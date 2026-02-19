@@ -1,0 +1,15 @@
+FROM oven/bun:1.2-alpine
+
+WORKDIR /app
+
+# Copiamos archivos de dependencias
+COPY ./frontend/package.json ./frontend/bun.lock* ./
+
+# Instalamos usando bun
+RUN bun install
+
+COPY ./frontend . 
+
+EXPOSE 5173
+# Comando optimizado para Bun
+CMD ["bun", "run", "dev", "--host"]
