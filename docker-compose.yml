@@ -1,0 +1,73 @@
+services:
+  # FRONTEND (React + Vite)
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.node
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend # Espera al back
+    networks:
+      - chaos-inc-net
+
+  # BACKEND (Laravel)
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.php
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8000:8000"
+      - "8080:8080"
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    environment: # Pasamos las variables de la DB al back
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - chaos-inc-net
+
+  # BASE DE DATOS (MySQL)
+  mysql:
+    image: mysql:8.0
+    container_name: chaosinc_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - chaos-inc-net
+
+  # CACHÉ/TIEMPO REAL (Redis)
+  redis:
+    image: redis:alpine
+    container_name: chaosinc_redis
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    networks:
+      - chaos-inc-net
+
+networks:
+  chaos-inc-net:
+    driver: bridge
+
+volumes:
+  db_data:
