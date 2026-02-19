@@ -6,7 +6,7 @@ use App\Services\UserService;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
@@ -37,13 +37,21 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, $id)
     {
+        $targetUser = $this->userService->getUserById($id);
+
+        Gate::authorize('update', $targetUser);
+
         $user = $this->userService->updateUser($id, $request->validated());
         return new UserResource($user);
     }
 
     public function destroy($id)
     {
+        $targetUser = $this->userService->getUserById($id);
+
+        Gate::authorize('delete', $targetUser);
+
         $this->userService->deleteUser($id);
-        return response()->json(['message' => 'Vaquero eliminado con éxito.'], 200);
+        return response()->noContent();
     }
 }

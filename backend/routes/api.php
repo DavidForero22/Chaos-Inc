@@ -22,17 +22,29 @@ Route::post('/login', [AuthController::class, 'login']);
 */
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Sesión de Usuario
+    // RUTAS PARA TODOS LOS LOGUEADOS (Admins y Users)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', function (Request $request) {
-        // Devuelve los datos del usuario logueado actualmente
         return $request->user();
     });
 
-    // CRUD de Usuarios
-    // (Crea automáticamente: GET /users, POST /users, GET /users/{id}, PUT /users/{id}, DELETE /users/{id})
-    Route::apiResource('users', UserController::class);
+    Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::put('/users/{user}', [UserController::class, 'update']);
+    
+    Route::get('/games', [GameController::class, 'index']);
+    Route::get('/games/{game}', [GameController::class, 'show']);
 
-    // CRUD de Partidas (Games)
-    Route::apiResource('games', GameController::class);
+    // ==========================================================
+    // RUTAS SENSIBLES (Solo para Administradores)
+    // ==========================================================
+    Route::middleware(\App\Http\Middleware\IsAdmin::class)->group(function () {
+
+        Route::post('/users', [UserController::class, 'store']);
+        Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+        Route::post('/games', [GameController::class, 'store']);
+        Route::put('/games/{game}', [GameController::class, 'update']);
+        Route::delete('/games/{game}', [GameController::class, 'destroy']);
+    });
 });

@@ -20,10 +20,10 @@ class AuthController extends Controller
 
     public function register(StoreUserRequest $request)
     {
-        // El Request ya ha validado que el email y username no existan
-        $user = $this->userService->createUser($request->validated());
+        $validatedData = $request->validated();
+        $validatedData['role'] = 'user';
 
-        // Generamos el token de Sanctum
+        $user = $this->userService->createUser($validatedData);
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -45,7 +45,7 @@ class AuthController extends Controller
         // Comprobamos si el usuario existe y la contraseña (hasheada) coincide
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'message' => 'Las credenciales proporcionadas son incorrectas.'
+                'message' => 'The credentials provided are incorrect.'
             ], 401);
         }
 
@@ -63,7 +63,7 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'message' => 'Sesión cerrada correctamente.'
+            'message' => 'Session closed successfully.'
         ], 200);
     }
 }

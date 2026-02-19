@@ -68,6 +68,6 @@ class GameController extends Controller
     public function destroy($id)
     {
         $this->gameService->deleteGame($id);
-        return response()->json(['message' => 'Partida eliminada con éxito.'], 200);
+        return response()->noContent();
     }
 }
