@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('match_user', function (Blueprint $table) {
+        Schema::create('game_user', function (Blueprint $table) {
             $table->id();
 
             // FK1 y FK2
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('match_id')->constrained()->onDelete('cascade');
+            $table->foreignId('game_id')->constrained()->onDelete('cascade');
 
             // Atributos de la partida para ECharts
             $table->boolean('has_won');
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('match_user');
+        Schema::dropIfExists('game_user');
     }
 };

@@ -17,21 +17,28 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['username', 'email', 'password', 'role'];
 
     /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
      */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
+
+    // Relación: Un usuario puede haber creado muchas salas
+    public function createdRooms()
+    {
+        return $this->hasMany(Room::class, 'creator_id');
+    }
+
+    // Relación: Un usuario participa en muchas partidas (Muchos a Muchos)
+    public function matches()
+    {
+        return $this->belongsToMany(Game::class)
+            ->withPivot('has_won', 'role', 'damage_dealt', 'damage_received', 'cards_played', 'eliminations')
+            ->withTimestamps();
+    }
 
     /**
      * Get the attributes that should be cast.
