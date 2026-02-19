@@ -26,12 +26,6 @@ class User extends Authenticatable
      */
     protected $hidden = ['password', 'remember_token'];
 
-    // Relación: Un usuario puede haber creado muchas salas
-    public function createdRooms()
-    {
-        return $this->hasMany(Room::class, 'creator_id');
-    }
-
     // Relación: Un usuario participa en muchas partidas (Muchos a Muchos)
     public function matches()
     {

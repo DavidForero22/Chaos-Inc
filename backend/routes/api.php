@@ -4,7 +4,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\RoomController;
 use App\Http\Controllers\GameController;
 
 /*
@@ -33,9 +32,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // CRUD de Usuarios
     // (Crea automáticamente: GET /users, POST /users, GET /users/{id}, PUT /users/{id}, DELETE /users/{id})
     Route::apiResource('users', UserController::class);
-
-    // CRUD de Salas (Rooms)
-    Route::apiResource('rooms', RoomController::class);
 
     // CRUD de Partidas (Games)
     Route::apiResource('games', GameController::class);
