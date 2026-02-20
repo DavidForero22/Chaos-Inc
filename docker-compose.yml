@@ -27,12 +27,6 @@ services:
       - "8000:8000"
       - "8080:8080"
     command: php artisan serve --host=0.0.0.0 --port=8000
-    environment: # Pasamos las variables de la DB al back
-      DB_DATABASE: ${MYSQL_DATABASE}
-      DB_USERNAME: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      LARAVEL_PASSWORD: ${LARAVEL_PASSWORD}
     depends_on:
       - mysql
       - redis
