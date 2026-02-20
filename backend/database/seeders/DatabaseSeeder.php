@@ -10,13 +10,13 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $adminPassword = env('ADMIN_PASSWORD');
+        $adminPassword = env('SUPER_ADMIN_PASSWORD');
 
         // Creamos el Super Admin inicial
         User::create([
             'username' => 'SuperAdmin',
             'email' => 'admin@chaosinc.com',
-            'password' => Hash::make($adminPassword), // Pon una segura si lo subes a producción
+            'password' => Hash::make($adminPassword),
             'role' => 'admin',
         ]);
     }

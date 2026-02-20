@@ -34,7 +34,7 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validación rápida inline (podrías hacer un LoginRequest si prefieres)
+        // Validación rápida inline
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
@@ -42,7 +42,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        // Comprobamos si el usuario existe y la contraseña (hasheada) coincide
+        // Comprobar si el usuario existe y la contraseña (hasheada) coincide
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'The credentials provided are incorrect.'
@@ -59,7 +59,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Revocamos el token que está usando actualmente para hacer la petición
+        // Revocar el token que está usando actualmente para hacer la petición
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([

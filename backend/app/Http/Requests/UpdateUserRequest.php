@@ -14,7 +14,7 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         // Obtenemos el ID del usuario que estamos editando desde la URL
-        $userId = $this->route('user') ? $this->route('user')->id : $this->user()->id;
+        $userId = $this->route('user');
 
         return [
             'username' => 'sometimes|string|max:255|unique:users,username,' . $userId,
