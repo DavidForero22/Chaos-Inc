@@ -40,6 +40,14 @@ class UserService
     public function deleteUser($id)
     {
         $user = User::findOrFail($id);
+
+        // Limpiar datos personales pero se mantiene la fila para las estadísticas
+        $user->update([
+            'username' => 'DeletedPlayer_' . $user->id,
+            'email' => 'deleted_' . $user->id . '@example.com',
+            'password' => 'anonimized',
+        ]);
+
         return $user->delete();
     }
 }

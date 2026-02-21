@@ -9,12 +9,16 @@ class GameService
 {
     public function getAllGames()
     {
-        return Game::with('users')->get();
+        return Game::with(['users' => function ($query) {
+            $query->withTrashed();
+        }])->get();
     }
 
     public function getGameById($id)
     {
-        return Game::with('users')->findOrFail($id);
+        return Game::with(['users' => function ($query) {
+            $query->withTrashed();
+        }])->findOrFail($id);
     }
 
     /**
