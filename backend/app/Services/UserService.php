@@ -19,6 +19,9 @@ class UserService
 
     public function createUser(array $data)
     {
+
+        $data['role'] = $data['role'] ?? 'user';
+
         return User::create($data);
     }
 
