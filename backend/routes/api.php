@@ -24,10 +24,11 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
 
         // RUTAS PARA TODOS LOS LOGUEADOS (Admins y Users)
-        Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', function (Request $request) {
             return $request->user();
         });
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 
         Route::get('/users', [UserController::class, 'index']);
         Route::get('/users/{user}', [UserController::class, 'show']);

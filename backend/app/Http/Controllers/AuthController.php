@@ -3,28 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
-use App\Services\UserService;
+use App\Services\AuthService;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Resources\UserResource;
-use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    protected $userService;
+    protected $authService;
 
-    public function __construct(UserService $userService)
+    public function __construct(AuthService $authService)
     {
-        $this->userService = $userService;
+        $this->authService = $authService;
     }
 
     public function register(StoreUserRequest $request)
     {
-        $validatedData = $request->validated();
-        $validatedData['role'] = 'user';
-
-        $user = $this->userService->createUser($validatedData);
-        $token = $user->createToken('auth_token')->plainTextToken;
+        list($user, $token) = $this->authService->register($request->validated());
 
         return response()->json([
             'user' => new UserResource($user),
@@ -34,22 +28,12 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validación rápida inline
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        // Comprobar si el usuario existe y la contraseña (hasheada) coincide
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'The credentials provided are incorrect.'
-            ], 401);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
+        list($user, $token) = $this->authService->login($request->email, $request->password);
 
         return response()->json([
             'user' => new UserResource($user),
@@ -59,11 +43,17 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        // Revocar el token que está usando actualmente para hacer la petición
-        $request->user()->currentAccessToken()->delete();
+        $this->authService->revokeCurrentToken($request->user());
+
+        return response()->json(['message' => 'Session closed successfully.'], 200);
+    }
+
+    public function logoutAll(Request $request)
+    {
+        $this->authService->revokeAllTokens($request->user());
 
         return response()->json([
-            'message' => 'Session closed successfully.'
+            'message' => 'Successfully logged out from all devices and sessions.'
         ], 200);
     }
 }
