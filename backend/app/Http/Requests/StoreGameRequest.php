@@ -43,7 +43,7 @@ class StoreGameRequest extends FormRequest
             'players.required' => 'Game data must include the players.',
             'players.min' => 'A game requires at least 2 players.',
 
-            'players.*.user_id.exists' => 'One or more provided player IDs do not exist in the database.',
+            'players.*.user_id.exists' => 'The provided player ID does not exist in the system.',
             'players.*.role.in' => 'One or more players have an invalid role assigned.',
             'players.*.damage_dealt.min' => 'Damage dealt cannot be a negative number.',
             'players.*.damage_received.min' => 'Damage received cannot be a negative number.',

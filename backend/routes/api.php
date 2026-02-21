@@ -46,8 +46,6 @@ Route::prefix('v1')->group(function () {
             Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
             Route::post('/games', [GameController::class, 'store']);
-            Route::put('/games/{game}', [GameController::class, 'update']);
-            Route::delete('/games/{game}', [GameController::class, 'destroy']);
         });
     });
 });

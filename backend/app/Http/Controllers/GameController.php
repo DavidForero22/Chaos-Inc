@@ -58,16 +58,4 @@ class GameController extends Controller
         $game = $this->gameService->getGameById($id);
         return new GameResource($game);
     }
-
-    public function update(Request $request, $id)
-    {
-        $game = $this->gameService->updateGame($id, $request->all());
-        return new GameResource($game);
-    }
-
-    public function destroy($id)
-    {
-        $this->gameService->deleteGame($id);
-        return response()->noContent();
-    }
 }
