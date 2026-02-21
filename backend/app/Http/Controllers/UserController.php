@@ -41,8 +41,19 @@ class UserController extends Controller
 
         Gate::authorize('update', $targetUser);
 
+        // Validar que el usuario no cambia su propio rol
+        if ($request->has('role') && $request->user()->id === $targetUser->id) {
+            return response()->json([
+                'message' => 'You are not allowed to change your own role.'
+            ], 403);
+        }
+
         $user = $this->userService->updateUser($id, $request->validated());
-        return new UserResource($user);
+        
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'user' => new UserResource($user)
+        ], 200);
     }
 
     public function destroy($id)
