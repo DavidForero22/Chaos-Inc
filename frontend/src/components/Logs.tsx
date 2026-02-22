@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export const Lobby = () => {
+export const Logs = () => {
     const [messages, setMessages] = useState<string[]>([]);
     const [status, setStatus] = useState('Conectando...');
 

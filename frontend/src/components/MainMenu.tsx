@@ -185,7 +185,7 @@ export default function MainMenu() {
 							Jugadores: {formData.max_players}
 							<input
 								type="range"
-								min="2"
+								min="3"
 								max="10"
 								className="w-full mt-2"
 								value={formData.max_players}
