@@ -6,7 +6,6 @@ export default function WaitingRoom() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 
-	// TODA la lógica pesada viene del Hook
 	const {
 		room,
 		myPlayerName,
@@ -15,11 +14,11 @@ export default function WaitingRoom() {
 		passwordError,
 		attemptJoin,
 		handleLeaveRoom,
+		startGame, // <-- Extraemos la función
 	} = useRoom(id);
 
 	const [passwordInput, setPasswordInput] = useState("");
 
-	// --- RENDERIZADOS CONDICIONALES ---
 	if (isJoining) {
 		return (
 			<div className="text-center text-white mt-20">
@@ -76,7 +75,6 @@ export default function WaitingRoom() {
 		);
 	}
 
-	// RENDERIZADO DE LA SALA DE ESPERA NORMAL
 	return (
 		<div className="max-w-2xl mx-auto mt-12 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
 			<h1 className="text-3xl font-bold text-white mb-2">{room.name}</h1>
@@ -128,6 +126,7 @@ export default function WaitingRoom() {
 					Abandonar Sala
 				</button>
 				<button
+					onClick={startGame} // <-- Vinculamos la función aquí
 					disabled={room.players.length < 2 || room.owner_name !== myPlayerName}
 					className={`px-6 py-3 rounded font-bold ${room.players.length < 2 || room.owner_name !== myPlayerName ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"}`}
 				>

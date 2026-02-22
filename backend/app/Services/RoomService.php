@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
+use App\Events\GameStarted;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;

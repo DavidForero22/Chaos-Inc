@@ -18,7 +18,6 @@ export function useRoom(roomId: string | undefined) {
 	const location = useLocation();
 	const { user } = useAuthStore();
 
-	// GESTIÓN DE IDENTIDAD
 	const [myPlayerName] = useState(() => {
 		if (user) return user;
 		if (location.state?.playerName) {
@@ -28,19 +27,17 @@ export function useRoom(roomId: string | undefined) {
 		const savedGuest = sessionStorage.getItem("guestName");
 		if (savedGuest) return savedGuest;
 
-		const newGuest = `Anon_${crypto.randomUUID().split('-')[0]}`;
+		const newGuest = `Anon_${Math.floor(Math.random() * 1000)}_${Date.now().toString().slice(-4)}`;
 		sessionStorage.setItem("guestName", newGuest);
 		return newGuest;
 	});
 
-	// ESTADOS
 	const [room, setRoom] = useState<RoomData | null>(null);
 	const roomStatusRef = useRef<string | null>(null);
 	const [isJoining, setIsJoining] = useState(true);
 	const [needsPassword, setNeedsPassword] = useState(false);
 	const [passwordError, setPasswordError] = useState("");
 
-	// FUNCIÓN PARA REFRESCAR DATOS (Usamos useCallback para evitar re-renders infinitos)
 	const fetchRoomData = useCallback(async () => {
 		if (!roomId) return;
 		try {
@@ -57,7 +54,6 @@ export function useRoom(roomId: string | undefined) {
 		}
 	}, [roomId, navigate]);
 
-	// INTENTO DE ENTRADA
 	const attemptJoin = async (pwd = "") => {
 		if (!roomId) return;
 		try {
@@ -86,7 +82,6 @@ export function useRoom(roomId: string | undefined) {
 		}
 	};
 
-	// FUNCIÓN PARA SALIR
 	const handleLeaveRoom = async () => {
 		if (!roomId) return;
 		try {
@@ -97,7 +92,16 @@ export function useRoom(roomId: string | undefined) {
 		}
 	};
 
-	// EFFECTS
+	// NUEVO: Función para iniciar la partida (La llamará el dueño)
+	const startGame = async () => {
+		if (!roomId) return;
+		try {
+			await api.post(`/rooms/${roomId}/start`, { player_name: myPlayerName });
+		} catch (error: any) {
+			alert(error.response?.data?.error || "Error al iniciar la partida.");
+		}
+	};
+
 	useEffect(() => {
 		attemptJoin();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -109,11 +113,18 @@ export function useRoom(roomId: string | undefined) {
 		const channel = echo.channel(`room.${roomId}`);
 		channel.listen(".RoomListUpdated", fetchRoomData);
 
+		// NUEVO: Escuchar evento de inicio de partida
+		channel.listen(".GameStarted", () => {
+			console.log("¡La partida ha comenzado! Navegando al tablero...");
+			navigate(`/game/${roomId}`, { state: { playerName: myPlayerName } });
+		});
+
 		return () => {
 			channel.stopListening(".RoomListUpdated");
+			channel.stopListening(".GameStarted");
 			echo.leaveChannel(`room.${roomId}`);
 		};
-	}, [roomId, isJoining, needsPassword, fetchRoomData]);
+	}, [roomId, isJoining, needsPassword, fetchRoomData, navigate, myPlayerName]);
 
 	useEffect(() => {
 		const handleUnload = () => {
@@ -137,5 +148,6 @@ export function useRoom(roomId: string | undefined) {
 		passwordError,
 		attemptJoin,
 		handleLeaveRoom,
+		startGame,
 	};
 }

@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar.tsx";
 import MainMenu from "./components/MainMenu.tsx";
 import WaitingRoom from "./components/WaitingRoom.tsx";
-import { Logs } from "./components/Logs.tsx"; 
+import GameBoard from "./components/GameBoard.tsx";
+import { Logs } from "./components/Logs.tsx";
 
 function App() {
 	return (
@@ -15,6 +16,7 @@ function App() {
 					<Routes>
 						<Route path="/" element={<MainMenu />} />
 						<Route path="/room/:id" element={<WaitingRoom />} />
+						<Route path="/game/:id" element={<GameBoard />} />{" "}
 						<Route path="/logs" element={<Logs />} />
 					</Routes>
 				</div>

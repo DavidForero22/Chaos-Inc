@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\LiveGameController;
 use App\Http\Controllers\RoomController;
 
 /*
@@ -20,6 +21,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::post('/rooms/{id}/join', [RoomController::class, 'join']);
     Route::post('/rooms/{id}/leave', [RoomController::class, 'leave']);
+    Route::post('/rooms/{id}/start', [RoomController::class, 'start']);
+    Route::post('/rooms/{id}/start', [LiveGameController::class, 'start']);
+    Route::post('/rooms/{id}/sync', [LiveGameController::class, 'sync']);
 
     /*
 |--------------------------------------------------------------------------

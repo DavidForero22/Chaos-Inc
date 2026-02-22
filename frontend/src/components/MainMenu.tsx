@@ -19,6 +19,9 @@ export default function MainMenu() {
 	const [rooms, setRooms] = useState<Room[]>([]);
 	const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [filterStatus, setFilterStatus] = useState<
+		"all" | "waiting" | "in_game"
+	>("all");
 
 	const { user } = useAuthStore();
 	const navigate = useNavigate();
@@ -38,10 +41,10 @@ export default function MainMenu() {
 		// Escuchar el canal global de salas
 		const channel = echo.channel("lobby");
 
-		// Escuchar el evento 
+		// Escuchar el evento
 		channel.listen(".RoomStateUpdated", () => {
 			console.log("¡Cambios en el lobby! Actualizando salas...");
-			fetchRooms(); 
+			fetchRooms();
 		});
 
 		// Limpieza al salir del componente
@@ -93,6 +96,12 @@ export default function MainMenu() {
 		}
 	};
 
+	// Aplicar filtro
+	const filteredRooms = rooms.filter((room) => {
+		if (filterStatus === "all") return true;
+		return room.status === filterStatus;
+	});
+
 	return (
 		<div className="max-w-4xl mx-auto mt-4">
 			<div className="flex justify-between items-end mb-6">
@@ -103,6 +112,28 @@ export default function MainMenu() {
 					<p className="text-gray-400 text-sm">
 						Únete a una partida pública o crea la tuya propia.
 					</p>
+
+					{/* BOTONES DE FILTRO */}
+					<div className="flex gap-2">
+						<button
+							onClick={() => setFilterStatus("all")}
+							className={`px-3 py-1 text-sm rounded ${filterStatus === "all" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"}`}
+						>
+							Todas
+						</button>
+						<button
+							onClick={() => setFilterStatus("waiting")}
+							className={`px-3 py-1 text-sm rounded ${filterStatus === "waiting" ? "bg-green-600 text-white" : "bg-gray-700 text-gray-400"}`}
+						>
+							Esperando
+						</button>
+						<button
+							onClick={() => setFilterStatus("in_game")}
+							className={`px-3 py-1 text-sm rounded ${filterStatus === "in_game" ? "bg-red-600 text-white" : "bg-gray-700 text-gray-400"}`}
+						>
+							En Partida
+						</button>
+					</div>
 				</div>
 
 				{user ? (
@@ -128,7 +159,7 @@ export default function MainMenu() {
 			</div>
 
 			<div className="bg-gray-800 rounded-lg shadow-xl border border-gray-700 overflow-hidden">
-				{rooms.map((room) => (
+				{filteredRooms.map((room) => (
 					<div
 						key={room.room_id}
 						onClick={() => setSelectedRoom(room.room_id)}
@@ -138,6 +169,16 @@ export default function MainMenu() {
 							<h3 className="text-lg font-bold text-white flex gap-2">
 								{room.is_private === "1" ? "🔒" : "🟢"} {room.name}
 							</h3>
+							{/* BADGE DE ESTADO */}
+							{room.status === "waiting" ? (
+								<span className="text-xs bg-green-900/50 text-green-400 px-2 py-0.5 rounded border border-green-700 ml-2">
+									Esperando
+								</span>
+							) : (
+								<span className="text-xs bg-red-900/50 text-red-400 px-2 py-0.5 rounded border border-red-700 ml-2">
+									En Partida
+								</span>
+							)}
 							<p className="text-gray-400 text-sm mt-1">
 								Creada por{" "}
 								<span className="text-gray-300">{room.owner_name}</span> •{" "}
@@ -160,16 +201,20 @@ export default function MainMenu() {
 						</div>
 					</div>
 				))}
-				{rooms.length === 0 && (
+				{filteredRooms.length === 0 && (
 					<div className="p-12 text-center text-gray-400">
-						No hay salas activas en este momento.
+						No hay salas activas con este filtro.
 					</div>
 				)}
 			</div>
 
 			<div className="mt-6 flex justify-end">
 				<button
-					disabled={!selectedRoom}
+					// No puedes unirte si no hay sala seleccionada o si la sala ya empezó
+					disabled={
+						!selectedRoom ||
+						rooms.find((r) => r.room_id === selectedRoom)?.status !== "waiting"
+					}
 					onClick={handleJoinRoom}
 					className={`px-8 py-3 rounded font-bold text-lg transition shadow-lg ${selectedRoom ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}
 				>
