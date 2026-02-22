@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +18,10 @@ class RoomService
             $roomData = Redis::hgetall("room:{$id}");
             if (!empty($roomData)) {
                 unset($roomData['password']);
+
+                $players = Redis::smembers("room:{$id}:players");
+                $roomData['players'] = $players;
+
                 $rooms[] = $roomData;
             }
         }
@@ -43,6 +48,55 @@ class RoomService
         Redis::sadd("active_rooms", $roomId);
         Redis::expire("room:{$roomId}", 86400); // 24h
 
+        // Añadimos al creador como el primer jugador de la sala
+        Redis::sadd("room:{$roomId}:players", $ownerName);
+        Redis::expire("room:{$roomId}:players", 86400);
+
+        // Devolvemos los datos con el array de jugadores inicializado
+        $roomData['players'] = [$ownerName];
+        unset($roomData['password']);
+
         return $roomData;
+    }
+
+    public function joinRoom(string $roomId, string $playerName, ?string $password = null): array
+    {
+        $roomKey = "room:{$roomId}";
+
+        if (!Redis::exists($roomKey)) {
+            throw new Exception("La sala no existe.", 404);
+        }
+
+        $room = Redis::hgetall($roomKey);
+
+        // Validar contraseña si es privada
+        if ($room['is_private'] === '1') {
+            if (!$password || !Hash::check($password, $room['password'])) {
+                throw new Exception("Contraseña incorrecta o requerida.", 403);
+            }
+        }
+
+        // Validar límite de jugadores
+        $currentPlayersCount = Redis::scard("{$roomKey}:players");
+        if ($currentPlayersCount >= $room['max_players']) {
+            throw new Exception("La sala está llena.", 403);
+        }
+
+        // Añadir jugador
+        Redis::sadd("{$roomKey}:players", $playerName);
+
+        return [
+            'message' => 'Te has unido a la sala.',
+            'room_id' => $roomId,
+            'player' => $playerName
+        ];
+    }
+
+    public function leaveRoom(string $roomId, string $playerName): void
+    {
+        $roomKey = "room:{$roomId}";
+        Redis::srem("{$roomKey}:players", $playerName);
+
+        // (Opcional a futuro): Si la sala se queda con 0 jugadores, borrarla de Redis para limpiar.
     }
 }

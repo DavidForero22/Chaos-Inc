@@ -16,7 +16,10 @@ use App\Http\Controllers\RoomController;
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
     Route::get('/rooms', [RoomController::class, 'index']);
+    Route::post('/rooms/{id}/join', [RoomController::class, 'join']);
+    Route::post('/rooms/{id}/leave', [RoomController::class, 'leave']);
 
     /*
 |--------------------------------------------------------------------------
