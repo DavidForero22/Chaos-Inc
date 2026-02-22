@@ -1,76 +1,82 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import api from "../api/axios";
-import echo from "../echo.ts"; // Importa tu instancia de Echo
-
-interface RoomData {
-	room_id: string;
-	name: string;
-	max_players: number;
-	owner_name: string;
-	players: string[];
-}
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useRoom } from "../hooks/useRoom";
 
 export default function WaitingRoom() {
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const location = useLocation();
 
-	const myPlayerName = location.state?.playerName || "Desconocido";
-	const [room, setRoom] = useState<RoomData | null>(null);
+	// TODA la lógica pesada viene del Hook
+	const {
+		room,
+		myPlayerName,
+		isJoining,
+		needsPassword,
+		passwordError,
+		attemptJoin,
+		handleLeaveRoom,
+	} = useRoom(id);
 
-	// SISTEMA WEBSOCKET PARA LA SALA
-	useEffect(() => {
-		const fetchRoomData = async () => {
-			try {
-				const res = await api.get("/rooms");
-				const currentRoom = res.data.find((r: RoomData) => r.room_id === id);
-				if (currentRoom) {
-					setRoom(currentRoom);
-				} else {
-					navigate("/"); // La sala no existe
-				}
-			} catch (error) {
-				console.error("Error cargando la sala");
-			}
-		};
+	const [passwordInput, setPasswordInput] = useState("");
 
-		// carga inicial
-		fetchRoomData();
-
-		// Escuchar el canal ESPECÍFICO de esta sala
-		const channel = echo.channel(`room.${id}`);
-
-		// Escuchar el evento de actualización de estado
-		channel.listen(".RoomListUpdated", () => {
-			console.log(`¡Alguien entró o salió de la sala ${id}! Actualizando...`);
-			fetchRoomData();
-		});
-
-		// Limpieza al salir
-		return () => {
-			channel.stopListening(".RoomStateUpdated");
-			echo.leaveChannel(`room.${id}`);
-		};
-	}, [id, navigate]);
-
-	const handleLeaveRoom = async () => {
-		try {
-			await api.post(`/rooms/${id}/leave`, { player_name: myPlayerName });
-			navigate("/");
-		} catch (error) {
-			console.error("Error al salir");
-			navigate("/");
-		}
-	};
-
-	if (!room)
+	// --- RENDERIZADOS CONDICIONALES ---
+	if (isJoining) {
 		return (
 			<div className="text-center text-white mt-20">
 				Conectando a la sala...
 			</div>
 		);
+	}
 
+	if (needsPassword) {
+		return (
+			<div className="max-w-md mx-auto mt-20 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
+				<h2 className="text-2xl font-bold text-white mb-4">🔒 Sala Privada</h2>
+				<p className="text-gray-400 mb-6">
+					Introduce la contraseña para acceder a la sala{" "}
+					<span className="text-yellow-400 font-mono">{id}</span>
+				</p>
+
+				<input
+					type="password"
+					className="w-full p-3 mb-2 bg-gray-900 border border-gray-600 rounded text-white focus:border-blue-500 outline-none transition"
+					placeholder="Contraseña"
+					value={passwordInput}
+					onChange={(e) => setPasswordInput(e.target.value)}
+					onKeyDown={(e) => e.key === "Enter" && attemptJoin(passwordInput)}
+				/>
+
+				{passwordError && (
+					<p className="text-red-400 text-sm mb-4 text-left">{passwordError}</p>
+				)}
+
+				<div className="flex justify-end gap-3 mt-6">
+					<button
+						onClick={() => navigate("/")}
+						className="px-5 py-2.5 text-gray-400 hover:text-white transition"
+					>
+						Volver al Menú
+					</button>
+					<button
+						onClick={() => attemptJoin(passwordInput)}
+						className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow-lg shadow-blue-900/20"
+					>
+						Entrar
+					</button>
+				</div>
+			</div>
+		);
+	}
+
+	if (!room) {
+		return (
+			<div className="text-center text-white mt-20">
+				Cargando datos de la sala...
+			</div>
+		);
+	}
+
+	// RENDERIZADO DE LA SALA DE ESPERA NORMAL
 	return (
 		<div className="max-w-2xl mx-auto mt-12 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
 			<h1 className="text-3xl font-bold text-white mb-2">{room.name}</h1>
@@ -122,8 +128,8 @@ export default function WaitingRoom() {
 					Abandonar Sala
 				</button>
 				<button
-					disabled={room.players.length < 2}
-					className={`px-6 py-3 rounded font-bold ${room.players.length < 2 ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"}`}
+					disabled={room.players.length < 2 || room.owner_name !== myPlayerName}
+					className={`px-6 py-3 rounded font-bold ${room.players.length < 2 || room.owner_name !== myPlayerName ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"}`}
 				>
 					Empezar Partida
 				</button>

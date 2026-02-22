@@ -74,6 +74,20 @@ class RoomService
 
         $room = Redis::hgetall($roomKey);
 
+        // Si el usuario ya esta en la sala, no hay que validar
+        if (Redis::sismember("{$roomKey}:players", $playerName)) {
+            return [
+                'message' => 'Ya estás en la sala.',
+                'room_id' => $roomId,
+                'player' => $playerName
+            ];
+        }
+
+        // Si es un jugador nuevo, verificar que la partida no haya empezado
+        if ($room['status'] !== 'waiting') {
+            throw new Exception("La partida ya ha comenzado.", 403);
+        }
+
         // Validar contraseña si es privada
         if ($room['is_private'] === '1') {
             if (!$password || !Hash::check($password, $room['password'])) {
@@ -106,6 +120,13 @@ class RoomService
     public function leaveRoom(string $roomId, string $playerName): void
     {
         $roomKey = "room:{$roomId}";
+        $room = Redis::hgetall($roomKey);
+
+        // Si la sala no existe o la partida ya empezó, ignoramos la salida.
+        if (empty($room) || $room['status'] !== 'waiting') {
+            return;
+        }
+
         // Eliminar al usuario de la sala
         Redis::srem("{$roomKey}:players", $playerName);
 
