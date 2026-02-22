@@ -19,9 +19,9 @@ class RoomController extends Controller
         return response()->json($this->roomService->getAllRooms());
     }
 
-    public function store(StoreRoomRequest $request)
+public function store(StoreRoomRequest $request)
     {
-        $ownerName = auth('sanctum')->user()?->username;
+        $ownerName = $request->user()->username;
         $roomData = $this->roomService->createRoom($request->validated(), $ownerName);
 
         return response()->json($roomData, 201);

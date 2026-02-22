@@ -35,7 +35,7 @@ class RoomService
             'password' => $data['is_private'] ? Hash::make($data['password']) : null,
             'max_players' => $data['max_players'],
             'status' => 'waiting',
-            'owner_name' => $ownerName ?? 'Invitado_' . Str::random(4),
+            'owner_name' => $ownerName,
         ];
 
         // Guardamos en Redis
