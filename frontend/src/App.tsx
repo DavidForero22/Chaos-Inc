@@ -1,26 +1,26 @@
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Lobby } from './components/Lobby';
-import MainMenu from './components/MainMenu';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar.tsx";
+import MainMenu from "./components/MainMenu.tsx";
+import WaitingRoom from "./components/WaitingRoom.tsx";
+import { Lobby } from "./components/Lobby.tsx"; 
 
 function App() {
-  return (
-    <Router>
-      <div className="min-h-screen bg-gray-900 text-white">
-        {/* Barra de navegación ultrabásica para desarrollo */}
-        <nav className="p-4 bg-gray-800 flex gap-4 border-b border-gray-700">
-          <Link to="/" className="text-blue-400 hover:text-blue-300 font-bold">Menú Principal</Link>
-          <Link to="/logs" className="text-red-400 hover:text-red-300 font-bold">Debug Logs</Link>
-        </nav>
+	return (
+		<Router>
+			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
+				{/* Cabecera extraída a su propio componente */}
+				<Navbar />
 
-        <div className="p-4">
-          <Routes>
-            <Route path="/" element={<MainMenu />} />
-            <Route path="/logs" element={<Lobby />} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
-  );
+				<div className="p-6 grow">
+					<Routes>
+						<Route path="/" element={<MainMenu />} />
+						<Route path="/room/:id" element={<WaitingRoom />} />
+						<Route path="/logs" element={<Lobby />} />
+					</Routes>
+				</div>
+			</div>
+		</Router>
+	);
 }
 
 export default App;

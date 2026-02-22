@@ -16,6 +16,7 @@ use App\Http\Controllers\RoomController;
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/rooms', [RoomController::class, 'index']);
 
     /*
 |--------------------------------------------------------------------------
@@ -38,7 +39,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/games', [GameController::class, 'index']);
         Route::get('/games/{game}', [GameController::class, 'show']);
 
-        Route::get('/rooms', [RoomController::class, 'index']);
         Route::post('/rooms', [RoomController::class, 'store']);
 
         // ==========================================================
