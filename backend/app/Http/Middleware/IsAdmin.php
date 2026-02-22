@@ -17,7 +17,7 @@ class IsAdmin
 
         // Si es un 'user' normal, le damos un portazo en la cara (Error 403 Forbidden)
         return response()->json([
-            'message' => 'Acceso denegado. Se requieren permisos de administrador.'
+            'message' => 'Administrator permissions are required.'
         ], 403);
     }
 }
