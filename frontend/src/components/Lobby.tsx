@@ -10,7 +10,7 @@ export const Lobby = () => {
         
         setStatus('Conectado a test-channel');
 
-        channel.listen('PingEvent', (e: { message: string }) => {
+        channel.listen('.PingEvent', (e: { message: string }) => {
             console.log("Evento recibido en componente:", e);
             setMessages((prev) => [...prev, e.message]);
         });

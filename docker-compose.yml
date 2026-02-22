@@ -29,6 +29,8 @@ services:
     depends_on:
       - mysql
       - redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
       
@@ -45,6 +47,23 @@ services:
     depends_on:
       - mysql
       - redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - chaos-inc-net
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.php
+    volumes:
+      - ./backend:/var/www/html
+    command: php artisan queue:work --tries=3 --timeout=90 --memory=128
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
 

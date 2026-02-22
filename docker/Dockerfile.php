@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl
 
 # Instalar extensiones de PHP (He quitado la línea repetida)
+RUN pecl install redis && docker-php-ext-enable redis
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # INSTALAR COMPOSER (Vital para tu TFG)
