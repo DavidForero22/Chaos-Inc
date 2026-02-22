@@ -29,8 +29,6 @@ services:
     depends_on:
       - mysql
       - redis
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
       
