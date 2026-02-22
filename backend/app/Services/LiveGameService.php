@@ -95,6 +95,22 @@ class LiveGameService
         $room = Redis::hgetall("room:{$roomId}");
         $data['current_turn'] = $room['current_turn_player_id'] ?? null;
 
+        $players = Redis::smembers("room:{$roomId}:players");
+        $publicPlayers = [];
+
+        foreach ($players as $pName) {
+            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+            $publicPlayers[] = [
+                'name' => $pName,
+                'stress' => $pData['stress'] ?? 0,
+                'is_dead' => $pData['is_dead'] ?? 0,
+                // Si es el boss, se avisa. Si no, se oculta el rol.
+                'role' => ($pData['role'] === 'boss') ? 'boss' : 'hidden'
+            ];
+        }
+
+        $data['players_info'] = $publicPlayers;
+
         return $data;
     }
 }
