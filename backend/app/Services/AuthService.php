@@ -17,6 +17,7 @@ class AuthService
 
     public function register(array $data)
     {
+        $data['role'] = 'user';
         $user = $this->userService->createUser($data);
         $token = $user->createToken('auth_token')->plainTextToken;
 
