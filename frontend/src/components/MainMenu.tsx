@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuthStore } from "../store/useAuthStore";
+// IMPORTANTE: Importa tu instancia de Laravel Echo
+import echo from "../echo.ts";
 
 interface Room {
 	room_id: string;
@@ -19,7 +21,7 @@ export default function MainMenu() {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 
 	const { user } = useAuthStore();
-	const navigate = useNavigate(); // Para redirigir a la sala de espera
+	const navigate = useNavigate();
 
 	const [formData, setFormData] = useState({
 		name: "",
@@ -28,8 +30,25 @@ export default function MainMenu() {
 		max_players: 4,
 	});
 
+	// SISTEMA WEBSOCKET PARA EL MENÚ PRINCIPAL
 	useEffect(() => {
+		// Carga inicial
 		fetchRooms();
+
+		// Escuchar el canal global de salas
+		const channel = echo.channel("lobby");
+
+		// Escuchar el evento 
+		channel.listen(".RoomStateUpdated", () => {
+			console.log("¡Cambios en el lobby! Actualizando salas...");
+			fetchRooms(); 
+		});
+
+		// Limpieza al salir del componente
+		return () => {
+			channel.stopListening(".RoomListUpdated");
+			echo.leaveChannel("lobby");
+		};
 	}, []);
 
 	const fetchRooms = async () => {
@@ -45,8 +64,9 @@ export default function MainMenu() {
 		try {
 			const response = await api.post("/rooms", formData);
 			setShowCreateModal(false);
-			// Al crearla, te unes automáticamente a la sala de espera
-			navigate(`/room/${response.data.room_id}`);
+			navigate(`/room/${response.data.room_id}`, {
+				state: { playerName: user },
+			});
 		} catch (error) {
 			alert("Hubo un error al crear la sala.");
 		}
@@ -54,11 +74,22 @@ export default function MainMenu() {
 
 	const handleJoinRoom = async () => {
 		if (!selectedRoom) return;
+		const roomInfo = rooms.find((r) => r.room_id === selectedRoom);
+		let password = "";
+
+		if (roomInfo?.is_private === "1") {
+			password = prompt("Esta sala es privada. Introduce la contraseña:") || "";
+		}
+
 		try {
-			// Aquí llamarías a un endpoint real para registrar tu entrada: api.post(`/rooms/${selectedRoom}/join`)
-			navigate(`/room/${selectedRoom}`);
-		} catch (error) {
-			alert("Error al unirse a la sala.");
+			const response = await api.post(`/rooms/${selectedRoom}/join`, {
+				password,
+			});
+			navigate(`/room/${selectedRoom}`, {
+				state: { playerName: response.data.player },
+			});
+		} catch (error: any) {
+			alert(error.response?.data?.error || "Error al unirse a la sala.");
 		}
 	};
 
@@ -112,7 +143,6 @@ export default function MainMenu() {
 								<span className="text-gray-300">{room.owner_name}</span> •{" "}
 								{room.status === "waiting" ? "Esperando..." : "Jugando"}
 							</p>
-							{/* AQUÍ MOSTRAMOS LOS JUGADORES */}
 							<p className="text-xs text-blue-300 mt-2">
 								Jugadores en sala:{" "}
 								{room.players && room.players.length > 0
@@ -132,7 +162,7 @@ export default function MainMenu() {
 				))}
 				{rooms.length === 0 && (
 					<div className="p-12 text-center text-gray-400">
-						No hay salas activas.
+						No hay salas activas en este momento.
 					</div>
 				)}
 			</div>
@@ -147,7 +177,7 @@ export default function MainMenu() {
 				</button>
 			</div>
 
-			{/* Modal de Crear (mismo que tenías, recortado por brevedad) */}
+			{/* Modal de Crear Sala */}
 			{showCreateModal && (
 				<div className="fixed inset-0 bg-gray-900/90 flex items-center justify-center p-4 z-50">
 					<div className="bg-gray-800 p-8 rounded-xl max-w-sm w-full border border-gray-700">

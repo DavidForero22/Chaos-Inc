@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Events\RoomListUpdated;
+use App\Events\RoomStateUpdated;
 use Exception;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
@@ -52,6 +54,9 @@ class RoomService
         Redis::sadd("room:{$roomId}:players", $ownerName);
         Redis::expire("room:{$roomId}:players", 86400);
 
+        // Avisar al Menú Principal de que hay una nueva sala
+        event(new RoomStateUpdated());
+
         // Devolvemos los datos con el array de jugadores inicializado
         $roomData['players'] = [$ownerName];
         unset($roomData['password']);
@@ -85,6 +90,12 @@ class RoomService
         // Añadir jugador
         Redis::sadd("{$roomKey}:players", $playerName);
 
+        // Avisar a los que ya están en la sala de que ha entrado alguien
+        event(new RoomListUpdated($roomId));
+
+        // Avisar al menú principal para que actualice el contador (X/4)
+        event(new RoomStateUpdated());
+
         return [
             'message' => 'Te has unido a la sala.',
             'room_id' => $roomId,
@@ -95,8 +106,24 @@ class RoomService
     public function leaveRoom(string $roomId, string $playerName): void
     {
         $roomKey = "room:{$roomId}";
+        // Eliminar al usuario de la sala
         Redis::srem("{$roomKey}:players", $playerName);
 
-        // (Opcional a futuro): Si la sala se queda con 0 jugadores, borrarla de Redis para limpiar.
+        $remainingPlayers = Redis::scard("{$roomKey}:players");
+
+        // Si no quedan jugadores, borrar sala
+        if ($remainingPlayers === 0) {
+            Redis::del($roomKey);
+            Redis::del("{$roomKey}:players");
+            Redis::srem("active_rooms", $roomId);
+
+            // La sala ha muerto, avisar al menú
+            event(new RoomStateUpdated());
+        } else {
+            // Alguien se fue, avisar a los que quedan en la sala
+            event(new RoomListUpdated($roomId));
+            // Avisar al menú principal para actualizar el contador
+            event(new RoomStateUpdated());
+        }
     }
 }
