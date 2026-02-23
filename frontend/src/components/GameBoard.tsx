@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useLiveGame } from "../hooks/useLiveGame";
+import { useLiveGame } from "../hooks/useLiveGame.ts";
 
 export default function GameBoard() {
 	const { id } = useParams();

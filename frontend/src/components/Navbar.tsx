@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../store/useAuthStore.ts";
 
 export default function Navbar() {
 	const { user, setAuth, logout } = useAuthStore();

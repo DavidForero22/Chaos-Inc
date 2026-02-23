@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoom } from "../hooks/useRoom";
+import { useRoom } from "../hooks/useRoom.ts";
 
 export default function WaitingRoom() {
 	const { id } = useParams();
