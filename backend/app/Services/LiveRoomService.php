@@ -87,4 +87,36 @@ class LiveRoomService
 
         event(new RoomStateUpdated());
     }
+
+    public function kickPlayer(string $roomId, string $adminName, string $playerToKick): void
+    {
+        $roomKey = "room:{$roomId}";
+        $room = Redis::hgetall($roomKey);
+
+        if (empty($room)) {
+            throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        // Validar que el que ejecuta la acción es el dueño
+        if ($room['owner_name'] !== $adminName) {
+            throw new GameException(GameException::NOT_LEADER, "Only the room owner can kick players.", 403);
+        }
+
+        // Validar que no se expulse a sí mismo
+        if ($adminName === $playerToKick) {
+            throw new GameException(GameException::CANNOT_KICK_SELF, "You cannot kick yourself.", 400);
+        }
+
+        // Validar que el jugador a expulsar esté en la sala
+        if (!Redis::sismember("{$roomKey}:players", $playerToKick)) {
+            throw new GameException(GameException::NOT_IN_ROOM, "The player is not in the room.", 404);
+        }
+
+        // --- Expulsar ---
+        Redis::srem("{$roomKey}:players", $playerToKick);
+
+        // Notificar a todos los canales 
+        event(new RoomListUpdated($roomId));
+        event(new RoomStateUpdated());
+    }
 }

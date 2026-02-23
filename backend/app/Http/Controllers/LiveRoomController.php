@@ -8,11 +8,11 @@ use Illuminate\Support\Str;
 
 class LiveRoomController extends Controller
 {
-    protected $roomService;
+    protected $liveRoomService;
 
-    public function __construct(LiveRoomService $roomService)
+    public function __construct(LiveRoomService $liveRoomService)
     {
-        $this->roomService = $roomService;
+        $this->liveRoomService = $liveRoomService;
     }
 
     public function join(Request $request, $id)
@@ -22,7 +22,7 @@ class LiveRoomController extends Controller
             ? auth('sanctum')->user()->username
             : $request->input('player_name', 'Anon_' . Str::random(4));
 
-        $result = $this->roomService->joinRoom($id, $playerName, $request->input('password'));
+        $result = $this->liveRoomService->joinRoom($id, $playerName, $request->input('password'));
         return response()->json($result, 200);
     }
 
@@ -37,7 +37,25 @@ class LiveRoomController extends Controller
         }
 
         // Ejecutamos la lógica del servicio
-        $this->roomService->leaveRoom($id, $playerName);
+        $this->liveRoomService->leaveRoom($id, $playerName);
         return response()->json(['message' => 'You have left the room.']);
+    }
+
+    public function kick(Request $request, $id)
+    {
+        // Obtener nombre del admin 
+        $adminName = auth('sanctum')->check()
+            ? auth('sanctum')->user()->username
+            : $request->input('admin_name');
+
+        // El jugador a expulsar vendrá en el body de la petición
+        $playerToKick = $request->input('player_to_kick');
+
+        if (!$playerToKick) {
+            return response()->json(['error' => 'Player to kick is required.'], 400);
+        }
+
+        $this->liveRoomService->kickPlayer($id, $adminName, $playerToKick);
+        return response()->json(['message' => 'Player kicked successfully.'], 200);
     }
 }
