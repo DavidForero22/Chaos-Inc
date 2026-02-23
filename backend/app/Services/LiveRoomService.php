@@ -93,10 +93,9 @@ class LiveRoomService
             Redis::del($roomKey);
             Redis::del("{$roomKey}:players");
             Redis::srem("active_rooms", $roomId);
-        } else {
-            event(new RoomListUpdated($roomId));
-        }
+        } 
 
+        event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated());
     }
 
