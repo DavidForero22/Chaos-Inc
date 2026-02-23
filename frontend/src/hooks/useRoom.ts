@@ -20,10 +20,12 @@ export function useRoom(roomId: string | undefined) {
 
 	const [myPlayerName] = useState(() => {
 		if (user) return user;
+
 		if (location.state?.playerName) {
 			sessionStorage.setItem("guestName", location.state.playerName);
 			return location.state.playerName;
 		}
+
 		const savedGuest = sessionStorage.getItem("guestName");
 		if (savedGuest) return savedGuest;
 
@@ -43,7 +45,15 @@ export function useRoom(roomId: string | undefined) {
 		try {
 			const res = await api.get("/rooms");
 			const currentRoom = res.data.find((r: RoomData) => r.room_id === roomId);
+
 			if (currentRoom) {
+				// Si ya no está en la lista de jugadores y no se fue voluntariamente
+				if (!isJoining && !currentRoom.players.includes(myPlayerName)) {
+					alert("Has sido expulsado de la sala.");
+					navigate("/");
+					return;
+				}
+
 				setRoom(currentRoom);
 				roomStatusRef.current = currentRoom.status;
 			} else {
@@ -52,7 +62,7 @@ export function useRoom(roomId: string | undefined) {
 		} catch (error) {
 			console.error("Error cargando la sala");
 		}
-	}, [roomId, navigate]);
+	}, [roomId, navigate, myPlayerName, isJoining]);
 
 	const attemptJoin = async (pwd = "") => {
 		if (!roomId) return;
@@ -121,13 +131,26 @@ export function useRoom(roomId: string | undefined) {
 		}
 	};
 
-	// NUEVO: Función para iniciar la partida (La llamará el dueño)
+	// Función para iniciar la partida (La llamará el dueño)
 	const startGame = async () => {
 		if (!roomId) return;
 		try {
 			await api.post(`/rooms/${roomId}/start`, { player_name: myPlayerName });
 		} catch (error: any) {
 			alert(error.response?.data?.error || "Error starting the game.");
+		}
+	};
+
+	const kickPlayer = async (playerToKick: string) => {
+		if (!roomId) return;
+		try {
+			await api.post(`/rooms/${roomId}/kick`, {
+				player_to_kick: playerToKick,
+				admin_name: myPlayerName, // Por si es invitado, lo pasamos también
+			});
+			// No hace falta hacer nada más, fetchRoomData se disparará por el evento de Echo
+		} catch (error: any) {
+			alert(error.response?.data?.error || "The player could not be sent off.");
 		}
 	};
 
@@ -178,5 +201,6 @@ export function useRoom(roomId: string | undefined) {
 		attemptJoin,
 		handleLeaveRoom,
 		startGame,
+		kickPlayer,
 	};
 }

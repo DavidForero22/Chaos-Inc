@@ -14,7 +14,8 @@ export default function WaitingRoom() {
 		passwordError,
 		attemptJoin,
 		handleLeaveRoom,
-		startGame, // <-- Extraemos la función
+		startGame,
+		kickPlayer,
 	} = useRoom(id);
 
 	const [passwordInput, setPasswordInput] = useState("");
@@ -96,15 +97,28 @@ export default function WaitingRoom() {
 					{room.players.map((player) => (
 						<li
 							key={player}
-							className="flex items-center gap-2 text-white bg-gray-800 p-2 rounded"
+							className="flex justify-between items-center bg-gray-800 p-2 rounded"
 						>
-							<span className="w-2 h-2 rounded-full bg-green-500"></span>
-							{player}{" "}
-							{player === myPlayerName && (
-								<span className="text-xs text-blue-400 ml-2">(Tú)</span>
-							)}
-							{player === room.owner_name && (
-								<span className="text-xs text-yellow-500 ml-2">👑 Líder</span>
+							<div className="flex items-center gap-2 text-white">
+								<span className="w-2 h-2 rounded-full bg-green-500"></span>
+								{player}
+								{player === myPlayerName && (
+									<span className="text-xs text-blue-400 ml-2">(Tú)</span>
+								)}
+								{player === room.owner_name && (
+									<span className="text-xs text-yellow-500 ml-2">👑 Líder</span>
+								)}
+							</div>
+
+							{/* BOTÓN DE EXPULSAR */}
+							{room.owner_name === myPlayerName && player !== myPlayerName && (
+								<button
+									onClick={() => kickPlayer(player)}
+									className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-2 py-1 rounded border border-red-700/50 transition"
+									title="Expulsar jugador"
+								>
+									Expulsar
+								</button>
 							)}
 						</li>
 					))}
