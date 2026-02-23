@@ -40,27 +40,36 @@ export function useLiveGame(roomId: string | undefined) {
 	const [loading, setLoading] = useState(true);
 
 	const syncGame = useCallback(async () => {
-		if (!myPlayerName || !roomId) return;
+		if (!roomId) return;
+
 		try {
-			const res = await api.post(`/rooms/${roomId}/sync`, {
-				player_name: myPlayerName,
-			});
+			const res = await api.post(`/rooms/${roomId}/sync`);
 			setGameData(res.data);
-		} catch (error) {
-			console.error("Error sincronizando partida:", error);
+			setLoading(false);
+		} catch (error: any) {
+			const errorType = error.response?.data?.type;
+
+			if (errorType === "GAME_NOT_STARTED") {
+				console.warn("Waiting for Redis initialization...");
+				return;
+			}
+
+			console.error("Error synchronizing game:", error);
+			if (error.response?.status === 401) {
+				alert("Game session expired.");
+			}
 			navigate("/");
-		} finally {
 			setLoading(false);
 		}
-	}, [roomId, myPlayerName, navigate]);
+	}, [roomId, navigate]);
 
 	useEffect(() => {
-		if (!myPlayerName) {
+		if (!sessionStorage.getItem("game_token")) {
 			navigate("/");
 			return;
 		}
 		syncGame();
-	}, [syncGame, myPlayerName, navigate]);
+	}, [syncGame, navigate]);
 
 	return {
 		gameData,

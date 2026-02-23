@@ -80,8 +80,23 @@ class LiveGameService
     // MÉTODO PARA EL ENDPOINT DE SINCRONIZACIÓN
     public function getPlayerData(string $roomId, string $playerName): array
     {
+        $roomKey = "room:{$roomId}";
+        
+        // Comprobar que la sala existe
+        if (!Redis::exists($roomKey)) {
+             throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        $room = Redis::hgetall($roomKey);
+
+        // Comprobar que el juego realmente ha empezado
+        if (($room['status'] ?? 'waiting') === 'waiting') {
+             throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
+        }
+
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
+        // Comprobar que el jugador tiene datos asignados
         if (!Redis::exists($playerKey)) {
             throw new GameException(GameException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
@@ -89,8 +104,7 @@ class LiveGameService
         // MIS DATOS
         $myData = Redis::hgetall($playerKey);
 
-        // DATOS GLOBALES
-        $room = Redis::hgetall("room:{$roomId}");
+        // DATOS GLOBALES 
         $allPlayers = Redis::smembers("room:{$roomId}:players");
 
         // DATOS DE LOS OPONENTES (Excluyéndome a mí)

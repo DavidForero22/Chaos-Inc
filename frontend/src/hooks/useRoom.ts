@@ -55,6 +55,7 @@ export function useRoom(roomId: string | undefined) {
 					!currentRoom.players.includes(myPlayerName)
 				) {
 					alert("You have been expelled from the room.");
+					sessionStorage.removeItem("game_token");
 					navigate("/");
 					return;
 				}
@@ -73,10 +74,15 @@ export function useRoom(roomId: string | undefined) {
 		if (!roomId) return;
 		try {
 			setPasswordError("");
-			await api.post(`/rooms/${roomId}/join`, {
+			const res = await api.post(`/rooms/${roomId}/join`, {
 				player_name: myPlayerName,
 				password: pwd,
 			});
+
+			// Guardar el token que da el backend
+			if (res.data.game_token) {
+				sessionStorage.setItem("game_token", res.data.game_token);
+			}
 
 			setNeedsPassword(false);
 			setIsJoining(false);
@@ -120,13 +126,13 @@ export function useRoom(roomId: string | undefined) {
 
 	const handleLeaveRoom = async () => {
 		if (!roomId) return;
-
 		isLeavingRef.current = true;
-
 		try {
-			await api.post(`/rooms/${roomId}/leave`, { player_name: myPlayerName });
+			await api.post(`/rooms/${roomId}/leave`);
+			sessionStorage.removeItem("game_token");
 			navigate("/");
 		} catch (error) {
+			sessionStorage.removeItem("game_token");
 			navigate("/");
 		}
 	};
@@ -135,7 +141,7 @@ export function useRoom(roomId: string | undefined) {
 	const startGame = async () => {
 		if (!roomId) return;
 		try {
-			await api.post(`/rooms/${roomId}/start`, { player_name: myPlayerName });
+			await api.post(`/rooms/${roomId}/start`);
 		} catch (error: any) {
 			alert(error.response?.data?.error || "Error starting the game.");
 		}
@@ -146,9 +152,7 @@ export function useRoom(roomId: string | undefined) {
 		try {
 			await api.post(`/rooms/${roomId}/kick`, {
 				player_to_kick: playerToKick,
-				admin_name: myPlayerName, // Por si es invitado, lo pasamos también
 			});
-			// No hace falta hacer nada más, fetchRoomData se disparará por el evento de Echo
 		} catch (error: any) {
 			alert(error.response?.data?.error || "The player could not be sent off.");
 		}
@@ -160,11 +164,9 @@ export function useRoom(roomId: string | undefined) {
 
 	useEffect(() => {
 		if (isJoining || needsPassword || !roomId) return;
-
 		const channel = echo.channel(`room.${roomId}`);
-		channel.listen(".RoomListUpdated", fetchRoomData);
 
-		// NUEVO: Escuchar evento de inicio de partida
+		channel.listen(".RoomListUpdated", fetchRoomData);
 		channel.listen(".GameStarted", () => {
 			console.log("The game has begun! Navigating to the board.");
 			navigate(`/game/${roomId}`, { state: { playerName: myPlayerName } });
@@ -182,14 +184,14 @@ export function useRoom(roomId: string | undefined) {
 			if (roomStatusRef.current === "waiting" && roomId) {
 				const leaveUrl = `${api.defaults.baseURL}/rooms/${roomId}/leave`;
 				const data = new URLSearchParams();
-				data.append("player_name", myPlayerName);
+				data.append("game_token", sessionStorage.getItem("game_token") || "");
 				navigator.sendBeacon(leaveUrl, data);
 			}
 		};
 
 		window.addEventListener("beforeunload", handleUnload);
 		return () => window.removeEventListener("beforeunload", handleUnload);
-	}, [roomId, myPlayerName]);
+	}, [roomId]);
 
 	return {
 		room,

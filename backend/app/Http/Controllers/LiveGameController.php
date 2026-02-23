@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Game\StartGameRequest;
 use App\Http\Requests\Game\SyncGameRequest;
 use App\Services\LiveGameService;
+use Illuminate\Support\Facades\Redis;
 
 class LiveGameController extends Controller
 {
@@ -17,9 +18,12 @@ class LiveGameController extends Controller
 
     public function start(StartGameRequest $request, $id)
     {
-        $playerName = auth('sanctum')->check()
-            ? auth('sanctum')->user()->username
-            : $request->input('player_name');
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
 
         $this->liveGameService->startGame($id, $playerName);
 
@@ -28,9 +32,12 @@ class LiveGameController extends Controller
 
     public function sync(SyncGameRequest $request, $id)
     {
-        $playerName = auth('sanctum')->check()
-            ? auth('sanctum')->user()->username
-            : $request->input('player_name');
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
 
         $data = $this->liveGameService->getPlayerData($id, $playerName);
 

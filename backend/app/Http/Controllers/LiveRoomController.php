@@ -7,6 +7,7 @@ use App\Http\Requests\Room\LeaveRoomRequest;
 use App\Http\Requests\Room\KickPlayerRequest;
 use App\Services\LiveRoomService;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Redis;
 
 class LiveRoomController extends Controller
 {
@@ -30,27 +31,36 @@ class LiveRoomController extends Controller
 
     public function leave(LeaveRoomRequest $request, $id)
     {
-        $playerName = auth('sanctum')->check()
-            ? auth('sanctum')->user()->username
-            : $request->input('player_name');
+        // OBTENER TOKEN Y VALIDAR IDENTIDAD
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
 
         if (!$playerName) {
-            return response()->json(['error' => "The player's name is required to leave the room."], 400);
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
         }
 
+        // EJECUTAR ACCIÓN SEGURO
         $this->liveRoomService->leaveRoom($id, $playerName);
+
+        // LIMPIEZA
+        Redis::del("room:{$id}:token:{$gameToken}");
 
         return response()->json(['message' => 'You have left the room.'], 200);
     }
 
     public function kick(KickPlayerRequest $request, $id)
     {
-        $adminName = auth('sanctum')->check()
-            ? auth('sanctum')->user()->username
-            : $request->input('admin_name');
+        // OBTENER TOKEN DEL QUE EJECUTA LA ACCIÓN
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $adminName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$adminName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
 
         $playerToKick = $request->input('player_to_kick');
 
+        // El servicio validará si el $adminName es realmente el dueño de la sala
         $this->liveRoomService->kickPlayer($id, $adminName, $playerToKick);
 
         return response()->json(['message' => 'Player kicked successfully.'], 200);

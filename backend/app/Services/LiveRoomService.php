@@ -7,6 +7,7 @@ use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class LiveRoomService
 {
@@ -20,12 +21,18 @@ class LiveRoomService
 
         $room = Redis::hgetall($roomKey);
 
+        // Generar un Token Único de Partida
+        $gameToken = (string) Str::uuid();
+
+        // Si ya está en la sala (refrescó la página)
         if (Redis::sismember("{$roomKey}:players", $playerName)) {
+            Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
             return [
-            'message' => "You're already in this room",
-            'room_id' => $roomId,
-            'player' => $playerName
-        ];
+                'message' => "You're already in this room",
+                'room_id' => $roomId,
+                'player' => $playerName,
+                'game_token' => $gameToken 
+            ];
         }
 
         if ($room['status'] !== 'waiting') {
@@ -50,16 +57,17 @@ class LiveRoomService
         // Añadir jugador
         Redis::sadd("{$roomKey}:players", $playerName);
 
-        // Avisar a los que ya están en la sala de que ha entrado alguien
-        event(new RoomListUpdated($roomId));
+        // Guardar el token en Redis
+        Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
 
-        // Avisar al menú principal para que actualice el contador (X/4)
+        event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated());
 
         return [
             'message' => 'You have joined the room.',
             'room_id' => $roomId,
-            'player' => $playerName
+            'player' => $playerName,
+            'game_token' => $gameToken // <-- DEVOLVEMOS EL TOKEN
         ];
     }
 
