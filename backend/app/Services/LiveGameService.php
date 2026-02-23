@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Events\RoomStateUpdated;
-use App\Events\GameStarted; // <-- Asegúrate de haber ejecutado: php artisan make:event GameStarted
-use Exception;
+use App\Events\GameStarted;
+use App\Exceptions\GameException;
 use Illuminate\Support\Facades\Redis;
 
 class LiveGameService
@@ -14,24 +14,24 @@ class LiveGameService
         $roomKey = "room:{$roomId}";
 
         if (!Redis::exists($roomKey)) {
-            throw new Exception("La sala no existe.", 404);
+            throw new GameException(GameException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
 
         if ($room['owner_name'] !== $requestingPlayer) {
-            throw new Exception("Solo el líder puede iniciar la partida.", 403);
+            throw new GameException(GameException::NOT_LEADER, "Solo el líder puede iniciar la partida.", 403);
         }
 
         $players = Redis::smembers("{$roomKey}:players");
         if (count($players) < 2) {
-            throw new Exception("No hay suficientes jugadores.", 400);
+            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "No hay suficientes jugadores.", 400);
         }
 
-        // 1. CAMBIAR ESTADO DE LA SALA
+        // CAMBIAR ESTADO DE LA SALA
         Redis::hset($roomKey, 'status', 'in_game');
 
-        // 2. REPARTO DE ROLES
+        // REPARTO DE ROLES
         shuffle($players);
         $roles = ['boss'];
         for ($i = 1; $i < count($players); $i++) {
@@ -40,8 +40,8 @@ class LiveGameService
 
         $bossPlayerName = '';
 
-        // 3. INICIALIZAR JUGADORES EN REDIS Y ASIGNAR CARTAS
-        $testDeck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // Mazo un poco más grande
+        // INICIALIZAR JUGADORES EN REDIS Y ASIGNAR CARTAS
+        $testDeck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
         shuffle($testDeck);
 
         foreach ($players as $index => $playerName) {
@@ -72,7 +72,7 @@ class LiveGameService
         Redis::set("room:{$roomId}:deck", json_encode($testDeck));
         Redis::expire("room:{$roomId}:deck", 86400);
 
-        // 4. AVISAR A TODOS
+        // AVISAR A TODOS
         event(new RoomStateUpdated());
         event(new GameStarted($roomId));
     }
@@ -83,7 +83,7 @@ class LiveGameService
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
         if (!Redis::exists($playerKey)) {
-            throw new Exception("Datos de jugador no encontrados.", 404);
+            throw new GameException(GameException::PLAYER_NOT_FOUND, "Datos de jugador no encontrados.", 404);
         }
 
         $data = Redis::hgetall($playerKey);

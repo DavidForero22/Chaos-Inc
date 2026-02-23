@@ -4,8 +4,7 @@ namespace App\Services;
 
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
-use App\Events\GameStarted;
-use Exception;
+use App\Exceptions\GameException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -70,36 +69,32 @@ class RoomService
         $roomKey = "room:{$roomId}";
 
         if (!Redis::exists($roomKey)) {
-            throw new Exception("The room does not exist.", 404);
+            throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
 
-        // Si el usuario ya esta en la sala, no hay que validar
         if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            throw new Exception("You are already in the room.", 409);
+            throw new GameException(GameException::ALREADY_IN_ROOM, "You are already in the room.", 409);
         }
 
-        // Si es un jugador nuevo, verificar que la partida no haya empezado
         if ($room['status'] !== 'waiting') {
-            throw new Exception("The game has already begun.", 403);
+            throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
         }
 
-        // Validar contraseña si es privada
         if ($room['is_private'] === '1') {
             if (!$password) {
-                throw new Exception("Password required.", 403);
+                throw new GameException(GameException::PASSWORD_REQUIRED, "Password required.", 403);
             }
 
             if (!Hash::check($password, $room['password'])) {
-                throw new Exception("Incorrect password.", 403);
+                throw new GameException(GameException::INCORRECT_PASSWORD, "Incorrect password.", 403);
             }
         }
 
-        // Validar límite de jugadores
         $currentPlayersCount = Redis::scard("{$roomKey}:players");
         if ($currentPlayersCount >= $room['max_players']) {
-            throw new Exception("The room is full.", 409);
+            throw new GameException(GameException::ROOM_FULL, "The room is full.", 409);
         }
 
         // Añadir jugador
@@ -123,14 +118,12 @@ class RoomService
         $roomKey = "room:{$roomId}";
         $room = Redis::hgetall($roomKey);
 
-        // Validar si la sala existe
         if (empty($room)) {
-            throw new Exception("The room with ID {$roomId} does not exist.", 404);
+            throw new GameException(GameException::ROOM_NOT_FOUND, "The room with ID {$roomId} does not exist.", 404);
         }
 
-        // Validar si el jugador está realmente en la sala antes de intentar quitarlo
         if (!Redis::sismember("{$roomKey}:players", $playerName)) {
-            throw new Exception("Player {$playerName} is not in this room.", 409);
+            throw new GameException(GameException::NOT_IN_ROOM, "Player {$playerName} is not in this room.", 409);
         }
 
         // Eliminar al usuario de la sala

@@ -6,7 +6,7 @@ import api from "../api/axios";
 export interface PublicPlayer {
 	name: string;
 	stress: number;
-	is_dead: string | number;
+	is_dead: number;
 	role: string; // Puede ser 'boss' o 'hidden'
 }
 
@@ -14,7 +14,7 @@ export interface PublicPlayer {
 export interface GameData {
 	role: string;
 	stress: number;
-	is_dead: string | number;
+	is_dead: number;
 	cards: number[];
 	current_turn: string;
 	players_info: PublicPlayer[];

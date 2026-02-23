@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRoomRequest;
 use App\Services\RoomService;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -37,14 +36,8 @@ class RoomController extends Controller
             ? auth('sanctum')->user()->username
             : $request->input('player_name', 'Anon_' . Str::random(4));
 
-        try {
-            $result = $this->roomService->joinRoom($id, $playerName, $request->input('password'));
-            return response()->json($result, 200);
-        } catch (Exception $e) {
-            $status = $e->getCode() ?: 400;
-            // Laravel a veces considera 0 como código por defecto en Exceptions, forzamos 400
-            return response()->json(['error' => $e->getMessage()], $status === 0 ? 400 : $status);
-        }
+        $result = $this->roomService->joinRoom($id, $playerName, $request->input('password'));
+        return response()->json($result, 200);
     }
 
     public function leave(Request $request, $id)
@@ -57,17 +50,8 @@ class RoomController extends Controller
             return response()->json(['error' => "The player's name is required to leave the room."], 400);
         }
 
-        try {
-            // Ejecutamos la lógica del servicio
-            $this->roomService->leaveRoom($id, $playerName);
-
-            return response()->json(['message' => 'You have left the room.'], 200);
-        } catch (\Exception $e) {
-            $status = $e->getCode() ?: 400; 
-
-            return response()->json([
-                'error' => $e->getMessage()
-            ], $status);
-        }
+        // Ejecutamos la lógica del servicio
+        $this->roomService->leaveRoom($id, $playerName);
+        return response()->json(['message' => 'You have left the room.']);
     }
 }

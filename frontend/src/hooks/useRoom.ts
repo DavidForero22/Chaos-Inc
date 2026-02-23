@@ -67,18 +67,47 @@ export function useRoom(roomId: string | undefined) {
 			setIsJoining(false);
 			fetchRoomData();
 		} catch (error: any) {
+			const errorType = error.response?.data?.type;
+			const errorMsg = error.response?.data?.error;
+
+			// Ya está dentro
+			if (errorType === "ALREADY_IN_ROOM") {
+				setNeedsPassword(false);
+				setIsJoining(false);
+				fetchRoomData();
+				return;
+			}
+
+			// Sala llena
+			if (errorType === "ROOM_FULL") {
+				alert("The room is full.");
+				navigate("/");
+				return;
+			}
+
+			// Contraseñas
 			if (
-				error.response?.status === 403 &&
-				error.response.data.error.includes("Contraseña")
+				errorType === "PASSWORD_REQUIRED" ||
+				errorType === "INCORRECT_PASSWORD"
 			) {
 				setNeedsPassword(true);
-				if (pwd !== "")
-					setPasswordError("Contraseña incorrecta. Inténtalo de nuevo.");
+				if (errorType === "INCORRECT_PASSWORD") {
+					setPasswordError("Incorrect password. Please try again.");
+				}
 				setIsJoining(false);
-			} else {
-				alert(error.response?.data?.error || "No puedes acceder a esta sala.");
-				navigate("/");
+				return;
 			}
+
+			// Partida ya iniciada
+			if (errorType === "GAME_ALREADY_STARTED") {
+				alert("The game has already begun.");
+				navigate("/");
+				return;
+			}
+
+			// CUALQUIER OTRO ERROR
+			alert(errorMsg || "You cannot access this room.");
+			navigate("/");
 		}
 	};
 
@@ -98,7 +127,7 @@ export function useRoom(roomId: string | undefined) {
 		try {
 			await api.post(`/rooms/${roomId}/start`, { player_name: myPlayerName });
 		} catch (error: any) {
-			alert(error.response?.data?.error || "Error al iniciar la partida.");
+			alert(error.response?.data?.error || "Error starting the game.");
 		}
 	};
 
@@ -115,7 +144,7 @@ export function useRoom(roomId: string | undefined) {
 
 		// NUEVO: Escuchar evento de inicio de partida
 		channel.listen(".GameStarted", () => {
-			console.log("¡La partida ha comenzado! Navegando al tablero...");
+			console.log("The game has begun! Navigating to the board.");
 			navigate(`/game/${roomId}`, { state: { playerName: myPlayerName } });
 		});
 
