@@ -50,16 +50,24 @@ class RoomController extends Controller
     public function leave(Request $request, $id)
     {
         // Necesitamos saber quién se va. 
-        $playerName = auth('sanctum')->check()
-            ? auth('sanctum')->user()->username
-            : $request->input('player_name');
+        $user = auth('sanctum')->user();
+        $playerName = $user ? $user->username : $request->input('player_name');
 
         if (!$playerName) {
-            return response()->json(['error' => 'Se requiere el nombre del jugador para abandonar la sala.'], 400);
+            return response()->json(['error' => "The player's name is required to leave the room."], 400);
         }
 
-        $this->roomService->leaveRoom($id, $playerName);
+        try {
+            // Ejecutamos la lógica del servicio
+            $this->roomService->leaveRoom($id, $playerName);
 
-        return response()->json(['message' => 'Has abandonado la sala.'], 200);
+            return response()->json(['message' => 'You have left the room.'], 200);
+        } catch (\Exception $e) {
+            $status = $e->getCode() ?: 400; 
+
+            return response()->json([
+                'error' => $e->getMessage()
+            ], $status);
+        }
     }
 }

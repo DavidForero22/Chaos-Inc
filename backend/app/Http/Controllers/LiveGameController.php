@@ -23,7 +23,7 @@ class LiveGameController extends Controller
 
         try {
             $this->liveGameService->startGame($id, $playerName);
-            return response()->json(['message' => 'Partida iniciada'], 200);
+            return response()->json(['message' => 'Game started'], 200);
         } catch (Exception $e) {
             $status = $e->getCode() ?: 400;
             return response()->json(['error' => $e->getMessage()], $status === 0 ? 400 : $status);
