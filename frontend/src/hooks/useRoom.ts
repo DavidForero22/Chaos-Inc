@@ -80,14 +80,6 @@ export function useRoom(roomId: string | undefined) {
 			const errorType = error.response?.data?.type;
 			const errorMsg = error.response?.data?.error;
 
-			// Ya está dentro
-			if (errorType === "ALREADY_IN_ROOM") {
-				setNeedsPassword(false);
-				setIsJoining(false);
-				fetchRoomData();
-				return;
-			}
-
 			// Sala llena
 			if (errorType === "ROOM_FULL") {
 				alert("The room is full.");
@@ -156,7 +148,6 @@ export function useRoom(roomId: string | undefined) {
 
 	useEffect(() => {
 		attemptJoin();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [roomId]);
 
 	useEffect(() => {

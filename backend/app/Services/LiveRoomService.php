@@ -21,7 +21,11 @@ class LiveRoomService
         $room = Redis::hgetall($roomKey);
 
         if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            throw new GameException(GameException::ALREADY_IN_ROOM, "You are already in the room.", 409);
+            return [
+            'message' => "You're already in this room",
+            'room_id' => $roomId,
+            'player' => $playerName
+        ];
         }
 
         if ($room['status'] !== 'waiting') {

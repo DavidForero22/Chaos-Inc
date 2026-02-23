@@ -8,7 +8,6 @@ class GameException extends Exception
 {
     // Constantes de tipos de error para evitar typos
     const ROOM_NOT_FOUND = 'ROOM_NOT_FOUND';
-    const ALREADY_IN_ROOM = 'ALREADY_IN_ROOM';
     const NOT_IN_ROOM = 'NOT_IN_ROOM';
     const GAME_ALREADY_STARTED = 'GAME_ALREADY_STARTED';
     const PASSWORD_REQUIRED = 'PASSWORD_REQUIRED';
