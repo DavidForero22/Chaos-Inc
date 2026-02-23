@@ -3,8 +3,6 @@ import { useLiveGame } from "../hooks/useLiveGame";
 
 export default function GameBoard() {
 	const { id } = useParams();
-
-	// Nuestro maravilloso hook haciendo todo el trabajo sucio
 	const { gameData, loading, myPlayerName } = useLiveGame(id);
 
 	if (loading) {
@@ -20,10 +18,7 @@ export default function GameBoard() {
 
 	if (!gameData || !myPlayerName) return null;
 
-	// Filtramos para separar a los rivales de nosotros mismos
-	const opponents = gameData.players_info.filter(
-		(p) => p.name !== myPlayerName,
-	);
+	const { me, game } = gameData;
 
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
@@ -40,9 +35,9 @@ export default function GameBoard() {
 						Turno Actual
 					</p>
 					<p className="text-blue-400 font-bold">
-						{gameData.current_turn === myPlayerName
+						{game.current_turn === myPlayerName
 							? "👉 TU TURNO"
-							: `👤 ${gameData.current_turn}`}
+							: `👤 ${game.current_turn}`}
 					</p>
 				</div>
 			</div>
@@ -53,7 +48,7 @@ export default function GameBoard() {
 					<span className="text-9xl">🃏</span>
 				</div>
 
-				{opponents.map((player) => (
+				{game.opponents.map((player) => (
 					<div
 						key={player.name}
 						className={`bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}`}
@@ -80,21 +75,19 @@ export default function GameBoard() {
 				{/* Tu Info */}
 				<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
 					<h3 className="text-blue-400 font-bold truncate mb-3">
-						{myPlayerName} (Tú)
+						{me.name} (Tú)
 					</h3>
 					<div className="flex justify-between items-center mb-2">
 						<span className="text-xs text-gray-500 uppercase">Tu Rol</span>
 						<span
-							className={`text-sm font-bold ${gameData.role === "boss" ? "text-yellow-400" : "text-green-400"}`}
+							className={`text-sm font-bold ${me.role === "boss" ? "text-yellow-400" : "text-green-400"}`}
 						>
-							{gameData.role === "boss" ? "👑 JEFE" : "💼 EMPLEADO"}
+							{me.role === "boss" ? "👑 JEFE" : "💼 EMPLEADO"}
 						</span>
 					</div>
 					<div className="flex justify-between items-center">
 						<span className="text-xs text-gray-500 uppercase">Estrés</span>
-						<span className="text-sm font-bold text-red-500">
-							{gameData.stress}%
-						</span>
+						<span className="text-sm font-bold text-red-500">{me.stress}%</span>
 					</div>
 				</div>
 
@@ -104,7 +97,7 @@ export default function GameBoard() {
 						Tu Mano
 					</p>
 					<div className="flex gap-3">
-						{gameData.cards.map((cardId, index) => (
+						{me.cards.map((cardId, index) => (
 							<div
 								key={`${cardId}-${index}`}
 								className="bg-gray-700 hover:bg-gray-600 hover:-translate-y-2 transition-transform cursor-pointer w-24 h-36 rounded-lg border border-gray-500 flex items-center justify-center shadow-lg"

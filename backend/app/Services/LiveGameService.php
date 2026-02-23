@@ -86,31 +86,40 @@ class LiveGameService
             throw new GameException(GameException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
 
-        $data = Redis::hgetall($playerKey);
+        // MIS DATOS
+        $myData = Redis::hgetall($playerKey);
 
-        // Decodificamos las cartas para enviarlas como array
-        $data['cards'] = json_decode($data['cards']);
-
-        // Obtenemos info general de la sala para sincronizar (ej: de quién es el turno)
+        // DATOS GLOBALES
         $room = Redis::hgetall("room:{$roomId}");
-        $data['current_turn'] = $room['current_turn_player_id'] ?? null;
+        $allPlayers = Redis::smembers("room:{$roomId}:players");
 
-        $players = Redis::smembers("room:{$roomId}:players");
-        $publicPlayers = [];
+        // DATOS DE LOS OPONENTES (Excluyéndome a mí)
+        $opponents = [];
+        foreach ($allPlayers as $pName) {
+            if ($pName === $playerName) continue;
 
-        foreach ($players as $pName) {
             $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $publicPlayers[] = [
-                'name' => $pName,
-                'stress' => $pData['stress'] ?? 0,
-                'is_dead' => $pData['is_dead'] ?? 0,
-                // Si es el boss, se avisa. Si no, se oculta el rol.
-                'role' => ($pData['role'] === 'boss') ? 'boss' : 'hidden'
+            $opponents[] = [
+                'name'    => $pName,
+                'stress'  => (int) ($pData['stress'] ?? 0),
+                'is_dead' => (bool) ($pData['is_dead'] ?? false),
+                'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden'
             ];
         }
 
-        $data['players_info'] = $publicPlayers;
-
-        return $data;
+        // ESTRUCTURA DE RESPUESTA
+        return [
+            'me' => [
+                'name'    => $playerName,
+                'role'    => $myData['role'],
+                'stress'  => (int) $myData['stress'],
+                'is_dead' => (bool) $myData['is_dead'],
+                'cards'   => json_decode($myData['cards']),
+            ],
+            'game' => [
+                'current_turn' => $room['current_turn_player_id'] ?? null,
+                'opponents'    => $opponents,
+            ]
+        ];
     }
 }

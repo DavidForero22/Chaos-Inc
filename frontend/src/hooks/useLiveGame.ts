@@ -2,22 +2,30 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../api/axios";
 
-// Tipado de los datos públicos (lo que ves de los demás)
-export interface PublicPlayer {
+// Tipado de los oponentes
+export interface Opponent {
 	name: string;
 	stress: number;
-	is_dead: number;
-	role: string; // Puede ser 'boss' o 'hidden'
+	is_dead: boolean;
+	role: "boss" | "hidden";
 }
 
-// Tipado de TUS datos (lo que te devuelve el sync)
-export interface GameData {
-	role: string;
+// Tipado de mis datos privados
+export interface MyData {
+	name: string;
+	role: "boss" | "secretary" | "intern" | " union";
 	stress: number;
-	is_dead: number;
+	is_dead: boolean;
 	cards: number[];
-	current_turn: string;
-	players_info: PublicPlayer[];
+}
+
+// Tipado general de la respuesta del sync
+export interface GameData {
+	me: MyData;
+	game: {
+		current_turn: string;
+		opponents: Opponent[];
+	};
 }
 
 export function useLiveGame(roomId: string | undefined) {
