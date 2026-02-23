@@ -24,8 +24,8 @@ class LiveGameService
         }
 
         $players = Redis::smembers("{$roomKey}:players");
-        if (count($players) < 2) {
-            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "There are not enough players.", 400);
+        if (count($players) < 3) {
+            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
         }
 
         // CAMBIAR ESTADO DE LA SALA

@@ -181,8 +181,7 @@ export default function MainMenu() {
 							)}
 							<p className="text-gray-400 text-sm mt-1">
 								Creada por{" "}
-								<span className="text-gray-300">{room.owner_name}</span> •{" "}
-								{room.status === "waiting" ? "Esperando..." : "Jugando"}
+								<span className="text-gray-300">{room.owner_name}</span>
 							</p>
 							<p className="text-xs text-blue-300 mt-2">
 								Jugadores en sala:{" "}
