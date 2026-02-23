@@ -36,6 +36,7 @@ export function useRoom(roomId: string | undefined) {
 
 	const [room, setRoom] = useState<RoomData | null>(null);
 	const roomStatusRef = useRef<string | null>(null);
+	const isLeavingRef = useRef(false);
 	const [isJoining, setIsJoining] = useState(true);
 	const [needsPassword, setNeedsPassword] = useState(false);
 	const [passwordError, setPasswordError] = useState("");
@@ -48,8 +49,12 @@ export function useRoom(roomId: string | undefined) {
 
 			if (currentRoom) {
 				// Si ya no está en la lista de jugadores y no se fue voluntariamente
-				if (!isJoining && !currentRoom.players.includes(myPlayerName)) {
-					alert("Has sido expulsado de la sala.");
+				if (
+					!isJoining &&
+					!isLeavingRef.current &&
+					!currentRoom.players.includes(myPlayerName)
+				) {
+					alert("You have been expelled from the room.");
 					navigate("/");
 					return;
 				}
@@ -60,7 +65,7 @@ export function useRoom(roomId: string | undefined) {
 				navigate("/");
 			}
 		} catch (error) {
-			console.error("Error cargando la sala");
+			console.error("Error loading the room");
 		}
 	}, [roomId, navigate, myPlayerName, isJoining]);
 
@@ -115,6 +120,9 @@ export function useRoom(roomId: string | undefined) {
 
 	const handleLeaveRoom = async () => {
 		if (!roomId) return;
+
+		isLeavingRef.current = true;
+
 		try {
 			await api.post(`/rooms/${roomId}/leave`, { player_name: myPlayerName });
 			navigate("/");
