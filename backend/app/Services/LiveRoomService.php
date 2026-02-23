@@ -31,7 +31,7 @@ class LiveRoomService
                 'message' => "You're already in this room",
                 'room_id' => $roomId,
                 'player' => $playerName,
-                'game_token' => $gameToken 
+                'game_token' => $gameToken
             ];
         }
 
@@ -86,14 +86,23 @@ class LiveRoomService
 
         // Eliminar al usuario de la sala
         Redis::srem("{$roomKey}:players", $playerName);
-        $remainingPlayers = Redis::scard("{$roomKey}:players");
+        $remainingPlayersCount = Redis::scard("{$roomKey}:players");
 
         // Si no quedan jugadores, borrar sala
-        if ($remainingPlayers === 0) {
+        if ($remainingPlayersCount === 0) {
             Redis::del($roomKey);
             Redis::del("{$roomKey}:players");
             Redis::srem("active_rooms", $roomId);
-        } 
+        } else {
+            // Si el que se va es el dueño, pasar la corona a otro
+            if ($room['owner_name'] === $playerName) {
+                $newOwner = Redis::srandmember("{$roomKey}:players");
+
+                if ($newOwner) {
+                    Redis::hset($roomKey, 'owner_name', $newOwner);
+                }
+            }
+        }
 
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated());
