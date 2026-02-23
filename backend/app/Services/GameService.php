@@ -32,7 +32,6 @@ class GameService
             $game = Game::create($gameData);
 
             // Vincular jugadores (Match_User) con los datos del pivot
-            // $playersData debe ser un array tipo: [user_id => ['damage_dealt' => 10, ...]]
             $game->users()->attach($playersData);
 
             return $game->load('users');

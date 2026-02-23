@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRoomRequest;
+use App\Http\Requests\Room\StoreRoomRequest;
 use App\Services\RoomService;
 
 class RoomController extends Controller

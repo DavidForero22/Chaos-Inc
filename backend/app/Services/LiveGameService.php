@@ -14,18 +14,18 @@ class LiveGameService
         $roomKey = "room:{$roomId}";
 
         if (!Redis::exists($roomKey)) {
-            throw new GameException(GameException::ROOM_NOT_FOUND, "La sala no existe.", 404);
+            throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
 
         if ($room['owner_name'] !== $requestingPlayer) {
-            throw new GameException(GameException::NOT_LEADER, "Solo el líder puede iniciar la partida.", 403);
+            throw new GameException(GameException::NOT_LEADER, "Only the leader can start the game.", 403);
         }
 
         $players = Redis::smembers("{$roomKey}:players");
         if (count($players) < 2) {
-            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "No hay suficientes jugadores.", 400);
+            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "There are not enough players.", 400);
         }
 
         // CAMBIAR ESTADO DE LA SALA
@@ -83,7 +83,7 @@ class LiveGameService
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
         if (!Redis::exists($playerKey)) {
-            throw new GameException(GameException::PLAYER_NOT_FOUND, "Datos de jugador no encontrados.", 404);
+            throw new GameException(GameException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
 
         $data = Redis::hgetall($playerKey);

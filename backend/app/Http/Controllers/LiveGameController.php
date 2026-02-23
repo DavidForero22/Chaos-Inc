@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Game\StartGameRequest;
+use App\Http\Requests\Game\SyncGameRequest;
 use App\Services\LiveGameService;
-use Illuminate\Http\Request;
 
 class LiveGameController extends Controller
 {
@@ -14,7 +15,7 @@ class LiveGameController extends Controller
         $this->liveGameService = $liveGameService;
     }
 
-    public function start(Request $request, $id)
+    public function start(StartGameRequest $request, $id)
     {
         $playerName = auth('sanctum')->check()
             ? auth('sanctum')->user()->username
@@ -25,7 +26,7 @@ class LiveGameController extends Controller
         return response()->json(['message' => 'Game started'], 200);
     }
 
-    public function sync(Request $request, $id)
+    public function sync(SyncGameRequest $request, $id)
     {
         $playerName = auth('sanctum')->check()
             ? auth('sanctum')->user()->username

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\UserService;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Gate;
 
