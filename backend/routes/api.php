@@ -23,7 +23,7 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/rooms/{id}/join', [LiveRoomController::class, 'join']);
     Route::post('/rooms/{id}/leave', [LiveRoomController::class, 'leave']);
-    Route::post('/rooms/{id}/kick', [LiveGameController::class, 'kick']);
+    Route::post('/rooms/{id}/kick', [LiveRoomController::class, 'kick']);
 
     Route::post('/rooms/{id}/start', [LiveGameController::class, 'start']);
     Route::post('/rooms/{id}/sync', [LiveGameController::class, 'sync']);
