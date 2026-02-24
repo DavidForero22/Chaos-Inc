@@ -46,6 +46,7 @@ class RoomService
     public function createRoom(array $data, ?string $ownerName): array
     {
         $roomId = Str::upper(Str::random(6));
+        $gameToken = (string) Str::uuid();
 
         $roomData = [
             'room_id' => $roomId,
@@ -57,20 +58,21 @@ class RoomService
             'owner_name' => $ownerName,
         ];
 
-        // Guardamos en Redis
+        // Guardar en Redis
         Redis::hmset("room:{$roomId}", $roomData);
         Redis::sadd("active_rooms", $roomId);
         Redis::expire("room:{$roomId}", 86400); // 24h
 
-        // Añadimos al creador como el primer jugador de la sala
+        // Añadir datos
         Redis::sadd("room:{$roomId}:players", $ownerName);
+        Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $ownerName);
         Redis::expire("room:{$roomId}:players", 86400);
 
         // Avisar al Menú Principal de que hay una nueva sala
         event(new RoomStateUpdated());
 
-        // Devolvemos los datos con el array de jugadores inicializado
         $roomData['players'] = [$ownerName];
+        $roomData['game_token'] = $gameToken;
         unset($roomData['password']);
 
         return $roomData;

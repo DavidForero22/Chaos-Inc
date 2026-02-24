@@ -61,6 +61,14 @@ export function useRoom(roomId: string | undefined) {
 	const attemptJoin = useCallback(
 		async (pwd = "") => {
 			if (!roomId) return;
+
+			if (sessionStorage.getItem("game_token")) {
+				setIsJoining(false);
+				isJoiningRef.current = false;
+				fetchRoomData();
+				return;
+			}
+
 			try {
 				setPasswordError("");
 				const res = await api.post(`/rooms/${roomId}/join`, {

@@ -19,6 +19,10 @@ class LiveRoomService
             throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
+        if (Redis::sismember("{$roomKey}:players", $playerName)) {
+            throw new GameException(GameException::ALREADY_IN_ROOM, "This player is already in this room.", 409);
+        }
+
         $room = Redis::hgetall($roomKey);
 
         // Generar un Token Único de Partida
@@ -124,7 +128,7 @@ class LiveRoomService
 
         // Validar que no se expulse a sí mismo
         if ($adminName === $playerToKick) {
-            throw new GameException(GameException::CANNOT_KICK_SELF, "You cannot kick yourself.", 400);
+            throw new GameException(GameException::CANNOT_KICK_SELF, "You cannot kick yourself.", 422);
         }
 
         // Validar que el jugador a expulsar esté en la sala

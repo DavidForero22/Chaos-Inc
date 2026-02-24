@@ -22,6 +22,8 @@ export default function CreateRoomModal({
 	const handleCreateRoom = async () => {
 		try {
 			const response = await api.post("/rooms", formData);
+			sessionStorage.setItem("game_token", response.data.game_token);
+			
 			onClose();
 			navigate(`/room/${response.data.room_id}`, {
 				state: { playerName: user },

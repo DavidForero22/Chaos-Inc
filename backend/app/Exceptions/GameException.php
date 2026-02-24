@@ -18,6 +18,7 @@ class GameException extends Exception
     const NOT_ENOUGH_PLAYERS = 'NOT_ENOUGH_PLAYERS';
     const PLAYER_NOT_FOUND = 'PLAYER_NOT_FOUND';
     const CANNOT_KICK_SELF = 'CANNOT_KICK_SELF';
+    const ALREADY_IN_ROOM = 'ALREADY_IN_ROOM';
 
     protected string $errorType;
 

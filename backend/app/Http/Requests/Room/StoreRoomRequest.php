@@ -15,7 +15,7 @@ class StoreRoomRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:20',
-            'max_players' => 'required|integer|min:2|max:6',
+            'max_players' => 'required|integer|min:3|max:6',
             'is_private' => 'required|boolean',
             'password' => 'required_if:is_private,true'
         ];
