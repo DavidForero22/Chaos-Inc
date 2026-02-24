@@ -20,6 +20,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
     Route::get('/rooms', [RoomController::class, 'index']);
+    Route::get('/rooms/{id}', [RoomController::class, 'show']);
 
     Route::post('/rooms/{id}/join', [LiveRoomController::class, 'join']);
     Route::post('/rooms/{id}/leave', [LiveRoomController::class, 'leave']);

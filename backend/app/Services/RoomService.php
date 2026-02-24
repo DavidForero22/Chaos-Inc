@@ -29,6 +29,20 @@ class RoomService
         return $rooms;
     }
 
+    public function getRoom(string $roomId): ?array
+    {
+        $roomKey = "room:{$roomId}";
+
+        if (!Redis::exists($roomKey)) {
+            return null;
+        }
+
+        $room = Redis::hgetall($roomKey);
+        $room['players'] = Redis::smembers("{$roomKey}:players");
+
+        return $room;
+    }
+
     public function createRoom(array $data, ?string $ownerName): array
     {
         $roomId = Str::upper(Str::random(6));

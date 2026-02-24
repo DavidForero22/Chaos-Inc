@@ -19,6 +19,17 @@ class RoomController extends Controller
         return response()->json($this->roomService->getAllRooms());
     }
 
+    public function show(string $id)
+    {
+        $room = $this->roomService->getRoom($id);
+
+        if (!$room) {
+            return response()->json(['error' => 'Room not found'], 404);
+        }
+
+        return response()->json($room, 200);
+    }
+
     public function store(StoreRoomRequest $request)
     {
         $ownerName = $request->user()->username;
