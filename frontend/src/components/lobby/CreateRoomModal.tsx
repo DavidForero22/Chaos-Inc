@@ -65,7 +65,7 @@ export default function CreateRoomModal({
 					<input
 						type="range"
 						min="3"
-						max="10"
+						max="6"
 						className="w-full mt-2"
 						value={formData.max_players}
 						onChange={(e) =>

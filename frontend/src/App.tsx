@@ -4,12 +4,13 @@ import MainMenu from "./components/MainMenu.tsx";
 import WaitingRoom from "./components/WaitingRoom.tsx";
 import GameBoard from "./components/GameBoard.tsx";
 import { Logs } from "./components/Logs.tsx";
+import { GlobalLoader } from "./components/GlobalLoader.tsx";
 
 function App() {
 	return (
 		<Router>
 			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-				{/* Cabecera extraída a su propio componente */}
+				<GlobalLoader />
 				<Navbar />
 
 				<div className="p-6 grow">
