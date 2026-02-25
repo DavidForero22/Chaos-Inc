@@ -1,7 +1,7 @@
-import { usePlayerIdentity } from "./usePlayerIdentity";
-import { useRoomSession } from "./useRoomSession";
-import { useRoomActions } from "./useRoomActions";
-import { useRoomSockets } from "./useRoomSockets";
+import { usePlayerIdentity } from "../usePlayerIdentity.ts";
+import { useRoomSession } from "./useRoomSession.ts";
+import { useRoomActions } from "./useRoomActions.ts";
+import { useRoomSockets } from "./useRoomSockets.ts";
 
 export function useRoom(roomId: string | undefined) {
 	const { myPlayerName } = usePlayerIdentity();

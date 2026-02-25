@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import api from "../api/axios";
-import type { GameData } from "../types/types";
+import api from "../api/axios.ts";
+import type { GameData } from "../types/types.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();

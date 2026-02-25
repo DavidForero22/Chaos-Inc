@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
-import type { RoomData } from "../types/types";
+import api from "../../api/axios";
+import type { RoomData } from "../../types/types";
 
 interface UseRoomSessionProps {
 	roomId: string | undefined;

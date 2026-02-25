@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoom } from "../hooks/useRoom.ts";
+import { useRoom } from "../hooks/room/useRoom.ts";
 import GuestNameModal from "./lobby/GuestNameModal.tsx";
 
 export default function WaitingRoom() {

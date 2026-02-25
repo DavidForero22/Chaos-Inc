@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import echo from "../echo";
+import echo from "../../echo";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;
