@@ -1,9 +1,11 @@
 import { useParams } from "react-router-dom";
 import { useLiveGame } from "../hooks/useLiveGame.ts";
+import { useState } from "react";
 
 export default function GameBoard() {
 	const { id } = useParams();
-	const { gameData, loading, myPlayerName } = useLiveGame(id);
+	const { gameData, loading, myPlayerName, playTurn } = useLiveGame(id);
+	const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
 	if (loading) {
 		return (
@@ -19,6 +21,20 @@ export default function GameBoard() {
 	if (!gameData || !myPlayerName) return null;
 
 	const { me, game } = gameData;
+	const isMyTurn = game.current_turn === myPlayerName;
+
+	const handleCardClick = (cardId: number) => {
+		if (!isMyTurn) return;
+
+		setSelectedCard((prev) => (prev === cardId ? null : cardId));
+	};
+
+	const handleOpponentClick = (targetName: string) => {
+		if (isMyTurn && selectedCard !== null) {
+			playTurn(selectedCard, targetName);
+			setSelectedCard(null);
+		}
+	};
 
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
@@ -48,10 +64,21 @@ export default function GameBoard() {
 					<span className="text-9xl">🃏</span>
 				</div>
 
+				{/* Si carta lista, avisar visualmente al jugador de que elija un rival */}
+				{isMyTurn && selectedCard !== null && (
+					<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/20 text-yellow-400 px-6 py-2 rounded-full border border-yellow-500 font-bold animate-bounce shadow-lg z-20">
+						¡Elige a un jugador objetivo! 🎯
+					</div>
+				)}
+
 				{game.opponents.map((player) => (
 					<div
 						key={player.name}
-						className={`bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}`}
+						onClick={() => handleOpponentClick(player.name)}
+						className={`bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
+                            ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}
+                            ${isMyTurn && selectedCard !== null ? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50" : ""}
+                        `}
 					>
 						{player.role === "boss" && (
 							<div className="text-2xl mb-1" title="Este jugador es el Jefe">
@@ -97,16 +124,25 @@ export default function GameBoard() {
 						Tu Mano
 					</p>
 					<div className="flex gap-3">
-						{me.cards.map((cardId, index) => (
-							<div
-								key={`${cardId}-${index}`}
-								className="bg-gray-700 hover:bg-gray-600 hover:-translate-y-2 transition-transform cursor-pointer w-24 h-36 rounded-lg border border-gray-500 flex items-center justify-center shadow-lg"
-							>
-								<span className="text-3xl text-gray-400 font-mono">
-									{cardId}
-								</span>
-							</div>
-						))}
+						{me.cards.map((cardId, index) => {
+							const isSelected = selectedCard === cardId;
+
+							return (
+								<div
+									key={`${cardId}-${index}`}
+									onClick={() => handleCardClick(cardId)}
+									className={`
+                                        w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all
+                                        ${isMyTurn ? "cursor-pointer hover:-translate-y-4" : "opacity-50 cursor-not-allowed"}
+                                        ${isSelected ? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400" : "bg-gray-700 border-gray-500"}
+                                    `}
+								>
+									<span className="text-3xl text-gray-200 font-mono">
+										{cardId}
+									</span>
+								</div>
+							);
+						})}
 					</div>
 				</div>
 			</div>

@@ -117,7 +117,7 @@ class LiveGameService
             $opponents[] = [
                 'name'    => $pName,
                 'stress'  => (int) ($pData['stress'] ?? 0),
-                'is_dead' => (bool) ($pData['is_dead'] ?? false),
+                'is_dead' => (bool) filter_var($myData['is_dead'], FILTER_VALIDATE_BOOLEAN),
                 'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden'
             ];
         }
