@@ -37,6 +37,20 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function guestLogin(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|min:2|max:15'
+        ]);
+
+        [$user, $token] = $this->authService->guestLogin($request->username);
+
+        return response()->json([
+            'user' => new UserResource($user),
+            'token' => $token
+        ], 201);
+    }
+
     public function logout(Request $request)
     {
         $this->authService->revokeCurrentToken($request->user());

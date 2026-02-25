@@ -18,6 +18,7 @@ use App\Http\Controllers\RoomController;
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/guest-login', [AuthController::class, 'guestLogin']);
 
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::get('/rooms/{id}', [RoomController::class, 'show']);
