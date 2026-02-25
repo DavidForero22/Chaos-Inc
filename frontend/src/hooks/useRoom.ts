@@ -7,7 +7,7 @@ import { useRoomSockets } from "./useRoomSockets.ts";
 
 export function useRoom(roomId: string | undefined) {
 	const navigate = useNavigate();
-	const { myPlayerName, user } = usePlayerIdentity();
+	const { myPlayerName } = usePlayerIdentity();
 
 	const [room, setRoom] = useState<RoomData | null>(null);
 	const roomStatusRef = useRef<string | null>(null);
@@ -60,7 +60,7 @@ export function useRoom(roomId: string | undefined) {
 
 	const attemptJoin = useCallback(
 		async (pwd = "") => {
-			if (!roomId) return;
+			if (!roomId || !myPlayerName) return;
 
 			if (sessionStorage.getItem("game_token")) {
 				setIsJoining(false);
@@ -141,7 +141,7 @@ export function useRoom(roomId: string | undefined) {
 		roomId,
 		isJoining,
 		needsPassword,
-		myPlayerName,
+		myPlayerName: myPlayerName || "",
 		fetchRoomData,
 	});
 
@@ -164,17 +164,22 @@ export function useRoom(roomId: string | undefined) {
 	// Listener de sesión multipestaña
 	useEffect(() => {
 		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key === "user" && !e.newValue) handleLeaveRoom();
+			if (e.key === "user" && !e.newValue) {
+				handleLeaveRoom();
+			}
 		};
 		window.addEventListener("storage", handleStorageChange);
-		if (myPlayerName && !user && !sessionStorage.getItem("guestName"))
+
+		if (!myPlayerName && !isJoiningRef.current) {
 			handleLeaveRoom();
+		}
+
 		return () => window.removeEventListener("storage", handleStorageChange);
-	}, [user, myPlayerName, handleLeaveRoom]);
+	}, [myPlayerName, handleLeaveRoom]);
 
 	return {
 		room,
-		myPlayerName,
+		myPlayerName: myPlayerName || "",
 		isJoining,
 		needsPassword,
 		passwordError,
