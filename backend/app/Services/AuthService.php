@@ -31,8 +31,7 @@ class AuthService
 
         // Buscar por email o username
         $user = User::where('email', $loginIdentifier)
-            ->orWhere('username', $loginIdentifier)
-            ->first();
+            ->orWhere('username', $loginIdentifier);
 
         if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([

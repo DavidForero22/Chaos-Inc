@@ -14,8 +14,8 @@ class DatabaseSeeder extends Seeder
 
         // Creamos el Super Admin inicial
         User::create([
-            'username' => 'SuperAdmin',
-            'email' => 'admin@chaosinc.com',
+            'username' => env('SUPER_ADMIN_USERNAME'),
+            'email' => env('SUPER_ADMIN_EMAIL'),
             'password' => Hash::make($adminPassword),
             'role' => 'admin',
         ]);
