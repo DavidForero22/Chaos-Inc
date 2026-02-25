@@ -34,7 +34,6 @@ export default function WaitingRoom() {
 				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
 				<p className="animate-pulse font-medium">Conectando a la sala...</p>
 
-				{/* Si por algún motivo el nombre tarda en propagarse desde el Store */}
 				{!myPlayerName && (
 					<p className="text-xs text-gray-500 mt-4 italic">
 						Esperando identificación del jugador...

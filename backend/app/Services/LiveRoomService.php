@@ -20,59 +20,49 @@ class LiveRoomService
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            throw new RoomException(RoomException::ALREADY_IN_ROOM, "This player is already in this room.", 409);
-        }
-
         $room = Redis::hgetall($roomKey);
-
-        // Generar un Token Único de Partida
-        $gameToken = (string) Str::uuid();
-
-        // Si ya está en la sala (refrescó la página)
-        if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
-            return [
-                'message' => "You're already in this room",
-                'room_id' => $roomId,
-                'player' => $playerName,
-                'game_token' => $gameToken
-            ];
-        }
 
         if ($room['status'] !== 'waiting') {
             throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
         }
 
+        // Validar la contraseña primero (Seguridad)
         if ($room['is_private'] === '1') {
             if (!$password) {
                 throw new RoomException(RoomException::PASSWORD_REQUIRED, "Password required.", 403);
             }
-
             if (!Hash::check($password, $room['password'])) {
                 throw new RoomException(RoomException::INCORRECT_PASSWORD, "Incorrect password.", 403);
             }
         }
 
-        $currentPlayersCount = Redis::scard("{$roomKey}:players");
-        if ($currentPlayersCount >= $room['max_players']) {
-            throw new RoomException(RoomException::ROOM_FULL, "The room is full.", 409);
+        // Comprobar si el jugador YA estaba en la sala
+        $alreadyInRoom = Redis::sismember("{$roomKey}:players", $playerName);
+
+        if (!$alreadyInRoom) {
+            // Si es nuevo, verificar que la sala no esté llena
+            $currentPlayersCount = Redis::scard("{$roomKey}:players");
+            if ($currentPlayersCount >= $room['max_players']) {
+                throw new RoomException(RoomException::ROOM_FULL, "The room is full.", 409);
+            }
+
+            // Añadir jugador
+            Redis::sadd("{$roomKey}:players", $playerName);
+
+            // Avisar por WebSockets si es alguien nuevo entrando
+            event(new RoomListUpdated($roomId));
+            event(new RoomStateUpdated());
         }
 
-        // Añadir jugador
-        Redis::sadd("{$roomKey}:players", $playerName);
-
-        // Guardar el token en Redis
+        // Generar un Token Único de Partida SIEMPRE (Incluso si recarga la página)
+        $gameToken = (string) Str::uuid();
         Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
 
-        event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
-
         return [
-            'message' => 'You have joined the room.',
+            'message' => $alreadyInRoom ? 'Reconnected to room.' : 'You have joined the room.',
             'room_id' => $roomId,
             'player' => $playerName,
-            'game_token' => $gameToken // <-- DEVOLVEMOS EL TOKEN
+            'game_token' => $gameToken
         ];
     }
 

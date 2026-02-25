@@ -22,6 +22,7 @@ export function useRoomSockets({
 	useEffect(() => {
 		if (isJoining || needsPassword || !roomId) return;
 
+		console.log("Estado de sala actualizado.")
 		const channel = echo.channel(`room.${roomId}`);
 
 		channel.listen(".RoomListUpdated", fetchRoomData);
