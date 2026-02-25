@@ -42,7 +42,10 @@ api.interceptors.response.use(
 		console.error("Error en la API:", error.response?.status);
 		// Si el token expira o nos echan, limpiar token
 		if (error.response?.status === 401) {
-			sessionStorage.removeItem("game_token");
+			const url = error.config?.url ?? "";
+			if (url.includes("/rooms/")) {
+				sessionStorage.removeItem("game_token");
+			}
 		}
 		return Promise.reject(error);
 	},
