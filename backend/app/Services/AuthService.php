@@ -24,13 +24,19 @@ class AuthService
         return [$user, $token];
     }
 
-    public function login(string $email, string $password)
+    public function login(array $credentials)
     {
-        $user = User::where('email', $email)->first();
+        $loginIdentifier = $credentials['login'];
+        $password = $credentials['password'];
+
+        // Buscar por email o username
+        $user = User::where('email', $loginIdentifier)
+            ->orWhere('username', $loginIdentifier)
+            ->first();
 
         if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The credentials provided are incorrect.'],
+                'login' => ['The credentials provided are incorrect.'],
             ]);
         }
 
