@@ -62,6 +62,12 @@ export function useRoom(roomId: string | undefined) {
 		async (pwd = "") => {
 			if (!roomId || !myPlayerName) return;
 
+			if (!myPlayerName) {
+				setIsJoining(false);
+				isJoiningRef.current = false;
+				return;
+			}
+
 			if (sessionStorage.getItem("game_token")) {
 				setIsJoining(false);
 				isJoiningRef.current = false;
@@ -133,8 +139,12 @@ export function useRoom(roomId: string | undefined) {
 
 	// Montaje inicial
 	useEffect(() => {
-		attemptJoin();
-	}, [attemptJoin]);
+		if (myPlayerName && isJoiningRef.current) {
+			attemptJoin();
+		} else if (!myPlayerName) {
+			setIsJoining(false);
+		}
+	}, [myPlayerName, attemptJoin]);
 
 	// Lógica de WebSockets extraída
 	useRoomSockets({
