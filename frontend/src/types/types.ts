@@ -1,4 +1,6 @@
-// --- TIPOS DE LA SALA (Lobby / Room) ---
+/**
+ * Tipado de la sala
+ */
 export interface RoomData {
 	room_id: string;
 	name: string;
@@ -9,7 +11,9 @@ export interface RoomData {
 	is_private?: string;
 }
 
-// --- TIPOS DEL JUEGO (Tablero) ---
+/**
+ * Tipado de los oponentes
+ */
 export interface Opponent {
 	name: string;
 	stress: number;
@@ -17,6 +21,9 @@ export interface Opponent {
 	role: "boss" | "hidden";
 }
 
+/**
+ * Tipado de mis datos privados
+ */
 export interface MyData {
 	name: string;
 	role: "boss" | "secretary" | "intern" | "union";
@@ -25,6 +32,9 @@ export interface MyData {
 	cards: number[];
 }
 
+/**
+ * Tipado general de la respuesta del sync
+ */
 export interface GameData {
 	me: MyData;
 	game: {
