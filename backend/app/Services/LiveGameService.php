@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Events\RoomStateUpdated;
 use App\Events\GameStarted;
 use App\Exceptions\GameException;
+use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
 
 class LiveGameService
@@ -14,18 +15,18 @@ class LiveGameService
         $roomKey = "room:{$roomId}";
 
         if (!Redis::exists($roomKey)) {
-            throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
 
         if ($room['owner_name'] !== $requestingPlayer) {
-            throw new GameException(GameException::NOT_LEADER, "Only the leader can start the game.", 403);
+            throw new RoomException(RoomException::NOT_LEADER, "Only the leader can start the game.", 403);
         }
 
         $players = Redis::smembers("{$roomKey}:players");
         if (count($players) < 3) {
-            throw new GameException(GameException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
+            throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
         }
 
         // CAMBIAR ESTADO DE LA SALA
@@ -84,7 +85,7 @@ class LiveGameService
         
         // Comprobar que la sala existe
         if (!Redis::exists($roomKey)) {
-             throw new GameException(GameException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
@@ -98,7 +99,7 @@ class LiveGameService
 
         // Comprobar que el jugador tiene datos asignados
         if (!Redis::exists($playerKey)) {
-            throw new GameException(GameException::PLAYER_NOT_FOUND, "Player data not found.", 404);
+            throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
 
         // MIS DATOS

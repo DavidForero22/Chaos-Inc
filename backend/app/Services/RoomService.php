@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Events\RoomStateUpdated;
+use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -34,7 +35,7 @@ class RoomService
         $roomKey = "room:{$roomId}";
 
         if (!Redis::exists($roomKey)) {
-            return null;
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
