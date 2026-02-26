@@ -57,7 +57,9 @@ class LiveGameService
                 'role' => $playerRole,
                 'stress' => 0,
                 'is_dead' => 0,
-                'cards' => json_encode($playerCards)
+                'cards' => json_encode($playerCards),
+                'is_online' => 1,
+                'skip_next_turn' => 0
             ];
 
             Redis::hmset("room:{$roomId}:player:{$playerName}", $playerData);
@@ -82,17 +84,17 @@ class LiveGameService
     public function getPlayerData(string $roomId, string $playerName): array
     {
         $roomKey = "room:{$roomId}";
-        
+
         // Comprobar que la sala existe
         if (!Redis::exists($roomKey)) {
-             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
         $room = Redis::hgetall($roomKey);
 
         // Comprobar que el juego realmente ha empezado
         if (($room['status'] ?? 'waiting') === 'waiting') {
-             throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
+            throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
         }
 
         $playerKey = "room:{$roomId}:player:{$playerName}";
@@ -117,8 +119,9 @@ class LiveGameService
             $opponents[] = [
                 'name'    => $pName,
                 'stress'  => (int) ($pData['stress'] ?? 0),
-                'is_dead' => (bool) filter_var($myData['is_dead'], FILTER_VALIDATE_BOOLEAN),
-                'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden'
+                'is_dead' => (bool) filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
+                'is_online' => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN)
             ];
         }
 
@@ -130,6 +133,8 @@ class LiveGameService
                 'stress'  => (int) $myData['stress'],
                 'is_dead' => (bool) $myData['is_dead'],
                 'cards'   => json_decode($myData['cards']),
+                'is_online' => (bool) filter_var($myData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'skip_next_turn' => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN)
             ],
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,

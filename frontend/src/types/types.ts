@@ -19,6 +19,7 @@ export interface Opponent {
 	stress: number;
 	is_dead: boolean;
 	role: "boss" | "hidden";
+	is_online: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export interface MyData {
 	stress: number;
 	is_dead: boolean;
 	cards: number[];
+	skip_next_turn: boolean;
 }
 
 /**

@@ -39,13 +39,12 @@ class LiveRoomController extends Controller
             return response()->json(['error' => 'Unauthorized or expired token.'], 401);
         }
 
-        // EJECUTAR ACCIÓN SEGURO
         $this->liveRoomService->leaveRoom($id, $playerName);
 
-        // LIMPIEZA
+        // LIMPIEZA DEL TOKEN DE SESIÓN DE ESA PESTAÑA
         Redis::del("room:{$id}:token:{$gameToken}");
 
-        return response()->json(['message' => 'You have left the room.'], 200);
+        return response()->json(['message' => 'Action processed successfully.'], 200);
     }
 
     public function kick(KickPlayerRequest $request, $id)

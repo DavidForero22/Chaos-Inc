@@ -29,8 +29,8 @@ export default function GameBoard() {
 		setSelectedCard((prev) => (prev === cardId ? null : cardId));
 	};
 
-	const handleOpponentClick = (targetName: string) => {
-		if (isMyTurn && selectedCard !== null) {
+	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
+		if (isMyTurn && selectedCard !== null && isOnline) {
 			playTurn(selectedCard, targetName);
 			setSelectedCard(null);
 		}
@@ -71,34 +71,65 @@ export default function GameBoard() {
 					</div>
 				)}
 
-				{game.opponents.map((player) => (
-					<div
-						key={player.name}
-						onClick={() => handleOpponentClick(player.name)}
-						className={`bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
-                            ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}
-                            ${isMyTurn && selectedCard !== null ? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50" : ""}
-                        `}
-					>
-						{player.role === "boss" && (
-							<div className="text-2xl mb-1" title="Este jugador es el Jefe">
-								👑
-							</div>
-						)}
-						<h3 className="text-white font-bold truncate">{player.name}</h3>
+				{game.opponents.map((player) => {
+					// 👈 Variables de lógica visual
+					const canBeTargeted =
+						isMyTurn && selectedCard !== null && player.is_online;
+					const offlineStyles = !player.is_online
+						? "opacity-40 grayscale scale-95 border-gray-900"
+						: "";
+					const targetStyles = canBeTargeted
+						? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50"
+						: "";
+					const roleStyles =
+						player.role === "boss" ? "border-yellow-600" : "border-gray-700";
 
-						<div className="mt-3 bg-gray-900 rounded p-2 border border-gray-700">
-							<p className="text-xs text-gray-500 uppercase">Estrés</p>
-							<p className="text-lg font-black text-red-500">
-								{player.stress}%
-							</p>
+					return (
+						<div
+							key={player.name}
+							onClick={() => handleOpponentClick(player.name, player.is_online)}
+							className={`bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
+                                ${roleStyles} ${targetStyles} ${offlineStyles}
+                            `}
+						>
+							{/* 👈 INDICADOR OFFLINE */}
+							{!player.is_online && (
+								<div className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">
+									🔌 OFFLINE
+								</div>
+							)}
+
+							{player.role === "boss" && (
+								<div className="text-2xl mb-1" title="Este jugador es el Jefe">
+									👑
+								</div>
+							)}
+							<h3
+								className={`font-bold truncate ${!player.is_online ? "text-gray-500" : "text-white"}`}
+							>
+								{player.name}
+							</h3>
+
+							<div className="mt-3 bg-gray-900 rounded p-2 border border-gray-700">
+								<p className="text-xs text-gray-500 uppercase">Estrés</p>
+								<p
+									className={`text-lg font-black ${!player.is_online ? "text-gray-600" : "text-red-500"}`}
+								>
+									{player.stress}%
+								</p>
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 
 			{/* ZONA DEL JUGADOR (Tus cartas y tu info) */}
 			<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end">
+				{me.skip_next_turn && (
+					<div className="absolute -top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-orange-400">
+						⚠️ Penalización: Perderás tu próximo turno por inactividad.
+					</div>
+				)}
 				{/* Tu Info */}
 				<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
 					<h3 className="text-blue-400 font-bold truncate mb-3">
