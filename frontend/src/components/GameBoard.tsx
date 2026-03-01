@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useLiveGame } from "../hooks/useLiveGame.ts";
+import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 import { useState } from "react";
 
 export default function GameBoard() {

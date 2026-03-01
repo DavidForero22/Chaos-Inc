@@ -69,6 +69,20 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 
 				setRoom(currentRoom);
 				roomStatusRef.current = currentRoom.status;
+
+				// Redirección automática si la partida ya ha empezado y no está en ella
+				if (
+					currentRoom.status === "in_game" &&
+					!window.location.pathname.includes("/game/")
+				) {
+					console.log(
+						"La partida ya está en curso, redirigiendo al tablero...",
+					);
+					navigate(`/game/${roomId}`, {
+						state: { playerName: myPlayerNameRef.current },
+					});
+					return;
+				}
 			} else {
 				navigate("/");
 			}
@@ -163,14 +177,14 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 	useEffect(() => {
 		console.log("Listener de sesion multipestaña...");
 		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key === "user" && !e.newValue) handleLeaveRoom();
+			if (e.key === "user" && e.newValue === null) {
+				handleLeaveRoom();
+			}
 		};
 		window.addEventListener("storage", handleStorageChange);
 
-		if (!myPlayerName && !isJoiningRef.current) handleLeaveRoom();
-
 		return () => window.removeEventListener("storage", handleStorageChange);
-	}, [myPlayerName, handleLeaveRoom]);
+	}, [handleLeaveRoom]);
 
 	return {
 		room,

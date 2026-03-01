@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\RoomStateUpdated;
 use App\Events\GameStarted;
+use App\Events\RoomListUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
@@ -76,7 +77,8 @@ class LiveGameService
         Redis::expire("room:{$roomId}:deck", 86400);
 
         // AVISAR A TODOS
-        event(new RoomStateUpdated());
+        event(new RoomListUpdated($roomId));
+        event(new RoomStateUpdated($roomId));
         event(new GameStarted($roomId));
     }
 
@@ -141,5 +143,55 @@ class LiveGameService
                 'opponents'    => $opponents,
             ]
         ];
+    }
+
+    public function checkAndAdvanceTurnOnDisconnect(string $roomId, string $disconnectedPlayer): void
+    {
+        $roomKey = "room:{$roomId}";
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+
+        // Si el que se ha ido es el que tenía el turno, pasamos al siguiente
+        if ($currentTurn === $disconnectedPlayer) {
+            $this->advanceTurn($roomId);
+        }
+    }
+
+    public function advanceTurn(string $roomId): void
+    {
+        $roomKey = "room:{$roomId}";
+        $turnOrderStr = Redis::get("{$roomKey}:turn_order");
+
+        if (!$turnOrderStr) return;
+
+        $turnOrder = json_decode($turnOrderStr, true);
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+
+        $currentIndex = array_search($currentTurn, $turnOrder);
+        if ($currentIndex === false) $currentIndex = 0;
+
+        $totalPlayers = count($turnOrder);
+        $nextIndex = $currentIndex;
+
+        // Buscamos al siguiente jugador válido
+        for ($i = 0; $i < $totalPlayers; $i++) {
+            $nextIndex = ($nextIndex + 1) % $totalPlayers;
+            $nextPlayer = $turnOrder[$nextIndex];
+            $playerKey = "{$roomKey}:player:{$nextPlayer}";
+
+            $isOnline = Redis::hget($playerKey, 'is_online') !== '0';
+            $skipNext = Redis::hget($playerKey, 'skip_next_turn') === '1';
+
+            if ($skipNext) {
+                // Se cobra la penalización (limpiamos el castigo y saltamos su turno)
+                Redis::hset($playerKey, 'skip_next_turn', 0);
+                continue;
+            }
+
+            if ($isOnline) {
+                // Hemos encontrado a un jugador válido online
+                Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
+                break;
+            }
+        }
     }
 }

@@ -25,14 +25,17 @@ export function useRoomSockets({
 		console.log("Estado de sala actualizado.")
 		const channel = echo.channel(`room.${roomId}`);
 
-		channel.listen(".RoomListUpdated", fetchRoomData);
+		channel.listen(".RoomStateUpdated", () => {
+            console.log("Alguien entró/salió en RoomStateUpdated, recargando datos...");
+            fetchRoomData();
+        });
 
 		channel.listen(".GameStarted", () => {
 			navigate(`/game/${roomId}`, { state: { playerName: myPlayerName } });
 		});
 
 		return () => {
-			channel.stopListening(".RoomListUpdated");
+			channel.stopListening(".RoomStateUpdated");
 			channel.stopListening(".GameStarted");
 			echo.leaveChannel(`room.${roomId}`);
 		};

@@ -46,8 +46,10 @@ class LiveRoomService
             }
 
             Redis::sadd("{$roomKey}:players", $playerName);
+
+            // Avisamos al Lobby (hay un jugador más) y a la Sala (actualicen sus listas)
             event(new RoomListUpdated($roomId));
-            event(new RoomStateUpdated());
+            event(new RoomStateUpdated($roomId));
         } else if ($room['status'] === 'in_game') {
             $playerKey = "room:{$roomId}:player:{$playerName}";
 
@@ -61,7 +63,8 @@ class LiveRoomService
                 Redis::hset($playerKey, 'skip_next_turn', 1);
             }
 
-            event(new RoomStateUpdated());
+            // Avisamos SOLO a la sala (el lobby no necesita saber que volvió, sigue contando como jugador)
+            event(new RoomStateUpdated($roomId));
         }
 
         $gameToken = (string) Str::uuid();
@@ -92,7 +95,10 @@ class LiveRoomService
         if ($room['status'] === 'in_game') {
             // Si la partida ya empezó, NO lo borramos, solo lo marcamos offline
             Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
-            event(new RoomStateUpdated());
+            app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
+
+            // Avisamos SOLO a la sala para que lo pinten de gris (el lobby no cambia el aforo)
+            event(new RoomStateUpdated($roomId));
             return;
         }
 
@@ -116,8 +122,9 @@ class LiveRoomService
             }
         }
 
+        // Avisamos a todos (Lobby actualiza aforo/borra sala, Sala actualiza jugadores/dueño)
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
+        event(new RoomStateUpdated($roomId));
     }
 
     public function kickPlayer(string $roomId, string $adminName, string $playerToKick): void
@@ -147,8 +154,8 @@ class LiveRoomService
         // --- Expulsar ---
         Redis::srem("{$roomKey}:players", $playerToKick);
 
-        // Notificar a todos los canales 
+        // Notificar a todos los canales (Lobby actualiza aforo, Sala expulsa al jugador visualmente)
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
+        event(new RoomStateUpdated($roomId));
     }
 }

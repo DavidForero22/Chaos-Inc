@@ -41,8 +41,12 @@ class LiveRoomController extends Controller
 
         $this->liveRoomService->leaveRoom($id, $playerName);
 
-        // LIMPIEZA DEL TOKEN DE SESIÓN DE ESA PESTAÑA
-        Redis::del("room:{$id}:token:{$gameToken}");
+        // Borar el token si la partida NO ha empezado.
+        $roomStatus = Redis::hget("room:{$id}", "status");
+
+        if ($roomStatus !== 'in_game') {
+            Redis::del("room:{$id}:token:{$gameToken}");
+        }
 
         return response()->json(['message' => 'Action processed successfully.'], 200);
     }
