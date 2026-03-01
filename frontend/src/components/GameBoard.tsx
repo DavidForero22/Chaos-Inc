@@ -115,7 +115,7 @@ export default function GameBoard() {
 								<p
 									className={`text-lg font-black ${!player.is_online ? "text-gray-600" : "text-red-500"}`}
 								>
-									{player.stress}%
+									{player.stress}
 								</p>
 							</div>
 						</div>
@@ -145,7 +145,7 @@ export default function GameBoard() {
 					</div>
 					<div className="flex justify-between items-center">
 						<span className="text-xs text-gray-500 uppercase">Estrés</span>
-						<span className="text-sm font-bold text-red-500">{me.stress}%</span>
+						<span className="text-sm font-bold text-red-500">{me.stress}</span>
 					</div>
 				</div>
 
