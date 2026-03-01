@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
 import type { RoomData } from "../../types/types";
 
@@ -10,6 +10,7 @@ interface UseRoomSessionProps {
 
 export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [room, setRoom] = useState<RoomData | null>(null);
 	const [isJoining, setIsJoining] = useState(true);
@@ -43,6 +44,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		} finally {
+			alert("Te has salido de la sala.")
 			sessionStorage.removeItem("game_token");
 			navigate("/");
 		}
@@ -54,42 +56,49 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			const res = await api.get("/rooms");
 			const currentRoom = res.data.find((r: RoomData) => r.room_id === roomId);
 
-			console.log("Pidiendo informacion de la sala....");
-
 			if (currentRoom) {
-				const imStillInRoom =
-					currentRoom.players?.includes(myPlayerNameRef.current) ?? false;
-
-				if (!isJoiningRef.current && !isLeavingRef.current && !imStillInRoom) {
-					alert("You are no longer in this room.");
-					sessionStorage.removeItem("game_token");
-					navigate("/");
-					return;
+				// Solo verificamos si está en la sala si REALMENTE tenemos un nombre que buscar.
+				// Si myPlayerNameRef está null, es porque React aún está cargando la sesión. No echar al jugador.
+				if (
+					myPlayerNameRef.current &&
+					!isJoiningRef.current &&
+					!isLeavingRef.current
+				) {
+					const imStillInRoom =
+						currentRoom.players?.includes(myPlayerNameRef.current) ?? false;
+					if (!imStillInRoom) {
+						alert("You are no longer in this room.");
+						sessionStorage.removeItem("game_token");
+						navigate("/");
+						return;
+					}
 				}
 
 				setRoom(currentRoom);
 				roomStatusRef.current = currentRoom.status;
 
-				// Redirección automática si la partida ya ha empezado y no está en ella
+				// Si la sala está en partida, PERO está en la ruta de WaitingRoom (/room/ABCD),
+				// mandar al tablero automáticamente.
 				if (
 					currentRoom.status === "in_game" &&
-					!window.location.pathname.includes("/game/")
+					location.pathname.includes(`/room/`)
 				) {
-					console.log(
-						"La partida ya está en curso, redirigiendo al tablero...",
-					);
+					alert(`Redireccionando a tablero. ${myPlayerNameRef}, ${isJoiningRef}, ${isLeavingRef}, ${currentRoom}`)
+					console.log("La partida ya empezó, redirigiendo al tablero...");
 					navigate(`/game/${roomId}`, {
 						state: { playerName: myPlayerNameRef.current },
+						replace: true,
 					});
 					return;
 				}
 			} else {
+				alert(`Redireccionando a lobby. ${myPlayerNameRef}, ${isJoiningRef}, ${isLeavingRef}, ${currentRoom}`)
 				navigate("/");
 			}
 		} catch (error) {
 			console.error("Error loading the room", error);
 		}
-	}, [roomId, navigate]);
+	}, [roomId, navigate, location.pathname]);
 
 	const attemptJoin = useCallback(
 		async (pwd = "") => {
@@ -111,7 +120,8 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 				setNeedsPassword(false);
 				setIsJoining(false);
 				isJoiningRef.current = false;
-				fetchRoomData();
+
+				await fetchRoomData();
 			} catch (error: any) {
 				const errorType = error.response?.data?.type;
 

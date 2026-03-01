@@ -17,6 +17,12 @@ export function useLiveGame(roomId: string | undefined) {
 	const syncGame = useCallback(async () => {
 		if (!roomId || !myPlayerName) return;
 
+		// Si los sockets responden pero aún no ha terminado de guardar el token de reconexión, ignorar el aviso.
+        if (!sessionStorage.getItem("game_token")) {
+            console.warn("Ignorando sync prematuro: aún estamos obteniendo el token.");
+            return; 
+        }
+
 		try {
 			const res = await api.post(`/rooms/${roomId}/sync`, {
 				player_name: myPlayerName,
@@ -36,6 +42,7 @@ export function useLiveGame(roomId: string | undefined) {
 				alert("Game session expired.");
 				isKickedRef.current = true;
 			}
+			alert("Eror al sincronizar la sala.");
 			navigate("/");
 			setLoading(false);
 		}
@@ -60,13 +67,40 @@ export function useLiveGame(roomId: string | undefined) {
 		}
 	};
 
+	// Flujo de auto-reconversión en el montaje
 	useEffect(() => {
-		if (!sessionStorage.getItem("game_token")) {
-			navigate("/");
-			return;
+		const attemptReconnection = async () => {
+			if (!roomId || !myPlayerName) return;
+
+			try {
+				// Intentar reconectar explícitamente usando el nombre
+				const res = await api.post(`/rooms/${roomId}/join`, {
+					player_name: myPlayerName,
+				});
+
+				// Si el backend acepta, dara un nuevo token.
+				if (res.data.game_token) {
+					sessionStorage.setItem("game_token", res.data.game_token);
+					syncGame();
+				}
+			} catch (error) {
+				// Si el backend  rechaza
+				console.error("No se pudo reconectar:", error);
+				alert("No puedes acceder a esta partida en curso.");
+				navigate("/");
+			}
+		};
+
+		const currentToken = sessionStorage.getItem("game_token");
+
+		if (!currentToken) {
+			// No hay token (cerró pestaña o F5 en nueva ventana). Intentar recuperarlo.
+			attemptReconnection();
+		} else {
+			// Ya hay token
+			syncGame();
 		}
-		syncGame();
-	}, [syncGame, navigate]);
+	}, [roomId, myPlayerName, syncGame, navigate]);
 
 	useEffect(() => {
 		const handleUnload = () => {

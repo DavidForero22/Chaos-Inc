@@ -43,7 +43,7 @@ api.interceptors.response.use(
 		// Si el token expira o nos echan, limpiar token
 		if (error.response?.status === 401) {
 			const url = error.config?.url ?? "";
-			if (url.includes("/rooms/")) {
+			if (url.includes("/sync") || url.includes("/leave")) {
 				sessionStorage.removeItem("game_token");
 			}
 		}
