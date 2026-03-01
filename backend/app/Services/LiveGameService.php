@@ -194,4 +194,56 @@ class LiveGameService
             }
         }
     }
+
+    public function playAction(string $roomId, string $playerName, int $cardId, string $targetName): void
+    {
+        $roomKey = "room:{$roomId}";
+
+        if (!Redis::exists($roomKey)) {
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        // Validar que es el turno del jugador
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        if ($currentTurn !== $playerName) {
+            throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
+        }
+
+        // Validar al objetivo
+        if ($playerName === $targetName) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
+        }
+        if (!Redis::sismember("{$roomKey}:players", $targetName)) {
+            throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
+        }
+
+        // Validar que el jugador tiene la carta en la mano
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $cards = json_decode(Redis::hget($playerKey, 'cards'), true);
+
+        $cardIndex = array_search($cardId, $cards);
+        if ($cardIndex === false) {
+            throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
+        }
+
+        // Consumir la carta jugada y robar una nueva del mazo
+        array_splice($cards, $cardIndex, 1);
+        $deck = json_decode(Redis::get("room:{$roomId}:deck"), true);
+
+        if (!empty($deck)) {
+            $newCard = array_shift($deck); // Robar la primera carta del mazo
+            $cards[] = $newCard;
+            Redis::set("room:{$roomId}:deck", json_encode($deck));
+        }
+
+        Redis::hset($playerKey, 'cards', json_encode($cards));
+
+        // EFECTO DEL ATAQUE: Sumar 1 de estrés al objetivo
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+        Redis::hincrby($targetKey, 'stress', 1);
+
+        // Finalizar turno y avisar a todos
+        $this->advanceTurn($roomId);
+        event(new RoomStateUpdated($roomId));
+    }
 }

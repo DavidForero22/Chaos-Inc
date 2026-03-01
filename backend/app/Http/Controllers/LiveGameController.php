@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Game\PlayActionRequest;
 use App\Http\Requests\Game\StartGameRequest;
 use App\Http\Requests\Game\SyncGameRequest;
 use App\Services\LiveGameService;
@@ -42,5 +43,25 @@ class LiveGameController extends Controller
         $data = $this->liveGameService->getPlayerData($id, $playerName);
 
         return response()->json($data, 200);
+    }
+
+    public function action(PlayActionRequest $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        // Llamamos al servicio con los datos validados
+        $this->liveGameService->playAction(
+            $id,
+            $playerName,
+            $request->input('card_id'),
+            $request->input('target_name')
+        );
+
+        return response()->json(['message' => 'Action executed successfully'], 200);
     }
 }
