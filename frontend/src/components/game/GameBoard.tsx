@@ -26,7 +26,10 @@ export default function GameBoard() {
 
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
+
 	const hasUsedAttackThisTurn = me.attack_used_this_turn;
+	const hasPendingAttack = me.has_pending_attack;
+
 	const selectedCardType =
 		me.cards.find((c) => c.id === selectedCardId)?.type ?? null;
 
@@ -77,7 +80,7 @@ export default function GameBoard() {
 	};
 
 	const handleEndTurn = async () => {
-		if (!isMyTurn || selectedCardId !== null) return;
+		if (!isMyTurn || selectedCardId !== null || hasPendingAttack) return;
 		await endTurn();
 	};
 
@@ -154,6 +157,7 @@ export default function GameBoard() {
 					onCardClick={handleCardClick}
 					incomingAttack={me.incoming_attack}
 					opponents={game.opponents}
+					hasPendingAttack={hasPendingAttack}
 				/>
 
 				<div className="ml-auto flex flex-col items-end gap-2">
@@ -167,11 +171,13 @@ export default function GameBoard() {
 					) : (
 						<button
 							onClick={handleEndTurn}
-							disabled={!isMyTurn || selectedCardId !== null}
+							disabled={
+								!isMyTurn || selectedCardId !== null || hasPendingAttack
+							}
 							className={`
 								px-4 py-2 rounded font-bold text-sm transition
 								${
-									isMyTurn && selectedCardId === null
+									isMyTurn && selectedCardId === null && !hasPendingAttack
 										? "bg-purple-600 hover:bg-purple-500 text-white"
 										: "bg-gray-700 text-gray-500 cursor-not-allowed"
 								}

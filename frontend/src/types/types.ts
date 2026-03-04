@@ -44,6 +44,7 @@ export interface MyData {
 	attack_used_this_turn: boolean;
 	incoming_attack: boolean;
 	has_shield: boolean;
+	has_pending_attack: boolean;
 }
 
 /**

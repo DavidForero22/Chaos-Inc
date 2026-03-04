@@ -104,6 +104,7 @@ class LiveGameService
         $myData = Redis::hgetall($playerKey);
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
         $hasIncomingAttack = !empty($pendingAttack) && ($pendingAttack['target'] ?? null) === $playerName;
+        $hasPendingAttack  = !empty($pendingAttack) && ($pendingAttack['attacker'] ?? null) === $playerName;
 
         $opponents = [];
         foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
@@ -132,7 +133,9 @@ class LiveGameService
                 'skip_next_turn'        => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'incoming_attack'       => $hasIncomingAttack,
+                'has_pending_attack' => $hasPendingAttack,
                 'has_shield'            => (bool) filter_var($myData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN),
+
             ],
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,

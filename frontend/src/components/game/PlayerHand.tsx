@@ -7,6 +7,7 @@ interface PlayerHandProps {
 	onCardClick: (card: CardInstance) => void;
 	incomingAttack: boolean;
 	opponents: Opponent[];
+	hasPendingAttack: boolean;
 }
 
 export function PlayerHand({
@@ -16,6 +17,7 @@ export function PlayerHand({
 	onCardClick,
 	incomingAttack,
 	opponents,
+	hasPendingAttack,
 }: PlayerHandProps) {
 	return (
 		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
@@ -53,14 +55,17 @@ export function PlayerHand({
 						<div
 							key={card.id}
 							onClick={() => {
-								// Si es esquive y hay ataque entrante, permitimos usarla aunque no sea nuestro turno.
+								// Bloquear cartas que no sean robo
+								if (hasPendingAttack) return;
+								// Si es esquive y hay ataque entrante, permitir usarla aunque no sea nuestro turno.
 								if (!canUseDodgeNow && isDisabled) return;
 								onCardClick(card);
 							}}
 							className={`
 								shrink-0 w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
 								${
-									(isMyTurn && !isDisabled) || canUseDodgeNow
+									(isMyTurn && !isDisabled && !hasPendingAttack) ||
+									canUseDodgeNow
 										? "cursor-pointer hover:-translate-y-4"
 										: "opacity-40 cursor-not-allowed"
 								}
