@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Game\PlayActionRequest;
 use App\Http\Requests\Game\StartGameRequest;
 use App\Http\Requests\Game\SyncGameRequest;
-use App\Services\LiveGameService;
+use App\Services\LiveGame\LiveGameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
