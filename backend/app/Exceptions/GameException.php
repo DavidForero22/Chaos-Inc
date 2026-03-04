@@ -9,7 +9,10 @@ class GameException extends Exception
     // Constantes exclusivas del estado del JUEGO y la PARTIDA
     const GAME_ALREADY_STARTED = 'GAME_ALREADY_STARTED';
     const GAME_NOT_STARTED = 'GAME_NOT_STARTED';
-
+    const NOT_YOUR_TURN = 'NOT_YOUR_TURN';
+    const INVALID_TARGET = 'INVALID_TARGET';
+    const CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND';
+    const INVALID_ACTION = 'INVALID_ACTION';
     protected string $errorType;
 
     public function __construct(string $errorType, string $message, int $code = 400)

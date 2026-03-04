@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
@@ -53,7 +54,7 @@ class RoomService
             'room_id' => $roomId,
             'name' => $data['name'],
             'is_private' => $data['is_private'] ? '1' : '0',
-            'password' => $data['is_private'] ? Hash::make($data['password']) : null,
+            'password' => $data['is_private'] ? Hash::make($data['password']) : '',
             'max_players' => $data['max_players'],
             'status' => 'waiting',
             'owner_name' => $ownerName,
@@ -69,8 +70,10 @@ class RoomService
         Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $ownerName);
         Redis::expire("room:{$roomId}:players", 86400);
 
-        // Avisar al Menú Principal de que hay una nueva sala
-        event(new RoomStateUpdated());
+        // Avisar al Menú Principal para que aparezca la nueva sala.
+        event(new RoomListUpdated($roomId)); 
+        // Pasar el $roomId requerido al evento de estado.
+        event(new RoomStateUpdated($roomId));
 
         $roomData['players'] = [$ownerName];
         $roomData['game_token'] = $gameToken;

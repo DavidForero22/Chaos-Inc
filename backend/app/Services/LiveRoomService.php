@@ -20,59 +20,61 @@ class LiveRoomService
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            throw new RoomException(RoomException::ALREADY_IN_ROOM, "This player is already in this room.", 409);
-        }
-
         $room = Redis::hgetall($roomKey);
 
-        // Generar un Token Único de Partida
-        $gameToken = (string) Str::uuid();
+        // Validar contraseña si no estamos ya en la sala
+        $alreadyInRoom = Redis::sismember("{$roomKey}:players", $playerName);
 
-        // Si ya está en la sala (refrescó la página)
-        if (Redis::sismember("{$roomKey}:players", $playerName)) {
-            Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
-            return [
-                'message' => "You're already in this room",
-                'room_id' => $roomId,
-                'player' => $playerName,
-                'game_token' => $gameToken
-            ];
-        }
-
-        if ($room['status'] !== 'waiting') {
-            throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
-        }
-
-        if ($room['is_private'] === '1') {
+        if (!$alreadyInRoom && $room['is_private'] === '1') {
             if (!$password) {
                 throw new RoomException(RoomException::PASSWORD_REQUIRED, "Password required.", 403);
             }
-
             if (!Hash::check($password, $room['password'])) {
                 throw new RoomException(RoomException::INCORRECT_PASSWORD, "Incorrect password.", 403);
             }
         }
 
-        $currentPlayersCount = Redis::scard("{$roomKey}:players");
-        if ($currentPlayersCount >= $room['max_players']) {
-            throw new RoomException(RoomException::ROOM_FULL, "The room is full.", 409);
+        // Si el juego está en curso y NO estás en la sala, error
+        if (!$alreadyInRoom && $room['status'] === 'in_game') {
+            throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
         }
 
-        // Añadir jugador
-        Redis::sadd("{$roomKey}:players", $playerName);
+        if (!$alreadyInRoom) {
+            $currentPlayersCount = Redis::scard("{$roomKey}:players");
+            if ($currentPlayersCount >= $room['max_players']) {
+                throw new RoomException(RoomException::ROOM_FULL, "The room is full.", 409);
+            }
 
-        // Guardar el token en Redis
+            Redis::sadd("{$roomKey}:players", $playerName);
+
+            // Avisamos al Lobby (hay un jugador más) y a la Sala (actualicen sus listas)
+            event(new RoomListUpdated($roomId));
+            event(new RoomStateUpdated($roomId));
+        } else if ($room['status'] === 'in_game') {
+            $playerKey = "room:{$roomId}:player:{$playerName}";
+
+            // Verificar si realmente se había caído antes de clavarle la penalización
+            $wasOffline = Redis::hget($playerKey, 'is_online') === '0';
+
+            // Volver a ponerlo online
+            Redis::hset($playerKey, 'is_online', 1);
+
+            if ($wasOffline) {
+                Redis::hset($playerKey, 'skip_next_turn', 1);
+            }
+
+            // Avisamos SOLO a la sala (el lobby no necesita saber que volvió, sigue contando como jugador)
+            event(new RoomStateUpdated($roomId));
+        }
+
+        $gameToken = (string) Str::uuid();
         Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $playerName);
 
-        event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
-
         return [
-            'message' => 'You have joined the room.',
+            'message' => $alreadyInRoom ? 'Reconnected.' : 'Joined.',
             'room_id' => $roomId,
             'player' => $playerName,
-            'game_token' => $gameToken // <-- DEVOLVEMOS EL TOKEN
+            'game_token' => $gameToken
         ];
     }
 
@@ -89,7 +91,18 @@ class LiveRoomService
             throw new RoomException(RoomException::NOT_IN_ROOM, "Player {$playerName} is not in this room.", 409);
         }
 
-        // Eliminar al usuario de la sala
+        // ABANDONO VS DESCONEXIÓN
+        if ($room['status'] === 'in_game') {
+            // Si la partida ya empezó, NO lo borramos, solo lo marcamos offline
+            Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
+            app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
+
+            // Avisamos SOLO a la sala para que lo pinten de gris (el lobby no cambia el aforo)
+            event(new RoomStateUpdated($roomId));
+            return;
+        }
+
+        // Si la partida NO ha empezado, borrado definitivo
         Redis::srem("{$roomKey}:players", $playerName);
         $remainingPlayersCount = Redis::scard("{$roomKey}:players");
 
@@ -109,8 +122,9 @@ class LiveRoomService
             }
         }
 
+        // Avisamos a todos (Lobby actualiza aforo/borra sala, Sala actualiza jugadores/dueño)
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
+        event(new RoomStateUpdated($roomId));
     }
 
     public function kickPlayer(string $roomId, string $adminName, string $playerToKick): void
@@ -140,8 +154,8 @@ class LiveRoomService
         // --- Expulsar ---
         Redis::srem("{$roomKey}:players", $playerToKick);
 
-        // Notificar a todos los canales 
+        // Notificar a todos los canales (Lobby actualiza aforo, Sala expulsa al jugador visualmente)
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated());
+        event(new RoomStateUpdated($roomId));
     }
 }

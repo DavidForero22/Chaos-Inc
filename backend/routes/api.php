@@ -18,6 +18,7 @@ use App\Http\Controllers\RoomController;
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/guest-login', [AuthController::class, 'guestLogin']);
 
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::get('/rooms/{id}', [RoomController::class, 'show']);
@@ -28,6 +29,9 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/rooms/{id}/start', [LiveGameController::class, 'start']);
     Route::post('/rooms/{id}/sync', [LiveGameController::class, 'sync']);
+    Route::post('/rooms/{id}/action', [LiveGameController::class, 'action']);
+    Route::post('/rooms/{id}/end-turn', [LiveGameController::class, 'endTurn']);
+    Route::post('/rooms/{id}/react', [LiveGameController::class, 'react']);
 
 
     /*

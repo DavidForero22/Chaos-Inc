@@ -12,18 +12,18 @@ class RoomStateUpdated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
+    public $roomId;
 
-    public function __construct(string $message = 'El estado de las salas ha cambiado')
+    public function __construct(string $roomId)
     {
-        $this->message = $message;
+        $this->roomId = $roomId;
     }
 
     public function broadcastOn(): array
     {
-        // Se emite al canal global "lobby" para que el MainMenu lo escuche
+        // SOLO enviamos el evento a los que están dentro de esta sala
         return [
-            new Channel('lobby'),
+            new Channel('room.' . $this->roomId),
         ];
     }
 

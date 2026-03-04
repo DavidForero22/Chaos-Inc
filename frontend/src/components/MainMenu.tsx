@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLobby } from "../hooks/useLobby.ts";
 import RoomList from "./lobby/RoomList.tsx";
 import CreateRoomModal from "./lobby/CreateRoomModal.tsx";
+import GuestNameModal from "./lobby/GuestNameModal.tsx";
 
 export default function MainMenu() {
 	const {
@@ -14,6 +15,29 @@ export default function MainMenu() {
 		user,
 	} = useLobby();
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [showGuestModal, setShowGuestModal] = useState(false);
+
+	const onJoinClick = () => {
+		if (user) {
+			// Si ya tiene usuario (logueado o invitado previo), entra directo
+			handleJoinRoom();
+		} else {
+			// Si no, le pedimos el nombre
+			setShowGuestModal(true);
+		}
+	};
+
+	// Callback para cuando el login de invitado termina con éxito
+	const handleGuestSuccess = () => {
+		setShowGuestModal(false);
+		// Intentamos unirse inmediatamente después de obtener el token
+		handleJoinRoom();
+	};
+
+	// Determinamos si el botón de unirse debe estar deshabilitado
+	const isJoinDisabled =
+		!selectedRoom ||
+		filteredRooms.find((r) => r.room_id === selectedRoom)?.status !== "waiting";
 
 	return (
 		<div className="max-w-4xl mx-auto mt-4">
@@ -50,7 +74,7 @@ export default function MainMenu() {
 				{user ? (
 					<button
 						onClick={() => setShowCreateModal(true)}
-						className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded font-bold transition"
+						className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded font-bold transition shadow-lg shadow-green-900/20"
 					>
 						+ Crear Sala
 					</button>
@@ -62,8 +86,8 @@ export default function MainMenu() {
 						>
 							+ Crear Sala
 						</button>
-						<p className="text-xs text-red-400 mt-2">
-							Inicia sesión para crear
+						<p className="text-xs text-gray-500 mt-2">
+							Solo usuarios registrados pueden crear
 						</p>
 					</div>
 				)}
@@ -77,24 +101,34 @@ export default function MainMenu() {
 
 			<div className="mt-6 flex justify-end">
 				<button
-					disabled={
-						!selectedRoom ||
-						filteredRooms.find((r) => r.room_id === selectedRoom)?.status !==
-							"waiting"
-					}
-					onClick={handleJoinRoom}
-					className={`px-8 py-3 rounded font-bold text-lg transition shadow-lg ${selectedRoom ? "bg-blue-600 hover:bg-blue-500 text-white" : "bg-gray-800 text-gray-600 cursor-not-allowed"}`}
+					disabled={isJoinDisabled}
+					onClick={onJoinClick}
+					className={`px-8 py-3 rounded font-bold text-lg transition shadow-lg flex items-center gap-2
+                        ${
+													!isJoinDisabled
+														? "bg-blue-600 hover:bg-blue-500 text-white hover:-translate-y-1"
+														: "bg-gray-800 text-gray-600 cursor-not-allowed"
+												}`}
 				>
-					Unirse a la partida
+					{!user && !isJoinDisabled
+						? "Jugar como Invitado"
+						: "Unirse a la partida"}
 				</button>
 			</div>
 
 			{showCreateModal && user && (
-				<CreateRoomModal
-					onClose={() => setShowCreateModal(false)}
-					user={user}
-				/>
-			)}
+                <CreateRoomModal
+                    onClose={() => setShowCreateModal(false)}
+                    user={user}
+                />
+            )}
+            
+            {showGuestModal && (
+                <GuestNameModal 
+                    onClose={() => setShowGuestModal(false)}
+                    onSuccess={handleGuestSuccess}
+                />
+            )}
 		</div>
 	);
 }

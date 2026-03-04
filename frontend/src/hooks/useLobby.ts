@@ -27,10 +27,10 @@ export function useLobby() {
 	useEffect(() => {
 		fetchRooms();
 		const channel = echo.channel("lobby");
-		channel.listen(".RoomStateUpdated", fetchRooms);
+		channel.listen(".RoomListUpdated", fetchRooms);
 
 		return () => {
-			channel.stopListening(".RoomStateUpdated");
+			channel.stopListening(".RoomListUpdated");
 			echo.leaveChannel("lobby");
 		};
 	}, [fetchRooms]);
