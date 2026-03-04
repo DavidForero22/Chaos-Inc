@@ -25,12 +25,19 @@ export interface Opponent {
 /**
  * Tipado de mis datos privados
  */
+export interface CardInstance {
+	id: string;
+	type: number;
+	name: string;
+	description: string;
+  }
+
 export interface MyData {
 	name: string;
 	role: "boss" | "secretary" | "intern" | "union";
 	stress: number;
 	is_dead: boolean;
-	cards: number[];
+	cards: CardInstance[];
 	skip_next_turn: boolean;
 }
 

@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 import { useState } from "react";
+import type { CardInstance } from "../types/types.ts";
 
 export default function GameBoard() {
 	const { id } = useParams();
 	const { gameData, loading, myPlayerName, playTurn } = useLiveGame(id);
-	const [selectedCard, setSelectedCard] = useState<number | null>(null);
+	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
 	if (loading) {
 		return (
@@ -23,16 +24,28 @@ export default function GameBoard() {
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
 
-	const handleCardClick = (cardId: number) => {
+	const handleCardClick = (cardId: string) => {
 		if (!isMyTurn) return;
 
-		setSelectedCard((prev) => (prev === cardId ? null : cardId));
+		setSelectedCardId((prev) => (prev === cardId ? null : cardId));
 	};
 
 	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
-		if (isMyTurn && selectedCard !== null && isOnline) {
-			playTurn(selectedCard, targetName);
-			setSelectedCard(null);
+		if (isMyTurn && selectedCardId !== null && isOnline) {
+			playTurn(selectedCardId, targetName);
+			setSelectedCardId(null);
+		}
+	};
+
+	const getCardLabel = (card: CardInstance) => {
+		// Mapeo simple de tipos de carta a nombres visibles.
+		// De momento, 1 = "Atacar". Más adelante se puede sincronizar
+		// esta lista con el backend o expandirla con más tipos.
+		switch (card.type) {
+			case 1:
+				return "Atacar";
+			default:
+				return `Carta ${card.type}`;
 		}
 	};
 
@@ -65,7 +78,7 @@ export default function GameBoard() {
 				</div>
 
 				{/* Si carta lista, avisar visualmente al jugador de que elija un rival */}
-				{isMyTurn && selectedCard !== null && (
+				{isMyTurn && selectedCardId !== null && (
 					<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/20 text-yellow-400 px-6 py-2 rounded-full border border-yellow-500 font-bold animate-bounce shadow-lg z-20">
 						¡Elige a un jugador objetivo! 🎯
 					</div>
@@ -74,7 +87,7 @@ export default function GameBoard() {
 				{game.opponents.map((player) => {
 					// 👈 Variables de lógica visual
 					const canBeTargeted =
-						isMyTurn && selectedCard !== null && player.is_online;
+						isMyTurn && selectedCardId !== null && player.is_online;
 					const offlineStyles = !player.is_online
 						? "opacity-40 grayscale scale-95 border-gray-900"
 						: "";
@@ -155,21 +168,23 @@ export default function GameBoard() {
 						Tu Mano
 					</p>
 					<div className="flex gap-3">
-						{me.cards.map((cardId, index) => {
-							const isSelected = selectedCard === cardId;
+						{me.cards.map((card) => {
+							  const isSelected = selectedCardId === card.id;
 
 							return (
 								<div
-									key={`${cardId}-${index}`}
-									onClick={() => handleCardClick(cardId)}
+									key={card.id}
+									onClick={() => handleCardClick(card.id)}
 									className={`
-                                        w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all
+                                        w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
                                         ${isMyTurn ? "cursor-pointer hover:-translate-y-4" : "opacity-50 cursor-not-allowed"}
                                         ${isSelected ? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400" : "bg-gray-700 border-gray-500"}
                                     `}
+									title={card.description}
 								>
-									<span className="text-3xl text-gray-200 font-mono">
-										{cardId}
+									<span className="text-sm text-gray-200 font-semibold leading-snug">
+									{card.name}
+
 									</span>
 								</div>
 							);

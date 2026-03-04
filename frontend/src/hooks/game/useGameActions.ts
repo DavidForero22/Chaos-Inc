@@ -4,7 +4,7 @@ export function useGameActions(
 	roomId: string | undefined,
 	syncGame: () => Promise<void>,
 ) {
-	const playTurn = async (cardId: number, targetName: string) => {
+	const playTurn = async (cardId: string, targetName: string) => {
 		if (!roomId) return;
 
 		try {

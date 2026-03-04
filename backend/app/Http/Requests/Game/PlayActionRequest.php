@@ -14,7 +14,8 @@ class PlayActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_id' => 'required|integer',
+            // Identificador de instancia de carta (string único generado en el servidor)
+            'card_id' => 'required|string',
             'target_name' => 'required|string',
         ];
     }

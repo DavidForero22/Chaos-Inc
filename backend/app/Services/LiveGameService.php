@@ -11,6 +11,85 @@ use Illuminate\Support\Facades\Redis;
 
 class LiveGameService
 {
+    /**
+     * Construye el mazo inicial a partir de la configuración de cartas.
+     */
+    protected function buildDeck(): array
+    {
+        $definitions = config('cards.cards', []);
+
+        $deck = [];
+
+        foreach ($definitions as $card) {
+            $id = $card['id'] ?? null;
+            $count = $card['count'] ?? 0;
+
+            if ($id === null || $count <= 0) {
+                continue;
+            }
+
+            for ($i = 0; $i < $count; $i++) {
+                // Cada entrada del mazo es una instancia única de una carta de un tipo concreto
+                $deck[] = [
+                    'id' => uniqid((string) $id . '_', true),
+                    'type' => $id,
+                    'name' => $card['name'] ?? 'Carta',
+                    'description' => $card['description'] ?? '',
+                ];
+            }
+        }
+
+        shuffle($deck);
+
+        return $deck;
+    }
+
+    /**
+     * Roba una cantidad de cartas del mazo y las añade a la mano del jugador.
+     */
+    protected function drawCardsForPlayer(string $roomId, string $playerName, int $amount): void
+    {
+        if ($amount <= 0) {
+            return;
+        }
+
+        $deckKey = "room:{$roomId}:deck";
+        $deck = json_decode(Redis::get($deckKey) ?: '[]', true);
+
+        if (empty($deck)) {
+            return;
+        }
+
+        $drawn = [];
+
+        for ($i = 0; $i < $amount; $i++) {
+            if (empty($deck)) {
+                break;
+            }
+
+            $drawn[] = array_shift($deck); // cada elemento es un array ['id' => string, 'type' => int]
+        }
+
+        // Guardar el mazo actualizado
+        Redis::set($deckKey, json_encode($deck));
+
+        if (empty($drawn)) {
+            return;
+        }
+
+        // Añadir las cartas robadas a la mano actual del jugador
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $currentCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+
+        if (!is_array($currentCards)) {
+            $currentCards = [];
+        }
+
+        $updatedCards = array_merge($currentCards, $drawn);
+
+        Redis::hset($playerKey, 'cards', json_encode($updatedCards));
+    }
+
     public function startGame(string $roomId, string $requestingPlayer): void
     {
         $roomKey = "room:{$roomId}";
@@ -43,8 +122,7 @@ class LiveGameService
         $bossPlayerName = '';
 
         // INICIALIZAR JUGADORES EN REDIS Y ASIGNAR CARTAS
-        $testDeck = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-        shuffle($testDeck);
+        $deck = $this->buildDeck();
 
         foreach ($players as $index => $playerName) {
             $playerRole = $roles[$index];
@@ -52,7 +130,8 @@ class LiveGameService
                 $bossPlayerName = $playerName;
             }
 
-            $playerCards = array_splice($testDeck, 0, 3);
+            // Reparto inicial: 3 cartas por jugador
+            $playerCards = array_splice($deck, 0, 3);
 
             $playerData = [
                 'role' => $playerRole,
@@ -73,8 +152,13 @@ class LiveGameService
         Redis::expire("room:{$roomId}:turn_order", 86400);
 
         // Guardar mazo restante
-        Redis::set("room:{$roomId}:deck", json_encode($testDeck));
+        Redis::set("room:{$roomId}:deck", json_encode($deck));
         Redis::expire("room:{$roomId}:deck", 86400);
+
+        // Cuando el jefe empieza su primer turno, roba 2 cartas adicionales
+        if ($bossPlayerName !== '') {
+            $this->drawCardsForPlayer($roomId, $bossPlayerName, 2);
+        }
 
         // AVISAR A TODOS
         event(new RoomListUpdated($roomId));
@@ -190,12 +274,15 @@ class LiveGameService
             if ($isOnline) {
                 // Hemos encontrado a un jugador válido online
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
+
+                // Al comienzo de su turno, roba 2 cartas adicionales
+                $this->drawCardsForPlayer($roomId, $nextPlayer, 2);
                 break;
             }
         }
     }
 
-    public function playAction(string $roomId, string $playerName, int $cardId, string $targetName): void
+    public function playAction(string $roomId, string $playerName, string $cardId, string $targetName): void
     {
         $roomKey = "room:{$roomId}";
 
@@ -219,22 +306,34 @@ class LiveGameService
 
         // Validar que el jugador tiene la carta en la mano
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        $cards = json_decode(Redis::hget($playerKey, 'cards'), true);
+        $cards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
 
-        $cardIndex = array_search($cardId, $cards);
-        if ($cardIndex === false) {
+        if (!is_array($cards)) {
+            $cards = [];
+        }
+
+        // Buscar la carta concreta por su identificador de instancia
+        $cardIndex = null;
+        $playedCard = null;
+
+        foreach ($cards as $index => $card) {
+            if (!is_array($card)) {
+                continue;
+            }
+
+            if (($card['id'] ?? null) === $cardId) {
+                $cardIndex = $index;
+                $playedCard = $card;
+                break;
+            }
+        }
+
+        if ($cardIndex === null) {
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
 
-        // Consumir la carta jugada y robar una nueva del mazo
+        // Consumir la carta jugada (el resto de la mano se mantiene)
         array_splice($cards, $cardIndex, 1);
-        $deck = json_decode(Redis::get("room:{$roomId}:deck"), true);
-
-        if (!empty($deck)) {
-            $newCard = array_shift($deck); // Robar la primera carta del mazo
-            $cards[] = $newCard;
-            Redis::set("room:{$roomId}:deck", json_encode($deck));
-        }
 
         Redis::hset($playerKey, 'cards', json_encode($cards));
 
