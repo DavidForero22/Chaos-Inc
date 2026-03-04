@@ -6,6 +6,7 @@ use App\Http\Requests\Game\PlayActionRequest;
 use App\Http\Requests\Game\StartGameRequest;
 use App\Http\Requests\Game\SyncGameRequest;
 use App\Services\LiveGameService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
 class LiveGameController extends Controller
@@ -63,5 +64,19 @@ class LiveGameController extends Controller
         );
 
         return response()->json(['message' => 'Action executed successfully'], 200);
+    }
+
+    public function endTurn(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $this->liveGameService->endTurn($id, $playerName);
+
+        return response()->json(['message' => 'Turn ended'], 200);
     }
 }

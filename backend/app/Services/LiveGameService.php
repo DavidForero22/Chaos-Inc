@@ -139,7 +139,8 @@ class LiveGameService
                 'is_dead' => 0,
                 'cards' => json_encode($playerCards),
                 'is_online' => 1,
-                'skip_next_turn' => 0
+                'skip_next_turn' => 0,
+                'attack_used_this_turn' => 0,
             ];
 
             Redis::hmset("room:{$roomId}:player:{$playerName}", $playerData);
@@ -207,7 +208,8 @@ class LiveGameService
                 'stress'  => (int) ($pData['stress'] ?? 0),
                 'is_dead' => (bool) filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
-                'is_online' => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN)
+                'is_online' => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }
 
@@ -329,21 +331,34 @@ class LiveGameService
         if (!Redis::sismember("{$roomKey}:players", $targetName)) {
             throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
         }
+
+        // Validar que no haya atacado antes
+        $playerTurnKey = "room:{$roomId}:player:{$playerName}";
+        $alreadyAttacked = (int) (Redis::hget($playerTurnKey, 'attack_used_this_turn') ?? 0);
+
+        if ($cardType === 1 && $alreadyAttacked === 1) {
+            throw new GameException(
+                GameException::INVALID_ACTION,
+                "Ya has usado una carta de ataque en este turno.",
+                422
+            );
+        }
+
         if ($cardType === 1 && $playerName === $targetName) {
             throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
         }
 
         // Consumir la carta jugada (el resto de la mano se mantiene)
         array_splice($cards, $cardIndex, 1);
-
         Redis::hset($playerKey, 'cards', json_encode($cards));
 
         $targetKey = "room:{$roomId}:player:{$targetName}";
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        
+
         if ($cardType === 1) {
             // Ataque: +1 estrés al objetivo
             Redis::hincrby($targetKey, 'stress', 1);
+            Redis::hset($playerTurnKey, 'attack_used_this_turn', 1);
         } elseif ($cardType === 2) {
             // Curar: -1 estrés a ti mismo, sin bajar de 0
             $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
@@ -352,7 +367,25 @@ class LiveGameService
             }
         }
 
-        // Finalizar turno y avisar a todos
+        // Avisar de la acción
+        event(new RoomStateUpdated($roomId));
+    }
+
+    public function endTurn(string $roomId, string $playerName): void
+    {
+        $roomKey = "room:{$roomId}";
+        if (!Redis::exists($roomKey)) {
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        if ($currentTurn !== $playerName) {
+            throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
+        }
+
+        // Aquí puedes resetear banderas de turno (ver siguiente sección)
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'attack_used_this_turn', 0);
+
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));
     }

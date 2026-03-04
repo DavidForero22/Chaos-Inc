@@ -5,7 +5,8 @@ import type { CardInstance } from "../types/types.ts";
 
 export default function GameBoard() {
 	const { id } = useParams();
-	const { gameData, loading, myPlayerName, playTurn } = useLiveGame(id);
+	const { gameData, loading, myPlayerName, playTurn, endTurn } =
+		useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
 	if (loading) {
@@ -23,15 +24,23 @@ export default function GameBoard() {
 
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
+	const hasUsedAttackThisTurn = me.attack_used_this_turn;
 
 	const handleCardClick = (card: CardInstance) => {
 		if (!isMyTurn) return;
 
+		// Carta de curación
 		if (card.type === 2) {
-			// Carta de curación: solo si tengo estrés > 0
+			// solo si tengo estrés > 0
 			if (me.stress <= 0) return;
 			playTurn(card.id, myPlayerName);
 			return;
+		}
+
+		// Carta de ataque
+		if (card.type === 1) {
+			// bloquea segundo ataque
+			if (hasUsedAttackThisTurn) return;
 		}
 
 		// Resto de cartas (ataque, etc.): flujo normal de selección
@@ -43,6 +52,11 @@ export default function GameBoard() {
 			playTurn(selectedCardId, targetName);
 			setSelectedCardId(null);
 		}
+	};
+
+	const handleEndTurn = async () => {
+		if (!isMyTurn || selectedCardId !== null) return;
+		await endTurn();
 	};
 
 	return (
@@ -76,7 +90,7 @@ export default function GameBoard() {
 				{/* Si carta lista, avisar visualmente al jugador de que elija un rival */}
 				{isMyTurn && selectedCardId !== null && (
 					<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/20 text-yellow-400 px-6 py-2 rounded-full border border-yellow-500 font-bold animate-bounce shadow-lg z-20">
-						¡Elige a un jugador objetivo! 🎯
+						¡Elige a un jugador objetivo!
 					</div>
 				)}
 
@@ -159,11 +173,11 @@ export default function GameBoard() {
 				</div>
 
 				{/* Tus Cartas */}
-				<div className="flex-1 border-l border-gray-700 pl-6">
+				<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
 					<p className="text-xs text-gray-500 uppercase font-bold mb-3">
 						Tu Mano
 					</p>
-					<div className="flex gap-3">
+					<div className="w-full flex gap-3 overflow-x-auto overflow-y-visible no-scrollbar py-2">
 						{me.cards.map((card) => {
 							const isSelected = selectedCardId === card.id;
 							const isHeal = card.type === 2;
@@ -177,26 +191,43 @@ export default function GameBoard() {
 										handleCardClick(card);
 									}}
 									className={`
-										w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
-										${isMyTurn && !isHealDisabled
-											? "cursor-pointer hover:-translate-y-4"
-											: "opacity-40 cursor-not-allowed"
+										shrink-0 w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
+										${
+											isMyTurn && !isHealDisabled
+												? "cursor-pointer hover:-translate-y-4"
+												: "opacity-40 cursor-not-allowed"
 										}
-										${isSelected
-											? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400"
-											: "bg-gray-700 border-gray-500"
+										${
+											isSelected
+												? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400"
+												: "bg-gray-700 border-gray-500"
 										}
 									`}
 									title={card.description}
 								>
 									<span className="text-sm text-gray-200 font-semibold leading-snug">
 										{card.name}
-
 									</span>
 								</div>
 							);
 						})}
 					</div>
+				</div>
+				<div className="ml-auto flex flex-col items-end gap-2">
+					<button
+						onClick={handleEndTurn}
+						disabled={!isMyTurn || selectedCardId !== null}
+						className={`
+							px-4 py-2 rounded font-bold text-sm transition
+							${
+										isMyTurn && selectedCardId === null
+											? "bg-purple-600 hover:bg-purple-500 text-white"
+											: "bg-gray-700 text-gray-500 cursor-not-allowed"
+									}
+						`}
+					>
+						Terminar turno
+					</button>
 				</div>
 			</div>
 		</div>

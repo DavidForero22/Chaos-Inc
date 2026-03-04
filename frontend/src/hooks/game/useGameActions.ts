@@ -24,7 +24,11 @@ export function useGameActions(
 		}
 	};
 
-	return {
-		playTurn,
+	const endTurn = async () => {
+		if (!roomId) return;
+		await api.post(`/rooms/${roomId}/end-turn`, {});
+		await syncGame();
 	};
+
+	return { playTurn, endTurn };
 }

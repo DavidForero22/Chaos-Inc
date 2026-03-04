@@ -30,7 +30,7 @@ export interface CardInstance {
 	type: number;
 	name: string;
 	description: string;
-  }
+}
 
 export interface MyData {
 	name: string;
@@ -39,6 +39,7 @@ export interface MyData {
 	is_dead: boolean;
 	cards: CardInstance[];
 	skip_next_turn: boolean;
+	attack_used_this_turn: boolean;
 }
 
 /**

@@ -30,6 +30,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/rooms/{id}/start', [LiveGameController::class, 'start']);
     Route::post('/rooms/{id}/sync', [LiveGameController::class, 'sync']);
     Route::post('/rooms/{id}/action', [LiveGameController::class, 'action']);
+    Route::post('/rooms/{id}/end-turn', [LiveGameController::class, 'endTurn']);
 
 
     /*
