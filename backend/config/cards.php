@@ -20,7 +20,13 @@ return [
             'id' => 1,
             'name' => 'Atacar',
             'description' => 'Inflige 1 punto de estrés a un rival.',
-            'count' => 999,
+            'count' => 15,
+        ],
+        [
+            'id' => 2,
+            'name' => 'Curar',
+            'description' => 'Reduce tu propio estrés en 1 punto.',
+            'count' => 15,
         ],
     ],
 ];

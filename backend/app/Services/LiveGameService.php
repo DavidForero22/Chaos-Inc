@@ -296,14 +296,6 @@ class LiveGameService
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
-        // Validar al objetivo
-        if ($playerName === $targetName) {
-            throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
-        }
-        if (!Redis::sismember("{$roomKey}:players", $targetName)) {
-            throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
-        }
-
         // Validar que el jugador tiene la carta en la mano
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $cards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
@@ -315,7 +307,7 @@ class LiveGameService
         // Buscar la carta concreta por su identificador de instancia
         $cardIndex = null;
         $playedCard = null;
-
+        $cardType = null;
         foreach ($cards as $index => $card) {
             if (!is_array($card)) {
                 continue;
@@ -324,6 +316,7 @@ class LiveGameService
             if (($card['id'] ?? null) === $cardId) {
                 $cardIndex = $index;
                 $playedCard = $card;
+                $cardType = $playedCard['type'] ?? null;
                 break;
             }
         }
@@ -332,14 +325,32 @@ class LiveGameService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
 
+        // Validar al objetivo en función del tipo de carta
+        if (!Redis::sismember("{$roomKey}:players", $targetName)) {
+            throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
+        }
+        if ($cardType === 1 && $playerName === $targetName) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
+        }
+
         // Consumir la carta jugada (el resto de la mano se mantiene)
         array_splice($cards, $cardIndex, 1);
 
         Redis::hset($playerKey, 'cards', json_encode($cards));
 
-        // EFECTO DEL ATAQUE: Sumar 1 de estrés al objetivo
         $targetKey = "room:{$roomId}:player:{$targetName}";
-        Redis::hincrby($targetKey, 'stress', 1);
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        
+        if ($cardType === 1) {
+            // Ataque: +1 estrés al objetivo
+            Redis::hincrby($targetKey, 'stress', 1);
+        } elseif ($cardType === 2) {
+            // Curar: -1 estrés a ti mismo, sin bajar de 0
+            $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
+            if ($currentStress > 0) {
+                Redis::hincrby($playerKey, 'stress', -1);
+            }
+        }
 
         // Finalizar turno y avisar a todos
         $this->advanceTurn($roomId);

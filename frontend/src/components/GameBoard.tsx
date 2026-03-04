@@ -24,10 +24,18 @@ export default function GameBoard() {
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
 
-	const handleCardClick = (cardId: string) => {
+	const handleCardClick = (card: CardInstance) => {
 		if (!isMyTurn) return;
 
-		setSelectedCardId((prev) => (prev === cardId ? null : cardId));
+		if (card.type === 2) {
+			// Carta de curación: solo si tengo estrés > 0
+			if (me.stress <= 0) return;
+			playTurn(card.id, myPlayerName);
+			return;
+		}
+
+		// Resto de cartas (ataque, etc.): flujo normal de selección
+		setSelectedCardId((prev) => (prev === card.id ? null : card.id));
 	};
 
 	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
@@ -157,21 +165,32 @@ export default function GameBoard() {
 					</p>
 					<div className="flex gap-3">
 						{me.cards.map((card) => {
-							  const isSelected = selectedCardId === card.id;
+							const isSelected = selectedCardId === card.id;
+							const isHeal = card.type === 2;
+							const isHealDisabled = isHeal && me.stress <= 0;
 
 							return (
 								<div
 									key={card.id}
-									onClick={() => handleCardClick(card.id)}
+									onClick={() => {
+										if (isHealDisabled) return;
+										handleCardClick(card);
+									}}
 									className={`
-                                        w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
-                                        ${isMyTurn ? "cursor-pointer hover:-translate-y-4" : "opacity-50 cursor-not-allowed"}
-                                        ${isSelected ? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400" : "bg-gray-700 border-gray-500"}
-                                    `}
+										w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
+										${isMyTurn && !isHealDisabled
+											? "cursor-pointer hover:-translate-y-4"
+											: "opacity-40 cursor-not-allowed"
+										}
+										${isSelected
+											? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400"
+											: "bg-gray-700 border-gray-500"
+										}
+									`}
 									title={card.description}
 								>
 									<span className="text-sm text-gray-200 font-semibold leading-snug">
-									{card.name}
+										{card.name}
 
 									</span>
 								</div>
