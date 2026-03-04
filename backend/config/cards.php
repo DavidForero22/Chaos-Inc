@@ -21,13 +21,13 @@ return [
             'id' => 1,
             'name' => 'Atacar',
             'description' => 'Inflige 1 punto de estrés a un rival.',
-            'count' => 15,
+            'count' => 12,
         ],
         [
             'id' => 2,
             'name' => 'Curar',
             'description' => 'Reduce tu propio estrés en 1 punto.',
-            'count' => 15,
+            'count' => 10,
         ],
         [
             'id' => 3,
@@ -39,7 +39,13 @@ return [
             'id' => 4,
             'name' => 'Robar',
             'description' => 'Roba una carta aleatoria de la mano de un rival.',
-            'count' => 5,
+            'count' => 6,
+        ],
+        [
+            'id' => 5,
+            'name' => 'Escudo',
+            'description' => 'Bloquea automáticamente el siguiente ataque que recibas.',
+            'count' => 4,
         ],
     ],
 ];

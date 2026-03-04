@@ -39,18 +39,23 @@ export default function GameBoard() {
 
 		if (!isMyTurn) return;
 
-		// Carta de curación
+		// CARTA DE CURACIÓN
 		if (card.type === 2) {
-			// solo si tengo estrés > 0
 			if (me.stress <= 0) return;
 			playTurn(card.id, myPlayerName);
 			return;
 		}
 
-		// Carta de ataque
+		// CARTA DE ATAQUE
 		if (card.type === 1) {
-			// bloquea segundo ataque
 			if (hasUsedAttackThisTurn) return;
+		}
+
+		// CARTA DE ESCUDO
+		if (card.type === 5) {
+			if (me.has_shield) return;
+			playTurn(card.id, myPlayerName);
+			return;
 		}
 
 		// Resto de cartas (ataque, etc.): flujo normal de selección
@@ -131,6 +136,14 @@ export default function GameBoard() {
 						<span className="text-xs text-gray-500 uppercase">Estrés</span>
 						<span className="text-sm font-bold text-red-500">{me.stress}</span>
 					</div>
+
+					{/* Indicador de escudo */}
+					{me.has_shield && (
+						<div className="flex justify-between items-center mt-2">
+							<span className="text-xs text-gray-500 uppercase">Escudo</span>
+							<span className="text-sm font-bold text-cyan-400">🛡️ Activo</span>
+						</div>
+					)}
 				</div>
 
 				{/* Tus Cartas */}

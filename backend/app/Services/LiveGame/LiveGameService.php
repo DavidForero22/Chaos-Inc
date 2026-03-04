@@ -61,6 +61,7 @@ class LiveGameService
                 'is_online'             => 1,
                 'skip_next_turn'        => 0,
                 'attack_used_this_turn' => 0,
+                'has_shield'            => 0,
             ]);
             Redis::expire("room:{$roomId}:player:{$playerName}", 86400);
         }
@@ -116,6 +117,7 @@ class LiveGameService
                 'role'        => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
                 'is_online'   => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
+                'has_shield'  => (bool) filter_var($pData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN), // ← nuevo
             ];
         }
 
@@ -130,6 +132,7 @@ class LiveGameService
                 'skip_next_turn'        => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'incoming_attack'       => $hasIncomingAttack,
+                'has_shield'            => (bool) filter_var($myData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ],
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,

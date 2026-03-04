@@ -67,6 +67,11 @@ export function OpponentsBoard({
 								👑
 							</div>
 						)}
+						{player.has_shield && (
+							<div className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50" title="Este jugador tiene un escudo activo">
+								🛡️
+							</div>
+						)}
 						<h3
 							className={`font-bold truncate ${!player.is_online ? "text-gray-500" : "text-white"}`}
 						>

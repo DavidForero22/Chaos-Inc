@@ -65,14 +65,20 @@ class GameActionService
 
         $targetKey = "room:{$roomId}:player:{$targetName}";
 
-        // -- Carta de ataque --
+        // -- CARTA DE ATAQUE --
         if ($cardType === 1) {
             $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
             $hasDodge = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+            $hasShield = Redis::hget($targetKey, 'has_shield') === '1';
+
 
             Redis::hset($playerKey, 'attack_used_this_turn', 1);
 
-            if ($hasDodge) {
+            // El escudo absorbe el ataque automáticamente
+            if ($hasShield) {
+                Redis::hset($targetKey, 'has_shield', 0);
+                // El ataque es esquivado
+            } elseif ($hasDodge) {
                 Redis::hmset("room:{$roomId}:pending_attack", [
                     'attacker' => $playerName,
                     'target'   => $targetName,
@@ -80,13 +86,14 @@ class GameActionService
             } else {
                 Redis::hincrby($targetKey, 'stress', 1);
             }
-            // -- Carta de curación --
+
+            // -- CARTA DE CURACIÓN --
         } elseif ($cardType === 2) {
             $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
             if ($currentStress > 0) {
                 Redis::hincrby($playerKey, 'stress', -1);
             }
-            // -- Carta de robo --
+            // -- CARTA DE ROBO --
         } elseif ($cardType === 4) {
             if ($playerName === $targetName) {
                 throw new GameException(GameException::INVALID_TARGET, "No puedes robarte a ti mismo.", 422);
@@ -112,6 +119,17 @@ class GameActionService
             if (!is_array($myCards)) $myCards = [];
             $myCards[] = $stolenCard;
             Redis::hset($playerKey, 'cards', json_encode($myCards));
+
+            // -- CARTA DE ESCUDO --
+        } elseif ($cardType === 5) {
+            if ($playerName !== $targetName) {
+                throw new GameException(GameException::INVALID_TARGET, "El escudo solo puede aplicarse a ti mismo.", 422);
+            }
+            $alreadyHasShield = Redis::hget($playerKey, 'has_shield') === '1';
+            if ($alreadyHasShield) {
+                throw new GameException(GameException::INVALID_ACTION, "Ya tienes un escudo activo.", 422);
+            }
+            Redis::hset($playerKey, 'has_shield', 1);
         }
 
         event(new RoomStateUpdated($roomId));

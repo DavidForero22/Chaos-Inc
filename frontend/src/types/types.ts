@@ -21,6 +21,7 @@ export interface Opponent {
 	role: "boss" | "hidden";
 	is_online: boolean;
 	cards_count: number;
+	has_shield: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ export interface MyData {
 	skip_next_turn: boolean;
 	attack_used_this_turn: boolean;
 	incoming_attack: boolean;
+	has_shield: boolean;
 }
 
 /**

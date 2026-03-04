@@ -39,11 +39,15 @@ export function PlayerHand({
 					const isSteal = card.type === 4;
 					const isStealDisabled = isSteal && !anyOpponentHasCards;
 
+					const isShield = card.type === 5;
+					const isShieldDisabled = isShield && me.has_shield;
+
 					const isDisabled =
 						isHealDisabled ||
 						isAttackDisabled ||
 						isDodgeDisabled ||
-						isStealDisabled;
+						isStealDisabled ||
+						isShieldDisabled;
 
 					return (
 						<div
