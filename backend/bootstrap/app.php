@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\GameException;
+use App\Exceptions\RoomException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,11 +20,17 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
 
-        // --- Capturar GameException globalmente ---
+        $exceptions->render(function (RoomException $e, Request $request) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'type' => $e->getErrorType()
+            ], $e->getCode());
+        });
+
         $exceptions->render(function (GameException $e, Request $request) {
             return response()->json([
                 'error' => $e->getMessage(),
-                'type'  => $e->getErrorType()
+                'type' => $e->getErrorType()
             ], $e->getCode());
         });
     })->create();

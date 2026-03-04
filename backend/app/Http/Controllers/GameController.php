@@ -24,30 +24,7 @@ class GameController extends Controller
     public function store(StoreGameRequest $request)
     {
         $validated = $request->validated();
-
-        // Preparar datos de la cabecera
-        $gameData = [
-            'winner_role' => $validated['winner_role'],
-            'total_rounds' => $validated['total_rounds'],
-            'total_eliminations' => $validated['total_eliminations'],
-        ];
-
-        // Formatear los jugadores para el método attach() (tabla game_user)
-        // Se convierte el array normal a un array asociativo usando el user_id como clave
-        $playersData = [];
-        foreach ($validated['players'] as $player) {
-            $playersData[$player['user_id']] = [
-                'has_won' => $player['has_won'],
-                'role' => $player['role'],
-                'damage_dealt' => $player['damage_dealt'],
-                'damage_received' => $player['damage_received'],
-                'cards_played' => $player['cards_played'],
-                'eliminations' => $player['eliminations'],
-            ];
-        }
-
-        // Enviar todo al Servicio para que lo guarde en una Transacción segura
-        $game = $this->gameService->createGame($gameData, $playersData);
+        $game = $this->gameService->createGame($validated);
 
         return new GameResource($game);
     }

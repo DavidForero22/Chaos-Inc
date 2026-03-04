@@ -39,10 +39,13 @@ api.interceptors.response.use(
 	},
 	(error) => {
 		useLoadingStore.getState().stopLoading();
-		console.error("Error en la API:", error.response?.status);
+		console.error("Error en la API:", error.response);
 		// Si el token expira o nos echan, limpiar token
 		if (error.response?.status === 401) {
-			sessionStorage.removeItem("game_token");
+			const url = error.config?.url ?? "";
+			if (url.includes("/sync") || url.includes("/leave")) {
+				sessionStorage.removeItem("game_token");
+			}
 		}
 		return Promise.reject(error);
 	},

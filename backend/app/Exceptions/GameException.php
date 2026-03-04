@@ -6,20 +6,13 @@ use Exception;
 
 class GameException extends Exception
 {
-    // Constantes de tipos de error para evitar typos
-    const ROOM_NOT_FOUND = 'ROOM_NOT_FOUND';
-    const NOT_IN_ROOM = 'NOT_IN_ROOM';
+    // Constantes exclusivas del estado del JUEGO y la PARTIDA
     const GAME_ALREADY_STARTED = 'GAME_ALREADY_STARTED';
     const GAME_NOT_STARTED = 'GAME_NOT_STARTED';
-    const PASSWORD_REQUIRED = 'PASSWORD_REQUIRED';
-    const INCORRECT_PASSWORD = 'INCORRECT_PASSWORD';
-    const ROOM_FULL = 'ROOM_FULL';
-    const NOT_LEADER = 'NOT_LEADER';
-    const NOT_ENOUGH_PLAYERS = 'NOT_ENOUGH_PLAYERS';
-    const PLAYER_NOT_FOUND = 'PLAYER_NOT_FOUND';
-    const CANNOT_KICK_SELF = 'CANNOT_KICK_SELF';
-    const ALREADY_IN_ROOM = 'ALREADY_IN_ROOM';
-
+    const NOT_YOUR_TURN = 'NOT_YOUR_TURN';
+    const INVALID_TARGET = 'INVALID_TARGET';
+    const CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND';
+    const INVALID_ACTION = 'INVALID_ACTION';
     protected string $errorType;
 
     public function __construct(string $errorType, string $message, int $code = 400)

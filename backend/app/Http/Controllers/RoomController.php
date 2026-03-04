@@ -23,10 +23,6 @@ class RoomController extends Controller
     {
         $room = $this->roomService->getRoom($id);
 
-        if (!$room) {
-            return response()->json(['error' => 'Room not found'], 404);
-        }
-
         return response()->json($room, 200);
     }
 

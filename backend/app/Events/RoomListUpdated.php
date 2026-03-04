@@ -23,7 +23,7 @@ class RoomListUpdated implements ShouldBroadcast
     {
         // Se emite a un canal específico de la sala, ej: "room.AB12CD"
         return [
-            new Channel('room.' . $this->roomId),
+            new Channel('lobby'),
         ];
     }
 

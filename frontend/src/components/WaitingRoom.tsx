@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoom } from "../hooks/useRoom.ts";
+import { useRoom } from "../hooks/room/useRoom.ts";
+import GuestNameModal from "./lobby/GuestNameModal.tsx";
 
 export default function WaitingRoom() {
 	const { id } = useParams();
@@ -19,12 +20,38 @@ export default function WaitingRoom() {
 	} = useRoom(id);
 
 	const [passwordInput, setPasswordInput] = useState("");
+	const [showGuestModal, setShowGuestModal] = useState(false);
+
+	useEffect(() => {
+		if (!isJoining && !myPlayerName && !showGuestModal) {
+			setShowGuestModal(true);
+		}
+	}, [isJoining, myPlayerName, showGuestModal]);
 
 	if (isJoining) {
 		return (
-			<div className="text-center text-white mt-20">
-				Conectando a la sala...
+			<div className="flex flex-col items-center justify-center mt-20 text-white">
+				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
+				<p className="animate-pulse font-medium">Conectando a la sala...</p>
+
+				{!myPlayerName && (
+					<p className="text-xs text-gray-500 mt-4 italic">
+						Esperando identificación del jugador...
+					</p>
+				)}
 			</div>
+		);
+	}
+
+	if (showGuestModal) {
+		return (
+			<GuestNameModal
+				onClose={() => navigate("/")}
+				onSuccess={() => {
+					setShowGuestModal(false);
+					attemptJoin();
+				}}
+			/>
 		);
 	}
 
@@ -140,7 +167,7 @@ export default function WaitingRoom() {
 					Abandonar Sala
 				</button>
 				<button
-					onClick={startGame} // <-- Vinculamos la función aquí
+					onClick={startGame}
 					disabled={room.players.length < 2 || room.owner_name !== myPlayerName}
 					className={`px-6 py-3 rounded font-bold ${room.players.length < 2 || room.owner_name !== myPlayerName ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"}`}
 				>

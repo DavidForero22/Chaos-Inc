@@ -39,13 +39,7 @@ class UserController extends Controller
     {
         $targetUser = $this->userService->getUserById($id);
 
-        $response = Gate::inspect('update', $targetUser);
-
-        if ($response->denied()) {
-            return response()->json([
-                'message' => $response->message()
-            ], 403);
-        }
+        Gate::authorize('update', $targetUser);
 
         // Validar que el usuario no cambia su propio rol
         if ($request->has('role') && $request->user()->id === $targetUser->id) {
@@ -66,13 +60,7 @@ class UserController extends Controller
     {
         $targetUser = $this->userService->getUserById($id);
 
-        $response = Gate::inspect('delete', $targetUser);
-
-        if ($response->denied()) {
-            return response()->json([
-                'message' => $response->message()
-            ], 403);
-        }
+        Gate::authorize('delete', $targetUser);
 
         $this->userService->deleteUser($id);
         return response()->noContent();

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterUserRequest;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
-use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
@@ -16,9 +17,9 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
-    public function register(StoreUserRequest $request)
+    public function register(RegisterUserRequest $request)
     {
-        list($user, $token) = $this->authService->register($request->validated());
+        [$user, $token] = $this->authService->register($request->validated());
 
         return response()->json([
             'user' => new UserResource($user),
@@ -26,19 +27,28 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
-        list($user, $token) = $this->authService->login($request->email, $request->password);
+        [$user, $token] = $this->authService->login($request->validated());
 
         return response()->json([
             'user' => new UserResource($user),
             'token' => $token
         ], 200);
+    }
+
+    public function guestLogin(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string|min:2|max:15'
+        ]);
+
+        [$user, $token] = $this->authService->guestLogin($request->username);
+
+        return response()->json([
+            'user' => new UserResource($user),
+            'token' => $token
+        ], 201);
     }
 
     public function logout(Request $request)
