@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
 import MainMenu from "./components/MainMenu.tsx";
 import WaitingRoom from "./components/WaitingRoom.tsx";
-import GameBoard from "./components/GameBoard.tsx";
+import GameBoard from "./components/game/GameBoard.tsx";
 import { Logs } from "./components/Logs.tsx";
 import { GlobalLoader } from "./components/GlobalLoader.tsx";
 

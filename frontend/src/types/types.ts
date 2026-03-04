@@ -20,6 +20,7 @@ export interface Opponent {
 	is_dead: boolean;
 	role: "boss" | "hidden";
 	is_online: boolean;
+	cards_count: number;
 }
 
 /**

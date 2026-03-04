@@ -209,6 +209,7 @@ class LiveGameService
                 'is_dead' => (bool) filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
                 'is_online' => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
             ];
         }
 
