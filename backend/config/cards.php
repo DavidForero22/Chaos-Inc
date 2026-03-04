@@ -28,6 +28,12 @@ return [
             'description' => 'Reduce tu propio estrés en 1 punto.',
             'count' => 15,
         ],
+        [
+            'id' => 3,
+            'name' => 'Esquivar',
+            'description' => 'Evita el efecto de un ataque contra ti.',
+            'count' => 10,
+        ],
     ],
 ];
 

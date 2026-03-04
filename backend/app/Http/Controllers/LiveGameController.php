@@ -79,4 +79,21 @@ class LiveGameController extends Controller
 
         return response()->json(['message' => 'Turn ended'], 200);
     }
+
+    public function react(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $reaction = $request->input('reaction'); // 'dodge' o 'accept'
+        $cardId = $request->input('card_id'); // opcional, solo para esquivar
+
+        $this->liveGameService->reactToAttack($id, $playerName, $reaction, $cardId);
+
+        return response()->json(['message' => 'Reaction processed'], 200);
+    }
 }

@@ -41,6 +41,7 @@ export interface MyData {
 	cards: CardInstance[];
 	skip_next_turn: boolean;
 	attack_used_this_turn: boolean;
+	incoming_attack: boolean;
 }
 
 /**

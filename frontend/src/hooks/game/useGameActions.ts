@@ -24,11 +24,28 @@ export function useGameActions(
 		}
 	};
 
+	const reactToAttack = async (reaction: "dodge" | "accept", cardId?: string) => {
+		if (!roomId) return;
+
+		try {
+			await api.post(`/rooms/${roomId}/react`, {
+				reaction,
+				card_id: cardId,
+			});
+			await syncGame();
+			return true;
+		} catch (error: any) {
+			console.error("Error reacting to attack:", error);
+			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
+			return false;
+		}
+	};
+
 	const endTurn = async () => {
 		if (!roomId) return;
 		await api.post(`/rooms/${roomId}/end-turn`, {});
 		await syncGame();
 	};
 
-	return { playTurn, endTurn };
+	return { playTurn, endTurn, reactToAttack };
 }

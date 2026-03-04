@@ -194,6 +194,10 @@ class LiveGameService
         // MIS DATOS
         $myData = Redis::hgetall($playerKey);
 
+        // Posible ataque pendiente
+        $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
+        $hasIncomingAttack = !empty($pendingAttack) && ($pendingAttack['target'] ?? null) === $playerName;
+
         // DATOS GLOBALES 
         $allPlayers = Redis::smembers("room:{$roomId}:players");
 
@@ -224,6 +228,7 @@ class LiveGameService
                 'is_online' => (bool) filter_var($myData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'skip_next_turn' => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'incoming_attack' => $hasIncomingAttack,
             ],
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,
@@ -299,6 +304,11 @@ class LiveGameService
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
+        // No permitir nuevos ataques si hay uno pendiente
+        if (Redis::exists("room:{$roomId}:pending_attack")) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
+        }
+
         // Validar que el jugador tiene la carta en la mano
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $cards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
@@ -357,8 +367,12 @@ class LiveGameService
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
         if ($cardType === 1) {
-            // Ataque: +1 estrés al objetivo
-            Redis::hincrby($targetKey, 'stress', 1);
+            // Ataque: marcamos ataque pendiente contra el objetivo.
+            // El daño se aplicará solo si el objetivo decide asumirlo.
+            Redis::hmset("room:{$roomId}:pending_attack", [
+                'attacker' => $playerName,
+                'target' => $targetName,
+            ]);
             Redis::hset($playerTurnKey, 'attack_used_this_turn', 1);
         } elseif ($cardType === 2) {
             // Curar: -1 estrés a ti mismo, sin bajar de 0
@@ -384,10 +398,74 @@ class LiveGameService
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
+        // No se puede terminar turno si hay un ataque pendiente
+        if (Redis::exists("room:{$roomId}:pending_attack")) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
+        }
+
         // Aquí puedes resetear banderas de turno (ver siguiente sección)
         Redis::hset("room:{$roomId}:player:{$playerName}", 'attack_used_this_turn', 0);
 
         $this->advanceTurn($roomId);
+        event(new RoomStateUpdated($roomId));
+    }
+
+    public function reactToAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
+    {
+        $pendingKey = "room:{$roomId}:pending_attack";
+        if (!Redis::exists($pendingKey)) {
+            throw new GameException(GameException::INVALID_ACTION, "No hay ningún ataque pendiente.", 422);
+        }
+
+        $pending = Redis::hgetall($pendingKey);
+        $attacker = $pending['attacker'] ?? null;
+        $target = $pending['target'] ?? null;
+
+        if ($target !== $playerName) {
+            throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de este ataque.", 403);
+        }
+
+        $targetKey = "room:{$roomId}:player:{$playerName}";
+
+        if ($reaction === 'dodge') {
+            if (!$cardId) {
+                throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
+            }
+
+            $cards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+            if (!is_array($cards)) {
+                $cards = [];
+            }
+
+            $cardIndex = null;
+            foreach ($cards as $index => $card) {
+                if (!is_array($card)) {
+                    continue;
+                }
+                if (($card['id'] ?? null) === $cardId && ($card['type'] ?? null) === 3) {
+                    $cardIndex = $index;
+                    break;
+                }
+            }
+
+            if ($cardIndex === null) {
+                throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes una carta de esquive válida.", 422);
+            }
+
+            // Consumir carta de esquive
+            array_splice($cards, $cardIndex, 1);
+            Redis::hset($targetKey, 'cards', json_encode($cards));
+
+            // Limpiar ataque pendiente (sin aplicar daño)
+            Redis::del($pendingKey);
+        } elseif ($reaction === 'accept') {
+            // Aplicar daño estándar del ataque
+            Redis::hincrby($targetKey, 'stress', 1);
+            Redis::del($pendingKey);
+        } else {
+            throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
+        }
+
         event(new RoomStateUpdated($roomId));
     }
 }

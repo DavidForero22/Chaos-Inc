@@ -53,7 +53,7 @@ export function useLiveGame(roomId: string | undefined) {
 	}, [roomId, navigate, myPlayerName]);
 
 	// 👈 Usamos el hook de acciones y le pasamos el syncGame
-	const { playTurn, endTurn } = useGameActions(roomId, syncGame);
+	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
 	useEffect(() => {
 		const attemptReconnection = async () => {
@@ -110,6 +110,7 @@ export function useLiveGame(roomId: string | undefined) {
 		loading,
 		myPlayerName,
 		playTurn,
-		endTurn
+		endTurn,
+		reactToAttack,
 	};
 }

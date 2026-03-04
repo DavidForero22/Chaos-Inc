@@ -7,7 +7,7 @@ import { OpponentsBoard } from "./OpponentsBoard.tsx";
 
 export default function GameBoard() {
 	const { id } = useParams();
-	const { gameData, loading, myPlayerName, playTurn, endTurn } =
+	const { gameData, loading, myPlayerName, playTurn, endTurn, reactToAttack } =
 		useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -29,6 +29,12 @@ export default function GameBoard() {
 	const hasUsedAttackThisTurn = me.attack_used_this_turn;
 
 	const handleCardClick = (card: CardInstance) => {
+		// Reacción: carta de esquive cuando tenemos un ataque entrante
+		if (me.incoming_attack && card.type === 3) {
+			reactToAttack("dodge", card.id);
+			return;
+		}
+
 		if (!isMyTurn) return;
 
 		// Carta de curación
@@ -123,23 +129,33 @@ export default function GameBoard() {
 					isMyTurn={isMyTurn}
 					selectedCardId={selectedCardId}
 					onCardClick={handleCardClick}
+					incomingAttack={me.incoming_attack}
 				/>
 
 				<div className="ml-auto flex flex-col items-end gap-2">
-					<button
-						onClick={handleEndTurn}
-						disabled={!isMyTurn || selectedCardId !== null}
-						className={`
-							px-4 py-2 rounded font-bold text-sm transition
-							${
-								isMyTurn && selectedCardId === null
-									? "bg-purple-600 hover:bg-purple-500 text-white"
-									: "bg-gray-700 text-gray-500 cursor-not-allowed"
-							}
-						`}
-					>
-						Terminar turno
-					</button>
+					{me.incoming_attack ? (
+						<button
+							onClick={() => reactToAttack("accept")}
+							className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
+						>
+							Asumir daño
+						</button>
+					) : (
+						<button
+							onClick={handleEndTurn}
+							disabled={!isMyTurn || selectedCardId !== null}
+							className={`
+								px-4 py-2 rounded font-bold text-sm transition
+								${
+													isMyTurn && selectedCardId === null
+														? "bg-purple-600 hover:bg-purple-500 text-white"
+														: "bg-gray-700 text-gray-500 cursor-not-allowed"
+												}
+								`}
+						>
+							Terminar turno
+						</button>
+					)}
 				</div>
 			</div>
 		</div>
