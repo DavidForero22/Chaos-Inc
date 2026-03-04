@@ -366,16 +366,26 @@ class LiveGameService
         $targetKey = "room:{$roomId}:player:{$targetName}";
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
+        // Carta de tipo ataque
         if ($cardType === 1) {
-            // Ataque: marcamos ataque pendiente contra el objetivo.
-            // El daño se aplicará solo si el objetivo decide asumirlo.
-            Redis::hmset("room:{$roomId}:pending_attack", [
-                'attacker' => $playerName,
-                'target' => $targetName,
-            ]);
+            $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+            $hasDodge = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+
             Redis::hset($playerTurnKey, 'attack_used_this_turn', 1);
+
+            if ($hasDodge) {
+                // La víctima puede esquivar — crear ataque pendiente
+                Redis::hmset("room:{$roomId}:pending_attack", [
+                    'attacker' => $playerName,
+                    'target'   => $targetName,
+                ]);
+            } else {
+                // Sin cartas de esquive — daño directo
+                Redis::hincrby("room:{$roomId}:player:{$targetName}", 'stress', 1);
+            }
+
+            // Carta de tipo curar
         } elseif ($cardType === 2) {
-            // Curar: -1 estrés a ti mismo, sin bajar de 0
             $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
             if ($currentStress > 0) {
                 Redis::hincrby($playerKey, 'stress', -1);
