@@ -183,26 +183,31 @@ export default function GameBoard() {
 							const isHeal = card.type === 2;
 							const isHealDisabled = isHeal && me.stress <= 0;
 
+							const isAttack = card.type === 1;
+							const isAttackDisabled = isAttack && me.attack_used_this_turn;
+						
+							const isDisabled = isHealDisabled || isAttackDisabled;
+
 							return (
 								<div
 									key={card.id}
 									onClick={() => {
-										if (isHealDisabled) return;
+										if (isDisabled) return;
 										handleCardClick(card);
 									}}
 									className={`
 										shrink-0 w-24 h-36 rounded-lg border flex items-center justify-center shadow-lg transition-all text-center px-2
 										${
-											isMyTurn && !isHealDisabled
-												? "cursor-pointer hover:-translate-y-4"
-												: "opacity-40 cursor-not-allowed"
+										  isMyTurn && !isDisabled
+											? "cursor-pointer hover:-translate-y-4"
+											: "opacity-40 cursor-not-allowed"
 										}
 										${
-											isSelected
-												? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400"
-												: "bg-gray-700 border-gray-500"
+										  isSelected
+											? "bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400"
+											: "bg-gray-700 border-gray-500"
 										}
-									`}
+									  `}
 									title={card.description}
 								>
 									<span className="text-sm text-gray-200 font-semibold leading-snug">

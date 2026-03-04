@@ -209,7 +209,6 @@ class LiveGameService
                 'is_dead' => (bool) filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'role'    => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
                 'is_online' => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }
 
@@ -222,7 +221,8 @@ class LiveGameService
                 'is_dead' => (bool) $myData['is_dead'],
                 'cards'   => json_decode($myData['cards']),
                 'is_online' => (bool) filter_var($myData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
-                'skip_next_turn' => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                'skip_next_turn' => (bool) filter_var($myData['skip_next_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'attack_used_this_turn' => (bool) filter_var($myData['attack_used_this_turn'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ],
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,
