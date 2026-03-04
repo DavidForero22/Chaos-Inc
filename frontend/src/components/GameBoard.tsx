@@ -37,18 +37,6 @@ export default function GameBoard() {
 		}
 	};
 
-	const getCardLabel = (card: CardInstance) => {
-		// Mapeo simple de tipos de carta a nombres visibles.
-		// De momento, 1 = "Atacar". Más adelante se puede sincronizar
-		// esta lista con el backend o expandirla con más tipos.
-		switch (card.type) {
-			case 1:
-				return "Atacar";
-			default:
-				return `Carta ${card.type}`;
-		}
-	};
-
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
 			{/* CABECERA */}
