@@ -9,6 +9,7 @@ return [
     | Aquí se definen las cartas disponibles en el mazo:
     |  - id: identificador numérico interno
     |  - name: nombre legible para mostrar en UI/logs
+    |  - description: descripcion de lo que hace la carta   
     |  - count: cuántas copias habrá en el mazo inicial
     |
     | De momento solo usamos una carta de prueba "Atacar"
@@ -34,6 +35,11 @@ return [
             'description' => 'Evita el efecto de un ataque contra ti.',
             'count' => 10,
         ],
+        [
+            'id' => 4,
+            'name' => 'Robar',
+            'description' => 'Roba una carta aleatoria de la mano de un rival.',
+            'count' => 5,
+        ],
     ],
 ];
-

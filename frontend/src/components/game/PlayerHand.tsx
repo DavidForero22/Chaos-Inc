@@ -1,4 +1,4 @@
-import type { CardInstance, MyData } from "../../types/types.ts";
+import type { CardInstance, MyData, Opponent } from "../../types/types.ts";
 
 interface PlayerHandProps {
 	me: MyData;
@@ -6,6 +6,7 @@ interface PlayerHandProps {
 	selectedCardId: string | null;
 	onCardClick: (card: CardInstance) => void;
 	incomingAttack: boolean;
+	opponents: Opponent[];
 }
 
 export function PlayerHand({
@@ -14,6 +15,7 @@ export function PlayerHand({
 	selectedCardId,
 	onCardClick,
 	incomingAttack,
+	opponents,
 }: PlayerHandProps) {
 	return (
 		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
@@ -31,7 +33,17 @@ export function PlayerHand({
 					const canUseDodgeNow = incomingAttack && isDodge;
 					const isDodgeDisabled = isDodge && !incomingAttack;
 
-					const isDisabled = isHealDisabled || isAttackDisabled || isDodgeDisabled;
+					const anyOpponentHasCards = opponents.some(
+						(o) => o.cards_count > 0 && o.is_online,
+					);
+					const isSteal = card.type === 4;
+					const isStealDisabled = isSteal && !anyOpponentHasCards;
+
+					const isDisabled =
+						isHealDisabled ||
+						isAttackDisabled ||
+						isDodgeDisabled ||
+						isStealDisabled;
 
 					return (
 						<div

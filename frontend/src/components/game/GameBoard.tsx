@@ -27,9 +27,11 @@ export default function GameBoard() {
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
 	const hasUsedAttackThisTurn = me.attack_used_this_turn;
+	const selectedCardType =
+		me.cards.find((c) => c.id === selectedCardId)?.type ?? null;
 
 	const handleCardClick = (card: CardInstance) => {
-		// Reacción: carta de esquive cuando tenemos un ataque entrante
+		// Reacción: carta de esquive cuando tiene un ataque entrante
 		if (me.incoming_attack && card.type === 3) {
 			reactToAttack("dodge", card.id);
 			return;
@@ -56,10 +58,17 @@ export default function GameBoard() {
 	};
 
 	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
-		if (isMyTurn && selectedCardId !== null && isOnline) {
-			playTurn(selectedCardId, targetName);
-			setSelectedCardId(null);
+		if (!isMyTurn || selectedCardId === null || !isOnline) return;
+
+		const selectedCard = me.cards.find((c) => c.id === selectedCardId);
+		// Intentar robar
+		if (selectedCard?.type === 4) {
+			const target = game.opponents.find((o) => o.name === targetName);
+			if (!target || target.cards_count === 0) return;
 		}
+
+		playTurn(selectedCardId, targetName);
+		setSelectedCardId(null);
 	};
 
 	const handleEndTurn = async () => {
@@ -94,6 +103,7 @@ export default function GameBoard() {
 				opponents={game.opponents}
 				isMyTurn={isMyTurn}
 				selectedCardId={selectedCardId}
+				selectedCardType={selectedCardType}
 				onOpponentClick={handleOpponentClick}
 			/>
 
@@ -130,6 +140,7 @@ export default function GameBoard() {
 					selectedCardId={selectedCardId}
 					onCardClick={handleCardClick}
 					incomingAttack={me.incoming_attack}
+					opponents={game.opponents}
 				/>
 
 				<div className="ml-auto flex flex-col items-end gap-2">
@@ -147,10 +158,10 @@ export default function GameBoard() {
 							className={`
 								px-4 py-2 rounded font-bold text-sm transition
 								${
-													isMyTurn && selectedCardId === null
-														? "bg-purple-600 hover:bg-purple-500 text-white"
-														: "bg-gray-700 text-gray-500 cursor-not-allowed"
-												}
+									isMyTurn && selectedCardId === null
+										? "bg-purple-600 hover:bg-purple-500 text-white"
+										: "bg-gray-700 text-gray-500 cursor-not-allowed"
+								}
 								`}
 						>
 							Terminar turno

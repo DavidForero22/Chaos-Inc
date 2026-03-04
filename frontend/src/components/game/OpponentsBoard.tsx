@@ -4,6 +4,7 @@ interface OpponentsBoardProps {
 	opponents: Opponent[];
 	isMyTurn: boolean;
 	selectedCardId: string | null;
+	selectedCardType: number | null;
 	onOpponentClick: (name: string, isOnline: boolean) => void;
 }
 
@@ -11,6 +12,7 @@ export function OpponentsBoard({
 	opponents,
 	isMyTurn,
 	selectedCardId,
+	selectedCardType,
 	onOpponentClick,
 }: OpponentsBoardProps) {
 	return (
@@ -27,8 +29,15 @@ export function OpponentsBoard({
 			)}
 
 			{opponents.map((player) => {
+				const isStealSelected = selectedCardType === 4;
+				const isUnstealable = isStealSelected && player.cards_count === 0;
+
 				const canBeTargeted =
-					isMyTurn && selectedCardId !== null && player.is_online;
+					isMyTurn &&
+					selectedCardId !== null &&
+					player.is_online &&
+					!isUnstealable;
+
 				const offlineStyles = !player.is_online
 					? "opacity-40 grayscale scale-95 border-gray-900"
 					: "";

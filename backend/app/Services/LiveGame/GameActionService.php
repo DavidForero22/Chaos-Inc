@@ -63,8 +63,10 @@ class GameActionService
         array_splice($cards, $cardIndex, 1);
         Redis::hset($playerKey, 'cards', json_encode($cards));
 
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+
+        // -- Carta de ataque --
         if ($cardType === 1) {
-            $targetKey = "room:{$roomId}:player:{$targetName}";
             $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
             $hasDodge = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
 
@@ -78,11 +80,38 @@ class GameActionService
             } else {
                 Redis::hincrby($targetKey, 'stress', 1);
             }
+            // -- Carta de curación --
         } elseif ($cardType === 2) {
             $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
             if ($currentStress > 0) {
                 Redis::hincrby($playerKey, 'stress', -1);
             }
+            // -- Carta de robo --
+        } elseif ($cardType === 4) {
+            if ($playerName === $targetName) {
+                throw new GameException(GameException::INVALID_TARGET, "No puedes robarte a ti mismo.", 422);
+            }
+
+            $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+            if (!is_array($targetCards)) $targetCards = [];
+
+            if (empty($targetCards)) {
+                throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas.", 422);
+            }
+
+            // Robar carta aleatoria
+            $randomIndex = array_rand($targetCards);
+            $stolenCard = $targetCards[$randomIndex];
+            array_splice($targetCards, $randomIndex, 1);
+
+            // Actualizar mano del objetivo
+            Redis::hset($targetKey, 'cards', json_encode($targetCards));
+
+            // Añadir carta robada al ladrón
+            $myCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+            if (!is_array($myCards)) $myCards = [];
+            $myCards[] = $stolenCard;
+            Redis::hset($playerKey, 'cards', json_encode($myCards));
         }
 
         event(new RoomStateUpdated($roomId));
