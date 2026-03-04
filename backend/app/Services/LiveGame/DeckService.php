@@ -38,11 +38,13 @@ class DeckService
         $deckKey = "room:{$roomId}:deck";
         $deck = json_decode(Redis::get($deckKey) ?: '[]', true);
 
-        if (empty($deck)) return;
-
         $drawn = [];
         for ($i = 0; $i < $amount; $i++) {
-            if (empty($deck)) break;
+            // Si el mazo se agota, reponerlo al momento
+            if (empty($deck)) {
+                $deck = $this->buildDeck();
+                if (empty($deck)) break; // cards.php vacío, salida de seguridad
+            }
             $drawn[] = array_shift($deck);
         }
 
@@ -52,7 +54,6 @@ class DeckService
 
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $currentCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
-
         if (!is_array($currentCards)) $currentCards = [];
 
         Redis::hset($playerKey, 'cards', json_encode(array_merge($currentCards, $drawn)));
