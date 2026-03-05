@@ -6,6 +6,7 @@ use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Services\LiveGame\LiveGameService;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
