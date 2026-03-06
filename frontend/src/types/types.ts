@@ -52,8 +52,10 @@ export interface MyData {
  */
 export interface GameData {
 	me: MyData;
-	game: {
-		current_turn: string;
-		opponents: Opponent[];
-	};
+    game: {
+        current_turn: string;
+        opponents: Opponent[];
+        game_over: boolean;       // ← nuevo
+        winner_role: "boss" | "union" | "intern" | null; // ← nuevo
+    };
 }

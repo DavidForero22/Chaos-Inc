@@ -37,6 +37,8 @@ class LiveGameService
         }
 
         Redis::hset($roomKey, 'status', 'in_game');
+        Redis::hset($roomKey, 'game_over', 0);
+        Redis::hset($roomKey, 'winner_role', '');
 
         shuffle($players);
         $count = count($players);
@@ -154,6 +156,8 @@ class LiveGameService
             'game' => [
                 'current_turn' => $room['current_turn_player_id'] ?? null,
                 'opponents'    => $opponents,
+                'game_over'    => (bool) filter_var($room['game_over'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'winner_role'  => $room['winner_role'] ?? null,
             ]
         ];
     }

@@ -84,7 +84,7 @@ class GameActionService
                     'target'   => $targetName,
                 ]);
             } else {
-                Redis::hincrby($targetKey, 'stress', 1);
+                $this->applyDamageAndCheck($roomId, $targetName);
             }
 
             // -- CARTA DE CURACIÓN --
@@ -175,12 +175,69 @@ class GameActionService
             Redis::hset($targetKey, 'cards', json_encode($cards));
             Redis::del($pendingKey);
         } elseif ($reaction === 'accept') {
-            Redis::hincrby($targetKey, 'stress', 1);
+            $this->applyDamageAndCheck($roomId, $playerName);
             Redis::del($pendingKey);
         } else {
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
 
         event(new RoomStateUpdated($roomId));
+    }
+
+    private function applyDamageAndCheck(string $roomId, string $targetName): void
+    {
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+        $role = Redis::hget($targetKey, 'role');
+        $maxStress = ($role === 'boss') ? 5 : 4;
+
+        Redis::hincrby($targetKey, 'stress', 1);
+        $newStress = (int) Redis::hget($targetKey, 'stress');
+
+        if ($newStress >= $maxStress) {
+            Redis::hset($targetKey, 'is_dead', 1);
+            $this->checkVictory($roomId);
+        }
+    }
+
+    private function checkVictory(string $roomId): void
+    {
+        $roomKey = "room:{$roomId}";
+        $players = Redis::smembers("room:{$roomId}:players");
+
+        $bossAlive   = false;
+        $allUnionDead = true;
+        $internAlive  = false;
+        $aliveNonBoss = 0;
+
+        foreach ($players as $name) {
+            $data   = Redis::hgetall("room:{$roomId}:player:{$name}");
+            $isDead = filter_var($data['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $role   = $data['role'] ?? '';
+
+            if ($role === 'boss')       $bossAlive   = !$isDead;
+            if ($role === 'union'  && !$isDead) $allUnionDead = false;
+            if ($role === 'intern' && !$isDead) $internAlive  = true;
+            if ($role !== 'boss'   && !$isDead) $aliveNonBoss++;
+        }
+
+        $winnerRole = null;
+
+        // Sindicalistas ganan si el jefe muere
+        if (!$bossAlive) {
+            $winnerRole = 'union';
+        }
+        // Jefe (y secretario) ganan si todos los sindicatos y el becario han muerto
+        elseif ($allUnionDead && !$internAlive) {
+            $winnerRole = 'boss';
+        }
+        // Becario gana si es el único vivo
+        elseif ($aliveNonBoss === 1 && $internAlive) {
+            $winnerRole = 'intern';
+        }
+
+        if ($winnerRole !== null) {
+            Redis::hset($roomKey, 'game_over', 1);
+            Redis::hset($roomKey, 'winner_role', $winnerRole);
+        }
     }
 }

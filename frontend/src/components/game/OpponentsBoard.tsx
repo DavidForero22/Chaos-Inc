@@ -47,13 +47,17 @@ export function OpponentsBoard({
 				const roleStyles =
 					player.role === "boss" ? "border-yellow-600" : "border-gray-700";
 
+				const deadStyles = player.is_dead
+					? "opacity-50 grayscale border-red-900"
+					: "";
+
 				return (
 					<div
 						key={player.name}
 						onClick={() => onOpponentClick(player.name, player.is_online)}
 						className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
-                                ${roleStyles} ${targetStyles} ${offlineStyles}
-                            `}
+    						${roleStyles} ${targetStyles} ${offlineStyles} ${deadStyles}
+						`}
 					>
 						{/* 👈 INDICADOR OFFLINE */}
 						{!player.is_online && (
@@ -68,10 +72,23 @@ export function OpponentsBoard({
 							</div>
 						)}
 						{player.has_shield && (
-							<div className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50" title="Este jugador tiene un escudo activo">
+							<div
+								className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
+								title="Este jugador tiene un escudo activo"
+							>
 								🛡️
 							</div>
 						)}
+
+						{player.is_dead && (
+							<div
+								className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800"
+								title="Este jugador ha muerto"
+							>
+								💀
+							</div>
+						)}
+
 						<h3
 							className={`font-bold truncate ${!player.is_online ? "text-gray-500" : "text-white"}`}
 						>

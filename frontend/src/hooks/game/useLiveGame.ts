@@ -14,6 +14,7 @@ export function useLiveGame(roomId: string | undefined) {
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
+	const [gameOver, setGameOver] = useState(false);
 
 	const isKickedRef = useRef(false);
 
@@ -33,6 +34,10 @@ export function useLiveGame(roomId: string | undefined) {
 			});
 			setGameData(res.data);
 			setLoading(false);
+
+			if (res.data.game?.game_over) {
+				setGameOver(true);
+			}
 		} catch (error: any) {
 			const errorType = error.response?.data?.type;
 
@@ -113,6 +118,7 @@ export function useLiveGame(roomId: string | undefined) {
 		endTurn,
 		reactToAttack,
 		isFirstLoad,
-		setIsFirstLoad
+		setIsFirstLoad,
+		gameOver,
 	};
 }

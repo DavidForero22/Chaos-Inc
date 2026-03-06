@@ -13,6 +13,8 @@ class GameException extends Exception
     const INVALID_TARGET = 'INVALID_TARGET';
     const CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND';
     const INVALID_ACTION = 'INVALID_ACTION';
+    const GAME_OVER = 'GAME_OVER';
+
     protected string $errorType;
 
     public function __construct(string $errorType, string $message, int $code = 400)

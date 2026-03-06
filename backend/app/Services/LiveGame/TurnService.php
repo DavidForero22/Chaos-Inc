@@ -33,6 +33,7 @@ class TurnService
             $playerKey = "{$roomKey}:player:{$nextPlayer}";
 
             $isOnline = Redis::hget($playerKey, 'is_online') !== '0';
+            $isDead   = Redis::hget($playerKey, 'is_dead') === '1';
             $skipNext = Redis::hget($playerKey, 'skip_next_turn') === '1';
 
             if ($skipNext) {
@@ -40,7 +41,7 @@ class TurnService
                 continue;
             }
 
-            if ($isOnline) {
+            if ($isOnline && !$isDead) {
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, 2);
                 break;

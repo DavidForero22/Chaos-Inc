@@ -5,6 +5,7 @@ import type { CardInstance } from "../../types/types.ts";
 import { PlayerHand } from "./PlayerHand.tsx";
 import { OpponentsBoard } from "./OpponentsBoard.tsx";
 import { RoleRevealModal } from "./RoleRevealModal.tsx";
+import { GameOverModal } from "./GameOverModal.tsx";
 
 export default function GameBoard() {
 	const { id } = useParams();
@@ -17,6 +18,7 @@ export default function GameBoard() {
 		reactToAttack,
 		isFirstLoad,
 		setIsFirstLoad,
+		gameOver,
 	} = useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -103,6 +105,14 @@ export default function GameBoard() {
 				/>
 			)}
 
+			{gameOver && gameData && (
+				<GameOverModal
+					winnerRole={gameData.game.winner_role!}
+					myRole={gameData.me.role}
+					onClose={() => navigate("/")}
+				/>
+			)}
+
 			{/* CABECERA */}
 			<div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 mb-4 flex justify-between items-center shrink-0">
 				<h1 className="text-xl font-bold text-white flex items-center gap-2">
@@ -141,8 +151,10 @@ export default function GameBoard() {
 				)}
 				{/* Tu Info */}
 				<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
-					<h3 className="text-blue-400 font-bold truncate mb-3">
-						{me.name} (Tú)
+					<h3
+						className={`font-bold truncate mb-3 ${me.is_dead ? "text-red-500 line-through" : "text-blue-400"}`}
+					>
+						{me.name} (Tú) {me.is_dead && "💀"}
 					</h3>
 					<div className="flex justify-between items-center mb-2">
 						<span className="text-xs text-gray-500 uppercase">Tu Rol</span>
