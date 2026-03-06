@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useLiveGame } from "../../hooks/game/useLiveGame.ts";
 import { useState } from "react";
 import type { CardInstance } from "../../types/types.ts";
@@ -9,6 +9,7 @@ import { GameOverModal } from "./GameOverModal.tsx";
 
 export default function GameBoard() {
 	const { id } = useParams();
+	const navigate = useNavigate();
 	const {
 		gameData,
 		loading,
