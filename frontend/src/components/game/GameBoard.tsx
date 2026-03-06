@@ -4,11 +4,20 @@ import { useState } from "react";
 import type { CardInstance } from "../../types/types.ts";
 import { PlayerHand } from "./PlayerHand.tsx";
 import { OpponentsBoard } from "./OpponentsBoard.tsx";
+import { RoleRevealModal } from "./RoleRevealModal.tsx";
 
 export default function GameBoard() {
 	const { id } = useParams();
-	const { gameData, loading, myPlayerName, playTurn, endTurn, reactToAttack } =
-		useLiveGame(id);
+	const {
+		gameData,
+		loading,
+		myPlayerName,
+		playTurn,
+		endTurn,
+		reactToAttack,
+		isFirstLoad,
+		setIsFirstLoad,
+	} = useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
 	if (loading) {
@@ -86,6 +95,14 @@ export default function GameBoard() {
 
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
+			{/* POPUP DE ROL — bloquea toda interacción hasta cerrarlo */}
+			{isFirstLoad && gameData && (
+				<RoleRevealModal
+					role={gameData.me.role}
+					onClose={() => setIsFirstLoad(false)}
+				/>
+			)}
+
 			{/* CABECERA */}
 			<div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 mb-4 flex justify-between items-center shrink-0">
 				<h1 className="text-xl font-bold text-white flex items-center gap-2">
@@ -130,9 +147,23 @@ export default function GameBoard() {
 					<div className="flex justify-between items-center mb-2">
 						<span className="text-xs text-gray-500 uppercase">Tu Rol</span>
 						<span
-							className={`text-sm font-bold ${me.role === "boss" ? "text-yellow-400" : "text-green-400"}`}
+							className={`text-sm font-bold ${
+								me.role === "boss"
+									? "text-yellow-400"
+									: me.role === "secretary"
+										? "text-blue-400"
+										: me.role === "intern"
+											? "text-green-400"
+											: "text-red-400"
+							}`}
 						>
-							{me.role === "boss" ? "👑 JEFE" : "💼 EMPLEADO"}
+							{me.role === "boss"
+								? "👑 JEFE"
+								: me.role === "secretary"
+									? "📋 SECRETARIA"
+									: me.role === "intern"
+										? "🎓 BECARIO"
+										: "✊ SINDICALISTA"}
 						</span>
 					</div>
 					<div className="flex justify-between items-center">

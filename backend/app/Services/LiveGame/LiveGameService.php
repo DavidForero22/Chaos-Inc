@@ -39,9 +39,23 @@ class LiveGameService
         Redis::hset($roomKey, 'status', 'in_game');
 
         shuffle($players);
-        $roles = ['boss'];
-        for ($i = 1; $i < count($players); $i++) {
-            $roles[] = 'employee';
+        $count = count($players);
+
+        // Tabla de balanceo de roles según número de jugadores
+        $roleTable = [
+            3 => ['boss' => 1, 'secretary' => 0, 'intern' => 1, 'union' => 1],
+            4 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 1],
+            5 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 2],
+            6 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 3],
+        ];
+
+        $distribution = $roleTable[$count] ?? $roleTable[6];
+
+        $roles = [];
+        foreach ($distribution as $role => $amount) {
+            for ($i = 0; $i < $amount; $i++) {
+                $roles[] = $role;
+            }
         }
 
         $deck = $this->deckService->buildDeck();

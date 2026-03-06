@@ -5,7 +5,7 @@ import api from "../../api/axios.ts";
 import type { GameData } from "../../types/types.ts";
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
-import { useGameActions } from "./useGameActions.ts"; // 👈 Importamos el nuevo hook
+import { useGameActions } from "./useGameActions.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
@@ -13,6 +13,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [isFirstLoad, setIsFirstLoad] = useState(true);
 
 	const isKickedRef = useRef(false);
 
@@ -52,7 +53,6 @@ export function useLiveGame(roomId: string | undefined) {
 		}
 	}, [roomId, navigate, myPlayerName]);
 
-	// 👈 Usamos el hook de acciones y le pasamos el syncGame
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
 	useEffect(() => {
@@ -112,5 +112,7 @@ export function useLiveGame(roomId: string | undefined) {
 		playTurn,
 		endTurn,
 		reactToAttack,
+		isFirstLoad,
+		setIsFirstLoad
 	};
 }
