@@ -1,5 +1,7 @@
 import api from "../../api/axios.ts";
 
+import { logWithTime } from "../../utils/logger.ts";
+
 export function useGameActions(
 	roomId: string | undefined,
 	syncGame: () => Promise<void>,
@@ -18,13 +20,16 @@ export function useGameActions(
 			await syncGame();
 			return true;
 		} catch (error: any) {
-			console.error("Error playing turn:", error);
+			logWithTime("Error playing turn. ", error);
 			alert(error.response?.data?.message || "Error al jugar la carta.");
 			return false;
 		}
 	};
 
-	const reactToAttack = async (reaction: "dodge" | "accept", cardId?: string) => {
+	const reactToAttack = async (
+		reaction: "dodge" | "accept",
+		cardId?: string,
+	) => {
 		if (!roomId) return;
 
 		try {
@@ -35,7 +40,7 @@ export function useGameActions(
 			await syncGame();
 			return true;
 		} catch (error: any) {
-			console.error("Error reacting to attack:", error);
+			logWithTime("Error reacting to attack. ", error);
 			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
 			return false;
 		}

@@ -7,6 +7,8 @@ import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
 
+import { logWithTime } from "../../utils/logger.ts";
+
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
 	const { myPlayerName } = usePlayerIdentity();
@@ -47,7 +49,7 @@ export function useLiveGame(roomId: string | undefined) {
 				return;
 			}
 
-			console.error("Error synchronizing game:", error);
+			console.error("ERROR en /sync:", error);
 			if (error.response?.status === 401) {
 				alert("Game session expired.");
 				isKickedRef.current = true;
@@ -75,7 +77,7 @@ export function useLiveGame(roomId: string | undefined) {
 					syncGame();
 				}
 			} catch (error) {
-				console.error("No se pudo reconectar:", error);
+				logWithTime("No se pudo reconectar. ", error);
 				alert("No puedes acceder a esta partida en curso.");
 				navigate("/");
 			}
