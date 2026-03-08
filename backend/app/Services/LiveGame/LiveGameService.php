@@ -39,6 +39,7 @@ class LiveGameService
         Redis::hset($roomKey, 'status', 'in_game');
         Redis::hset($roomKey, 'game_over', 0);
         Redis::hset($roomKey, 'winner_role', '');
+        Redis::hset($roomKey, 'round_number', 0);
 
         shuffle($players);
         $count = count($players);
@@ -78,6 +79,10 @@ class LiveGameService
                 'skip_next_turn'        => 0,
                 'attack_used_this_turn' => 0,
                 'has_shield'            => 0,
+                'damage_dealt'          => 0,
+                'damage_received'       => 0,
+                'cards_played'          => 0,
+                'eliminations'          => 0,
             ]);
             Redis::expire("room:{$roomId}:player:{$playerName}", 86400);
         }

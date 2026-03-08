@@ -37,6 +37,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 			if (res.data.game?.game_over) {
 				setGameOver(true);
+				sessionStorage.removeItem("game_token");
 			}
 		} catch (error: any) {
 			const errorType = error.response?.data?.type;

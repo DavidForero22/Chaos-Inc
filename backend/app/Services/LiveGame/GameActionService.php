@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Redis;
 
 class GameActionService
 {
+    public function __construct(protected GameFinalizationService $finalizationService) {}
+
     public function playAction(string $roomId, string $playerName, string $cardId, string $targetName): void
     {
         $roomKey = "room:{$roomId}";
@@ -59,9 +61,9 @@ class GameActionService
             }
         }
 
-        // Consumir carta
         array_splice($cards, $cardIndex, 1);
         Redis::hset($playerKey, 'cards', json_encode($cards));
+        Redis::hincrby($playerKey, 'cards_played', 1);
 
         $targetKey = "room:{$roomId}:player:{$targetName}";
 
@@ -84,7 +86,7 @@ class GameActionService
                     'target'   => $targetName,
                 ]);
             } else {
-                $this->applyDamageAndCheck($roomId, $targetName);
+                $this->applyDamageAndCheck($roomId, $playerName, $targetName);
             }
 
             // -- CARTA DE CURACIÓN --
@@ -175,7 +177,8 @@ class GameActionService
             Redis::hset($targetKey, 'cards', json_encode($cards));
             Redis::del($pendingKey);
         } elseif ($reaction === 'accept') {
-            $this->applyDamageAndCheck($roomId, $playerName);
+            $attacker = $pending['attacker'];
+            $this->applyDamageAndCheck($roomId, $attacker, $playerName);
             Redis::del($pendingKey);
         } else {
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
@@ -184,17 +187,22 @@ class GameActionService
         event(new RoomStateUpdated($roomId));
     }
 
-    private function applyDamageAndCheck(string $roomId, string $targetName): void
+    private function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
     {
-        $targetKey = "room:{$roomId}:player:{$targetName}";
-        $role = Redis::hget($targetKey, 'role');
-        $maxStress = ($role === 'boss') ? 5 : 4;
+        $targetKey   = "room:{$roomId}:player:{$targetName}";
+        $attackerKey = "room:{$roomId}:player:{$attackerName}";
+        $role        = Redis::hget($targetKey, 'role');
+        $maxStress   = ($role === 'boss') ? 5 : 4;
 
         Redis::hincrby($targetKey, 'stress', 1);
+        Redis::hincrby($targetKey, 'damage_received', 1);
+        Redis::hincrby($attackerKey, 'damage_dealt', 1);
+
         $newStress = (int) Redis::hget($targetKey, 'stress');
 
         if ($newStress >= $maxStress) {
             Redis::hset($targetKey, 'is_dead', 1);
+            Redis::hincrby($attackerKey, 'eliminations', 1);
             $this->checkVictory($roomId);
         }
     }
@@ -238,6 +246,12 @@ class GameActionService
         if ($winnerRole !== null) {
             Redis::hset($roomKey, 'game_over', 1);
             Redis::hset($roomKey, 'winner_role', $winnerRole);
+
+            // Emitir estado final antes de limpiar Redis
+            event(new RoomStateUpdated($roomId));
+
+            // Guardar en DB y limpiar Redis
+            $this->finalizationService->finalize($roomId);
         }
     }
 }

@@ -55,7 +55,7 @@ export interface GameData {
     game: {
         current_turn: string;
         opponents: Opponent[];
-        game_over: boolean;       // ← nuevo
-        winner_role: "boss" | "union" | "intern" | null; // ← nuevo
+        game_over: boolean;
+        winner_role: "boss" | "union" | "intern" | null;
     };
 }

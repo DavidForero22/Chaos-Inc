@@ -76,6 +76,7 @@ class TurnService
         }
 
         Redis::hset("room:{$roomId}:player:{$playerName}", 'attack_used_this_turn', 0);
+        Redis::hincrby("room:{$roomId}", 'round_number', 1);
 
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));

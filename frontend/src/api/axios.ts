@@ -39,7 +39,7 @@ api.interceptors.response.use(
 	},
 	(error) => {
 		useLoadingStore.getState().stopLoading();
-		console.error("Error en la API:", error.response);
+		console.error("Error en la API:", error);
 		// Si el token expira o nos echan, limpiar token
 		if (error.response?.status === 401) {
 			const url = error.config?.url ?? "";
