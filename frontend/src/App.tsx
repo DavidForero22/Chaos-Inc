@@ -5,6 +5,7 @@ import WaitingRoom from "./components/WaitingRoom.tsx";
 import GameBoard from "./components/game/GameBoard.tsx";
 import { Logs } from "./components/Logs.tsx";
 import { GlobalLoader } from "./components/GlobalLoader.tsx";
+import ProfilePage from "./components/profile/ProfilePage.tsx";
 
 function App() {
 	return (
@@ -19,6 +20,7 @@ function App() {
 						<Route path="/room/:id" element={<WaitingRoom />} />
 						<Route path="/game/:id" element={<GameBoard />} />{" "}
 						<Route path="/logs" element={<Logs />} />
+						<Route path="/profile" element={<ProfilePage />} />
 					</Routes>
 				</div>
 			</div>

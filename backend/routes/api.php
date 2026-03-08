@@ -45,6 +45,8 @@ Route::prefix('v1')->group(function () {
         Route::get('/me', function (Request $request) {
             return $request->user();
         });
+        Route::get('/me/games', [GameController::class, 'myGames']);
+
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
 

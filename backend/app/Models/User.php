@@ -29,7 +29,7 @@ class User extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     // Relación: Un usuario participa en muchas partidas (Muchos a Muchos)
-    public function matches()
+    public function games()
     {
         return $this->belongsToMany(Game::class)
             ->withPivot('has_won', 'role', 'damage_dealt', 'damage_received', 'cards_played', 'eliminations')

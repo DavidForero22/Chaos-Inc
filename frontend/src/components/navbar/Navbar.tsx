@@ -33,33 +33,10 @@ export default function Navbar() {
 
 				<div className="flex gap-4 items-center">
 					{user ? (
-						<>
-							<span className="text-sm text-gray-400">
-								Jugador: <strong className="text-blue-400">{user}</strong>
-							</span>
-							<button
-								onClick={logout}
-								className="text-sm px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-white transition"
-							>
-								Salir
-							</button>
-						</>
-					) : (
-						<>
-							<button
-								onClick={() => setShowLogin(true)}
-								className="text-sm px-4 py-1.5 text-gray-400 hover:text-white transition"
-							>
-								Iniciar Sesión
-							</button>
-							<button
-								onClick={() => setShowRegister(true)}
-								className="text-sm px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition shadow-lg"
-							>
-								Registrarse
-							</button>
-						</>
-					)}
+						<Link to="/profile" className="...">
+							👤 <strong className="text-blue-400">{user}</strong>
+						</Link>
+					) : null}
 				</div>
 			</nav>
 
