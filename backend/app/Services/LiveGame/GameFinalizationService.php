@@ -12,18 +12,18 @@ class GameFinalizationService
 
     public function finalize(string $roomId): void
     {
-        $roomKey    = "room:{$roomId}";
-        $room       = Redis::hgetall($roomKey);
+        $roomKey     = "room:{$roomId}";
+        $room        = Redis::hgetall($roomKey);
         $playerNames = Redis::smembers("{$roomKey}:players");
 
         $winnerRole        = $room['winner_role'] ?? null;
         $totalRounds       = (int) ($room['round_number'] ?? 0);
         $totalEliminations = 0;
 
-        $winningRoles = match($winnerRole) {
+        $winningRoles = match ($winnerRole) {
             'boss'  => ['boss', 'secretary'],
             'union' => ['union'],
-            'intern'=> ['intern'],
+            'intern' => ['intern'],
             default => [],
         };
 
@@ -62,29 +62,35 @@ class GameFinalizationService
             ]);
         }
 
-        // Limpiar Redis
+        // Iniciar la limpieza "perezosa"
         $this->cleanupRedis($roomId, $playerNames);
     }
 
     private function cleanupRedis(string $roomId, array $playerNames): void
     {
         $roomKey = "room:{$roomId}";
+        $expireTime = 60;
 
+        // Poner fecha de caducidad a todas las llaves de la sala
         foreach ($playerNames as $name) {
-            Redis::del("{$roomKey}:player:{$name}");
+            Redis::expire("{$roomKey}:player:{$name}", $expireTime);
         }
 
         // Tokens de la sala
         $tokenKeys = Redis::keys("{$roomKey}:token:*");
         foreach ($tokenKeys as $key) {
-            Redis::del($key);
+            Redis::expire($key, $expireTime);
         }
 
-        Redis::del("{$roomKey}:deck");
-        Redis::del("{$roomKey}:turn_order");
-        Redis::del("{$roomKey}:pending_attack");
-        Redis::del("{$roomKey}:players");
-        Redis::del($roomKey);
+        Redis::expire("{$roomKey}:deck", $expireTime);
+        Redis::expire("{$roomKey}:turn_order", $expireTime);
+        Redis::expire("{$roomKey}:pending_attack", $expireTime);
+        Redis::expire("{$roomKey}:players", $expireTime);
+
+        // Expirar la llave principal de la sala
+        Redis::expire($roomKey, $expireTime);
+
+        // La unica llave que se borra al instante es la de "active_rooms"
         Redis::srem("active_rooms", $roomId);
     }
 }

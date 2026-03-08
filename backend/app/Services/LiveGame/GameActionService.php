@@ -212,42 +212,47 @@ class GameActionService
         $roomKey = "room:{$roomId}";
         $players = Redis::smembers("room:{$roomId}:players");
 
-        $bossAlive   = false;
-        $allUnionDead = true;
-        $internAlive  = false;
-        $aliveNonBoss = 0;
+        $bossAlive       = false;
+        $internAlive     = false;
+        $unionAliveCount = 0;
+        $totalAlive      = 0;
 
+        // Recolectar el estado exacto de la mesa
         foreach ($players as $name) {
             $data   = Redis::hgetall("room:{$roomId}:player:{$name}");
             $isDead = filter_var($data['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $role   = $data['role'] ?? '';
 
-            if ($role === 'boss')       $bossAlive   = !$isDead;
-            if ($role === 'union'  && !$isDead) $allUnionDead = false;
-            if ($role === 'intern' && !$isDead) $internAlive  = true;
-            if ($role !== 'boss'   && !$isDead) $aliveNonBoss++;
+            if (!$isDead) {
+                $totalAlive++;
+                if ($role === 'boss')   $bossAlive = true;
+                if ($role === 'union')  $unionAliveCount++;
+                if ($role === 'intern') $internAlive = true;
+            }
         }
-
         $winnerRole = null;
 
-        // Sindicalistas ganan si el jefe muere
+        // Evaluar condiciones de victoria de forma jerárquica
+
         if (!$bossAlive) {
-            $winnerRole = 'union';
-        }
-        // Jefe (y secretario) ganan si todos los sindicatos y el becario han muerto
-        elseif ($allUnionDead && !$internAlive) {
+            // Si el jefe muere, el juego termina. ¿Quién gana?
+            if ($totalAlive === 1 && $internAlive) {
+                // El Becario es el único superviviente de toda la partida
+                $winnerRole = 'intern';
+            } else {
+                // Si queda alguien más vivo además del Becario o si el Becario también murió, la victoria es para el Sindicato.
+                $winnerRole = 'union';
+            }
+        } elseif ($unionAliveCount === 0 && !$internAlive) {
+            // Si el Jefe sigue vivo y todas las amenazas están muertas
             $winnerRole = 'boss';
         }
-        // Becario gana si es el único vivo
-        elseif ($aliveNonBoss === 1 && $internAlive) {
-            $winnerRole = 'intern';
-        }
 
+        // Si hay un ganador, procesar el final de la partida
         if ($winnerRole !== null) {
             Redis::hset($roomKey, 'game_over', 1);
             Redis::hset($roomKey, 'winner_role', $winnerRole);
 
-            // Emitir estado final antes de limpiar Redis
             event(new RoomStateUpdated($roomId));
 
             // Guardar en DB y limpiar Redis
