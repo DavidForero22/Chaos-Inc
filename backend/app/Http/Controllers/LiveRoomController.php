@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/LiveRoomController.php
 
 namespace App\Http\Controllers;
 

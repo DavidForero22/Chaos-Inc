@@ -67,7 +67,7 @@ export function useLiveGame(roomId: string | undefined) {
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
 	useEffect(() => {
-		const attemptReconnection = async () => {
+		const reconnect = async () => {
 			if (!roomId || !myPlayerName) return;
 
 			try {
@@ -77,8 +77,9 @@ export function useLiveGame(roomId: string | undefined) {
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
-					syncGame();
 				}
+
+				await syncGame();
 			} catch (error) {
 				logWithTime("No se pudo reconectar. ", error);
 				alert("No puedes acceder a esta partida en curso.");
@@ -86,13 +87,7 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 		};
 
-		const currentToken = localStorage.getItem("game_token");
-
-		if (!currentToken) {
-			attemptReconnection();
-		} else {
-			syncGame();
-		}
+		reconnect();
 	}, [roomId, myPlayerName, syncGame, navigate]);
 
 	useEffect(() => {
