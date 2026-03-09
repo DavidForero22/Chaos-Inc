@@ -65,16 +65,6 @@ class GameFinalizationService
             'players'            => $playersData,
         ]);
 
-        // Guardar en DB solo si hay jugadores registrados
-        if (!empty($playersData)) {
-            $this->gameService->createGame([
-                'winner_role'        => $winnerRole,
-                'total_rounds'       => $totalRounds,
-                'total_eliminations' => $totalEliminations,
-                'players'            => $playersData,
-            ]);
-        }
-
         // Iniciar la limpieza "perezosa"
         $this->cleanupRedis($roomId, $playerNames);
     }
