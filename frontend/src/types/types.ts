@@ -52,10 +52,33 @@ export interface MyData {
  */
 export interface GameData {
 	me: MyData;
-    game: {
-        current_turn: string;
-        opponents: Opponent[];
-        game_over: boolean;
-        winner_role: "boss" | "union" | "intern" | null;
-    };
+	game: {
+		current_turn: string;
+		opponents: Opponent[];
+		game_over: boolean;
+		winner_role: "boss" | "union" | "intern" | null;
+	};
+}
+
+export interface GameParticipant {
+	userId: number | null;
+	isGuest: boolean;
+	displayName: string;
+	stats: {
+		hasWon: boolean;
+		role: string;
+		damageDealt: number;
+		damageReceived: number;
+		cardsPlayed: number;
+		eliminations: number;
+	};
+}
+
+export interface GameRecord {
+	id: number;
+	winnerRole: string;
+	totalRounds: number;
+	totalEliminations: number;
+	playedAt: string;
+	players: GameParticipant[];
 }

@@ -1,3 +1,5 @@
+// src/hooks/room/useRoomSession.ts
+
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
@@ -33,7 +35,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		isLeavingRef.current = true;
 		console.log("Saliendo de la sala...");
 
-		const gameToken = sessionStorage.getItem("game_token");
+		const gameToken = localStorage.getItem("game_token");
 
 		try {
 			await api.post(
@@ -45,7 +47,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			console.error("Error leaving room:", error);
 		} finally {
 			alert("Te has salido de la sala.")
-			sessionStorage.removeItem("game_token");
+			localStorage.removeItem("game_token");
 			navigate("/");
 		}
 	}, [roomId, navigate]);
@@ -68,7 +70,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 						currentRoom.players?.includes(myPlayerNameRef.current) ?? false;
 					if (!imStillInRoom) {
 						alert("You are no longer in this room.");
-						sessionStorage.removeItem("game_token");
+						localStorage.removeItem("game_token");
 						navigate("/");
 						return;
 					}
@@ -115,7 +117,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 				});
 
 				if (res.data.game_token)
-					sessionStorage.setItem("game_token", res.data.game_token);
+					localStorage.setItem("game_token", res.data.game_token);
 
 				setNeedsPassword(false);
 				setIsJoining(false);
@@ -172,7 +174,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			if (isLeavingRef.current) return;
 			if (roomStatusRef.current === "waiting" && roomId) {
 				const data = new URLSearchParams();
-				data.append("game_token", sessionStorage.getItem("game_token") || "");
+				data.append("game_token", localStorage.getItem("game_token") || "");
 				navigator.sendBeacon(
 					`${api.defaults.baseURL}/rooms/${roomId}/leave`,
 					data,

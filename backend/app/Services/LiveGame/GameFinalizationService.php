@@ -28,7 +28,6 @@ class GameFinalizationService
         };
 
         $playersData   = [];
-        $playerUserIds = [];
 
         foreach ($playerNames as $name) {
             $pData = Redis::hgetall("{$roomKey}:player:{$name}");
@@ -36,13 +35,19 @@ class GameFinalizationService
             $elims = (int) ($pData['eliminations'] ?? 0);
             $totalEliminations += $elims;
 
-            // Buscar usuario registrado por nombre (guests no tienen registro)
             $user = User::where('username', $name)->first();
-            if (!$user) continue;
+            $isGuest = !$user || $user->is_guest;
 
-            $playerUserIds[] = $user->id;
-            $playersData[]   = [
-                'user_id'         => $user->id,
+            // Si es usuario guest creado en DB, borrarlo limpiamente
+            if ($user && $user->is_guest) {
+                $user->forceDelete();
+                $user = null;
+            }
+
+            $playersData[] = [
+                'user_id'         => $user?->id,
+                'is_guest'        => $isGuest,
+                'display_name'    => $name,
                 'has_won'         => in_array($role, $winningRoles),
                 'role'            => $role,
                 'damage_dealt'    => (int) ($pData['damage_dealt']    ?? 0),
@@ -51,6 +56,14 @@ class GameFinalizationService
                 'eliminations'    => $elims,
             ];
         }
+
+        // Guardar siempre — aunque todos sean invitados
+        $this->gameService->createGame([
+            'winner_role'        => $winnerRole,
+            'total_rounds'       => $totalRounds,
+            'total_eliminations' => $totalEliminations,
+            'players'            => $playersData,
+        ]);
 
         // Guardar en DB solo si hay jugadores registrados
         if (!empty($playersData)) {

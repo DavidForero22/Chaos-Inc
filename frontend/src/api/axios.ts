@@ -1,3 +1,5 @@
+// src/api/axios.ts
+
 import axios from "axios";
 import { useAuthStore } from "../store/useAuthStore.ts";
 import { useLoadingStore } from "../store/useLoadingStore.ts";
@@ -22,8 +24,8 @@ api.interceptors.request.use((config) => {
 	}
 
 	// Token de Partida (Game Token)
-	// Buscamos si tenemos un token temporal para jugar en una sala
-	const gameToken = sessionStorage.getItem("game_token");
+	// Buscar si tiene un token temporal para jugar en una sala
+	const gameToken = localStorage.getItem("game_token");
 	if (gameToken) {
 		config.headers["X-Game-Token"] = gameToken;
 	}
@@ -44,7 +46,7 @@ api.interceptors.response.use(
 		if (error.response?.status === 401) {
 			const url = error.config?.url ?? "";
 			if (url.includes("/sync") || url.includes("/leave")) {
-				sessionStorage.removeItem("game_token");
+				localStorage.removeItem("game_token");
 			}
 		}
 		return Promise.reject(error);

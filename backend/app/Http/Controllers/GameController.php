@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Services\GameService;
 use App\Http\Requests\Game\StoreGameRequest;
 use App\Http\Resources\GameResource;
+use App\Models\Game;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
@@ -39,7 +40,7 @@ class GameController extends Controller
     public function myGames(Request $request)
     {
         $user = $request->user();
-        $games = $user->games()->with('users')->latest()->get();
+        $games = $user->games()->with('participants')->latest()->get();
         return GameResource::collection($games);
     }
 }

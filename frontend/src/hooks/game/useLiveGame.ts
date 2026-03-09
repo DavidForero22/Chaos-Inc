@@ -1,4 +1,5 @@
-// --- src/hooks/game/useLiveGame.ts ---
+// src/hooks/game/useLiveGame.ts
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.ts";
@@ -6,6 +7,7 @@ import type { GameData } from "../../types/types.ts";
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
+import { useAuthStore } from "../../store/useAuthStore.ts";
 
 import { logWithTime } from "../../utils/logger.ts";
 
@@ -17,13 +19,14 @@ export function useLiveGame(roomId: string | undefined) {
 	const [loading, setLoading] = useState(true);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
+	const { isGuest, logout } = useAuthStore();
 
 	const isKickedRef = useRef(false);
 
 	const syncGame = useCallback(async () => {
 		if (!roomId || !myPlayerName) return;
 
-		if (!sessionStorage.getItem("game_token")) {
+		if (!localStorage.getItem("game_token")) {
 			console.warn(
 				"Ignorando sync prematuro: aún estamos obteniendo el token.",
 			);
@@ -39,7 +42,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 			if (res.data.game?.game_over) {
 				setGameOver(true);
-				sessionStorage.removeItem("game_token");
+				localStorage.removeItem("game_token");
 			}
 		} catch (error: any) {
 			const errorType = error.response?.data?.type;
@@ -73,7 +76,7 @@ export function useLiveGame(roomId: string | undefined) {
 				});
 
 				if (res.data.game_token) {
-					sessionStorage.setItem("game_token", res.data.game_token);
+					localStorage.setItem("game_token", res.data.game_token);
 					syncGame();
 				}
 			} catch (error) {
@@ -83,7 +86,7 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 		};
 
-		const currentToken = sessionStorage.getItem("game_token");
+		const currentToken = localStorage.getItem("game_token");
 
 		if (!currentToken) {
 			attemptReconnection();
@@ -95,18 +98,27 @@ export function useLiveGame(roomId: string | undefined) {
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
+
+			if (gameOver) {
+				// Partida terminada — limpiar invitado si corresponde
+				if (isGuest) logout();
+				return; // no enviar beacon, ya no hay sesión activa
+			}
+
+			// Partida en curso — marcar offline
 			if (roomId) {
 				const data = new URLSearchParams();
-				data.append("game_token", sessionStorage.getItem("game_token") || "");
+				data.append("game_token", localStorage.getItem("game_token") || "");
 				navigator.sendBeacon(
 					`${api.defaults.baseURL}/rooms/${roomId}/leave`,
 					data,
 				);
 			}
 		};
+
 		window.addEventListener("beforeunload", handleUnload);
 		return () => window.removeEventListener("beforeunload", handleUnload);
-	}, [roomId]);
+	}, [roomId, gameOver, isGuest, logout]);
 
 	useGameSockets({
 		roomId,

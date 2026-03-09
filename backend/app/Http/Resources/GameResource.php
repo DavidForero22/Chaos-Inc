@@ -15,27 +15,26 @@ class GameResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'winnerRole' => $this->winner_role, 
-            'totalRounds' => $this->total_rounds,
+            'id'                => $this->id,
+            'winnerRole'        => $this->winner_role,
+            'totalRounds'       => $this->total_rounds,
             'totalEliminations' => $this->total_eliminations,
-            'playedAt' => $this->created_at->toIso8601String(),
+            'playedAt'          => $this->created_at->toIso8601String(),
 
-            // Tabla pivot
-            'players' => $this->whenLoaded('users', function () {
-                return $this->users->map(function ($user) {
+            'players' => $this->whenLoaded('participants', function () {
+                return $this->participants->map(function ($participant) {
                     return [
-                        'id' => $user->id,
-                        'username' => $user->username,
-                        'stats' => [
-                            // Asegurar que el booleano llegue como true/false y no como 1/0
-                            'hasWon' => (bool) $user->pivot->has_won,
-                            'role' => $user->pivot->role,
-                            'damageDealt' => $user->pivot->damage_dealt,
-                            'damageReceived' => $user->pivot->damage_received,
-                            'cardsPlayed' => $user->pivot->cards_played,
-                            'eliminations' => $user->pivot->eliminations,
-                        ]
+                        'userId'      => $participant->user_id,
+                        'isGuest'     => (bool) $participant->is_guest,
+                        'displayName' => $participant->display_name,
+                        'stats'       => [
+                            'hasWon'          => (bool) $participant->has_won,
+                            'role'            => $participant->role,
+                            'damageDealt'     => $participant->damage_dealt,
+                            'damageReceived'  => $participant->damage_received,
+                            'cardsPlayed'     => $participant->cards_played,
+                            'eliminations'    => $participant->eliminations,
+                        ],
                     ];
                 });
             }),

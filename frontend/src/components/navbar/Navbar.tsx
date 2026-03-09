@@ -5,7 +5,7 @@ import LoginModal from "./LoginModal.tsx";
 import RegisterModal from "./RegisterModal.tsx";
 
 export default function Navbar() {
-	const { user, logout } = useAuthStore();
+	const { user } = useAuthStore();
 
 	const [showLogin, setShowLogin] = useState(false);
 	const [showRegister, setShowRegister] = useState(false);

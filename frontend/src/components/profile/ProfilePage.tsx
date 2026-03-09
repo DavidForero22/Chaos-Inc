@@ -2,24 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 import api from "../../api/axios.ts";
-
-interface GameStats {
-	hasWon: boolean;
-	role: string;
-	damageDealt: number;
-	damageReceived: number;
-	cardsPlayed: number;
-	eliminations: number;
-}
-
-interface GameRecord {
-	id: number;
-	winnerRole: string;
-	totalRounds: number;
-	totalEliminations: number;
-	playedAt: string;
-	players: { id: number; username: string; stats: GameStats }[];
-}
+import type { GameRecord } from "../../types/types.ts";
 
 const ROLE_LABELS: Record<string, string> = {
 	boss: "👑 Jefe",
@@ -83,7 +66,7 @@ export default function ProfilePage() {
 	// Calcular totales
 	const myStats = games.reduce(
 		(acc, game) => {
-			const me = game.players.find((p) => p.username === user);
+			const me = game.players.find((p) => p.displayName === user);
 			if (!me) return acc;
 			return {
 				wins: acc.wins + (me.stats.hasWon ? 1 : 0),
@@ -149,7 +132,7 @@ export default function ProfilePage() {
 				) : (
 					<div className="flex flex-col gap-3">
 						{games.map((game) => {
-							const me = game.players.find((p) => p.username === user);
+							const me = game.players.find((p) => p.displayName === user);
 							if (!me) return null;
 							return (
 								<div
