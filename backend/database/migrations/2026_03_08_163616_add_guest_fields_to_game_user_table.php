@@ -44,4 +44,16 @@ return new class extends Migration
             END
         ');
     }
+
+    public function down(): void
+    {
+        // Eliminar triggers
+        DB::unprepared('DROP TRIGGER IF EXISTS enforce_user_id_if_not_guest');
+        DB::unprepared('DROP TRIGGER IF EXISTS enforce_user_id_if_not_guest_update');
+
+        Schema::table('game_user', function (Blueprint $table) {
+            $table->dropColumn(['is_guest', 'display_name']);
+            $table->unsignedBigInteger('user_id')->nullable(false)->change();
+        });
+    }
 };

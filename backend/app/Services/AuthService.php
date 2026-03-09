@@ -1,4 +1,5 @@
 <?php
+// App/Services/AuthService.php
 
 namespace App\Services;
 
@@ -64,7 +65,8 @@ class AuthService
             'username' => $username,
             'email'    => $fakeEmail,
             'password' => $fakePassword,
-            'role'     => 'user'
+            'role'     => 'user',
+            'is_guest' => true,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
