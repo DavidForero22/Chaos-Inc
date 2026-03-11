@@ -1,4 +1,5 @@
 <?php
+// app/Services/LiveGame/TurnService.php
 
 namespace App\Services\LiveGame;
 
@@ -44,6 +45,12 @@ class TurnService
             if ($isOnline && !$isDead) {
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, 2);
+
+                // Al volver al primer jugador del orden, nueva ronda
+                if ($nextIndex === 0) {
+                    Redis::hincrby($roomKey, 'round_number', 1);
+                }
+
                 break;
             }
         }
@@ -76,7 +83,6 @@ class TurnService
         }
 
         Redis::hset("room:{$roomId}:player:{$playerName}", 'attack_used_this_turn', 0);
-        Redis::hincrby("room:{$roomId}", 'round_number', 1);
 
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));

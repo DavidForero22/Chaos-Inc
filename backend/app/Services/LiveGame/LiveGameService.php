@@ -1,4 +1,5 @@
 <?php
+// app/services/livegame/LiveGameService.php
 
 namespace App\Services\LiveGame;
 
@@ -39,7 +40,7 @@ class LiveGameService
         Redis::hset($roomKey, 'status', 'in_game');
         Redis::hset($roomKey, 'game_over', 0);
         Redis::hset($roomKey, 'winner_role', '');
-        Redis::hset($roomKey, 'round_number', 0);
+        Redis::hset($roomKey, 'round_number', 1);
 
         shuffle($players);
         $count = count($players);
@@ -163,6 +164,8 @@ class LiveGameService
                 'opponents'    => $opponents,
                 'game_over'    => (bool) filter_var($room['game_over'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 'winner_role'  => $room['winner_role'] ?? null,
+                'round_number' => (int) ($room['round_number'] ?? 0),
+                'deck_count'   => count(json_decode(Redis::get("room:{$roomId}:deck") ?? '[]', true)),
             ]
         ];
     }

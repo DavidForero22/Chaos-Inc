@@ -88,10 +88,14 @@ export default function GameBoardPage() {
 	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
 		if (!isMyTurn || selectedCardId === null || !isOnline) return;
 
-		const selectedCard = me.cards.find((c: CardInstance) => c.id === selectedCardId);
+		const selectedCard = me.cards.find(
+			(c: CardInstance) => c.id === selectedCardId,
+		);
 		// Intentar robar
 		if (selectedCard?.type === 4) {
-			const target = game.opponents.find((o: Opponent) => o.name === targetName);
+			const target = game.opponents.find(
+				(o: Opponent) => o.name === targetName,
+			);
 			if (!target || target.cards_count === 0) return;
 		}
 
@@ -130,6 +134,7 @@ export default function GameBoardPage() {
 						SALA: {id}
 					</span>
 				</h1>
+
 				<div className="text-right">
 					<p className="text-gray-400 text-xs uppercase font-bold">
 						Turno Actual
@@ -138,6 +143,9 @@ export default function GameBoardPage() {
 						{game.current_turn === myPlayerName
 							? "👉 TU TURNO"
 							: `👤 ${game.current_turn}`}
+					</p>
+					<p className="text-gray-500 text-xs mt-1">
+						Ronda {game.round_number} · 🃏 {game.deck_count} cartas
 					</p>
 				</div>
 			</div>

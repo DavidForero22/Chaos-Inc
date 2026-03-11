@@ -47,5 +47,7 @@ export interface GameData {
 		opponents: Opponent[];
 		game_over: boolean;
 		winner_role: "boss" | "union" | "intern" | null;
+		round_number: number;
+		deck_count: number;
 	};
 }
