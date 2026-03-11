@@ -27,26 +27,19 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 
 	useEffect(() => {
 		myPlayerNameRef.current = myPlayerName;
-		console.log("myPlayerNameRef.current ha cambiado a" + myPlayerName);
 	}, [myPlayerName]);
 
 	const handleLeaveRoom = useCallback(async () => {
 		if (!roomId) return;
 		isLeavingRef.current = true;
-		console.log("Saliendo de la sala...");
-
-		const gameToken = localStorage.getItem("game_token");
 
 		try {
-			await api.post(
-				`/rooms/${roomId}/leave`,
-				{},
-				{ headers: { "X-Game-Token": gameToken } },
-			);
+			// El interceptor de Axios inyecta el X-Game-Token y el Bearer Token automáticamente
+			await api.post(`/rooms/${roomId}/leave`);
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		} finally {
-			alert("Te has salido de la sala.")
+			alert("Te has salido de la sala.");
 			localStorage.removeItem("game_token");
 			navigate("/");
 		}
@@ -59,8 +52,6 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			const currentRoom = res.data.find((r: RoomData) => r.room_id === roomId);
 
 			if (currentRoom) {
-				// Solo verificamos si está en la sala si REALMENTE tenemos un nombre que buscar.
-				// Si myPlayerNameRef está null, es porque React aún está cargando la sesión. No echar al jugador.
 				if (
 					myPlayerNameRef.current &&
 					!isJoiningRef.current &&
@@ -69,7 +60,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 					const imStillInRoom =
 						currentRoom.players?.includes(myPlayerNameRef.current) ?? false;
 					if (!imStillInRoom) {
-						alert("You are no longer in this room.");
+						alert("Ya no estás en esta sala.");
 						localStorage.removeItem("game_token");
 						navigate("/");
 						return;
@@ -79,14 +70,10 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 				setRoom(currentRoom);
 				roomStatusRef.current = currentRoom.status;
 
-				// Si la sala está en partida, PERO está en la ruta de WaitingRoom (/room/ABCD),
-				// mandar al tablero automáticamente.
 				if (
 					currentRoom.status === "in_game" &&
 					location.pathname.includes(`/room/`)
 				) {
-					alert(`Redireccionando a tablero. ${myPlayerNameRef}, ${isJoiningRef}, ${isLeavingRef}, ${currentRoom}`)
-					console.log("La partida ya empezó, redirigiendo al tablero...");
 					navigate(`/game/${roomId}`, {
 						state: { playerName: myPlayerNameRef.current },
 						replace: true,
@@ -94,7 +81,6 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 					return;
 				}
 			} else {
-				alert(`Redireccionando a lobby. ${myPlayerNameRef}, ${isJoiningRef}, ${isLeavingRef}, ${currentRoom}`)
 				navigate("/");
 			}
 		} catch (error) {
@@ -111,13 +97,14 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 
 			try {
 				setPasswordError("");
+
 				const res = await api.post(`/rooms/${roomId}/join`, {
-					player_name: myPlayerName,
 					password: pwd,
 				});
 
-				if (res.data.game_token)
+				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
+				}
 
 				setNeedsPassword(false);
 				setIsJoining(false);
@@ -128,7 +115,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 				const errorType = error.response?.data?.type;
 
 				if (errorType === "ROOM_FULL") {
-					alert("The room is full.");
+					alert("La sala está llena.");
 					navigate("/");
 					return;
 				}
@@ -138,17 +125,17 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 				) {
 					setNeedsPassword(true);
 					if (errorType === "INCORRECT_PASSWORD")
-						setPasswordError("Incorrect password. Please try again.");
+						setPasswordError("Contraseña incorrecta. Inténtalo de nuevo.");
 					setIsJoining(false);
 					return;
 				}
 				if (errorType === "GAME_ALREADY_STARTED") {
-					alert("The game has already begun.");
+					alert("La partida ya ha comenzado.");
 					navigate("/");
 					return;
 				}
-
-				alert(error.response?.data?.error || "You cannot access this room.");
+				// Si salta el error de "Ya estás en otra sala" (ALREADY_IN_ANOTHER_ROOM), se mostrará aquí:
+				alert(error.response?.data?.error || "No puedes acceder a esta sala.");
 				navigate("/");
 			} finally {
 				isAttemptingRef.current = false;
@@ -159,7 +146,6 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 
 	// Montaje inicial
 	useEffect(() => {
-		console.log("Montaje inicial de useRoomSession...");
 		if (myPlayerName && isJoiningRef.current) {
 			attemptJoin();
 		} else if (!myPlayerName) {
@@ -167,18 +153,27 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		}
 	}, [myPlayerName, attemptJoin]);
 
-	// Protección al cerrar ventana
+	// PROTECCIÓN AL CERRAR VENTANA (Corregido para Sanctum)
 	useEffect(() => {
-		console.log("Proteccion al cerrar vemtama...");
 		const handleUnload = () => {
 			if (isLeavingRef.current) return;
 			if (roomStatusRef.current === "waiting" && roomId) {
-				const data = new URLSearchParams();
-				data.append("game_token", localStorage.getItem("game_token") || "");
-				navigator.sendBeacon(
-					`${api.defaults.baseURL}/rooms/${roomId}/leave`,
-					data,
-				);
+				const sanctumToken = localStorage.getItem("token") || "";
+				const gameToken = localStorage.getItem("game_token") || "";
+
+				// Usamos fetch con keepalive para garantizar que la petición se envíe
+				// incluso si el navegador está matando la pestaña, PERO enviando las cabeceras.
+				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
+					method: "POST",
+					headers: {
+						Accept: "application/json",
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${sanctumToken}`,
+						"X-Game-Token": gameToken,
+					},
+					keepalive: true,
+					body: JSON.stringify({}),
+				}).catch(() => {});
 			}
 		};
 		window.addEventListener("beforeunload", handleUnload);
@@ -187,7 +182,6 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 
 	// Listener de sesión multipestaña
 	useEffect(() => {
-		console.log("Listener de sesion multipestaña...");
 		const handleStorageChange = (e: StorageEvent) => {
 			if (e.key === "user" && e.newValue === null) {
 				handleLeaveRoom();

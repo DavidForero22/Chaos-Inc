@@ -1,6 +1,7 @@
 <?php
 
 use App\Exceptions\GameException;
+use App\Exceptions\IdentityException;
 use App\Exceptions\RoomException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,6 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (GameException $e, Request $request) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'type' => $e->getErrorType()
+            ], $e->getCode());
+        });
+
+        $exceptions->render(function (IdentityException $e, Request $request) {
             return response()->json([
                 'error' => $e->getMessage(),
                 'type' => $e->getErrorType()

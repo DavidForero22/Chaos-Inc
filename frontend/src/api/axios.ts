@@ -24,7 +24,6 @@ api.interceptors.request.use((config) => {
 	}
 
 	// Token de Partida (Game Token)
-	// Buscar si tiene un token temporal para jugar en una sala
 	const gameToken = localStorage.getItem("game_token");
 	if (gameToken) {
 		config.headers["X-Game-Token"] = gameToken;
@@ -42,13 +41,28 @@ api.interceptors.response.use(
 	(error) => {
 		useLoadingStore.getState().stopLoading();
 		console.error("Error en la API:", error);
-		// Si el token expira o nos echan, limpiar token
-		if (error.response?.status === 401) {
-			const url = error.config?.url ?? "";
-			if (url.includes("/sync") || url.includes("/leave")) {
-				localStorage.removeItem("game_token");
-			}
+
+		const status = error.response?.status;
+		const errorType = error.response?.data?.type;
+		const url = error.config?.url ?? "";
+
+		// Limpiar token temporal de partida si caduca o es expulsado
+		if (status === 401 && (url.includes("/sync") || url.includes("/leave"))) {
+			localStorage.removeItem("game_token");
 		}
+
+		// Si Sanctum rechaza el token inicial en /me O si el backend lanza USER_NOT_FOUND
+		if (
+			(status === 401 && url.includes("/me")) ||
+			errorType === "USER_NOT_FOUND"
+		) {
+			console.warn(
+				"Identidad no válida o usuario expirado. Limpiando sesión silenciosamente...",
+			);
+			localStorage.removeItem("game_token");
+			useAuthStore.getState().logout();
+		}
+
 		return Promise.reject(error);
 	},
 );

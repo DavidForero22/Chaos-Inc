@@ -20,17 +20,18 @@ import type { GameData } from "../../types/live-game.ts";
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
 	const { myPlayerName } = usePlayerIdentity();
+	const { token, isGuest, logout } = useAuthStore();
 
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
-	const { isGuest, logout } = useAuthStore();
 
 	const isKickedRef = useRef(false);
 
 	const syncGame = useCallback(async () => {
-		if (!roomId || !myPlayerName) return;
+		// Si no hay token de Sanctum o nombre, no puede hacer peticiones
+		if (!roomId || !myPlayerName || !token) return;
 
 		if (!localStorage.getItem("game_token")) {
 			console.warn(
@@ -40,9 +41,8 @@ export function useLiveGame(roomId: string | undefined) {
 		}
 
 		try {
-			const res = await api.post(`/rooms/${roomId}/sync`, {
-				player_name: myPlayerName,
-			});
+			const res = await api.post(`/rooms/${roomId}/sync`);
+
 			setGameData(res.data);
 			setLoading(false);
 
@@ -59,8 +59,8 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 
 			console.error("ERROR en /sync:", error);
-			if (error.response?.status === 401) {
-				alert("Game session expired.");
+			if (error.response?.status === 401 || error.response?.status === 403) {
+				alert("Game session expired or unauthorized.");
 				isKickedRef.current = true;
 			} else {
 				alert("Error al sincronizar la sala.");
@@ -68,18 +68,17 @@ export function useLiveGame(roomId: string | undefined) {
 			navigate("/");
 			setLoading(false);
 		}
-	}, [roomId, navigate, myPlayerName]);
+	}, [roomId, navigate, myPlayerName, token]);
 
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
 	useEffect(() => {
 		const reconnect = async () => {
-			if (!roomId || !myPlayerName) return;
+			// Esperar a que el store tenga la sesión iniciada
+			if (!roomId || !myPlayerName || !token) return;
 
 			try {
-				const res = await api.post(`/rooms/${roomId}/join`, {
-					player_name: myPlayerName,
-				});
+				const res = await api.post(`/rooms/${roomId}/join`);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
@@ -94,26 +93,32 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, myPlayerName, syncGame, navigate]);
+	}, [roomId, myPlayerName, token, syncGame, navigate]);
 
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
 
 			if (gameOver) {
-				// Partida terminada — limpiar invitado si corresponde
 				if (isGuest) logout();
-				return; // no enviar beacon, ya no hay sesión activa
+				return;
 			}
 
-			// Partida en curso — marcar offline
 			if (roomId) {
-				const data = new URLSearchParams();
-				data.append("game_token", localStorage.getItem("game_token") || "");
-				navigator.sendBeacon(
-					`${api.defaults.baseURL}/rooms/${roomId}/leave`,
-					data,
-				);
+				const sanctumToken = localStorage.getItem("token") || "";
+				const gameToken = localStorage.getItem("game_token") || "";
+
+				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
+					method: "POST",
+					headers: {
+						Accept: "application/json",
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${sanctumToken}`,
+						"X-Game-Token": gameToken,
+					},
+					keepalive: true,
+					body: JSON.stringify({}),
+				}).catch(() => {});
 			}
 		};
 

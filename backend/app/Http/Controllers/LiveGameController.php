@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Game\PlayActionRequest;
-use App\Http\Requests\Game\StartGameRequest;
-use App\Http\Requests\Game\SyncGameRequest;
 use App\Services\LiveGame\LiveGameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
@@ -18,7 +16,7 @@ class LiveGameController extends Controller
         $this->liveGameService = $liveGameService;
     }
 
-    public function start(StartGameRequest $request, $id)
+    public function start(Request $request, $id)
     {
         $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
         $playerName = Redis::get("room:{$id}:token:{$gameToken}");
@@ -32,7 +30,7 @@ class LiveGameController extends Controller
         return response()->json(['message' => 'Game started'], 200);
     }
 
-    public function sync(SyncGameRequest $request, $id)
+    public function sync(Request $request, $id)
     {
         $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
         $playerName = Redis::get("room:{$id}:token:{$gameToken}");
