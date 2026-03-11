@@ -27,7 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 		localStorage.setItem("token", token);
 		localStorage.setItem("isGuest", String(isGuest));
 		localStorage.setItem("role", role ?? "user");
-		set({ user, token, isGuest });
+		set({ user, token, isGuest, role });
 	},
 
 	logout: () => {
