@@ -1,13 +1,21 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useLiveGame } from "../../hooks/game/useLiveGame.ts";
-import { useState } from "react";
-import type { CardInstance } from "../../types/types.ts";
-import { PlayerHand } from "./PlayerHand.tsx";
-import { OpponentsBoard } from "./OpponentsBoard.tsx";
-import { RoleRevealModal } from "./RoleRevealModal.tsx";
-import { GameOverModal } from "./GameOverModal.tsx";
+// src/pages/GameBoardPage.tsx
 
-export default function GameBoard() {
+// -- HOOKS --
+import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
+import { useLiveGame } from "../hooks/game/useLiveGame.ts";
+
+// -- INTERFACES --
+import type { CardInstance, Opponent } from "../types/live-game.ts";
+
+// -- COMPONENTES --
+import { PlayerHand } from "../components/game/PlayerHand.tsx";
+import { OpponentsBoard } from "../components/game/OpponentsBoard.tsx";
+import { RoleRevealModal } from "../components/game/RoleRevealModal.tsx";
+import { GameOverModal } from "../components/game/GameOverModal.tsx";
+
+export default function GameBoardPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const {
@@ -43,7 +51,7 @@ export default function GameBoard() {
 	const hasPendingAttack = me.has_pending_attack;
 
 	const selectedCardType =
-		me.cards.find((c) => c.id === selectedCardId)?.type ?? null;
+		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 
 	const handleCardClick = (card: CardInstance) => {
 		// Reacción: carta de esquive cuando tiene un ataque entrante
@@ -80,10 +88,10 @@ export default function GameBoard() {
 	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
 		if (!isMyTurn || selectedCardId === null || !isOnline) return;
 
-		const selectedCard = me.cards.find((c) => c.id === selectedCardId);
+		const selectedCard = me.cards.find((c: CardInstance) => c.id === selectedCardId);
 		// Intentar robar
 		if (selectedCard?.type === 4) {
-			const target = game.opponents.find((o) => o.name === targetName);
+			const target = game.opponents.find((o: Opponent) => o.name === targetName);
 			if (!target || target.cards_count === 0) return;
 		}
 

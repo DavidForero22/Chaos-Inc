@@ -1,4 +1,6 @@
-import type { Opponent } from "../../types/types.ts";
+// src/components/game/OpponentsBoard.tsx
+
+import type { Opponent } from "../../types/live-game.ts";
 
 interface OpponentsBoardProps {
 	opponents: Opponent[];

@@ -1,4 +1,6 @@
-import type { RoomData } from "../../types/types.ts";
+// src/components/lobby/RoomList.tsx
+
+import type { RoomData } from "../../types/api";
 
 interface RoomListProps {
 	rooms: RoomData[];

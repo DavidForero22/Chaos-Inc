@@ -1,12 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
-import MainMenu from "./components/MainMenu.tsx";
-import WaitingRoom from "./components/WaitingRoom.tsx";
-import GameBoard from "./components/game/GameBoard.tsx";
-import { Logs } from "./components/Logs.tsx";
 import { GlobalLoader } from "./components/GlobalLoader.tsx";
-import ProfilePage from "./components/profile/ProfilePage.tsx";
-import AdminPage from "./components/admin/AdminPage.tsx";
+
+// -- PÁGINAS --
+import MainMenuPage from "./pages/MainMenuPage.tsx";
+import WaitingRoomPage from "./pages/WaitingRoomPage.tsx";
+import GameBoardPage from "./pages/GameBoardPage.tsx";
+import ProfilePage from "./pages/ProfilePage.tsx";
+import AdminPage from "./pages/AdminPage.tsx";
 
 function App() {
 	return (
@@ -17,10 +18,9 @@ function App() {
 
 				<div className="p-6 grow">
 					<Routes>
-						<Route path="/" element={<MainMenu />} />
-						<Route path="/room/:id" element={<WaitingRoom />} />
-						<Route path="/game/:id" element={<GameBoard />} />{" "}
-						<Route path="/logs" element={<Logs />} />
+						<Route path="/" element={<MainMenuPage />} />
+						<Route path="/room/:id" element={<WaitingRoomPage />} />
+						<Route path="/game/:id" element={<GameBoardPage />} />
 						<Route path="/profile" element={<ProfilePage />} />
 						<Route path="/admin" element={<AdminPage />} />
 					</Routes>

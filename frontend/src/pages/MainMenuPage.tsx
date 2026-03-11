@@ -1,10 +1,15 @@
+// src/pages/MainMenuPage.tsx
+
+// -- HOOKS --
 import { useState } from "react";
 import { useLobby } from "../hooks/useLobby.ts";
-import RoomList from "./lobby/RoomList.tsx";
-import CreateRoomModal from "./lobby/CreateRoomModal.tsx";
-import GuestNameModal from "./lobby/GuestNameModal.tsx";
 
-export default function MainMenu() {
+// -- COMPONENTES --
+import RoomList from "../components/lobby/RoomList.tsx";
+import CreateRoomModal from "../components/lobby/CreateRoomModal.tsx";
+import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
+
+export default function MainMenuPage() {
 	const {
 		filteredRooms,
 		selectedRoom,

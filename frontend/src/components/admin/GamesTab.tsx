@@ -1,4 +1,4 @@
-import type { GameRecord } from "../../types/types.ts";
+import type { GameRecord } from "../../types/api.ts";
 
 interface Props {
 	games: GameRecord[];

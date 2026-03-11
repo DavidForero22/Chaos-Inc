@@ -1,9 +1,14 @@
+// src/pages/WaitingRoomPage.tsx
+
+// -- HOOKS --
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../hooks/room/useRoom.ts";
-import GuestNameModal from "./lobby/GuestNameModal.tsx";
 
-export default function WaitingRoom() {
+// -- COMPONENTES --
+import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
+
+export default function WaitingRoomPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 
@@ -121,7 +126,7 @@ export default function WaitingRoom() {
 				</div>
 
 				<ul className="space-y-3">
-					{room.players.map((player) => (
+					{room.players.map((player: string) => (
 						<li
 							key={player}
 							className="flex justify-between items-center bg-gray-800 p-2 rounded"

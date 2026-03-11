@@ -1,11 +1,19 @@
+// src/pages/AdminPage.tsx
+
+// -- STORE --
+import { useAuthStore } from "../store/useAuthStore.ts";
+
+// -- HOOKS --
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/useAuthStore.ts";
-import { useAdminData } from "../../hooks/admin/useAdminData.ts";
-import UsersTab from "./UsersTab.tsx";
-import GamesTab from "./GamesTab.tsx";
-import RoomsTab from "./RoomsTab.tsx";
 import { useState } from "react";
+
+import { useAdminData } from "../hooks/admin/useAdminData.ts";
+
+// -- COMPONENTES --
+import UsersTab from "../components/admin/UsersTab.tsx";
+import GamesTab from "../components/admin/GamesTab.tsx";
+import RoomsTab from "../components/admin/RoomsTab.tsx";
 
 type Tab = "users" | "games" | "rooms";
 

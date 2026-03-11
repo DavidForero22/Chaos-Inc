@@ -1,4 +1,4 @@
-import type { CardInstance, MyData, Opponent } from "../../types/types.ts";
+import type { CardInstance, MyData, Opponent } from "../../types/live-game.ts";
 
 interface PlayerHandProps {
 	me: MyData;

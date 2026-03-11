@@ -25,12 +25,6 @@ export default function Navbar() {
 					>
 						Salas
 					</Link>
-					<Link
-						to="/logs"
-						className="text-gray-400 hover:text-white transition text-sm font-medium"
-					>
-						Logs
-					</Link>
 				</div>
 
 				<div className="flex gap-4 items-center">

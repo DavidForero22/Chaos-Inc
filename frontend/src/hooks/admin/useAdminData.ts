@@ -1,6 +1,12 @@
-import { useState, useCallback } from "react";
+// useAdminData.ts
+
 import api from "../../api/axios.ts";
-import type { UserRecord, GameRecord, RoomRecord } from "../../types/types.ts";
+
+// -- HOOKS --
+import { useState, useCallback } from "react";
+
+// -- INTERFACES --
+import type { UserRecord, GameRecord, RoomRecord } from "../../types/api.ts";
 
 export function useAdminData() {
 	const [users, setUsers] = useState<UserRecord[]>([]);

@@ -1,4 +1,4 @@
-import type { MyData } from "../../types/types.ts";
+import type { MyData } from "../../types/live-game.ts";
 
 const ROLE_CONFIG: Record<
 	MyData["role"],

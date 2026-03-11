@@ -1,10 +1,16 @@
-// src/components/profile/ProfilePage.tsx
+// src/pages/ProfilePage.tsx
 
+import api from "../api/axios.ts";
+
+// -- HOOKS --
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/useAuthStore.ts";
-import api from "../../api/axios.ts";
-import type { GameRecord } from "../../types/types.ts";
+
+// -- STORE --
+import { useAuthStore } from "../store/useAuthStore.ts";
+
+// -- INTERFACES --
+import type { GameRecord } from "../types/api.ts";
 
 const ROLE_LABELS: Record<string, string> = {
 	boss: "👑 Jefe",

@@ -1,4 +1,4 @@
-import type { RoomRecord } from "../../types/types.ts";
+import type { RoomRecord } from "../../types/api.ts";
 
 interface Props {
 	rooms: RoomRecord[];

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { UserRecord } from "../../types/types.ts";
+import type { UserRecord } from "../../types/api.ts";
 
 interface Props {
 	users: UserRecord[];

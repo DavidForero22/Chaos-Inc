@@ -1,15 +1,21 @@
 // src/hooks/game/useLiveGame.ts
 
+import api from "../../api/axios.ts";
+
+// -- HOOKS --
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios.ts";
-import type { GameData } from "../../types/types.ts";
+
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
+import { logWithTime } from "../../utils/logger.ts";
+
+// -- STORE -- 
 import { useAuthStore } from "../../store/useAuthStore.ts";
 
-import { logWithTime } from "../../utils/logger.ts";
+// -- INTERFACES --
+import type { GameData } from "../../types/live-game.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
