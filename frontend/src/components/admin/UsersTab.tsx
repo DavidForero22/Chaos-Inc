@@ -8,13 +8,32 @@ interface Props {
 		id: number,
 		data: { username: string; email: string; role: string },
 	) => Promise<void>;
+	onCreate: (data: {
+		username: string;
+		email: string;
+		password: string;
+		role: string;
+	}) => Promise<void>;
 }
 
-export default function UsersTab({ users, onDelete, onUpdate }: Props) {
+export default function UsersTab({
+	users,
+	onDelete,
+	onUpdate,
+	onCreate,
+}: Props) {
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [editData, setEditData] = useState({
 		username: "",
 		email: "",
+		role: "user",
+	});
+
+	const [showCreate, setShowCreate] = useState(false);
+	const [createData, setCreateData] = useState({
+		username: "",
+		email: "",
+		password: "",
 		role: "user",
 	});
 
@@ -36,11 +55,80 @@ export default function UsersTab({ users, onDelete, onUpdate }: Props) {
 		}
 	};
 
+	const handleCreate = async () => {
+		try {
+			await onCreate(createData);
+			setCreateData({ username: "", email: "", password: "", role: "user" });
+			setShowCreate(false);
+		} catch (e: any) {
+			alert(e.response?.data?.message || "Error al crear usuario.");
+		}
+	};
+
 	return (
 		<div className="bg-gray-800 rounded-xl border border-gray-700 p-6 flex flex-col gap-3">
 			<h2 className="text-sm text-gray-400 uppercase font-bold mb-2">
 				Usuarios registrados
 			</h2>
+
+			{/* Boton crear usuario */}
+			<div className="flex justify-end mb-2">
+				<button
+					onClick={() => setShowCreate(!showCreate)}
+					className="px-3 py-1 bg-blue-700 hover:bg-blue-600 text-white rounded text-sm font-bold"
+				>
+					{showCreate ? "Cancelar" : "+ Nuevo usuario"}
+				</button>
+			</div>
+
+			{/* Modal creacion de usuario */}
+			{showCreate && (
+				<div className="bg-gray-900 rounded-lg border border-blue-800 p-4 flex flex-col gap-2 mb-2">
+					<input
+						className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-white text-sm"
+						value={createData.username}
+						onChange={(e) =>
+							setCreateData({ ...createData, username: e.target.value })
+						}
+						placeholder="Username"
+					/>
+					<input
+						className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-white text-sm"
+						value={createData.email}
+						onChange={(e) =>
+							setCreateData({ ...createData, email: e.target.value })
+						}
+						placeholder="Email"
+					/>
+					<input
+						type="password"
+						className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-white text-sm"
+						value={createData.password}
+						onChange={(e) =>
+							setCreateData({ ...createData, password: e.target.value })
+						}
+						placeholder="Contraseña"
+					/>
+					<select
+						className="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-white text-sm"
+						value={createData.role}
+						onChange={(e) =>
+							setCreateData({ ...createData, role: e.target.value })
+						}
+					>
+						<option value="user">user</option>
+						<option value="admin">admin</option>
+					</select>
+					<button
+						onClick={handleCreate}
+						className="px-3 py-1 bg-green-700 hover:bg-green-600 text-white rounded text-sm font-bold"
+					>
+						Crear usuario
+					</button>
+				</div>
+			)}
+
+			{/* Listado de usuarios */}
 			{users.map((u) => (
 				<div
 					key={u.id}

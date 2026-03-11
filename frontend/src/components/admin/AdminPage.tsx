@@ -13,7 +13,7 @@ export default function AdminPage() {
 	const { role, token } = useAuthStore();
 	const navigate = useNavigate();
 	const [tab, setTab] = useState<Tab>("users");
-	const { users, games, rooms, loading, fetchAll, deleteUser, updateUser } =
+	const { users, games, rooms, loading, fetchAll, deleteUser, updateUser, createUser } =
 		useAdminData();
 
 	useEffect(() => {
@@ -56,7 +56,12 @@ export default function AdminPage() {
 			</div>
 
 			{tab === "users" && (
-				<UsersTab users={users} onDelete={deleteUser} onUpdate={updateUser} />
+				<UsersTab
+					users={users}
+					onDelete={deleteUser}
+					onUpdate={updateUser}
+					onCreate={createUser}
+				/>
 			)}
 			{tab === "games" && <GamesTab games={games} />}
 			{tab === "rooms" && <RoomsTab rooms={rooms} />}

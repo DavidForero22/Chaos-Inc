@@ -37,5 +37,24 @@ export function useAdminData() {
 		setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, ...data } : u)));
 	};
 
-	return { users, games, rooms, loading, fetchAll, deleteUser, updateUser };
+	const createUser = async (data: {
+		username: string;
+		email: string;
+		password: string;
+		role: string;
+	}) => {
+		const res = await api.post("/users", data);
+		setUsers((prev) => [...prev, res.data.data ?? res.data]);
+	};
+
+	return {
+		users,
+		games,
+		rooms,
+		loading,
+		fetchAll,
+		deleteUser,
+		updateUser,
+		createUser,
+	};
 }
