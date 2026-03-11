@@ -27,6 +27,23 @@ class LiveRoomService
         // Validar contraseña si no estamos ya en la sala
         $alreadyInRoom = Redis::sismember("{$roomKey}:players", $playerName);
 
+        // Verificar que el jugador no este en mas de una sala
+        if (!$alreadyInRoom) {
+            $activeRooms = Redis::smembers("active_rooms");
+            foreach ($activeRooms as $activeRoomId) {
+                if ($activeRoomId !== $roomId) {
+                    $isInOtherRoom = Redis::sismember("room:{$activeRoomId}:players", $playerName);
+                    if ($isInOtherRoom) {
+                        throw new RoomException(
+                            RoomException::ALREADY_IN_ANOTHER_ROOM,
+                            "You are already in another game. Finish or quit the current one first.",
+                            403
+                        );
+                    }
+                }
+            }
+        }
+
         if (!$alreadyInRoom && $room['is_private'] === '1') {
             if (!$password) {
                 throw new RoomException(RoomException::PASSWORD_REQUIRED, "Password required.", 403);

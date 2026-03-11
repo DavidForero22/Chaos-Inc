@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
-import type { RoomData } from "../../types/types";
+import type { RoomData } from "../../types/api.ts";
 
 interface UseRoomSessionProps {
 	roomId: string | undefined;

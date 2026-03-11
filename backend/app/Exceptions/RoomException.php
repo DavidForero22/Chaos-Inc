@@ -17,6 +17,7 @@ class RoomException extends Exception
     const ALREADY_IN_ROOM = 'ALREADY_IN_ROOM';
     const PLAYER_NOT_FOUND = 'PLAYER_NOT_FOUND';
     const NOT_ENOUGH_PLAYERS = 'NOT_ENOUGH_PLAYERS';
+    CONST ALREADY_IN_ANOTHER_ROOM = 'ALREADY_IN_ANOTHER_ROOM';
 
     protected string $errorType;
 

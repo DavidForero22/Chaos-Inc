@@ -1,3 +1,5 @@
+// src/hooks/usePlayerIdentity.ts
+
 import { useAuthStore } from "../store/useAuthStore";
 
 export function usePlayerIdentity() {
