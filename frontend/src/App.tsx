@@ -6,6 +6,7 @@ import GameBoard from "./components/game/GameBoard.tsx";
 import { Logs } from "./components/Logs.tsx";
 import { GlobalLoader } from "./components/GlobalLoader.tsx";
 import ProfilePage from "./components/profile/ProfilePage.tsx";
+import AdminPage from "./components/admin/AdminPage.tsx";
 
 function App() {
 	return (
@@ -21,6 +22,7 @@ function App() {
 						<Route path="/game/:id" element={<GameBoard />} />{" "}
 						<Route path="/logs" element={<Logs />} />
 						<Route path="/profile" element={<ProfilePage />} />
+						<Route path="/admin" element={<AdminPage />} />
 					</Routes>
 				</div>
 			</div>

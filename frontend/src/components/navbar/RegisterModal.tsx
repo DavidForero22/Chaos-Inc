@@ -1,3 +1,5 @@
+// src/navbar/RegisterModal.tsx
+
 import { useState } from "react";
 import api from "../../api/axios";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -19,7 +21,12 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
 		e.preventDefault();
 		try {
 			const res = await api.post("/register", authForm);
-			setAuth(res.data.user.username, res.data.token);
+			setAuth(
+				res.data.user.username,
+				res.data.token,
+				false,
+				res.data.user.role,
+			);
 			onClose();
 		} catch (error) {
 			alert("Error al registrarse. Puede que el usuario o email ya existan.");

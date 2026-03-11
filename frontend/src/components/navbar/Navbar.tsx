@@ -1,3 +1,5 @@
+// src/components/navbar/Navbar.tsx
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.ts";
@@ -5,7 +7,7 @@ import LoginModal from "./LoginModal.tsx";
 import RegisterModal from "./RegisterModal.tsx";
 
 export default function Navbar() {
-	const { user, isGuest } = useAuthStore();
+	const { user, isGuest, role } = useAuthStore();
 
 	const [showLogin, setShowLogin] = useState(false);
 	const [showRegister, setShowRegister] = useState(false);
@@ -33,6 +35,7 @@ export default function Navbar() {
 
 				<div className="flex gap-4 items-center">
 					{user ? (
+						// Está con usuario invitado
 						isGuest ? (
 							<div className="flex gap-3 items-center">
 								<span className="text-sm text-gray-500">
@@ -47,14 +50,26 @@ export default function Navbar() {
 								</button>
 							</div>
 						) : (
-							<Link
-								to="/profile"
-								className="text-sm text-gray-400 hover:text-white transition font-medium"
-							>
-								👤 <strong className="text-blue-400">{user}</strong>
-							</Link>
+							// Está con usuario normal
+							<div className="flex gap-3 items-center">
+								{role === "admin" && (
+									<Link
+										to="/admin"
+										className="text-sm text-red-400 hover:text-red-300 transition font-medium"
+									>
+										⚙️ Admin
+									</Link>
+								)}
+								<Link
+									to="/profile"
+									className="text-sm text-gray-400 hover:text-white transition font-medium"
+								>
+									👤 <strong className="text-blue-400">{user}</strong>
+								</Link>
+							</div>
 						)
 					) : (
+						// No está con usuario
 						<>
 							<button
 								onClick={() => setShowLogin(true)}

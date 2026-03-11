@@ -1,5 +1,7 @@
 <?php
 
+// app/Http/Middleware/IsAdmin.php
+
 namespace App\Http\Middleware;
 
 use Closure;
@@ -10,12 +12,12 @@ class IsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        // Comprobamos si el usuario está logueado y si su rol es 'admin'
+        // Comprobar si el usuario está logueado y si su rol es 'admin'
         if ($request->user() && $request->user()->role === 'admin') {
-            return $next($request); // Adelante, puedes pasar
+            return $next($request);
         }
 
-        // Si es un 'user' normal, le damos un portazo en la cara (Error 403 Forbidden)
+        // Si es un 'user' normal, denegar
         return response()->json([
             'message' => 'Administrator permissions are required.'
         ], 403);
