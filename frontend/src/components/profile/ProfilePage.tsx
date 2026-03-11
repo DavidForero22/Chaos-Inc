@@ -1,3 +1,5 @@
+// src/components/profile/ProfilePage.tsx
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.ts";

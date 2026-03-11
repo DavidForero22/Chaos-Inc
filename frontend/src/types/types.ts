@@ -1,3 +1,5 @@
+// src/types/types.ts
+
 /**
  * Tipado de la sala
  */
@@ -81,4 +83,21 @@ export interface GameRecord {
 	totalEliminations: number;
 	playedAt: string;
 	players: GameParticipant[];
+}
+
+export interface UserRecord {
+	id: number;
+	username: string;
+	email: string;
+	role: string;
+	joinedAt: string;
+}
+
+export interface RoomRecord {
+	room_id: string;
+	name: string;
+	status: string;
+	owner_name: string;
+	max_players: string;
+	players: string[];
 }
