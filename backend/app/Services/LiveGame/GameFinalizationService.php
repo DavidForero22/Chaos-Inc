@@ -67,17 +67,20 @@ class GameFinalizationService
     private function cleanupRedis(string $roomId, array $playerNames): void
     {
         $roomKey = "room:{$roomId}";
-        $expireTime = 60;
+        $expireTime = 15;
 
         // Poner fecha de caducidad a todas las llaves de la sala
         foreach ($playerNames as $name) {
             Redis::expire("{$roomKey}:player:{$name}", $expireTime);
         }
 
-        // Tokens de la sala
+        // Borrar tokens de la sala
+        $prefix = config('database.redis.options.prefix', '');
         $tokenKeys = Redis::keys("{$roomKey}:token:*");
+
         foreach ($tokenKeys as $key) {
-            Redis::expire($key, $expireTime);
+            $cleanKey = str_replace($prefix, '', $key);
+            Redis::expire($cleanKey, $expireTime);
         }
 
         Redis::expire("{$roomKey}:deck", $expireTime);

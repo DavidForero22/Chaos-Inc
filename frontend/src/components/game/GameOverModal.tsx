@@ -1,7 +1,5 @@
 // src/components/game/GameOverModal.tsx
 
-import { useAuthStore } from "../../store/useAuthStore.ts";
-
 type WinnerRole = "boss" | "union" | "intern";
 type PlayerRole = "boss" | "secretary" | "intern" | "union";
 
@@ -48,14 +46,10 @@ export function GameOverModal({
 	myRole,
 	onClose,
 }: GameOverModalProps) {
-	const { isGuest, logout } = useAuthStore();
 	const config = RESULT_CONFIG[winnerRole];
 	const iWon = config.winners.includes(myRole);
 
 	const handleClose = () => {
-		if (isGuest) {
-			logout(); 
-		}
 		onClose(); 
 	};
 

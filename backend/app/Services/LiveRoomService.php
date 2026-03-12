@@ -88,7 +88,7 @@ class LiveRoomService
         // Borrar token antiguo para limpieza y seguridad
         $prefix = config('database.redis.options.prefix', '');
         $existingTokens = Redis::keys("room:{$roomId}:token:*");
-        
+
         foreach ($existingTokens as $key) {
             $cleanKey = str_replace($prefix, '', $key);
             if (Redis::get($cleanKey) === $playerName) {
@@ -120,10 +120,32 @@ class LiveRoomService
             throw new RoomException(RoomException::NOT_IN_ROOM, "Player {$playerName} is not in this room.", 409);
         }
 
-        // ABANDONO VS DESCONEXIÓN
+        // ABANDONO EN MITAD DE PARTIDA
         if ($room['status'] === 'in_game') {
             // Si la partida ya empezó, marcar al jugador offline
             Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
+
+            // ¿Queda alguien vivo en la sala?
+            $allPlayers = Redis::smembers("{$roomKey}:players");
+            $isAnyoneOnline = false;
+
+            foreach ($allPlayers as $pName) {
+                if (Redis::hget("{$roomKey}:player:{$pName}", 'is_online') === '1') {
+                    $isAnyoneOnline = true;
+                    break;
+                }
+            }
+
+            // Si ya no queda nadie online, destruir la sala
+            if (!$isAnyoneOnline) {
+                $this->deleteAllRoomData($roomId);
+                Redis::srem("active_rooms", $roomId);
+
+                event(new RoomListUpdated($roomId));
+
+                return;
+            }
+
             app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
             event(new RoomStateUpdated($roomId));
             return;
@@ -197,16 +219,18 @@ class LiveRoomService
      */
     private function deletePlayerToken(string $roomId, string $playerName): void
     {
-        $prefix = config('database.redis.options.prefix', '');
         $tokenKeys = Redis::keys("room:{$roomId}:token:*");
 
         foreach ($tokenKeys as $key) {
-            $cleanKey = str_replace($prefix, '', $key);
-            $tokenOwner = Redis::get($cleanKey);
+            $pos = strpos($key, "room:{$roomId}:token:");
+            if ($pos !== false) {
+                $cleanKey = substr($key, $pos);
+                $tokenOwner = Redis::get($cleanKey);
 
-            if ($tokenOwner === $playerName) {
-                Redis::del($cleanKey);
-                break; 
+                if ($tokenOwner === $playerName) {
+                    Redis::del($cleanKey);
+                    break;
+                }
             }
         }
     }
@@ -216,11 +240,17 @@ class LiveRoomService
      */
     private function deleteAllRoomData(string $roomId): void
     {
-        $prefix = config('database.redis.options.prefix', '');
         $allRoomKeys = Redis::keys("room:{$roomId}*");
+        $cleanKeys = [];
 
-        if (!empty($allRoomKeys)) {
-            $cleanKeys = array_map(fn($key) => str_replace($prefix, '', $key), $allRoomKeys);
+        foreach ($allRoomKeys as $key) {
+            $pos = strpos($key, "room:{$roomId}");
+            if ($pos !== false) {
+                $cleanKeys[] = substr($key, $pos);
+            }
+        }
+
+        if (!empty($cleanKeys)) {
             Redis::del($cleanKeys);
         }
     }

@@ -154,32 +154,36 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		}
 	}, [myPlayerName, attemptJoin]);
 
-	// PROTECCIÓN AL CERRAR VENTANA (Corregido para Sanctum)
-	useEffect(() => {
-		const handleUnload = () => {
-			if (isLeavingRef.current) return;
-			if (roomStatusRef.current === "waiting" && roomId) {
-				const sanctumToken = localStorage.getItem("token") || "";
-				const gameToken = localStorage.getItem("game_token") || "";
+	// PROTECCIÓN AL CERRAR VENTANA 
+    useEffect(() => {
+        const handleUnload = () => {
+            // Si ya está saliendo con el botón "Salir", no hacer nada
+            if (isLeavingRef.current) return;
 
-				// Usamos fetch con keepalive para garantizar que la petición se envíe
-				// incluso si el navegador está matando la pestaña, PERO enviando las cabeceras.
-				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
-					method: "POST",
-					headers: {
-						Accept: "application/json",
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${sanctumToken}`,
-						"X-Game-Token": gameToken,
-					},
-					keepalive: true,
-					body: JSON.stringify({}),
-				}).catch(() => {});
-			}
-		};
-		window.addEventListener("beforeunload", handleUnload);
-		return () => window.removeEventListener("beforeunload", handleUnload);
-	}, [roomId]);
+            // Solo disparar el abandono si está en la sala de espera
+            if (roomStatusRef.current === "waiting" && roomId) {
+                const sanctumToken = localStorage.getItem("token") || "";
+                const gameToken = localStorage.getItem("game_token") || "";
+
+                const baseUrl = api.defaults.baseURL;
+
+                fetch(`${baseUrl}/rooms/${roomId}/leave`, {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${sanctumToken}`,
+                        "X-Game-Token": gameToken,
+                    },
+                    keepalive: true, // ¡La magia!
+                    body: JSON.stringify({}),
+                }).catch(() => {});
+            }
+        };
+
+        window.addEventListener("beforeunload", handleUnload);
+        return () => window.removeEventListener("beforeunload", handleUnload);
+    }, [roomId]);
 
 	// Listener de sesión multipestaña
 	useEffect(() => {

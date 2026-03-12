@@ -11,7 +11,7 @@ import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
 import { logWithTime } from "../../utils/logger.ts";
 
-// -- STORE -- 
+// -- STORE --
 import { useAuthStore } from "../../store/useAuthStore.ts";
 
 // -- INTERFACES --
@@ -24,6 +24,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [isConnecting, setIsConnecting] = useState(true);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
 
@@ -42,6 +43,13 @@ export function useLiveGame(roomId: string | undefined) {
 
 		try {
 			const res = await api.post(`/rooms/${roomId}/sync`);
+
+			// Silenciador de Axios (si intercepta un 401 devuelve null)
+			if (!res || res.data === null) {
+				isKickedRef.current = true;
+				navigate("/");
+				return;
+			}
 
 			setGameData(res.data);
 			setLoading(false);
@@ -78,17 +86,21 @@ export function useLiveGame(roomId: string | undefined) {
 			if (!roomId || !myPlayerName || !token) return;
 
 			try {
+				// Primero hacer el JOIN sí o sí
 				const res = await api.post(`/rooms/${roomId}/join`);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
 				}
 
+				// Una vez guardado el token nuevo, sincronizar con seguridad
 				await syncGame();
 			} catch (error) {
 				logWithTime("No se pudo reconectar. ", error);
 				alert("No puedes acceder a esta partida en curso.");
 				navigate("/");
+			} finally {
+				setIsConnecting(false);
 			}
 		};
 
@@ -128,7 +140,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 	useGameSockets({
 		roomId,
-		refreshGameData: syncGame,
+		refreshGameData: isConnecting ? () => {} : syncGame,
 	});
 
 	return {
