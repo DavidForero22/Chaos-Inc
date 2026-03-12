@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/axios";
 import type { RoomData } from "../../types/api.ts";
+import { logWithTime } from "../../utils/logger.ts";
 
 interface UseRoomSessionProps {
 	roomId: string | undefined;
@@ -39,7 +40,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		} finally {
-			alert("Te has salido de la sala.");
+			logWithTime("Te has salido de la sala.", null);
 			localStorage.removeItem("game_token");
 			navigate("/");
 		}

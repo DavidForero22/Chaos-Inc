@@ -55,7 +55,7 @@ api.interceptors.response.use(
 			if (url.includes("/sync") || url.includes("/leave")) {
 				localStorage.removeItem("game_token");
 				logWithTime(
-					"⚠️ [Sala] Sesión de juego caducada. Limpiando game_token...",
+					"[Sala] Sesión de juego caducada. Limpiando game_token...",
 					null,
 					"warn",
 				);
@@ -64,7 +64,7 @@ api.interceptors.response.use(
 
 			// Usuario no existe.
 			logWithTime(
-				"⚠️ [Auth] Usuario invitado purgado o token inválido. Limpiando sesión...",
+				"[Auth] Usuario invitado purgado o token inválido. Limpiando sesión...",
 				null,
 				"warn",
 			);
