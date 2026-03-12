@@ -82,8 +82,18 @@ class LiveRoomService
                 Redis::hset($playerKey, 'skip_next_turn', 1);
             }
 
-            // Avisamos SOLO a la sala (el lobby no necesita saber que volvió, sigue contando como jugador)
             event(new RoomStateUpdated($roomId));
+        }
+
+        // Borrar token antiguo para limpieza y seguridad
+        $prefix = config('database.redis.options.prefix', '');
+        $existingTokens = Redis::keys("room:{$roomId}:token:*");
+        
+        foreach ($existingTokens as $key) {
+            $cleanKey = str_replace($prefix, '', $key);
+            if (Redis::get($cleanKey) === $playerName) {
+                Redis::del($cleanKey);
+            }
         }
 
         $gameToken = (string) Str::uuid();
@@ -112,38 +122,39 @@ class LiveRoomService
 
         // ABANDONO VS DESCONEXIÓN
         if ($room['status'] === 'in_game') {
-            // Si la partida ya empezó, NO lo borramos, solo lo marcamos offline
+            // Si la partida ya empezó, marcar al jugador offline
             Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
             app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
-
-            // Avisamos SOLO a la sala para que lo pinten de gris (el lobby no cambia el aforo)
             event(new RoomStateUpdated($roomId));
             return;
         }
 
-        // Si la partida NO ha empezado, borrado definitivo
+        // --- BORRADO DE JUGADOR ---
         Redis::srem("{$roomKey}:players", $playerName);
+        $this->deletePlayerToken($roomId, $playerName);
+
         $remainingPlayersCount = Redis::scard("{$roomKey}:players");
 
-        // Si no quedan jugadores, borrar sala
+        // --- BORRADO DE SALA VACIA ---
         if ($remainingPlayersCount === 0) {
-            Redis::del($roomKey);
-            Redis::del("{$roomKey}:players");
+            $this->deleteAllRoomData($roomId);
             Redis::srem("active_rooms", $roomId);
         } else {
-            // Si el que se va es el dueño, pasar la corona a otro
+            // Si el que se va es el dueño, pasar la corona a otro jugador
             if ($room['owner_name'] === $playerName) {
                 $newOwner = Redis::srandmember("{$roomKey}:players");
-
                 if ($newOwner) {
                     Redis::hset($roomKey, 'owner_name', $newOwner);
                 }
             }
         }
 
-        // Avisamos a todos (Lobby actualiza aforo/borra sala, Sala actualiza jugadores/dueño)
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated($roomId));
+
+        // Si la sala se borró, no disparar el evento StateUpdated porque ya no existe
+        if ($remainingPlayersCount > 0) {
+            event(new RoomStateUpdated($roomId));
+        }
     }
 
     public function kickPlayer(string $roomId, string $adminName, string $playerToKick): void
@@ -170,11 +181,47 @@ class LiveRoomService
             throw new RoomException(RoomException::NOT_IN_ROOM, "The player is not in the room.", 404);
         }
 
-        // --- Expulsar ---
+        // --- Expulsar y Limpiar ---
         Redis::srem("{$roomKey}:players", $playerToKick);
 
-        // Notificar a todos los canales (Lobby actualiza aforo, Sala expulsa al jugador visualmente)
+        $this->deletePlayerToken($roomId, $playerToKick);
+
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
+    }
+
+    // --- FUNCIONES AUXILIARES ---
+
+    /**
+     * Busca el token de un jugador concreto en Redis y lo borra.
+     */
+    private function deletePlayerToken(string $roomId, string $playerName): void
+    {
+        $prefix = config('database.redis.options.prefix', '');
+        $tokenKeys = Redis::keys("room:{$roomId}:token:*");
+
+        foreach ($tokenKeys as $key) {
+            $cleanKey = str_replace($prefix, '', $key);
+            $tokenOwner = Redis::get($cleanKey);
+
+            if ($tokenOwner === $playerName) {
+                Redis::del($cleanKey);
+                break; 
+            }
+        }
+    }
+
+    /**
+     * Borra todos los datos relaccionados a una sala en Redis.
+     */
+    private function deleteAllRoomData(string $roomId): void
+    {
+        $prefix = config('database.redis.options.prefix', '');
+        $allRoomKeys = Redis::keys("room:{$roomId}*");
+
+        if (!empty($allRoomKeys)) {
+            $cleanKeys = array_map(fn($key) => str_replace($prefix, '', $key), $allRoomKeys);
+            Redis::del($cleanKeys);
+        }
     }
 }
