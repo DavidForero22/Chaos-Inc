@@ -1,8 +1,10 @@
 // src/api/axios.ts
 
 import axios from "axios";
+
 import { useAuthStore } from "../store/useAuthStore.ts";
 import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { logWithTime } from "../utils/logger.ts";
 
 const api = axios.create({
 	baseURL: "http://localhost:8000/api/v1",
@@ -40,28 +42,41 @@ api.interceptors.response.use(
 	},
 	(error) => {
 		useLoadingStore.getState().stopLoading();
-		console.error("Error en la API:", error);
 
 		const status = error.response?.status;
-		const errorType = error.response?.data?.type;
 		const url = error.config?.url ?? "";
 
-		// Limpiar token temporal de partida si caduca o es expulsado
-		if (status === 401 && (url.includes("/sync") || url.includes("/leave"))) {
-			localStorage.removeItem("game_token");
-		}
-
-		// Si Sanctum rechaza el token inicial en /me O si el backend lanza USER_NOT_FOUND
-		if (
-			(status === 401 && url.includes("/me")) ||
-			errorType === "USER_NOT_FOUND"
-		) {
-			console.warn(
-				"Identidad no válida o usuario expirado. Limpiando sesión silenciosamente...",
+		// Usuario borrado de la base de datos
+		if (status === 401 && url.includes("/me")) {
+			logWithTime(
+				"[Auth] Usuario invitado purgado o no encontrado. Limpiando sesión...",
+				null,
+				"warn",
 			);
+
 			localStorage.removeItem("game_token");
 			useAuthStore.getState().logout();
+
+			if (window.location.pathname !== "/") {
+				window.location.href = "/";
+			}
+
+			return Promise.resolve({ data: null });
 		}
+
+		// Token de sala caducado
+		if (status === 401 && (url.includes("/sync") || url.includes("/leave"))) {
+			localStorage.removeItem("game_token");
+			logWithTime(
+				"[Room] Sesión de juego caducada. Limpiando game_token de localStorage...",
+				null,
+				"warn",
+			);
+			return Promise.resolve({ data: null });
+		}
+
+		// Error general
+		logWithTime("Error en la API", error, "error");
 
 		return Promise.reject(error);
 	},

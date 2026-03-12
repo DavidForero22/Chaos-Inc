@@ -8,7 +8,7 @@ use App\Http\Requests\Auth\RegisterUserRequest;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
 use App\Http\Resources\UserResource;
-use App\Exceptions\IdentityException;
+
 
 class AuthController extends Controller
 {
@@ -21,32 +21,8 @@ class AuthController extends Controller
 
     public function me(Request $request)
     {
-        $user = $request->user();
-
-        // Si Sanctum no encuentra al usuario $user, será null.
-        if (!$user) {
-            throw new IdentityException(
-                IdentityException::USER_NOT_FOUND,
-                "The user identity no longer exists in our records.",
-                401
-            );
-        }
-
-        // Si por algún motivo el usuario está "eliminado suavemente" pero Sanctum 
-        // aún lo devuelve, forzar la comprobación:
-        if ($user->trashed()) {
-            // Revocar sus tokens por seguridad
-            $user->tokens()->delete();
-
-            throw new IdentityException(
-                IdentityException::USER_NOT_FOUND,
-                "This account has been deleted.",
-                401
-            );
-        }
-
         return response()->json([
-            'user' => new UserResource($user)
+            'user' => new UserResource($request->user())
         ], 200);
     }
 

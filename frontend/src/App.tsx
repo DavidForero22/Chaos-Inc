@@ -9,7 +9,24 @@ import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
 
+import { useAuthStore } from "./store/useAuthStore.ts";
+import { useEffect } from "react";
+import api from "./api/axios.ts";
+
 function App() {
+	const { token } = useAuthStore();
+
+	useEffect(() => {
+		// Si hay token en el frontend, comprobamos si sigue vivo en el backend
+		const verifySession = async () => {
+			if (!token) return;
+
+			await api.get("/me");
+		};
+
+		verifySession();
+	}, [token]);
+
 	return (
 		<Router>
 			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
