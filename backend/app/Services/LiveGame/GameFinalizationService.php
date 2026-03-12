@@ -1,4 +1,5 @@
 <?php
+// app/Services/LiveGame/GameFinalizationService.php
 
 namespace App\Services\LiveGame;
 
@@ -37,12 +38,6 @@ class GameFinalizationService
 
             $user = User::where('username', $name)->first();
             $isGuest = !$user || $user->is_guest;
-
-            // Si es usuario guest creado en DB, borrarlo limpiamente
-            if ($user && $user->is_guest) {
-                $user->forceDelete();
-                $user = null;
-            }
 
             $playersData[] = [
                 'user_id'         => $user?->id,

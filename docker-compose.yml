@@ -25,13 +25,14 @@ services:
       - ./backend:/var/www/html
     ports:
       - "8000:8000"
-    command: php artisan serve --host=0.0.0.0 --port=8000
+    command: >
+      sh -c "php artisan guests:purge && php artisan serve --host=0.0.0.0 --port=8000"
     depends_on:
       - mysql
       - redis
     networks:
       - chaos-inc-net
-      
+
   # CONEXIÓN (Reverb)
   reverb:
     build:
@@ -50,6 +51,7 @@ services:
     networks:
       - chaos-inc-net
 
+  # TRABAJADOR DE COLAS
   worker:
     build:
       context: .
@@ -60,6 +62,23 @@ services:
     depends_on:
       - mysql
       - redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - chaos-inc-net
+
+  # PLANIFICADOR DE TAREAS
+  scheduler:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.php
+    volumes:
+      - ./backend:/var/www/html
+    command: php artisan schedule:work
+    depends_on:
+      - mysql
+      - redis
+      - backend
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
