@@ -45,11 +45,26 @@ api.interceptors.response.use(
 
 		const status = error.response?.status;
 		const url = error.config?.url ?? "";
+		const isAuthRoute =
+			url.includes("/login") ||
+			url.includes("/register") ||
+			url.includes("/guest");
 
-		// Usuario borrado de la base de datos
-		if (status === 401 && url.includes("/me")) {
+		if (status === 401 && !isAuthRoute) {
+			// Si es un 401 de una ruta exclusiva de sala, solo borar el game_token
+			if (url.includes("/sync") || url.includes("/leave")) {
+				localStorage.removeItem("game_token");
+				logWithTime(
+					"⚠️ [Sala] Sesión de juego caducada. Limpiando game_token...",
+					null,
+					"warn",
+				);
+				return Promise.resolve({ data: null });
+			}
+
+			// Usuario no existe.
 			logWithTime(
-				"[Auth] Usuario invitado purgado o no encontrado. Limpiando sesión...",
+				"⚠️ [Auth] Usuario invitado purgado o token inválido. Limpiando sesión...",
 				null,
 				"warn",
 			);
@@ -61,17 +76,6 @@ api.interceptors.response.use(
 				window.location.href = "/";
 			}
 
-			return Promise.resolve({ data: null });
-		}
-
-		// Token de sala caducado
-		if (status === 401 && (url.includes("/sync") || url.includes("/leave"))) {
-			localStorage.removeItem("game_token");
-			logWithTime(
-				"[Room] Sesión de juego caducada. Limpiando game_token de localStorage...",
-				null,
-				"warn",
-			);
 			return Promise.resolve({ data: null });
 		}
 
