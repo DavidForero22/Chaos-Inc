@@ -12,6 +12,7 @@ export interface Opponent {
 	is_online: boolean;
 	cards_count: number;
 	has_shield: boolean;
+	acting_boss: boolean;
 }
 
 /**
@@ -35,6 +36,7 @@ export interface MyData {
 	incoming_attack: boolean;
 	has_shield: boolean;
 	has_pending_attack: boolean;
+	acting_boss: boolean;
 }
 
 /**

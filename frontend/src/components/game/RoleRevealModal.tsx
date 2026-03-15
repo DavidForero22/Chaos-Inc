@@ -1,48 +1,85 @@
 import type { MyData } from "../../types/live-game.ts";
 
+type DisplayRole = MyData["role"] | "acting_boss";
+
 const ROLE_CONFIG: Record<
-	MyData["role"],
-	{ label: string; emoji: string; color: string; objective: string }
+	DisplayRole,
+	{
+		label: string;
+		emoji: string;
+		color: string;
+		objective: string;
+		titleLabel: string;
+		isWarning?: boolean;
+	}
 > = {
 	boss: {
 		label: "Jefe",
 		emoji: "👑",
 		color: "text-yellow-400",
-		objective: "Eres el jefe de la empresa. ¡Acaba con los Sindicalistas de trabajadores antes de que te hechen de la empresa!",
+		objective:
+			"Eres el jefe de la empresa. ¡Acaba con los Sindicalistas de trabajadores antes de que te echen de la empresa!",
+		titleLabel: "Tu rol en esta partida",
 	},
 	secretary: {
 		label: "Secretario",
 		emoji: "📋",
 		color: "text-blue-400",
-		objective: "Eres el secretario del jefe. ¡Protege su puesto por lo que mas sea, no puede caer!",
+		objective:
+			"Eres el secretario del jefe. ¡Protege su puesto por lo que más sea, no puede caer!",
+		titleLabel: "Tu rol en esta partida",
 	},
 	intern: {
 		label: "Becario",
 		emoji: "🎓",
 		color: "text-green-400",
-		objective: "Eres el becario. ¡Acaba con todos en la empresa y conviertete en el nuevo jefe!",
+		objective:
+			"Eres el becario. ¡Acaba con todos en la empresa y conviértete en el nuevo jefe!",
+		titleLabel: "Tu rol en esta partida",
 	},
 	union: {
 		label: "Sindicalista",
 		emoji: "✊",
 		color: "text-red-400",
-		objective: "Eres sindicalista. ¡Acaba con el jefe de esta empresa corrupta!",
+		objective:
+			"Eres sindicalista. ¡Acaba con el jefe de esta empresa corrupta!",
+		titleLabel: "Tu rol en esta partida",
+	},
+	acting_boss: {
+		label: "Eres el nuevo Jefe",
+		emoji: "👑",
+		color: "text-yellow-400",
+		objective:
+			"El jefe se ha desconectado y has heredado su cargo en secreto. Ahora debes sobrevivir y eliminar a los Sindicalistas. Si se reconecta el jefe original, recuperarás tu puesto anterior.",
+		titleLabel: "⚠️ Cambio de poder",
+		isWarning: true,
 	},
 };
 
 interface RoleRevealModalProps {
 	role: MyData["role"];
 	onClose: () => void;
+	isActingBoss?: boolean;
 }
 
-export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
-	const config = ROLE_CONFIG[role];
+export function RoleRevealModal({
+	role,
+	onClose,
+	isActingBoss = false,
+}: RoleRevealModalProps) {
+	const displayKey: DisplayRole = isActingBoss ? "acting_boss" : role;
+	const config = ROLE_CONFIG[displayKey];
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
 			<div className="bg-gray-800 border border-gray-600 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
-				<p className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-4">
-					Tu rol en esta partida
+				{/* Etiqueta superior dinámica (Advertencia o Rol Normal) */}
+				<p
+					className={`text-xs uppercase font-bold tracking-widest mb-4 ${
+						config.isWarning ? "text-yellow-400" : "text-gray-400"
+					}`}
+				>
+					{config.titleLabel}
 				</p>
 
 				<div className="text-6xl mb-4">{config.emoji}</div>
@@ -53,7 +90,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 
 				<div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mt-4 mb-6">
 					<p className="text-xs text-gray-500 uppercase font-bold mb-2">
-						Tu objetivo
+						{config.isWarning ? "Tu nueva misión" : "Tu objetivo"}
 					</p>
 					<p className="text-gray-300 text-sm leading-relaxed">
 						{config.objective}
@@ -64,7 +101,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 					onClick={onClose}
 					className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
 				>
-					¡Entendido, a jugar!
+					¡Entendido!
 				</button>
 			</div>
 		</div>

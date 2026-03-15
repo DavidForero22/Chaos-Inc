@@ -2,7 +2,7 @@
 
 // -- HOOKS --
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 
@@ -30,6 +30,9 @@ export default function GameBoardPage() {
 		gameOver,
 	} = useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+
+	const [isActingBossReveal, setIsActingBossReveal] = useState(false);
+	const prevActingBossRef = useRef(false);
 
 	if (loading) {
 		return (
@@ -108,9 +111,24 @@ export default function GameBoardPage() {
 		await endTurn();
 	};
 
+	// Detectar cuando el jugador se convierte en acting_boss
+	useEffect(() => {
+		if (!gameData) return;
+		const isNowActingBoss = gameData.me.acting_boss === true;
+		if (isNowActingBoss && !prevActingBossRef.current) {
+			setIsActingBossReveal(true);
+		}
+		prevActingBossRef.current = isNowActingBoss;
+	}, [gameData?.me.acting_boss]);
+
+	// Detectar si el jefe está desconectado (visible para todos)
+	const bossDisconnected = game.opponents.some(
+		(o) => o.role === "boss" && !o.is_online,
+	);
+
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
-			{/* POPUP DE ROL — bloquea toda interacción hasta cerrarlo */}
+			{/* Modal rol inicial */}
 			{isFirstLoad && gameData && (
 				<RoleRevealModal
 					role={gameData.me.role}
@@ -118,12 +136,29 @@ export default function GameBoardPage() {
 				/>
 			)}
 
+			{/* Modal herencia de cargo */}
+			{isActingBossReveal && gameData && (
+				<RoleRevealModal
+					role={gameData.me.role}
+					isActingBoss={true}
+					onClose={() => setIsActingBossReveal(false)}
+				/>
+			)}
+
 			{gameOver && gameData && (
 				<GameOverModal
-					winnerRole={gameData.game.winner_role!}
+					winnerRole={gameData.game.winner_role}
 					myRole={gameData.me.role}
 					onClose={() => navigate("/")}
 				/>
+			)}
+
+			{/* Banner jefe desconectado */}
+			{bossDisconnected && (
+				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
+					⚠️ El jefe se ha desconectado. Alguien ha heredado su cargo en
+					secreto.
+				</div>
 			)}
 
 			{/* CABECERA */}
@@ -205,6 +240,15 @@ export default function GameBoardPage() {
 						<div className="flex justify-between items-center mt-2">
 							<span className="text-xs text-gray-500 uppercase">Escudo</span>
 							<span className="text-sm font-bold text-cyan-400">🛡️ Activo</span>
+						</div>
+					)}
+
+					{me.acting_boss && (
+						<div className="flex justify-between items-center mt-2">
+							<span className="text-xs text-gray-500 uppercase">Cargo</span>
+							<span className="text-sm font-bold text-yellow-400">
+								👑 Jefe en funciones
+							</span>
 						</div>
 					)}
 				</div>
