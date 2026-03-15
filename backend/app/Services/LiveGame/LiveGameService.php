@@ -84,6 +84,7 @@ class LiveGameService
                 'damage_received'       => 0,
                 'cards_played'          => 0,
                 'eliminations'          => 0,
+                'acting_boss' => 0,
             ]);
             Redis::expire("room:{$roomId}:player:{$playerName}", 86400);
         }
@@ -122,6 +123,8 @@ class LiveGameService
         if (!Redis::exists($playerKey)) {
             throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
+
+        app(DisconnectionService::class)->checkBossGracePeriod($roomId);
 
         $myData = Redis::hgetall($playerKey);
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");

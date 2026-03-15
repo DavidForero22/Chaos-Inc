@@ -94,4 +94,10 @@ class GameFinalizationService
         // La unica llave que se borra al instante es la de "active_rooms"
         Redis::srem("active_rooms", $roomId);
     }
+
+    public function cancelAndCleanup(string $roomId): void
+    {
+        $playerNames = Redis::smembers("room:{$roomId}:players");
+        $this->cleanupRedis($roomId, $playerNames);
+    }
 }

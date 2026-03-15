@@ -222,12 +222,14 @@ class GameActionService
             $data   = Redis::hgetall("room:{$roomId}:player:{$name}");
             $isDead = filter_var($data['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
             $role   = $data['role'] ?? '';
+            $isActingBoss = ($data['acting_boss'] ?? '0') === '1';
 
             if (!$isDead) {
                 $totalAlive++;
-                if ($role === 'boss')   $bossAlive = true;
+                // El jefe efectivo es el real o quien tenga acting_boss
+                if ($role === 'boss' || $isActingBoss) $bossAlive = true;
                 if ($role === 'union')  $unionAliveCount++;
-                if ($role === 'intern') $internAlive = true;
+                if ($role === 'intern' && !$isActingBoss) $internAlive = true;
             }
         }
         $winnerRole = null;
@@ -254,8 +256,6 @@ class GameActionService
             Redis::hset($roomKey, 'winner_role', $winnerRole);
 
             event(new RoomStateUpdated($roomId));
-
-            // Guardar en DB y limpiar Redis
             $this->finalizationService->finalize($roomId);
         }
     }

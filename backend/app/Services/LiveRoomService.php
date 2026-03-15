@@ -7,6 +7,7 @@ use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Services\LiveGame\DisconnectionService;
 use App\Services\LiveGame\LiveGameService;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
@@ -70,16 +71,23 @@ class LiveRoomService
             event(new RoomListUpdated($roomId));
             event(new RoomStateUpdated($roomId));
         } else if ($room['status'] === 'in_game') {
-            $playerKey = "room:{$roomId}:player:{$playerName}";
-
-            // Verificar si realmente se había caído antes de clavarle la penalización
-            $wasOffline = Redis::hget($playerKey, 'is_online') === '0';
+            $playerKey  = "room:{$roomId}:player:{$playerName}";
+            $playerData = Redis::hgetall($playerKey);
+            $wasOffline = ($playerData['is_online'] ?? '1') === '0';
 
             // Volver a ponerlo online
             Redis::hset($playerKey, 'is_online', 1);
 
             if ($wasOffline) {
                 Redis::hset($playerKey, 'skip_next_turn', 1);
+
+                // Si era el jefe real y vuelve antes de que expire la gracia
+                if (($playerData['role'] ?? '') === 'boss') {
+                    $gracePeriodExists = Redis::exists("room:{$roomId}:boss_grace_period");
+                    if ($gracePeriodExists) {
+                        app(DisconnectionService::class)->handleBossReconnection($roomId);
+                    }
+                }
             }
 
             event(new RoomStateUpdated($roomId));
@@ -140,10 +148,20 @@ class LiveRoomService
             if (!$isAnyoneOnline) {
                 $this->deleteAllRoomData($roomId);
                 Redis::srem("active_rooms", $roomId);
-
                 event(new RoomListUpdated($roomId));
-
                 return;
+            }
+
+            $playerData   = Redis::hgetall("room:{$roomId}:player:{$playerName}");
+            $isRealBoss   = ($playerData['role'] ?? '') === 'boss';
+            $isActingBoss = ($playerData['acting_boss'] ?? '0') === '1';
+
+            $disconnectionService = app(DisconnectionService::class);
+
+            if ($isRealBoss) {
+                $disconnectionService->handleBossDisconnection($roomId, $playerName);
+            } elseif ($isActingBoss) {
+                $disconnectionService->handleActingBossDisconnection($roomId, $playerName);
             }
 
             app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
