@@ -1,3 +1,5 @@
+// src/components/game/RoleRevealModal.tsx
+
 import type { MyData } from "../../types/live-game.ts";
 
 type DisplayRole = MyData["role"] | "acting_boss";

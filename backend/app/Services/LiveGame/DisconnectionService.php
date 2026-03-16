@@ -3,7 +3,11 @@
 
 namespace App\Services\LiveGame;
 
+use App\Events\ActingBossAssigned;
+use App\Events\ActingBossGracePeriodCancelled;
+use App\Events\ActingBossGracePeriodStarted;
 use App\Events\RoomStateUpdated;
+use App\Jobs\InheritBossRoleJob;
 use Illuminate\Support\Facades\Redis;
 
 class DisconnectionService
@@ -18,15 +22,17 @@ class DisconnectionService
     public function handleBossDisconnection(string $roomId, string $bossName): void
     {
         Redis::setex("room:{$roomId}:boss_grace_period", 10, $bossName);
+        InheritBossRoleJob::dispatch($roomId)->delay(10);
     }
 
     /**
-     * El jefe real vuelve antes de que expire la gracia.
-     * Cancela el timer y quita acting_boss a quien lo tuviera.
+     * El jefe real vuelve a la partida.
+     * Cancela el timer y quita acting_boss a quien lo tuviera (si habia alguien).
      */
     public function handleBossReconnection(string $roomId): void
     {
         Redis::del("room:{$roomId}:boss_grace_period");
+        Redis::del("room:{$roomId}:acting_boss_grace_period");
 
         $players = Redis::smembers("room:{$roomId}:players");
         foreach ($players as $name) {
@@ -34,6 +40,9 @@ class DisconnectionService
                 Redis::hset("room:{$roomId}:player:{$name}", 'acting_boss', 0);
             }
         }
+
+        $this->notifyInternGraceCancelled($roomId);
+        event(new RoomStateUpdated($roomId));
     }
 
     /**
@@ -47,8 +56,13 @@ class DisconnectionService
             return;
         }
 
-        $players = Redis::smembers("room:{$roomId}:players");
-        $bossIsOffline   = false;
+        // Si hay una grace period del acting boss activa, tampoco actuar
+        if (Redis::exists("room:{$roomId}:acting_boss_grace_period")) {
+            return;
+        }
+
+        $players          = Redis::smembers("room:{$roomId}:players");
+        $bossIsOffline    = false;
         $actingBossExists = false;
 
         foreach ($players as $name) {
@@ -75,9 +89,9 @@ class DisconnectionService
      */
     public function inheritBossRole(string $roomId): void
     {
-        $players    = Redis::smembers("room:{$roomId}:players");
-        $secretary  = null;
-        $intern     = null;
+        $players   = Redis::smembers("room:{$roomId}:players");
+        $secretary = null;
+        $intern    = null;
 
         foreach ($players as $name) {
             $pData    = Redis::hgetall("room:{$roomId}:player:{$name}");
@@ -95,6 +109,7 @@ class DisconnectionService
 
         if ($newActingBoss !== null) {
             Redis::hset("room:{$roomId}:player:{$newActingBoss}", 'acting_boss', 1);
+            event(new ActingBossAssigned($newActingBoss));
             event(new RoomStateUpdated($roomId));
         } else {
             $this->resolveNoInheritance($roomId);
@@ -108,37 +123,27 @@ class DisconnectionService
     public function handleActingBossDisconnection(string $roomId, string $actingBossName): void
     {
         Redis::hset("room:{$roomId}:player:{$actingBossName}", 'acting_boss', 0);
+        Redis::setex("room:{$roomId}:acting_boss_grace_period", 10, $actingBossName);
+        InheritBossRoleJob::dispatch($roomId)->delay(10);
 
-        $actingBossRole = Redis::hget("room:{$roomId}:player:{$actingBossName}", 'role');
-        $players        = Redis::smembers("room:{$roomId}:players");
-        $nextCandidate  = null;
-
-        // Solo el secretario puede ceder al becario
-        if ($actingBossRole === 'secretary') {
-            foreach ($players as $name) {
-                $pData    = Redis::hgetall("room:{$roomId}:player:{$name}");
-                $isOnline = ($pData['is_online'] ?? '1') !== '0';
-                $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
-                if (($pData['role'] ?? '') === 'intern' && $isOnline && !$isDead) {
-                    $nextCandidate = $name;
-                    break;
-                }
+        $players = Redis::smembers("room:{$roomId}:players");
+        foreach ($players as $name) {
+            $pData    = Redis::hgetall("room:{$roomId}:player:{$name}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if (($pData['role'] ?? '') === 'intern' && $isOnline && !$isDead) {
+                event(new ActingBossGracePeriodStarted($name));
+                break;
             }
         }
-
-        if ($nextCandidate !== null) {
-            Redis::hset("room:{$roomId}:player:{$nextCandidate}", 'acting_boss', 1);
-            event(new RoomStateUpdated($roomId));
-        } else {
-            $this->resolveNoInheritance($roomId);
-        }
+        event(new RoomStateUpdated($roomId));
     }
 
     /**
      * No hay nadie que pueda heredar el cargo de jefe.
-     * Si han pasado 2+ rondas, victoria union registrada. Si no, partida cancelada.
+     * Si han pasado 2+ rondas, victoria union. Si no, partida cancelada.
      */
-    private function resolveNoInheritance(string $roomId): void
+    public function resolveNoInheritance(string $roomId): void
     {
         $roundNumber = (int) Redis::hget("room:{$roomId}", 'round_number');
 
@@ -152,6 +157,20 @@ class DisconnectionService
             // Partida cancelada — limpiar sin registrar resultado
             event(new RoomStateUpdated($roomId));
             $this->finalizationService->cancelAndCleanup($roomId);
+        }
+    }
+
+    public function notifyInternGraceCancelled(string $roomId): void
+    {
+        $players = Redis::smembers("room:{$roomId}:players");
+        foreach ($players as $name) {
+            $pData    = Redis::hgetall("room:{$roomId}:player:{$name}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if (($pData['role'] ?? '') === 'intern' && $isOnline && !$isDead) {
+                event(new ActingBossGracePeriodCancelled($name));
+                break;
+            }
         }
     }
 }

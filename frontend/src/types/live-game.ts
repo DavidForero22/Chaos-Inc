@@ -51,5 +51,6 @@ export interface GameData {
 		winner_role: "boss" | "union" | "intern" | null;
 		round_number: number;
 		deck_count: number;
+		boss_disconnected: boolean;
 	};
 }

@@ -28,6 +28,12 @@ export function useLiveGame(roomId: string | undefined) {
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
 
+	// Estado para el modal de herencia — se activa por evento privado,
+	// no por comparación de gameData, para evitar depender del sync
+	const [isActingBossAssigned, setIsActingBossAssigned] = useState(false);
+	const [internGraceCancelled, setInternGraceCancelled] = useState(false);
+	const [actingBossGraceTrigger, setActingBossGraceTrigger] = useState(0);
+
 	const isKickedRef = useRef(false);
 
 	const syncGame = useCallback(async () => {
@@ -79,6 +85,21 @@ export function useLiveGame(roomId: string | undefined) {
 	}, [roomId, navigate, myPlayerName, token]);
 
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
+
+	// Callback que dispara useGameSockets al recibir el evento privado.
+	// Abre el modal de inmediato y después hace sync para tener gameData actualizado cuando el usuario pulse "Entendido".
+	const handleActingBossAssigned = useCallback(async () => {
+		setIsActingBossAssigned(true);
+		await syncGame();
+	}, [syncGame]);
+
+	const handleActingBossGrace = useCallback(() => {
+		setActingBossGraceTrigger((n) => n + 1);
+	}, []);
+
+	const handleActingBossGraceCancelled = useCallback(() => {
+		setInternGraceCancelled(true);
+	}, []);
 
 	useEffect(() => {
 		const reconnect = async () => {
@@ -140,7 +161,11 @@ export function useLiveGame(roomId: string | undefined) {
 
 	useGameSockets({
 		roomId,
+		myPlayerName: myPlayerName ?? "",
 		refreshGameData: isConnecting ? () => {} : syncGame,
+		onActingBossAssigned: handleActingBossAssigned,
+		onActingBossGrace: handleActingBossGrace,
+		onActingBossGraceCancelled: handleActingBossGraceCancelled,
 	});
 
 	return {
@@ -153,5 +178,10 @@ export function useLiveGame(roomId: string | undefined) {
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
+		isActingBossAssigned,
+		setIsActingBossAssigned,
+		actingBossGraceTrigger,
+		internGraceCancelled,
+		setInternGraceCancelled,
 	};
 }

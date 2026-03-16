@@ -143,7 +143,7 @@ class LiveGameService
                 'role'        => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
                 'is_online'   => (bool) filter_var($pData['is_online'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
-                'has_shield'  => (bool) filter_var($pData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN), // ← nuevo
+                'has_shield'  => (bool) filter_var($pData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN),
             ];
         }
 
@@ -160,6 +160,7 @@ class LiveGameService
                 'incoming_attack'       => $hasIncomingAttack,
                 'has_pending_attack' => $hasPendingAttack,
                 'has_shield'            => (bool) filter_var($myData['has_shield'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                'acting_boss' => (bool) filter_var($myData['acting_boss'] ?? false, FILTER_VALIDATE_BOOLEAN),
 
             ],
             'game' => [
@@ -169,6 +170,8 @@ class LiveGameService
                 'winner_role'  => $room['winner_role'] ?? null,
                 'round_number' => (int) ($room['round_number'] ?? 0),
                 'deck_count'   => count(json_decode(Redis::get("room:{$roomId}:deck") ?? '[]', true)),
+                'boss_disconnected' => Redis::exists("room:{$roomId}:boss_grace_period")
+                    || $this->hasBossOfflineWithActingBoss($roomId),
             ]
         ];
     }
@@ -193,5 +196,17 @@ class LiveGameService
     public function reactToAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
     {
         $this->gameActionService->reactToAttack($roomId, $playerName, $reaction, $cardId);
+    }
+
+    private function hasBossOfflineWithActingBoss(string $roomId): bool
+    {
+        $players = Redis::smembers("room:{$roomId}:players");
+        foreach ($players as $name) {
+            $pData = Redis::hgetall("room:{$roomId}:player:{$name}");
+            if (($pData['role'] ?? '') === 'boss' && ($pData['is_online'] ?? '1') === '0') {
+                return true;
+            }
+        }
+        return false;
     }
 }

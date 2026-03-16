@@ -3,6 +3,7 @@
 
 namespace App\Services;
 
+use App\Events\ActingBossAssigned;
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
@@ -67,7 +68,7 @@ class LiveRoomService
 
             Redis::sadd("{$roomKey}:players", $playerName);
 
-            // Avisamos al Lobby (hay un jugador más) y a la Sala (actualicen sus listas)
+            // Avisar al Lobby (hay un jugador más) y a la Sala (actualicen sus listas)
             event(new RoomListUpdated($roomId));
             event(new RoomStateUpdated($roomId));
         } else if ($room['status'] === 'in_game') {
@@ -81,11 +82,45 @@ class LiveRoomService
             if ($wasOffline) {
                 Redis::hset($playerKey, 'skip_next_turn', 1);
 
-                // Si era el jefe real y vuelve antes de que expire la gracia
                 if (($playerData['role'] ?? '') === 'boss') {
-                    $gracePeriodExists = Redis::exists("room:{$roomId}:boss_grace_period");
-                    if ($gracePeriodExists) {
-                        app(DisconnectionService::class)->handleBossReconnection($roomId);
+                    app(DisconnectionService::class)->handleBossReconnection($roomId);
+                }
+
+                // Si era el jefe heredado y vuelve antes de que expire su gracia
+                $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
+                if ($actingGraceValue === $playerName) {
+                    Redis::del("room:{$roomId}:acting_boss_grace_period");
+                    Redis::hset($playerKey, 'acting_boss', 1);
+                    $players = Redis::smembers("room:{$roomId}:players");
+                    foreach ($players as $pName) {
+                        if ($pName === $playerName) continue;
+                        $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+                        if (($pData['role'] ?? '') === 'intern' && ($pData['acting_boss'] ?? '0') === '1') {
+                            Redis::hset("room:{$roomId}:player:{$pName}", 'acting_boss', 0);
+                        }
+                    }
+                    app(DisconnectionService::class)->notifyInternGraceCancelled($roomId);
+                }
+
+                // Si el secretario vuelve y el jefe sigue offline, recupera prioridad sobre el becario
+                if (($playerData['role'] ?? '') === 'secretary') {
+                    $bossStillOffline = false;
+                    foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
+                        $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+                        if (($pData['role'] ?? '') === 'boss' && ($pData['is_online'] ?? '1') === '0') {
+                            $bossStillOffline = true;
+                            break;
+                        }
+                    }
+                    if ($bossStillOffline) {
+                        foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
+                            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+                            if (($pData['role'] ?? '') === 'intern' && ($pData['acting_boss'] ?? '0') === '1') {
+                                Redis::hset("room:{$roomId}:player:{$pName}", 'acting_boss', 0);
+                            }
+                        }
+                        Redis::hset($playerKey, 'acting_boss', 1);
+                        event(new ActingBossAssigned($playerName));
                     }
                 }
             }

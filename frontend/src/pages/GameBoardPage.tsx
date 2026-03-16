@@ -14,6 +14,7 @@ import { PlayerHand } from "../components/game/PlayerHand.tsx";
 import { OpponentsBoard } from "../components/game/OpponentsBoard.tsx";
 import { RoleRevealModal } from "../components/game/RoleRevealModal.tsx";
 import { GameOverModal } from "../components/game/GameOverModal.tsx";
+import { logWithTime } from "../utils/logger.ts";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -28,11 +29,109 @@ export default function GameBoardPage() {
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
+		isActingBossAssigned,
+		setIsActingBossAssigned,
+		actingBossGraceTrigger,
+		internGraceCancelled,
+		setInternGraceCancelled,
 	} = useLiveGame(id);
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
-	const [isActingBossReveal, setIsActingBossReveal] = useState(false);
-	const prevActingBossRef = useRef(false);
+	// --- Contador reconexion jefe + Jefe heredado ---
+	const [graceSecondsLeft, setGraceSecondsLeft] = useState<number | null>(null);
+	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
+	const prevBossDisconnectedRef = useRef(false);
+	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const [internGraceSecondsLeft, setInternGraceSecondsLeft] = useState<
+		number | null
+	>(null);
+	const internCountdownRef = useRef<ReturnType<typeof setInterval> | null>(
+		null,
+	);
+
+	useEffect(() => {
+		if (!gameData) return;
+		const bossDisconnected = Boolean(gameData.game.boss_disconnected);
+		const wasDisconnected = prevBossDisconnectedRef.current;
+		prevBossDisconnectedRef.current = bossDisconnected;
+
+		if (bossDisconnected && !wasDisconnected) {
+			setGraceSecondsLeft(10);
+
+			if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+			countdownTimerRef.current = setInterval(() => {
+				setGraceSecondsLeft((prev) => {
+					if (prev === null || prev <= 1) {
+						clearInterval(countdownTimerRef.current!);
+						countdownTimerRef.current = null;
+						setShowInheritanceBanner(true);
+						if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+						bannerTimerRef.current = setTimeout(
+							() => setShowInheritanceBanner(false),
+							4500,
+						);
+						return null;
+					}
+					return prev - 1;
+				});
+			}, 1000);
+		}
+
+		if (!bossDisconnected && wasDisconnected) {
+			if (countdownTimerRef.current) {
+				clearInterval(countdownTimerRef.current);
+				countdownTimerRef.current = null;
+			}
+			if (bannerTimerRef.current) {
+				clearTimeout(bannerTimerRef.current);
+				bannerTimerRef.current = null;
+			}
+			setGraceSecondsLeft(null);
+			setShowInheritanceBanner(false);
+		}
+
+		return () => {
+			if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
+			if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
+		};
+	}, [gameData?.game.boss_disconnected]);
+
+	// UseEffect para el jefe heredado
+	useEffect(() => {
+		if (!actingBossGraceTrigger) return;
+
+		logWithTime("Iniciando cuenta atras de internGraceSecondsLeft (10s).");
+		setInternGraceSecondsLeft(10);
+
+		if (internCountdownRef.current) clearInterval(internCountdownRef.current);
+		internCountdownRef.current = setInterval(() => {
+			setInternGraceSecondsLeft((prev) => {
+				if (prev === null || prev <= 1) {
+					clearInterval(internCountdownRef.current!);
+					internCountdownRef.current = null;
+					return null;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => {
+			if (internCountdownRef.current) clearInterval(internCountdownRef.current);
+		};
+	}, [actingBossGraceTrigger]);
+
+	// UseEffect para cancelar el countdown del becario
+	useEffect(() => {
+		if (!internGraceCancelled) return;
+		setInternGraceCancelled(false);
+		if (internCountdownRef.current) {
+			clearInterval(internCountdownRef.current);
+			internCountdownRef.current = null;
+			setInternGraceSecondsLeft(null);
+		}
+	}, [internGraceCancelled]);
 
 	if (loading) {
 		return (
@@ -111,21 +210,6 @@ export default function GameBoardPage() {
 		await endTurn();
 	};
 
-	// Detectar cuando el jugador se convierte en acting_boss
-	useEffect(() => {
-		if (!gameData) return;
-		const isNowActingBoss = gameData.me.acting_boss === true;
-		if (isNowActingBoss && !prevActingBossRef.current) {
-			setIsActingBossReveal(true);
-		}
-		prevActingBossRef.current = isNowActingBoss;
-	}, [gameData?.me.acting_boss]);
-
-	// Detectar si el jefe está desconectado (visible para todos)
-	const bossDisconnected = game.opponents.some(
-		(o) => o.role === "boss" && !o.is_online,
-	);
-
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
 			{/* Modal rol inicial */}
@@ -136,13 +220,24 @@ export default function GameBoardPage() {
 				/>
 			)}
 
-			{/* Modal herencia de cargo */}
-			{isActingBossReveal && gameData && (
+			{/* Modal herencia de cargo — se abre por evento privado,
+			    sin necesidad de que el jugador haga sync primero */}
+			{isActingBossAssigned && gameData && (
 				<RoleRevealModal
 					role={gameData.me.role}
 					isActingBoss={true}
-					onClose={() => setIsActingBossReveal(false)}
+					onClose={() => setIsActingBossAssigned(false)}
 				/>
+			)}
+
+			{/* Cuenta atras de reconexion solo para el becario */}
+			{internGraceSecondsLeft !== null && (
+				<div className="bg-orange-900/40 border border-orange-700 text-orange-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
+					⏳ El jefe heredado se ha desconectado. Esperando reconexión...{" "}
+					<span className="font-mono text-orange-200">
+						{internGraceSecondsLeft}s
+					</span>
+				</div>
 			)}
 
 			{gameOver && gameData && (
@@ -153,8 +248,16 @@ export default function GameBoardPage() {
 				/>
 			)}
 
-			{/* Banner jefe desconectado */}
-			{bossDisconnected && (
+			{/* Contador de gracia */}
+			{graceSecondsLeft !== null && (
+				<div className="bg-blue-900/40 border border-blue-700 text-blue-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
+					⏳ El jefe se ha desconectado. Esperando reconexión...{" "}
+					<span className="font-mono text-blue-200">{graceSecondsLeft}s</span>
+				</div>
+			)}
+
+			{/* Banner de herencia — se auto-descarta a los 4.5s */}
+			{showInheritanceBanner && (
 				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
 					⚠️ El jefe se ha desconectado. Alguien ha heredado su cargo en
 					secreto.
@@ -185,7 +288,7 @@ export default function GameBoardPage() {
 				</div>
 			</div>
 
-			{/* MESA CENTRAL (Rivales) */}
+			{/* MESA CENTRAL */}
 			<OpponentsBoard
 				opponents={game.opponents}
 				isMyTurn={isMyTurn}
@@ -194,7 +297,7 @@ export default function GameBoardPage() {
 				onOpponentClick={handleOpponentClick}
 			/>
 
-			{/* ZONA DEL JUGADOR (Tus cartas y tu info) */}
+			{/* ZONA DEL JUGADOR */}
 			<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end">
 				{me.skip_next_turn && (
 					<div className="absolute -top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-orange-400">
@@ -243,7 +346,7 @@ export default function GameBoardPage() {
 						</div>
 					)}
 
-					{me.acting_boss && (
+					{Boolean(me.acting_boss) && (
 						<div className="flex justify-between items-center mt-2">
 							<span className="text-xs text-gray-500 uppercase">Cargo</span>
 							<span className="text-sm font-bold text-yellow-400">
