@@ -1,17 +1,17 @@
 // src/hooks/game/useLiveGame.ts
 
 import api from "../../api/axios.ts";
-
-// -- HOOKS --
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+// -- HOOKS CUSTOM --
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
-import { logWithTime } from "../../utils/logger.ts";
+import { useGameEvents } from "./useGameEvents.ts";
 
-// -- STORE --
+// -- UTILS & STORE --
+import { logWithTime } from "../../utils/logger.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 
 // -- INTERFACES --
@@ -22,22 +22,17 @@ export function useLiveGame(roomId: string | undefined) {
 	const { myPlayerName } = usePlayerIdentity();
 	const { token, isGuest, logout } = useAuthStore();
 
+	// -- ESTADOS CENTRALES DE LA PARTIDA --
 	const [gameData, setGameData] = useState<GameData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [isConnecting, setIsConnecting] = useState(true);
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
 
-	// Estado para el modal de herencia — se activa por evento privado,
-	// no por comparación de gameData, para evitar depender del sync
-	const [isActingBossAssigned, setIsActingBossAssigned] = useState(false);
-	const [internGraceCancelled, setInternGraceCancelled] = useState(false);
-	const [actingBossGraceTrigger, setActingBossGraceTrigger] = useState(0);
-
 	const isKickedRef = useRef(false);
 
+	// -- 1. FUNCIÓN DE SINCRONIZACIÓN (FETCH) --
 	const syncGame = useCallback(async () => {
-		// Si no hay token de Sanctum o nombre, no puede hacer peticiones
 		if (!roomId || !myPlayerName || !token) return;
 
 		if (!localStorage.getItem("game_token")) {
@@ -50,7 +45,6 @@ export function useLiveGame(roomId: string | undefined) {
 		try {
 			const res = await api.post(`/rooms/${roomId}/sync`);
 
-			// Silenciador de Axios (si intercepta un 401 devuelve null)
 			if (!res || res.data === null) {
 				isKickedRef.current = true;
 				navigate("/");
@@ -58,7 +52,6 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 
 			setGameData(res.data);
-			setLoading(false);
 
 			if (res.data.game?.game_over) {
 				setGameOver(true);
@@ -80,41 +73,39 @@ export function useLiveGame(roomId: string | undefined) {
 				alert("Error al sincronizar la sala.");
 			}
 			navigate("/");
+		} finally {
+			// Siempre quitar el loading, haya éxito o error
 			setLoading(false);
 		}
 	}, [roomId, navigate, myPlayerName, token]);
 
+	// -- 2. ACCIONES DEL JUGADOR --
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
-	// Callback que dispara useGameSockets al recibir el evento privado.
-	// Abre el modal de inmediato y después hace sync para tener gameData actualizado cuando el usuario pulse "Entendido".
-	const handleActingBossAssigned = useCallback(async () => {
-		setIsActingBossAssigned(true);
-		await syncGame();
-	}, [syncGame]);
+	// -- 3. EVENTOS ESPECIALES DE UI (Modales y Gracia) --
+	const {
+		isActingBossAssigned,
+		setIsActingBossAssigned,
+		internGraceCancelled,
+		setInternGraceCancelled,
+		actingBossGraceTrigger,
+		handleActingBossAssigned,
+		handleActingBossGrace,
+		handleActingBossGraceCancelled,
+	} = useGameEvents(syncGame);
 
-	const handleActingBossGrace = useCallback(() => {
-		setActingBossGraceTrigger((n) => n + 1);
-	}, []);
-
-	const handleActingBossGraceCancelled = useCallback(() => {
-		setInternGraceCancelled(true);
-	}, []);
-
+	// -- 4. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
-			// Esperar a que el store tenga la sesión iniciada
 			if (!roomId || !myPlayerName || !token) return;
 
 			try {
-				// Primero hacer el JOIN sí o sí
 				const res = await api.post(`/rooms/${roomId}/join`);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
 				}
 
-				// Una vez guardado el token nuevo, sincronizar con seguridad
 				await syncGame();
 			} catch (error) {
 				logWithTime("No se pudo reconectar. ", error);
@@ -128,10 +119,10 @@ export function useLiveGame(roomId: string | undefined) {
 		reconnect();
 	}, [roomId, myPlayerName, token, syncGame, navigate]);
 
+	// -- 5. ABANDONO DE LA SALA (LEAVE) --
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
-
 			if (gameOver) {
 				if (isGuest) logout();
 				return;
@@ -141,6 +132,7 @@ export function useLiveGame(roomId: string | undefined) {
 				const sanctumToken = localStorage.getItem("token") || "";
 				const gameToken = localStorage.getItem("game_token") || "";
 
+				// Usar fetch con keepalive porque Axios no es seguro en el beforeunload
 				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
 					method: "POST",
 					headers: {
@@ -159,6 +151,7 @@ export function useLiveGame(roomId: string | undefined) {
 		return () => window.removeEventListener("beforeunload", handleUnload);
 	}, [roomId, gameOver, isGuest, logout]);
 
+	// -- 6. ESCUCHA DE SOCKETS --
 	useGameSockets({
 		roomId,
 		myPlayerName: myPlayerName ?? "",
@@ -169,15 +162,18 @@ export function useLiveGame(roomId: string | undefined) {
 	});
 
 	return {
+		// Datos
 		gameData,
 		loading,
 		myPlayerName,
-		playTurn,
-		endTurn,
-		reactToAttack,
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
+		// Acciones
+		playTurn,
+		endTurn,
+		reactToAttack,
+		// Eventos UI
 		isActingBossAssigned,
 		setIsActingBossAssigned,
 		actingBossGraceTrigger,

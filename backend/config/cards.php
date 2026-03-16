@@ -27,7 +27,7 @@ return [
             'id' => 2,
             'name' => 'Curar',
             'description' => 'Reduce tu propio estrés en 1 punto.',
-            'count' => 10,
+            'count' => 6,
         ],
         [
             'id' => 3,
@@ -39,13 +39,13 @@ return [
             'id' => 4,
             'name' => 'Robar',
             'description' => 'Roba una carta aleatoria de la mano de un rival.',
-            'count' => 6,
+            'count' => 4,
         ],
         [
             'id' => 5,
             'name' => 'Escudo',
             'description' => 'Bloquea automáticamente el siguiente ataque que recibas.',
-            'count' => 4,
+            'count' => 2,
         ],
     ],
 ];
