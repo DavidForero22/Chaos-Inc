@@ -8,7 +8,6 @@ use App\Events\ActingBossGracePeriodCancelled;
 use App\Events\ActingBossGracePeriodStarted;
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
-use App\Services\LiveRoomService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -16,7 +15,6 @@ class DisconnectionService
 {
     public function __construct(
         protected GameFinalizationService $finalizationService,
-        protected LiveRoomService $liveRoomService,
     ) {}
 
     /**
