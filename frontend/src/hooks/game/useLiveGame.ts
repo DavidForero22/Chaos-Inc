@@ -34,6 +34,7 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 1. FUNCIÓN DE SINCRONIZACIÓN (FETCH) --
 	const syncGame = useCallback(async () => {
 		if (!roomId || !myPlayerName || !token) return;
+		if (isKickedRef.current) return;
 
 		if (!localStorage.getItem("game_token")) {
 			console.warn(
@@ -58,20 +59,30 @@ export function useLiveGame(roomId: string | undefined) {
 				localStorage.removeItem("game_token");
 			}
 		} catch (error: any) {
+			if (isKickedRef.current) return;
+
 			const errorType = error.response?.data?.type;
+			const status = error.response?.status;
 
 			if (errorType === "GAME_NOT_STARTED") {
 				console.warn("Waiting for Redis initialization...");
 				return;
 			}
 
-			console.error("ERROR en /sync:", error);
-			if (error.response?.status === 401 || error.response?.status === 403) {
-				alert("Game session expired or unauthorized.");
+			// 404 significa que la sala fue limpiada — salir silenciosamente
+			if (status === 404) {
 				isKickedRef.current = true;
+				navigate("/");
+				return;
+			}
+
+			console.error("ERROR en /sync:", error);
+			if (status === 401 || status === 403) {
+				alert("Game session expired or unauthorized.");
 			} else {
 				alert("Error al sincronizar la sala.");
 			}
+			isKickedRef.current = true;
 			navigate("/");
 		} finally {
 			// Siempre quitar el loading, haya éxito o error
@@ -155,7 +166,7 @@ export function useLiveGame(roomId: string | undefined) {
 	useGameSockets({
 		roomId,
 		myPlayerName: myPlayerName ?? "",
-		refreshGameData: isConnecting ? () => {} : syncGame,
+		refreshGameData: isConnecting || gameOver ? () => {} : syncGame,
 		onActingBossAssigned: handleActingBossAssigned,
 		onActingBossGrace: handleActingBossGrace,
 		onActingBossGraceCancelled: handleActingBossGraceCancelled,

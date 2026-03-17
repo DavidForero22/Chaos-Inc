@@ -52,5 +52,6 @@ export interface GameData {
 		round_number: number;
 		deck_count: number;
 		boss_disconnected: boolean;
+		ending_soon: boolean;
 	};
 }

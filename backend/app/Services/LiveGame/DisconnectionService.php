@@ -8,12 +8,15 @@ use App\Events\ActingBossGracePeriodCancelled;
 use App\Events\ActingBossGracePeriodStarted;
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
+use App\Services\LiveRoomService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class DisconnectionService
 {
     public function __construct(
         protected GameFinalizationService $finalizationService,
+        protected LiveRoomService $liveRoomService,
     ) {}
 
     /**
@@ -23,26 +26,6 @@ class DisconnectionService
     {
         Redis::setex("room:{$roomId}:boss_grace_period", 10, $bossName);
         InheritBossRoleJob::dispatch($roomId)->delay(10);
-    }
-
-    /**
-     * El jefe real vuelve a la partida.
-     * Cancela el timer y quita acting_boss a quien lo tuviera (si habia alguien).
-     */
-    public function handleBossReconnection(string $roomId): void
-    {
-        Redis::del("room:{$roomId}:boss_grace_period");
-        Redis::del("room:{$roomId}:acting_boss_grace_period");
-
-        $players = Redis::smembers("room:{$roomId}:players");
-        foreach ($players as $name) {
-            if (Redis::hget("room:{$roomId}:player:{$name}", 'acting_boss') === '1') {
-                Redis::hset("room:{$roomId}:player:{$name}", 'acting_boss', 0);
-            }
-        }
-
-        $this->notifyInternGraceCancelled($roomId);
-        event(new RoomStateUpdated($roomId));
     }
 
     /**
@@ -172,5 +155,54 @@ class DisconnectionService
                 break;
             }
         }
+    }
+
+    public function processInGameDisconnection(string $roomId, string $playerName, string $roomKey): void
+    {
+        // Si la partida ya terminó o la sala está siendo finalizada, ignorar
+        if (
+            Redis::hget("room:{$roomId}", 'game_over') === '1' ||
+            !Redis::exists("room:{$roomId}")
+        ) {
+            return;
+        }
+
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
+        $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}");
+        Log::info("processInGameDisconnection: role={$playerData['role']} acting_boss={$playerData['acting_boss']}");
+
+        $isAnyoneOnline = false;
+        foreach (Redis::smembers("{$roomKey}:players") as $pName) {
+            if (Redis::hget("{$roomKey}:player:{$pName}", 'is_online') === '1') {
+                $isAnyoneOnline = true;
+                break;
+            }
+        }
+
+        if (!$isAnyoneOnline) {
+            $this->finalizationService->destroyRoom($roomId);
+            return;
+        }
+
+        $isRealBoss   = ($playerData['role'] ?? '') === 'boss';
+        $isActingBoss = ($playerData['acting_boss'] ?? '0') === '1';
+
+        if ($isRealBoss) {
+            $this->handleBossDisconnection($roomId, $playerName);
+        } elseif ($isActingBoss) {
+            $this->handleActingBossDisconnection($roomId, $playerName);
+        } else {
+            if (
+                !Redis::exists("room:{$roomId}:boss_grace_period") &&
+                !Redis::exists("room:{$roomId}:acting_boss_grace_period")
+            ) {
+                if ($this->finalizationService->checkDisconnectionVictory($roomId)) {
+                    return;
+                }
+            }
+        }
+
+        app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
+        event(new RoomStateUpdated($roomId));
     }
 }

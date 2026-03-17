@@ -6,6 +6,7 @@ export function useReconnectionTimers(
 	actingBossGraceTrigger: number,
 	internGraceCancelled: boolean,
 	setInternGraceCancelled: (val: boolean) => void,
+	endingSoon: boolean | undefined,
 ) {
 	// Timer del Jefe Principal
 	const [graceSecondsLeft, setGraceSecondsLeft] = useState<number | null>(null);
@@ -13,6 +14,13 @@ export function useReconnectionTimers(
 	const prevBossDisconnectedRef = useRef(false);
 	const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	// Timer de reconexión para victoria/cancelación
+	const [endingSecondsLeft, setEndingSecondsLeft] = useState<number | null>(
+		null,
+	);
+	const prevEndingSoonRef = useRef(false);
+	const endingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
 	// Timer del Becario (Jefe Heredado)
 	const [internGraceSecondsLeft, setInternGraceSecondsLeft] = useState<
@@ -30,6 +38,7 @@ export function useReconnectionTimers(
 
 		if (isDisconnected && !wasDisconnected) {
 			setGraceSecondsLeft(10);
+			logWithTime("Iniciando cuenta atras de setGraceSecondsLeft (10s).");
 			if (countdownTimerRef.current) clearInterval(countdownTimerRef.current);
 
 			countdownTimerRef.current = setInterval(() => {
@@ -68,7 +77,7 @@ export function useReconnectionTimers(
 	useEffect(() => {
 		if (!actingBossGraceTrigger) return;
 
-		logWithTime("Iniciando cuenta atras de internGraceSecondsLeft (10s).");
+		logWithTime("Iniciando cuenta atras de internCountdownRef (10s).");
 		setInternGraceSecondsLeft(10);
 
 		if (internCountdownRef.current) clearInterval(internCountdownRef.current);
@@ -100,9 +109,41 @@ export function useReconnectionTimers(
 		}
 	}, [internGraceCancelled, setInternGraceCancelled]);
 
+	// Contador de reconexión para ganar o cancelar partida
+	useEffect(() => {
+		const isEnding = Boolean(endingSoon);
+		const wasEnding = prevEndingSoonRef.current;
+		prevEndingSoonRef.current = isEnding;
+
+		if (isEnding && !wasEnding) {
+			setEndingSecondsLeft(10);
+			if (endingTimerRef.current) clearInterval(endingTimerRef.current);
+			endingTimerRef.current = setInterval(() => {
+				setEndingSecondsLeft((prev) => {
+					if (prev === null || prev <= 1) {
+						clearInterval(endingTimerRef.current!);
+						endingTimerRef.current = null;
+						return null;
+					}
+					return prev - 1;
+				});
+			}, 1000);
+		}
+
+		if (!isEnding && wasEnding) {
+			if (endingTimerRef.current) clearInterval(endingTimerRef.current);
+			setEndingSecondsLeft(null);
+		}
+
+		return () => {
+			if (endingTimerRef.current) clearInterval(endingTimerRef.current);
+		};
+	}, [endingSoon]);
+
 	return {
 		graceSecondsLeft,
 		showInheritanceBanner,
 		internGraceSecondsLeft,
+		endingSecondsLeft,
 	};
 }

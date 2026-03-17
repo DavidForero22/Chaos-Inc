@@ -3,8 +3,12 @@
 
 namespace App\Services\LiveGame;
 
+use App\Events\RoomListUpdated;
+use App\Events\RoomStateUpdated;
+use App\Jobs\CheckVictoryJob;
 use App\Models\User;
 use App\Services\GameService;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class GameFinalizationService
@@ -99,5 +103,123 @@ class GameFinalizationService
     {
         $playerNames = Redis::smembers("room:{$roomId}:players");
         $this->cleanupRedis($roomId, $playerNames);
+    }
+
+    public function destroyRoom(string $roomId): void
+    {
+        $allRoomKeys = Redis::keys("room:{$roomId}*");
+        $prefix = config('database.redis.options.prefix', '');
+        $cleanKeys = array_map(fn($key) => str_replace($prefix, '', $key), $allRoomKeys);
+
+        if (!empty($cleanKeys)) {
+            Redis::del($cleanKeys);
+        }
+
+        Redis::srem("active_rooms", $roomId);
+        event(new RoomListUpdated($roomId));
+    }
+
+    public function checkDisconnectionVictory(string $roomId): bool
+    {
+
+        if (
+            !Redis::exists("room:{$roomId}") ||
+            Redis::hget("room:{$roomId}", 'game_over') === '1'
+        ) {
+            return false;
+        }
+
+        // Si ya hay una ending grace period activa, no relanzar
+        if (Redis::exists("room:{$roomId}:ending_grace_period")) {
+            return false;
+        }
+
+        $players     = Redis::smembers("room:{$roomId}:players");
+        $onlineRoles = [];
+
+        foreach ($players as $pName) {
+            $pData    = Redis::hgetall("room:{$roomId}:player:{$pName}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if ($isOnline && !$isDead) {
+                $role = ($pData['acting_boss'] ?? '0') === '1' ? 'boss' : ($pData['role'] ?? '');
+                $onlineRoles[] = $role;
+            }
+        }
+
+        $hasUnion     = in_array('union', $onlineRoles);
+        $hasBoss      = in_array('boss', $onlineRoles);
+        $hasSecretary = in_array('secretary', $onlineRoles);
+        $hasIntern    = in_array('intern', $onlineRoles);
+
+        $isVictoryCondition =
+            count($onlineRoles) <= 1 ||
+            (!$hasUnion && !$hasIntern && ($hasBoss || $hasSecretary)) ||
+            (!$hasBoss && !$hasSecretary && $hasUnion);
+
+        if (!$isVictoryCondition) {
+            Log::info("Comprobación de victoria hecha. Todavía no ganó nadie");
+            return false;
+        }
+
+        // Iniciar grace period de 10s antes de confirmar victoria
+        Redis::setex("room:{$roomId}:ending_grace_period", 10, '1');
+        CheckVictoryJob::dispatch($roomId)->delay(10);
+        event(new RoomStateUpdated($roomId));
+        Log::info("Condición de victoria detectada en {$roomId}, esperando 10s...");
+        return true;
+    }
+
+    public function finalizeVictory(string $roomId): void
+    {
+        $players     = Redis::smembers("room:{$roomId}:players");
+        $onlineRoles = [];
+
+        foreach ($players as $pName) {
+            $pData    = Redis::hgetall("room:{$roomId}:player:{$pName}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            if ($isOnline && !$isDead) {
+                $onlineRoles[] = $pData['role'] ?? '';
+            }
+        }
+
+        $roundNumber  = (int) Redis::hget("room:{$roomId}", 'round_number');
+        $hasUnion     = in_array('union', $onlineRoles);
+        $hasBoss      = in_array('boss', $onlineRoles);
+        $hasSecretary = in_array('secretary', $onlineRoles);
+        $hasIntern    = in_array('intern', $onlineRoles);
+
+        if (count($onlineRoles) <= 1) {
+            $soloRole   = $onlineRoles[0] ?? null;
+            $winnerRole = match ($soloRole) {
+                'boss', 'secretary' => 'boss',
+                'intern'            => 'intern',
+                'union'             => 'union',
+                default             => null,
+            };
+        } elseif (!$hasUnion && !$hasIntern) {
+            $winnerRole = 'boss';
+        } elseif (!$hasBoss && !$hasSecretary) {
+            $winnerRole = 'union';
+        } else {
+            // La condición ya no se cumple — alguien se reconectó
+            Log::info("finalizeVictory: condición de victoria ya no se cumple en {$roomId}");
+            return;
+        }
+
+        if ($roundNumber >= 2) {
+            Redis::hset("room:{$roomId}", 'game_over', 1);
+            Redis::hset("room:{$roomId}", 'winner_role', $winnerRole);
+            event(new RoomStateUpdated($roomId));
+            $this->finalize($roomId);
+        } else {
+            Redis::hset("room:{$roomId}", 'game_over', 1);
+            Redis::hset("room:{$roomId}", 'winner_role', 'cancelled');
+            event(new RoomStateUpdated($roomId));
+            $this->cancelAndCleanup($roomId);
+        }
+
+        Log::info("finalizeVictory: victoria confirmada en {$roomId} para {$winnerRole}");
     }
 }

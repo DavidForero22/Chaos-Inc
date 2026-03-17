@@ -38,13 +38,18 @@ export default function GameBoardPage() {
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
 	// --- Lógica de Timers (Extraída) ---
-	const { graceSecondsLeft, showInheritanceBanner, internGraceSecondsLeft } =
-		useReconnectionTimers(
-			gameData?.game.boss_disconnected,
-			actingBossGraceTrigger,
-			internGraceCancelled,
-			setInternGraceCancelled,
-		);
+	const {
+		graceSecondsLeft,
+		showInheritanceBanner,
+		internGraceSecondsLeft,
+		endingSecondsLeft,
+	} = useReconnectionTimers(
+		gameData?.game.boss_disconnected,
+		actingBossGraceTrigger,
+		internGraceCancelled,
+		setInternGraceCancelled,
+		gameData?.game.ending_soon,
+	);
 
 	if (loading) {
 		return (
@@ -146,6 +151,13 @@ export default function GameBoardPage() {
 				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
 					⚠️ El jefe se ha desconectado. Alguien ha heredado su cargo en
 					secreto.
+				</div>
+			)}
+
+			{endingSecondsLeft !== null && (
+				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
+					⚠️ La partida podría terminar por abandono. Reconectando...{" "}
+					<span className="font-mono">{endingSecondsLeft}s</span>
 				</div>
 			)}
 

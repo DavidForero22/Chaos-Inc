@@ -9,6 +9,8 @@ use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
+use App\Support\LiveGameHelper;
+use GameDataFormatter;
 
 class LiveGameService
 {
@@ -42,7 +44,7 @@ class LiveGameService
 
         $this->initializeRoomState($roomKey, $players);
 
-        $roles = $this->generateRolesDistribution($playersCount);
+        $roles = LiveGameHelper::generateRolesDistribution($playersCount);
         $deck = $this->deckService->buildDeck();
         $bossPlayerName = $this->assignRolesAndCards($roomId, $players, $roles, $deck);
 
@@ -79,8 +81,8 @@ class LiveGameService
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
 
         return [
-            'me' => $this->formatMyData($playerName, $myData, $pendingAttack),
-            'game' => $this->formatGameData($roomId, $room, $playerName)
+            'me' => GameDataFormatter::formatMyData($playerName, $myData, $pendingAttack),
+            'game' => GameDataFormatter::formatGameData($roomId, $room, $playerName)
         ];
     }
 
@@ -119,27 +121,6 @@ class LiveGameService
         Redis::hset($roomKey, 'winner_role', '');
         Redis::hset($roomKey, 'round_number', 1);
         shuffle($players);
-    }
-
-    private function generateRolesDistribution(int $count): array
-    {
-        $roleTable = [
-            3 => ['boss' => 1, 'secretary' => 0, 'intern' => 1, 'union' => 1],
-            4 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 1],
-            5 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 2],
-            6 => ['boss' => 1, 'secretary' => 1, 'intern' => 1, 'union' => 3],
-        ];
-
-        $distribution = $roleTable[$count] ?? $roleTable[6];
-        $roles = [];
-
-        foreach ($distribution as $role => $amount) {
-            for ($i = 0; $i < $amount; $i++) {
-                $roles[] = $role;
-            }
-        }
-
-        return $roles;
     }
 
     private function assignRolesAndCards(string $roomId, array $players, array $roles, array &$deck): string
@@ -182,71 +163,5 @@ class LiveGameService
         if ($bossPlayerName !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerName, 2);
         }
-    }
-
-    private function formatMyData(string $playerName, array $myData, array $pendingAttack): array
-    {
-        $hasIncomingAttack = !empty($pendingAttack) && ($pendingAttack['target'] ?? null) === $playerName;
-        $hasPendingAttack  = !empty($pendingAttack) && ($pendingAttack['attacker'] ?? null) === $playerName;
-
-        return [
-            'name'                  => $playerName,
-            'role'                  => $myData['role'],
-            'stress'                => (int) $myData['stress'],
-            'is_dead'               => $this->toBool($myData['is_dead'] ?? 0),
-            'cards'                 => json_decode($myData['cards'] ?? '[]'),
-            'is_online'             => $this->toBool($myData['is_online'] ?? 1),
-            'skip_next_turn'        => $this->toBool($myData['skip_next_turn'] ?? 0),
-            'attack_used_this_turn' => $this->toBool($myData['attack_used_this_turn'] ?? 0),
-            'incoming_attack'       => $hasIncomingAttack,
-            'has_pending_attack'    => $hasPendingAttack,
-            'has_shield'            => $this->toBool($myData['has_shield'] ?? 0),
-            'acting_boss'           => $this->toBool($myData['acting_boss'] ?? 0),
-        ];
-    }
-
-    private function formatGameData(string $roomId, array $room, string $myPlayerName): array
-    {
-        $opponents = [];
-        foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
-            if ($pName === $myPlayerName) continue;
-
-            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $opponents[] = [
-                'name'        => $pName,
-                'stress'      => (int) ($pData['stress'] ?? 0),
-                'is_dead'     => $this->toBool($pData['is_dead'] ?? 0),
-                'role'        => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
-                'is_online'   => $this->toBool($pData['is_online'] ?? 1),
-                'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
-                'has_shield'  => $this->toBool($pData['has_shield'] ?? 0),
-            ];
-        }
-
-        return [
-            'current_turn'      => $room['current_turn_player_id'] ?? null,
-            'opponents'         => $opponents,
-            'game_over'         => $this->toBool($room['game_over'] ?? 0),
-            'winner_role'       => $room['winner_role'] ?? null,
-            'round_number'      => (int) ($room['round_number'] ?? 0),
-            'deck_count'        => count(json_decode(Redis::get("room:{$roomId}:deck") ?? '[]', true)),
-            'boss_disconnected' => Redis::exists("room:{$roomId}:boss_grace_period") || $this->hasBossOfflineWithActingBoss($roomId),
-        ];
-    }
-
-    private function hasBossOfflineWithActingBoss(string $roomId): bool
-    {
-        foreach (Redis::smembers("room:{$roomId}:players") as $name) {
-            $pData = Redis::hgetall("room:{$roomId}:player:{$name}");
-            if (($pData['role'] ?? '') === 'boss' && ($pData['is_online'] ?? '1') === '0') {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private function toBool($value): bool
-    {
-        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 }

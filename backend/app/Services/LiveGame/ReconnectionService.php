@@ -4,10 +4,16 @@
 namespace App\Services\LiveGame;
 
 use App\Events\ActingBossAssigned;
+use App\Events\RoomStateUpdated;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class ReconnectionService
 {
+    public function __construct(
+        protected DisconnectionService $disconnectionService,
+    ) {}
+
     public function handleReconnection(string $roomId, string $playerName, array $playerData): void
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
@@ -27,18 +33,27 @@ class ReconnectionService
 
         // 1. Si el Jefe Original vuelve
         if ($role === 'boss') {
-            app(DisconnectionService::class)->handleBossReconnection($roomId);
+            Log::info("ReconnectionService.php::handleReconnection: El jefe {$playerName} se reconectó, ejecutando DisconnectionService::handleBossReconnection");
+            $this->handleBossReconnection($roomId);
         }
 
         // 2. Si el Becario (Jefe Heredado) vuelve antes de que expire su gracia
         $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
         if ($actingGraceValue === $playerName) {
+            Log::info("ReconnectionService.php::handleReconnection: El becario {$playerName} se reconectó, ejecutando restoreInternGrace");
             $this->restoreInternGrace($roomId, $playerName, $playerKey);
         }
 
         // 3. Si el Secretario vuelve, prioriza sobre el Becario
         if ($role === 'secretary') {
+            Log::info("ReconnectionService.php::handleReconnection: El secretario {$playerName} se reconectó, ejecutando evaluateSecretaryReturn");
             $this->evaluateSecretaryReturn($roomId, $playerName, $playerKey);
+        }
+
+        // 4. Si alguien vuelve durante la ending grace period, cancelarla
+        if (Redis::exists("room:{$roomId}:ending_grace_period")) {
+            Redis::del("room:{$roomId}:ending_grace_period");
+            Log::info("ReconnectionService.php::handleReconnection: ending grace period cancelada por reconexión de {$playerName}");
         }
     }
 
@@ -57,7 +72,7 @@ class ReconnectionService
             }
         }
 
-        app(DisconnectionService::class)->notifyInternGraceCancelled($roomId);
+        $this->disconnectionService->notifyInternGraceCancelled($roomId);
     }
 
     private function evaluateSecretaryReturn(string $roomId, string $playerName, string $playerKey): void
@@ -84,5 +99,25 @@ class ReconnectionService
             Redis::hset($playerKey, 'acting_boss', 1);
             event(new ActingBossAssigned($playerName));
         }
+    }
+
+    /**
+     * El jefe real vuelve a la partida.
+     * Cancela el timer y quita acting_boss a quien lo tuviera (si habia alguien).
+     */
+    private function handleBossReconnection(string $roomId): void
+    {
+        Redis::del("room:{$roomId}:boss_grace_period");
+        Redis::del("room:{$roomId}:acting_boss_grace_period");
+
+        $players = Redis::smembers("room:{$roomId}:players");
+        foreach ($players as $name) {
+            if (Redis::hget("room:{$roomId}:player:{$name}", 'acting_boss') === '1') {
+                Redis::hset("room:{$roomId}:player:{$name}", 'acting_boss', 0);
+            }
+        }
+
+        $this->disconnectionService->notifyInternGraceCancelled($roomId);
+        event(new RoomStateUpdated($roomId));
     }
 }

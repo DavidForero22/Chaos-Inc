@@ -9,7 +9,11 @@ use Illuminate\Support\Facades\Redis;
 
 class GameActionService
 {
-    public function __construct(protected GameFinalizationService $finalizationService) {}
+    public function __construct(
+        protected GameFinalizationService $finalizationService,
+        protected CardEffectService $cardEffectService,
+        protected CardValidationService $cardValidationService,
+    ) {}
 
     public function playAction(string $roomId, string $playerName, string $cardId, string $targetName): void
     {
@@ -51,88 +55,25 @@ class GameActionService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
 
-        if ($cardType === 1) {
-            $alreadyAttacked = (int) (Redis::hget($playerKey, 'attack_used_this_turn') ?? 0);
-            if ($alreadyAttacked === 1) {
-                throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque en este turno.", 422);
-            }
-            if ($playerName === $targetName) {
-                throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
-            }
-        }
+        match ($cardType) {
+            1 => $this->cardValidationService->validateAttack($roomId, $playerName, $targetName),
+            2 => $this->cardValidationService->validateHeal($roomId, $playerName),
+            4 => $this->cardValidationService->validateSteal($roomId, $playerName, $targetName),
+            5 => $this->cardValidationService->validateShield($roomId, $playerName, $targetName),
+            default => null,
+        };
+
+        match ($cardType) {
+            1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
+            2 => $this->cardEffectService->applyHeal($roomId, $playerName),
+            4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
+            5 => $this->cardEffectService->applyShield($roomId, $playerName), 
+            default => null,
+        };
 
         array_splice($cards, $cardIndex, 1);
         Redis::hset($playerKey, 'cards', json_encode($cards));
         Redis::hincrby($playerKey, 'cards_played', 1);
-
-        $targetKey = "room:{$roomId}:player:{$targetName}";
-
-        // -- CARTA DE ATAQUE --
-        if ($cardType === 1) {
-            $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
-            $hasDodge = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
-            $hasShield = Redis::hget($targetKey, 'has_shield') === '1';
-
-
-            Redis::hset($playerKey, 'attack_used_this_turn', 1);
-
-            // El escudo absorbe el ataque automáticamente
-            if ($hasShield) {
-                Redis::hset($targetKey, 'has_shield', 0);
-                // El ataque es esquivado
-            } elseif ($hasDodge) {
-                Redis::hmset("room:{$roomId}:pending_attack", [
-                    'attacker' => $playerName,
-                    'target'   => $targetName,
-                ]);
-            } else {
-                $this->applyDamageAndCheck($roomId, $playerName, $targetName);
-            }
-
-            // -- CARTA DE CURACIÓN --
-        } elseif ($cardType === 2) {
-            $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
-            if ($currentStress > 0) {
-                Redis::hincrby($playerKey, 'stress', -1);
-            }
-            // -- CARTA DE ROBO --
-        } elseif ($cardType === 4) {
-            if ($playerName === $targetName) {
-                throw new GameException(GameException::INVALID_TARGET, "No puedes robarte a ti mismo.", 422);
-            }
-
-            $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
-            if (!is_array($targetCards)) $targetCards = [];
-
-            if (empty($targetCards)) {
-                throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas.", 422);
-            }
-
-            // Robar carta aleatoria
-            $randomIndex = array_rand($targetCards);
-            $stolenCard = $targetCards[$randomIndex];
-            array_splice($targetCards, $randomIndex, 1);
-
-            // Actualizar mano del objetivo
-            Redis::hset($targetKey, 'cards', json_encode($targetCards));
-
-            // Añadir carta robada al ladrón
-            $myCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
-            if (!is_array($myCards)) $myCards = [];
-            $myCards[] = $stolenCard;
-            Redis::hset($playerKey, 'cards', json_encode($myCards));
-
-            // -- CARTA DE ESCUDO --
-        } elseif ($cardType === 5) {
-            if ($playerName !== $targetName) {
-                throw new GameException(GameException::INVALID_TARGET, "El escudo solo puede aplicarse a ti mismo.", 422);
-            }
-            $alreadyHasShield = Redis::hget($playerKey, 'has_shield') === '1';
-            if ($alreadyHasShield) {
-                throw new GameException(GameException::INVALID_ACTION, "Ya tienes un escudo activo.", 422);
-            }
-            Redis::hset($playerKey, 'has_shield', 1);
-        }
 
         event(new RoomStateUpdated($roomId));
     }
@@ -187,7 +128,7 @@ class GameActionService
         event(new RoomStateUpdated($roomId));
     }
 
-    private function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
+    public function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
     {
         $targetKey   = "room:{$roomId}:player:{$targetName}";
         $attackerKey = "room:{$roomId}:player:{$attackerName}";
