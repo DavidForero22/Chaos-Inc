@@ -10,7 +10,7 @@ use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
 use App\Support\LiveGameHelper;
-use GameDataFormatter;
+use App\Support\GameDataFormatter;
 
 class LiveGameService
 {

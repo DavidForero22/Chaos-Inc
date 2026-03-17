@@ -1,6 +1,7 @@
 <?php
+// app/Support/GameDataFormatter.php
+namespace App\Support;
 
-use App\Services\LiveGame\LiveGameService;
 use Illuminate\Support\Facades\Redis;
 use App\Support\CastHelper;
 use App\Support\LiveGameHelper;
