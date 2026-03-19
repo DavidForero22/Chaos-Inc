@@ -20,15 +20,27 @@ class InheritBossRoleJob implements ShouldQueue
         DisconnectionService $disconnectionService,
         GameFinalizationService $finalizationService
     ): void {
-        $ttl       = Redis::ttl("room:{$this->roomId}:boss_grace_period");
-        $actingTtl = Redis::ttl("room:{$this->roomId}:acting_boss_grace_period");
 
-        fwrite(STDOUT, "InheritBossRoleJob: TTL boss={$ttl} acting={$actingTtl}\n");
-
-        if ($ttl > 1 || $actingTtl >= 1) {
-            fwrite(STDOUT, "InheritBossRoleJob: grace period activa, abortando.\n");
+        // Si la partida ya está terminando por abandono, no heredar nada.
+        if (
+            Redis::hget("room:{$this->roomId}", 'game_over') === '1' ||
+            Redis::exists("room:{$this->roomId}:ending_grace_period")
+        ) {
+            fwrite(STDOUT, "InheritBossRoleJob: Partida terminando, abortando herencia.\n");
             return;
         }
+
+        $hasBossGrace = Redis::exists("room:{$this->roomId}:boss_grace_period");
+        $hasActingGrace = Redis::exists("room:{$this->roomId}:acting_boss_grace_period");
+
+        // Si las llaves no   existen, es porque el jugador se reconectó
+        if (!$hasBossGrace && !$hasActingGrace) {
+            fwrite(STDOUT, "InheritBossRoleJob: No hay llaves de gracia (jugador reconectado o ya procesado), abortando.\n");
+            return;
+        }
+
+        Redis::del("room:{$this->roomId}:boss_grace_period");
+        Redis::del("room:{$this->roomId}:acting_boss_grace_period");
 
         $players = Redis::smembers("room:{$this->roomId}:players");
         foreach ($players as $name) {

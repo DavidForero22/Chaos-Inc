@@ -20,7 +20,7 @@ export function useGameActions(
 			await syncGame();
 			return true;
 		} catch (error: any) {
-			logWithTime("Error playing turn. ", error);
+			logWithTime("useGameActions.ts -Error playing turn. ", error);
 			alert(error.response?.data?.message || "Error al jugar la carta.");
 			return false;
 		}
@@ -40,7 +40,7 @@ export function useGameActions(
 			await syncGame();
 			return true;
 		} catch (error: any) {
-			logWithTime("Error reacting to attack. ", error);
+			logWithTime("useGameActions.ts - Error reacting to attack. ", error);
 			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
 			return false;
 		}

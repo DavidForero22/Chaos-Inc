@@ -158,6 +158,7 @@ class LiveGameService
     {
         Redis::hset("room:{$roomId}", 'current_turn_player_id', $bossPlayerName);
         Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
+        Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
         Redis::setex("room:{$roomId}:deck", 86400, json_encode($deck));
 
         if ($bossPlayerName !== '') {

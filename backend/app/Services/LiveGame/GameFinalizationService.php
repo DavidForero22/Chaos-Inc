@@ -6,6 +6,7 @@ namespace App\Services\LiveGame;
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Jobs\CheckVictoryJob;
+use App\Jobs\CleanupRoomJob;
 use App\Models\User;
 use App\Services\GameService;
 use Illuminate\Support\Facades\Log;
@@ -64,14 +65,13 @@ class GameFinalizationService
             'players'            => $playersData,
         ]);
 
-        // Iniciar la limpieza "perezosa"
-        $this->cleanupRedis($roomId, $playerNames);
+        CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
     }
 
-    private function cleanupRedis(string $roomId, array $playerNames): void
+    public function cleanupRedis(string $roomId, array $playerNames): void
     {
         $roomKey = "room:{$roomId}";
-        $expireTime = 15;
+        $expireTime = 7;
 
         // Poner fecha de caducidad a todas las llaves de la sala
         foreach ($playerNames as $name) {
@@ -101,8 +101,22 @@ class GameFinalizationService
 
     public function cancelAndCleanup(string $roomId): void
     {
-        $playerNames = Redis::smembers("room:{$roomId}:players");
-        $this->cleanupRedis($roomId, $playerNames);
+        // Evita que se programe la limpieza 500 veces por segundo
+        if (Redis::hget("room:{$roomId}", 'game_over') == 1) {
+            return;
+        }
+
+        // Marcar estado para que el /sync no falle
+        Redis::hset("room:{$roomId}", 'game_over', 1);
+        Redis::hset("room:{$roomId}", 'winner_role', 'canceled');
+
+        // Notificar al frontend
+        event(new RoomStateUpdated($roomId));
+
+        // Programar la destrucción total para dentro de 10 segundos
+        CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
+
+        Log::info("Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.");
     }
 
     public function destroyRoom(string $roomId): void
@@ -158,15 +172,16 @@ class GameFinalizationService
             (!$hasBoss && !$hasSecretary && $hasUnion);
 
         if (!$isVictoryCondition) {
-            Log::info("Comprobación de victoria hecha. Todavía no ganó nadie");
+            Log::info("GameFinalizationService.php::checkDisconnectionVictory - Comprobación de victoria hecha. Todavía no ganó nadie");
             return false;
         }
 
-        // Iniciar grace period de 10s antes de confirmar victoria
-        Redis::setex("room:{$roomId}:ending_grace_period", 10, '1');
-        CheckVictoryJob::dispatch($roomId)->delay(10);
+        $jobToken = uniqid();
+        Redis::set("room:{$roomId}:ending_grace_period", $jobToken);
+        CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(10));
+        
         event(new RoomStateUpdated($roomId));
-        Log::info("Condición de victoria detectada en {$roomId}, esperando 10s...");
+        Log::info("GameFinalizationService.php::checkDisconnectionVictory - Condición de victoria detectada en {$roomId}, esperando 10s...");
         return true;
     }
 
@@ -204,7 +219,7 @@ class GameFinalizationService
             $winnerRole = 'union';
         } else {
             // La condición ya no se cumple — alguien se reconectó
-            Log::info("finalizeVictory: condición de victoria ya no se cumple en {$roomId}");
+            Log::info("GameFinalizationService.php::finalizeVictory - condición de victoria ya no se cumple en {$roomId}");
             return;
         }
 
@@ -213,13 +228,11 @@ class GameFinalizationService
             Redis::hset("room:{$roomId}", 'winner_role', $winnerRole);
             event(new RoomStateUpdated($roomId));
             $this->finalize($roomId);
+
+            Log::info("GameFinalizationService.php::finalizeVictory - victoria confirmada en {$roomId} para {$winnerRole}");
         } else {
-            Redis::hset("room:{$roomId}", 'game_over', 1);
-            Redis::hset("room:{$roomId}", 'winner_role', 'cancelled');
-            event(new RoomStateUpdated($roomId));
+            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes. Cancelando {$roomId}");
             $this->cancelAndCleanup($roomId);
         }
-
-        Log::info("finalizeVictory: victoria confirmada en {$roomId} para {$winnerRole}");
     }
 }

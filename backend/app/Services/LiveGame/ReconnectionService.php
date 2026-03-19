@@ -40,20 +40,20 @@ class ReconnectionService
         // 2. Si el Becario (Jefe Heredado) vuelve antes de que expire su gracia
         $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
         if ($actingGraceValue === $playerName) {
-            Log::info("ReconnectionService.php::handleReconnection: El becario {$playerName} se reconectó, ejecutando restoreInternGrace");
+            Log::info("ReconnectionService.php::handleReconnection - El jugador (como jefe heredado) {$playerName} se reconectó, ejecutando restoreInternGrace");
             $this->restoreInternGrace($roomId, $playerName, $playerKey);
         }
 
         // 3. Si el Secretario vuelve, prioriza sobre el Becario
         if ($role === 'secretary') {
-            Log::info("ReconnectionService.php::handleReconnection: El secretario {$playerName} se reconectó, ejecutando evaluateSecretaryReturn");
+            Log::info("ReconnectionService.php::handleReconnection - El secretario {$playerName} se reconectó, ejecutando evaluateSecretaryReturn");
             $this->evaluateSecretaryReturn($roomId, $playerName, $playerKey);
         }
 
         // 4. Si alguien vuelve durante la ending grace period, cancelarla
         if (Redis::exists("room:{$roomId}:ending_grace_period")) {
             Redis::del("room:{$roomId}:ending_grace_period");
-            Log::info("ReconnectionService.php::handleReconnection: ending grace period cancelada por reconexión de {$playerName}");
+            Log::info("ReconnectionService.php::handleReconnection - ending grace period cancelada por reconexión de {$playerName}");
         }
     }
 
@@ -72,7 +72,7 @@ class ReconnectionService
             }
         }
 
-        $this->disconnectionService->notifyInternGraceCancelled($roomId);
+        event(new RoomStateUpdated($roomId));
     }
 
     private function evaluateSecretaryReturn(string $roomId, string $playerName, string $playerKey): void
@@ -97,7 +97,7 @@ class ReconnectionService
             }
 
             Redis::hset($playerKey, 'acting_boss', 1);
-            event(new ActingBossAssigned($playerName));
+            event(new RoomStateUpdated($roomId));
         }
     }
 
@@ -117,7 +117,6 @@ class ReconnectionService
             }
         }
 
-        $this->disconnectionService->notifyInternGraceCancelled($roomId);
         event(new RoomStateUpdated($roomId));
     }
 }

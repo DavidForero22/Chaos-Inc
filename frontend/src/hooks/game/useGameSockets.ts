@@ -6,20 +6,12 @@ import { logWithTime } from "../../utils/logger";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;
-	myPlayerName: string;
 	refreshGameData: () => void;
-	onActingBossAssigned: () => void;
-	onActingBossGrace: () => void;
-	onActingBossGraceCancelled: () => void;
 }
 
 export function useGameSockets({
 	roomId,
-	myPlayerName,
 	refreshGameData,
-	onActingBossAssigned,
-	onActingBossGrace,
-	onActingBossGraceCancelled,
 }: UseGameSocketsProps) {
 	useEffect(() => {
 		if (!roomId) return;
@@ -27,7 +19,9 @@ export function useGameSockets({
 		// Canal público de sala — cambios de estado generales
 		const roomChannel = echo.channel(`room.${roomId}`);
 		roomChannel.listen(".RoomStateUpdated", () => {
-			logWithTime("El estado del tablero ha cambiado, recargando...");
+			logWithTime(
+				"useGameSockets.ts - El estado de la sala ha cambiado, recargando...",
+			);
 			refreshGameData();
 		});
 
@@ -36,42 +30,4 @@ export function useGameSockets({
 			echo.leaveChannel(`room.${roomId}`);
 		};
 	}, [roomId, refreshGameData]);
-
-	useEffect(() => {
-		if (!myPlayerName) return;
-
-		// Canal privado del jugador — solo él recibe este evento.
-		// Ningún otro jugador puede ver que este canal recibió algo.
-		const privateChannel = echo.private(`player.${myPlayerName}`);
-		privateChannel.listen(".ActingBossAssigned", () => {
-			logWithTime(
-				"Evento privado recibido: este jugador es el nuevo jefe heredado.",
-			);
-			onActingBossAssigned();
-		});
-
-		privateChannel.listen(".ActingBossGracePeriodStarted", () => {
-			logWithTime(
-				"Evento privado: el secretario se ha desconectado, posible herencia.",
-			);
-			onActingBossGrace();
-		});
-
-		privateChannel.listen(".ActingBossGracePeriodCancelled", () => {
-			logWithTime("Evento privado: grace period del jefe heredado cancelada.");
-			onActingBossGraceCancelled();
-		});
-
-		return () => {
-			privateChannel.stopListening(".ActingBossAssigned");
-			privateChannel.stopListening(".ActingBossGracePeriodStarted");
-			privateChannel.stopListening(".ActingBossGracePeriodCancelled");
-			echo.leaveChannel(`private-player.${myPlayerName}`);
-		};
-	}, [
-		myPlayerName,
-		onActingBossAssigned,
-		onActingBossGrace,
-		onActingBossGraceCancelled,
-	]);
 }

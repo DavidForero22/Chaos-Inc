@@ -58,7 +58,7 @@ services:
       dockerfile: ./docker/Dockerfile.php
     volumes:
       - ./backend:/var/www/html
-    command: php artisan queue:work --tries=3 --timeout=90 --memory=128 --sleep=0
+    command: php artisan queue:work --tries=3 --timeout=90 --memory=128 --sleep=1
     depends_on:
       - mysql
       - redis
@@ -66,6 +66,8 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
+    deploy:
+      replicas: 3
 
   # PLANIFICADOR DE TAREAS
   scheduler:

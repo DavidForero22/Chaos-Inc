@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
-import { useGameEvents } from "./useGameEvents.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
@@ -29,7 +28,12 @@ export function useLiveGame(roomId: string | undefined) {
 	const [isFirstLoad, setIsFirstLoad] = useState(true);
 	const [gameOver, setGameOver] = useState(false);
 
+	// -- ESTADO PARA EL MODAL DE NUEVO JEFE (HERENCIA) --
+	const [showActingBossModal, setShowActingBossModal] = useState(false);
+	const prevActingBossRef = useRef(false);
+
 	const isKickedRef = useRef(false);
+	const syncRequestIdRef = useRef(0);
 
 	// -- 1. FUNCIÓN DE SINCRONIZACIÓN (FETCH) --
 	const syncGame = useCallback(async () => {
@@ -43,8 +47,13 @@ export function useLiveGame(roomId: string | undefined) {
 			return;
 		}
 
+		const currentSyncId = ++syncRequestIdRef.current;
+
 		try {
 			const res = await api.post(`/rooms/${roomId}/sync`);
+
+			// En la espera, si se envió otra peticion, ignorar esta.
+			if (currentSyncId !== syncRequestIdRef.current) return;
 
 			if (!res || res.data === null) {
 				isKickedRef.current = true;
@@ -69,7 +78,6 @@ export function useLiveGame(roomId: string | undefined) {
 				return;
 			}
 
-			// 404 significa que la sala fue limpiada — salir silenciosamente
 			if (status === 404) {
 				isKickedRef.current = true;
 				navigate("/");
@@ -78,14 +86,13 @@ export function useLiveGame(roomId: string | undefined) {
 
 			console.error("ERROR en /sync:", error);
 			if (status === 401 || status === 403) {
-				alert("Game session expired or unauthorized.");
+				logWithTime("useLiveGame.ts - Sesión de juego caducada.");
 			} else {
 				alert("Error al sincronizar la sala.");
 			}
 			isKickedRef.current = true;
 			navigate("/");
 		} finally {
-			// Siempre quitar el loading, haya éxito o error
 			setLoading(false);
 		}
 	}, [roomId, navigate, myPlayerName, token]);
@@ -93,17 +100,22 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 2. ACCIONES DEL JUGADOR --
 	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
 
-	// -- 3. EVENTOS ESPECIALES DE UI (Modales y Gracia) --
-	const {
-		isActingBossAssigned,
-		setIsActingBossAssigned,
-		internGraceCancelled,
-		setInternGraceCancelled,
-		actingBossGraceTrigger,
-		handleActingBossAssigned,
-		handleActingBossGrace,
-		handleActingBossGraceCancelled,
-	} = useGameEvents(syncGame);
+	// -- 3. VIGILANTE DE HERENCIA (MODAL REACTIVO) --
+	useEffect(() => {
+		// Comprobamos si en los datos que acaban de llegar somos acting_boss
+		const isNowActingBoss = gameData?.me?.acting_boss === true;
+		const wasActingBoss = prevActingBossRef.current;
+
+		// Si el estado cambia de false a true, disparamos el modal
+		if (isNowActingBoss && !wasActingBoss) {
+			logWithTime(
+				"useLiveGame.ts - Cambio detectado: ¡Eres el nuevo Jefe Heredado!",
+			);
+			setShowActingBossModal(true);
+		}
+
+		prevActingBossRef.current = isNowActingBoss;
+	}, [gameData?.me?.acting_boss]);
 
 	// -- 4. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
@@ -119,8 +131,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 				await syncGame();
 			} catch (error) {
-				logWithTime("No se pudo reconectar. ", error);
-				alert("No puedes acceder a esta partida en curso.");
+				logWithTime("useLiveGame.ts - No se pudo reconectar. ", error);
 				navigate("/");
 			} finally {
 				setIsConnecting(false);
@@ -143,7 +154,6 @@ export function useLiveGame(roomId: string | undefined) {
 				const sanctumToken = localStorage.getItem("token") || "";
 				const gameToken = localStorage.getItem("game_token") || "";
 
-				// Usar fetch con keepalive porque Axios no es seguro en el beforeunload
 				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
 					method: "POST",
 					headers: {
@@ -162,14 +172,10 @@ export function useLiveGame(roomId: string | undefined) {
 		return () => window.removeEventListener("beforeunload", handleUnload);
 	}, [roomId, gameOver, isGuest, logout]);
 
-	// -- 6. ESCUCHA DE SOCKETS --
+	// -- 6. ESCUCHA DE SOCKETS (AHORA SIMPLIFICADA) --
 	useGameSockets({
 		roomId,
-		myPlayerName: myPlayerName ?? "",
 		refreshGameData: isConnecting || gameOver ? () => {} : syncGame,
-		onActingBossAssigned: handleActingBossAssigned,
-		onActingBossGrace: handleActingBossGrace,
-		onActingBossGraceCancelled: handleActingBossGraceCancelled,
 	});
 
 	return {
@@ -180,15 +186,11 @@ export function useLiveGame(roomId: string | undefined) {
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
+		showActingBossModal,
+		setShowActingBossModal,
 		// Acciones
 		playTurn,
 		endTurn,
 		reactToAttack,
-		// Eventos UI
-		isActingBossAssigned,
-		setIsActingBossAssigned,
-		actingBossGraceTrigger,
-		internGraceCancelled,
-		setInternGraceCancelled,
 	};
 }

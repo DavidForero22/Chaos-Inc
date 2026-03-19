@@ -28,26 +28,21 @@ export default function GameBoardPage() {
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
-		isActingBossAssigned,
-		setIsActingBossAssigned,
-		actingBossGraceTrigger,
-		internGraceCancelled,
-		setInternGraceCancelled,
+		showActingBossModal, 
+        setShowActingBossModal
 	} = useLiveGame(id);
 
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
 	// --- Lógica de Timers (Extraída) ---
 	const {
-		graceSecondsLeft,
+		showBossWaiting,
+		showActingBossWaiting,
+		showEndingWaiting,
 		showInheritanceBanner,
-		internGraceSecondsLeft,
-		endingSecondsLeft,
 	} = useReconnectionTimers(
 		gameData?.game.boss_disconnected,
-		actingBossGraceTrigger,
-		internGraceCancelled,
-		setInternGraceCancelled,
+		gameData?.game.acting_boss_disconnected,
 		gameData?.game.ending_soon,
 	);
 
@@ -118,11 +113,11 @@ export default function GameBoardPage() {
 				<RoleRevealModal role={me.role} onClose={() => setIsFirstLoad(false)} />
 			)}
 
-			{isActingBossAssigned && (
+			{showActingBossModal && (
 				<RoleRevealModal
-					role={me.role}
+					role={gameData?.me?.role}
 					isActingBoss={true}
-					onClose={() => setIsActingBossAssigned(false)}
+					onClose={() => setShowActingBossModal(false)}
 				/>
 			)}
 
@@ -135,29 +130,27 @@ export default function GameBoardPage() {
 			)}
 
 			{/* --- ALERTAS DE RECONEXIÓN --- */}
-			{internGraceSecondsLeft !== null && (
+			{showActingBossWaiting && (
 				<div className="bg-orange-900/40 border border-orange-700 text-orange-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⏳ El jefe heredado se ha desconectado. Esperando reconexión...{" "}
-					<span className="font-mono">{internGraceSecondsLeft}s</span>
+					⏳ El jefe heredado se ha desconectado. Esperando 10s para
+					reconexión...
 				</div>
 			)}
-			{graceSecondsLeft !== null && (
+			{showBossWaiting && (
 				<div className="bg-blue-900/40 border border-blue-700 text-blue-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⏳ El jefe se ha desconectado. Esperando reconexión...{" "}
-					<span className="font-mono">{graceSecondsLeft}s</span>
+					⏳ El jefe se ha desconectado. Esperando 10s para reconexión o
+					sucesión...
 				</div>
 			)}
 			{showInheritanceBanner && (
 				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⚠️ El jefe se ha desconectado. Alguien ha heredado su cargo en
-					secreto.
+					⚠️ El tiempo expiró. Alguien ha heredado el cargo en secreto.
 				</div>
 			)}
 
-			{endingSecondsLeft !== null && (
+			{showEndingWaiting && (
 				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⚠️ La partida podría terminar por abandono. Reconectando...{" "}
-					<span className="font-mono">{endingSecondsLeft}s</span>
+					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
 				</div>
 			)}
 

@@ -40,7 +40,7 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		} finally {
-			logWithTime("Te has salido de la sala.", null);
+			logWithTime("useRoomSession.ts::handleLeaveRoom - Te has salido de la sala.", null);
 			localStorage.removeItem("game_token");
 			navigate("/");
 		}

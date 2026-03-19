@@ -72,7 +72,7 @@ class LiveRoomService
             throw new RoomException(RoomException::NOT_IN_ROOM, "Player {$playerName} is not in this room.", 409);
         }
 
-        Log::info("El jugador {$playerName} abandonó la sala {$roomId}\n");
+        Log::info("LiveRoomService.php::leaveRoom - El jugador {$playerName} abandonó la sala {$roomId}\n");
 
         // Derivar según el estado de la sala
         if ($room['status'] === 'in_game') {

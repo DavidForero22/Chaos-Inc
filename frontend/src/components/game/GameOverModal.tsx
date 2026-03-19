@@ -1,8 +1,8 @@
 // src/components/game/GameOverModal.tsx
 
-type WinnerRole = "boss" | "union" | "intern" | null;
+type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
 type PlayerRole = "boss" | "secretary" | "intern" | "union";
-type ConfigKey = "boss" | "union" | "intern" | "cancelled";
+type ConfigKey = "boss" | "union" | "intern" | "canceled";
 
 const RESULT_CONFIG: Record<
 	ConfigKey,
@@ -27,7 +27,7 @@ const RESULT_CONFIG: Record<
 		title: "¡El Becario ha ganado!",
 		winners: ["intern"],
 	},
-	cancelled: {
+	canceled: {
 		emoji: "🚫",
 		title: "Partida cancelada",
 		winners: [],
@@ -52,10 +52,11 @@ export function GameOverModal({
 	myRole,
 	onClose,
 }: GameOverModalProps) {
-	const configKey: ConfigKey = winnerRole ?? "cancelled";
+	const configKey: ConfigKey =
+		winnerRole === "canceled" || !winnerRole ? "canceled" : winnerRole;
 	const config = RESULT_CONFIG[configKey];
 	const iWon = config.winners.includes(myRole);
-	const isCancelled = winnerRole === null;
+	const isCancelled = configKey === "canceled";
 
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">

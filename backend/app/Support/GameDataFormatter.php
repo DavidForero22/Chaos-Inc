@@ -4,7 +4,6 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Redis;
 use App\Support\CastHelper;
-use App\Support\LiveGameHelper;
 
 class GameDataFormatter
 {
@@ -44,7 +43,6 @@ class GameDataFormatter
                 'is_online'   => CastHelper::toBool($pData['is_online'] ?? 1),
                 'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
                 'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
-                'ending_soon' => Redis::exists("room:{$roomId}:ending_grace_period"),
             ];
         }
 
@@ -55,7 +53,9 @@ class GameDataFormatter
             'winner_role'       => $room['winner_role'] ?? null,
             'round_number'      => (int) ($room['round_number'] ?? 0),
             'deck_count'        => count(json_decode(Redis::get("room:{$roomId}:deck") ?? '[]', true)),
-            'boss_disconnected' => Redis::exists("room:{$roomId}:boss_grace_period") || LiveGameHelper::hasBossOfflineWithActingBoss($roomId),
+            'boss_disconnected'        => Redis::exists("room:{$roomId}:boss_grace_period"),
+            'acting_boss_disconnected' => Redis::exists("room:{$roomId}:acting_boss_grace_period"),
+            'ending_soon'              => Redis::exists("room:{$roomId}:ending_grace_period"),
         ];
     }
 }

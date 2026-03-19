@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
+import { logWithTime } from "../../utils/logger";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;
@@ -24,11 +25,11 @@ export function useRoomSockets({
 	useEffect(() => {
 		if (isJoining || needsPassword || !roomId) return;
 
-		console.log("Estado de sala actualizado.")
+		logWithTime("useRoomSockets.ts - Estado de sala actualizado.")
 		const channel = echo.channel(`room.${roomId}`);
 
 		channel.listen(".RoomStateUpdated", () => {
-            console.log("Alguien entró/salió en RoomStateUpdated, recargando datos...");
+            logWithTime("useRoomSockets.ts - Alguien entró/salió en RoomStateUpdated, recargando datos...");
             fetchRoomData();
         });
 
