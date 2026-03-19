@@ -28,9 +28,16 @@ class TurnService
         $totalPlayers = count($turnOrder);
         $nextIndex = $currentIndex;
 
+        $hasWrapped = false;
+
         for ($i = 0; $i < $totalPlayers; $i++) {
             $nextIndex = ($nextIndex + 1) % $totalPlayers;
             $nextPlayer = $turnOrder[$nextIndex];
+
+            if ($nextIndex === 0) {
+                $hasWrapped = true;
+            }
+
             $playerKey = "{$roomKey}:player:{$nextPlayer}";
 
             $isOnline = Redis::hget($playerKey, 'is_online') !== '0';
@@ -46,8 +53,7 @@ class TurnService
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, 2);
 
-                // Al volver al primer jugador del orden, nueva ronda
-                if ($nextIndex === 0) {
+                if ($hasWrapped) {
                     Redis::hincrby($roomKey, 'round_number', 1);
                 }
 
