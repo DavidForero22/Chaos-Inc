@@ -116,7 +116,7 @@ class GameFinalizationService
         // Programar la destrucción total para dentro de 10 segundos
         CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
 
-        Log::info("Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.");
+        Log::info("GameFinalizationService.php - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
     }
 
     public function destroyRoom(string $roomId): void
@@ -140,6 +140,16 @@ class GameFinalizationService
             !Redis::exists("room:{$roomId}") ||
             Redis::hget("room:{$roomId}", 'game_over') === '1'
         ) {
+            return false;
+        }
+
+        // --- NUEVO: Proteger la partida durante la herencia ---
+        // Si el jefe se acaba de ir, no evaluamos la victoria hasta que se resuelva su cargo
+        if (
+            Redis::exists("room:{$roomId}:boss_grace_period") ||
+            Redis::exists("room:{$roomId}:acting_boss_grace_period")
+        ) {
+            Log::info("GameFinalizationService.php - Ignorando victoria, esperando herencia de jefe.");
             return false;
         }
 
@@ -178,10 +188,12 @@ class GameFinalizationService
 
         $jobToken = uniqid();
         Redis::set("room:{$roomId}:ending_grace_period", $jobToken);
-        CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(10));
-        
+
+        // --- CAMBIO: Aumentamos a 12s para dar margen a la herencia (que dura 10s) ---
+        CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(12));
+
         event(new RoomStateUpdated($roomId));
-        Log::info("GameFinalizationService.php::checkDisconnectionVictory - Condición de victoria detectada en {$roomId}, esperando 10s...");
+        Log::info("GameFinalizationService.php::checkDisconnectionVictory - Condición de victoria detectada en {$roomId}, esperando 12s...");
         return true;
     }
 

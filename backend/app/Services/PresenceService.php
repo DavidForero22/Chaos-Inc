@@ -22,9 +22,18 @@ class PresenceService
         }
 
         $isOnline = Redis::hget("room:{$roomId}:player:{$playerName}", 'is_online');
+
+        // Si el jugador estaba online, procedemos con la desconexión oficial
         if ($isOnline === '1') {
-            Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
-            Log::info("PresenceService.php::markOffline - {$playerName} marcado offline en sala {$roomId}");
+            Log::info("PresenceService.php::markOffline - {$playerName} cerró pestaña/ruta. Procesando desconexión...");
+
+            $this->disconnectionService->processInGameDisconnection(
+                $roomId,
+                $playerName,
+                "room:{$roomId}"
+            );
+        } else {
+            Log::info("PresenceService.php::markOffline - {$playerName} ya estaba offline.");
         }
 
         return 'marked offline';

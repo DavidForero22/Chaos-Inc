@@ -44,6 +44,7 @@ export default function GameBoardPage() {
 		gameData?.game.boss_disconnected,
 		gameData?.game.acting_boss_disconnected,
 		gameData?.game.ending_soon,
+		gameData?.game.has_acting_boss
 	);
 
 	if (loading) {

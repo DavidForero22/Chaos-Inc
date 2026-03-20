@@ -1,12 +1,16 @@
 <?php
+// app/Exceptions/RoomException.php
 
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RoomException extends Exception
 {
-    // Constantes exclusivas de la gestión de la SALA
+    // Constantes exclusivas de la gestión de la sala
     const ROOM_NOT_FOUND = 'ROOM_NOT_FOUND';
     const NOT_IN_ROOM = 'NOT_IN_ROOM';
     const PASSWORD_REQUIRED = 'PASSWORD_REQUIRED';
@@ -17,7 +21,7 @@ class RoomException extends Exception
     const ALREADY_IN_ROOM = 'ALREADY_IN_ROOM';
     const PLAYER_NOT_FOUND = 'PLAYER_NOT_FOUND';
     const NOT_ENOUGH_PLAYERS = 'NOT_ENOUGH_PLAYERS';
-    CONST ALREADY_IN_ANOTHER_ROOM = 'ALREADY_IN_ANOTHER_ROOM';
+    const ALREADY_IN_ANOTHER_ROOM = 'ALREADY_IN_ANOTHER_ROOM';
 
     protected string $errorType;
 
@@ -30,5 +34,21 @@ class RoomException extends Exception
     public function getErrorType(): string
     {
         return $this->errorType;
+    }
+
+    /**
+     * Renderiza la excepción en una respuesta HTTP y escribe el log limpio.
+     */
+    public function render(Request $request): JsonResponse
+    {
+        $roomId = $request->route('id') ?? $request->route('room') ?? 'Unknown';
+        $username = $request->user() ? $request->user()->username : 'Unknown';
+
+        Log::warning("RoomException [{$this->errorType}]: {$this->message} | RoomID: {$roomId} | User: {$username}");
+
+        return response()->json([
+            'error' => $this->getMessage(),
+            'type' => $this->getErrorType()
+        ], $this->getCode());
     }
 }

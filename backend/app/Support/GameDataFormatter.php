@@ -31,7 +31,16 @@ class GameDataFormatter
     public static function formatGameData(string $roomId, array $room, string $myPlayerName): array
     {
         $opponents = [];
+        $hasActingBoss = false;
+
         foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
+            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+
+            // Comprobamos si alguien (incluso yo) es acting_boss
+            if (CastHelper::toBool($pData['acting_boss'] ?? 0)) {
+                $hasActingBoss = true;
+            }
+
             if ($pName === $myPlayerName) continue;
 
             $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
@@ -56,6 +65,7 @@ class GameDataFormatter
             'boss_disconnected'        => Redis::exists("room:{$roomId}:boss_grace_period"),
             'acting_boss_disconnected' => Redis::exists("room:{$roomId}:acting_boss_grace_period"),
             'ending_soon'              => Redis::exists("room:{$roomId}:ending_grace_period"),
+            'has_acting_boss'          => $hasActingBoss,
         ];
     }
 }

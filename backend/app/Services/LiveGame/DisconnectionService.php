@@ -76,6 +76,9 @@ class DisconnectionService
         $secretary = null;
         $intern    = null;
 
+        // NUEVO: Llevamos la cuenta de cuántos quedan vivos
+        $onlineCount = 0;
+
         foreach ($players as $name) {
             $pData    = Redis::hgetall("room:{$roomId}:player:{$name}");
             $role     = $pData['role'] ?? '';
@@ -83,9 +86,20 @@ class DisconnectionService
             $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             if ($isOnline && !$isDead) {
+                $onlineCount++; // Sumamos un superviviente
+
                 if ($role === 'secretary' && $secretary === null) $secretary = $name;
                 if ($role === 'intern'    && $intern    === null) $intern    = $name;
             }
+        }
+
+        // --- LA BARRERA ANTI-MODALS ---
+        // Si solo queda 1 persona (o ninguna), la empresa quiebra.
+        // NO ascendemos a nadie, simplemente disparamos el final del juego.
+        if ($onlineCount <= 1) {
+            Log::info("DisconnectionService.php - Solo queda 1 jugador. Ignorando herencia y forzando fin de partida.");
+            $this->finalizationService->checkDisconnectionVictory($roomId);
+            return;
         }
 
         $newActingBoss = $secretary ?? $intern ?? null;
@@ -159,31 +173,22 @@ class DisconnectionService
             return;
         }
 
-        // Si solo queda 1 jugador, forzar el check de victoria.
-        if ($onlineCount === 1) {
-            if ($this->finalizationService->checkDisconnectionVictory($roomId)) {
-                return;
-            }
-        }
-
         $isRealBoss   = ($playerData['role'] ?? '') === 'boss';
         $isActingBoss = ($playerData['acting_boss'] ?? '0') === '1';
 
+        // 1. Damos prioridad a manejar la herencia del cargo ANTES de la victoria
         if ($isRealBoss) {
             $this->handleBossDisconnection($roomId, $playerName);
         } elseif ($isActingBoss) {
             $this->handleActingBossDisconnection($roomId, $playerName);
-        } else {
-            if (
-                !Redis::exists("room:{$roomId}:boss_grace_period") &&
-                !Redis::exists("room:{$roomId}:acting_boss_grace_period")
-            ) {
-                if ($this->finalizationService->checkDisconnectionVictory($roomId)) {
-                    return;
-                }
-            }
         }
 
+        // 2. Comprobamos victoria (incluso si se fue un jugador normal, 
+        // o si se fue el jefe y queremos que arranque el contador de fin de partida)
+        // Eliminamos el 'return' para que el turno avance de todos modos.
+        $this->finalizationService->checkDisconnectionVictory($roomId);
+
+        // 3. Avanzar el turno
         app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
         event(new RoomStateUpdated($roomId));
     }

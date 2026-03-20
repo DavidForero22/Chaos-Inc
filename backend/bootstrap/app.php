@@ -24,22 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'broadcasting/auth',
-            'api/v1/webhooks/reverb',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        
+        $exceptions->dontReport([
+            RoomException::class,
+            GameException::class,
+        ]);
 
-        $exceptions->render(function (RoomException $e, Request $request) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'type' => $e->getErrorType()
-            ], $e->getCode());
-        });
-
-        $exceptions->render(function (GameException $e, Request $request) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'type' => $e->getErrorType()
-            ], $e->getCode());
-        });
     })->create();

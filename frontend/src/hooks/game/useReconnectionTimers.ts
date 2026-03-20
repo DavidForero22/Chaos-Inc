@@ -7,21 +7,24 @@ export function useReconnectionTimers(
 	bossDisconnected: boolean | undefined,
 	actingBossDisconnected: boolean | undefined,
 	endingSoon: boolean | undefined,
+	hasActingBoss: boolean | undefined,
 ) {
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
-	const prevBossDisconnectedRef = useRef(false);
+	const prevHasActingBossRef = useRef(hasActingBoss);
 	const bannerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	// --- Efecto del Banner Informativo de Herencia ---
 	useEffect(() => {
-		const isDisconnected = Boolean(bossDisconnected);
-		const wasDisconnected = prevBossDisconnectedRef.current;
-		prevBossDisconnectedRef.current = isDisconnected;
+		const isActingBossNow = Boolean(hasActingBoss);
+		const wasActingBossBefore = Boolean(prevHasActingBossRef.current);
+		prevHasActingBossRef.current = isActingBossNow;
 
-		// Si el jefe estaba desconectado y AHORA ya no lo está...
-		// PERO seguimos en la partida (no ending), significa que alguien heredó.
-		if (!isDisconnected && wasDisconnected && !endingSoon) {
-			logWithTime("useReconnectionTimers.ts - Mostrando banner de herencia.");
+		// La regla de oro: Solo mostramos el banner si antes NO había jefe interino
+		// y ahora SÍ hay uno (porque el tiempo expiró o alguien murió y se heredó)
+		if (isActingBossNow && !wasActingBossBefore && !endingSoon) {
+			logWithTime(
+				"useReconnectionTimers.ts - Mostrando banner de herencia real.",
+			);
 			setShowInheritanceBanner(true);
 
 			if (bannerTimerRef.current) clearTimeout(bannerTimerRef.current);
