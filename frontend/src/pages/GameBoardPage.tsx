@@ -13,6 +13,7 @@ import { OpponentsBoard } from "../components/game/OpponentsBoard.tsx";
 import { RoleRevealModal } from "../components/game/RoleRevealModal.tsx";
 import { GameOverModal } from "../components/game/GameOverModal.tsx";
 import { PlayerArea } from "../components/game/PlayerArea.tsx";
+import { GameLog } from "../components/game/GameLog.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -30,6 +31,7 @@ export default function GameBoardPage() {
 		gameOver,
 		showActingBossModal,
 		setShowActingBossModal,
+		logs
 	} = useLiveGame(id);
 
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -198,6 +200,8 @@ export default function GameBoardPage() {
 				onEndTurn={handleEndTurn}
 				onReactToAttack={reactToAttack}
 			/>
+
+			<GameLog logs={logs} />
 		</div>
 	);
 }

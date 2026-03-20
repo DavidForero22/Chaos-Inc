@@ -1,4 +1,5 @@
 <?php
+// app/Services/LiveGame/RoomStateUpdated.php
 
 namespace App\Services\LiveGame;
 
@@ -6,6 +7,7 @@ use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use Illuminate\Support\Facades\Redis;
+use App\Support\GameMessages;
 
 class GameActionService
 {
@@ -67,7 +69,7 @@ class GameActionService
             1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
-            5 => $this->cardEffectService->applyShield($roomId, $playerName), 
+            5 => $this->cardEffectService->applyShield($roomId, $playerName),
             default => null,
         };
 
@@ -75,7 +77,14 @@ class GameActionService
         Redis::hset($playerKey, 'cards', json_encode($cards));
         Redis::hincrby($playerKey, 'cards_played', 1);
 
-        event(new RoomStateUpdated($roomId));
+        $logMessage = match ($cardType) {
+            1 => GameMessages::attacked($playerName, $targetName),
+            2 => GameMessages::healed($playerName),
+            4 => GameMessages::stolen($playerName, $targetName),
+            5 => GameMessages::shielded($playerName),
+            default => null,
+        };
+        event(new RoomStateUpdated($roomId, $logMessage));
     }
 
     public function reactToAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
@@ -125,7 +134,10 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
 
-        event(new RoomStateUpdated($roomId));
+        $logMessage = $reaction === 'dodge'
+            ? GameMessages::dodged($playerName)
+            : GameMessages::tookDamage($playerName);
+        event(new RoomStateUpdated($roomId, $logMessage));
     }
 
     public function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
@@ -144,11 +156,11 @@ class GameActionService
         if ($newStress >= $maxStress) {
             Redis::hset($targetKey, 'is_dead', 1);
             Redis::hincrby($attackerKey, 'eliminations', 1);
-            $this->checkVictory($roomId);
+            $this->checkVictory($roomId, $targetName);
         }
     }
 
-    private function checkVictory(string $roomId): void
+    private function checkVictory(string $roomId, $targetName): void
     {
         $roomKey = "room:{$roomId}";
         $players = Redis::smembers("room:{$roomId}:players");
@@ -189,6 +201,10 @@ class GameActionService
         } elseif ($unionAliveCount === 0 && !$internAlive) {
             // Si el Jefe sigue vivo y todas las amenazas están muertas
             $winnerRole = 'boss';
+        }
+
+        if ($winnerRole === null && $targetName !== null) {
+            event(new RoomStateUpdated($roomId, "{$targetName} ha sido eliminado."));
         }
 
         // Si hay un ganador, procesar el final de la partida

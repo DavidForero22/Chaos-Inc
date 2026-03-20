@@ -8,16 +8,21 @@ import api from "../../api/axios";
 interface UseGameSocketsProps {
 	roomId: string | undefined;
 	refreshGameData: () => void;
+	addLog: (message: string) => void;
 }
 
 export function useGameSockets({
 	roomId,
 	refreshGameData,
+	addLog 
 }: UseGameSocketsProps) {
 	const refreshRef = useRef(refreshGameData);
 	useEffect(() => {
 		refreshRef.current = refreshGameData;
 	}, [refreshGameData]);
+
+	const addLogRef = useRef(addLog);
+    useEffect(() => { addLogRef.current = addLog; }, [addLog]);
 
 	useEffect(() => {
 		if (!roomId) return;
@@ -55,10 +60,9 @@ export function useGameSockets({
 
 				refreshRef.current();
 			})
-			.listen(".RoomStateUpdated", () => {
-				logWithTime(
-					"useGameSockets.ts - El estado de la sala ha cambiado, recargando...",
-				);
+			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
+				logWithTime("useGameSockets.ts - Estado actualizado.");
+				if (data.log_message) addLogRef.current(data.log_message);
 				refreshRef.current();
 			});
 

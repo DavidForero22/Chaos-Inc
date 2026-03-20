@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { useGameActions } from "./useGameActions.ts";
+import { useGameLog } from "./useGameLog.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
@@ -34,6 +35,9 @@ export function useLiveGame(roomId: string | undefined) {
 
 	const isKickedRef = useRef(false);
 	const syncRequestIdRef = useRef(0);
+
+	// -- LOGS DE PARTIDA --
+	const { logs, addLog } = useGameLog();
 
 	// -- 1. FUNCIÓN DE SINCRONIZACIÓN (FETCH) --
 	const syncGame = useCallback(async () => {
@@ -185,6 +189,7 @@ export function useLiveGame(roomId: string | undefined) {
 	useGameSockets({
 		roomId,
 		refreshGameData: isConnecting || gameOver ? () => {} : syncGame,
+		addLog 
 	});
 
 	return {
@@ -201,5 +206,6 @@ export function useLiveGame(roomId: string | undefined) {
 		playTurn,
 		endTurn,
 		reactToAttack,
+		logs,
 	};
 }

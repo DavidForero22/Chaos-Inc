@@ -5,6 +5,7 @@ namespace App\Services\LiveGame;
 
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
+use App\Support\GameMessages;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -122,7 +123,6 @@ class DisconnectionService
         Redis::set("room:{$roomId}:acting_boss_grace_period", $actingBossName);
         InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
 
-        event(new RoomStateUpdated($roomId));
     }
 
     /**
@@ -190,6 +190,6 @@ class DisconnectionService
 
         // 3. Avanzar el turno
         app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
-        event(new RoomStateUpdated($roomId));
+        event(new RoomStateUpdated($roomId, GameMessages::disconnected($playerName)));
     }
 }

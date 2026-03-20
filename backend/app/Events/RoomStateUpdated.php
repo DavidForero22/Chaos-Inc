@@ -13,18 +13,23 @@ class RoomStateUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $roomId;
+    public string $roomId;
+    public ?string $logMessage;
 
-    public function __construct(string $roomId)
+    public function __construct(string $roomId, ?string $logMessage = null)
     {
         $this->roomId = $roomId;
+        $this->logMessage = $logMessage;
+    }
+
+    public function broadcastWith(): array
+    {
+        return ['log_message' => $this->logMessage];
     }
 
     public function broadcastOn(): array
     {
-        return [
-            new PresenceChannel('room.' . $this->roomId),
-        ];
+        return [new PresenceChannel('room.' . $this->roomId)];
     }
 
     public function broadcastAs(): string
