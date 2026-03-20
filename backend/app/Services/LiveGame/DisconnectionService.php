@@ -3,9 +3,6 @@
 
 namespace App\Services\LiveGame;
 
-use App\Events\ActingBossAssigned;
-use App\Events\ActingBossGracePeriodCancelled;
-use App\Events\ActingBossGracePeriodStarted;
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
 use Illuminate\Support\Facades\Log;
@@ -146,6 +143,7 @@ class DisconnectionService
         }
 
         Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'disconnected_at', time());
         $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}");
         Log::info("DisconnectionService.php::processInGameDisconnection - role={$playerData['role']} acting_boss={$playerData['acting_boss']}");
 

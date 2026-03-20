@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\LiveGameController;
 use App\Http\Controllers\LiveRoomController;
+use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\RoomController;
 
 /*
@@ -23,7 +24,7 @@ Route::prefix('v1')->group(function () {
     // Ver el listado de salas debe ser público
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::get('/rooms/{id}', [RoomController::class, 'show']);
-
+    
     /*
     |--------------------------------------------------------------------------
     | Rutas Protegidas (Requieren token de Sanctum)
@@ -43,6 +44,11 @@ Route::prefix('v1')->group(function () {
         Route::post('/rooms/{id}/action', [LiveGameController::class, 'action']);
         Route::post('/rooms/{id}/end-turn', [LiveGameController::class, 'endTurn']);
         Route::post('/rooms/{id}/react', [LiveGameController::class, 'react']);
+
+        Route::post('/rooms/{id}/mark-offline', [PresenceController::class, 'markOffline']);
+        Route::post('/rooms/{id}/report-disconnect', [PresenceController::class, 'reportDisconnect']);
+        Route::post('/rooms/{id}/report-lobby-disconnect', [PresenceController::class, 'reportLobbyDisconnect']);
+
 
         Route::post('/rooms', [RoomController::class, 'store']);
 

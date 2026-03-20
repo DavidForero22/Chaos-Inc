@@ -3,7 +3,6 @@
 
 namespace App\Services\LiveGame;
 
-use App\Events\ActingBossAssigned;
 use App\Events\RoomStateUpdated;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -23,7 +22,19 @@ class ReconnectionService
         Redis::hset($playerKey, 'is_online', 1);
 
         if (!$wasOffline) {
-            return; // Si ya estaba online (ej: refrescó la página sin llegar a caerse por timeout) no aplicamos penalizaciones.
+            return; // Si ya estaba online
+        }
+
+        $disconnectedAt = (int) ($playerData['disconnected_at'] ?? 0);
+        // Si ha vuelto en menos de 3 segundos, lo perdonamos (fue un F5 o navegación)
+        if (time() - $disconnectedAt <= 3) {
+            Log::info("Reconexión rápida de {$playerName} (F5). Sin penalización.");
+
+            // Si era el jefe, cancelamos el timer de herencia que acababa de empezar
+            if (($playerData['role'] ?? '') === 'boss') {
+                $this->handleBossReconnection($roomId);
+            }
+            return;
         }
 
         // Penalización por haber caído

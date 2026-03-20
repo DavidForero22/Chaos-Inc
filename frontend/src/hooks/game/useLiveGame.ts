@@ -19,7 +19,7 @@ import type { GameData } from "../../types/live-game.ts";
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
 	const { myPlayerName } = usePlayerIdentity();
-	const { token, isGuest, logout } = useAuthStore();
+	const { token } = useAuthStore();
 
 	// -- ESTADOS CENTRALES DE LA PARTIDA --
 	const [gameData, setGameData] = useState<GameData | null>(null);
@@ -141,20 +141,16 @@ export function useLiveGame(roomId: string | undefined) {
 		reconnect();
 	}, [roomId, myPlayerName, token, syncGame, navigate]);
 
-	// -- 5. ABANDONO DE LA SALA (LEAVE) --
+	// -- 5. MARCAR OFFLINE AL CERRAR PESTAÑA --
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
-			if (gameOver) {
-				if (isGuest) logout();
-				return;
-			}
 
-			if (roomId) {
-				const sanctumToken = localStorage.getItem("token") || "";
-				const gameToken = localStorage.getItem("game_token") || "";
+			const sanctumToken = localStorage.getItem("token") || "";
+			const gameToken = localStorage.getItem("game_token") || "";
 
-				fetch(`${api.defaults.baseURL}/rooms/${roomId}/leave`, {
+			if (roomId && gameToken) {
+				fetch(`${api.defaults.baseURL}/rooms/${roomId}/mark-offline`, {
 					method: "POST",
 					headers: {
 						Accept: "application/json",
@@ -168,9 +164,9 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 		};
 
-		window.addEventListener("beforeunload", handleUnload);
-		return () => window.removeEventListener("beforeunload", handleUnload);
-	}, [roomId, gameOver, isGuest, logout]);
+		window.addEventListener("pagehide", handleUnload);
+		return () => window.removeEventListener("pagehide", handleUnload);
+	}, [roomId]);
 
 	// -- 6. ESCUCHA DE SOCKETS (AHORA SIMPLIFICADA) --
 	useGameSockets({

@@ -40,7 +40,10 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		} finally {
-			logWithTime("useRoomSession.ts::handleLeaveRoom - Te has salido de la sala.", null);
+			logWithTime(
+				"useRoomSession.ts::handleLeaveRoom - Te has salido de la sala.",
+				null,
+			);
 			localStorage.removeItem("game_token");
 			navigate("/");
 		}
@@ -153,37 +156,6 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			setIsJoining(false);
 		}
 	}, [myPlayerName, attemptJoin]);
-
-	// PROTECCIÓN AL CERRAR VENTANA 
-    useEffect(() => {
-        const handleUnload = () => {
-            // Si ya está saliendo con el botón "Salir", no hacer nada
-            if (isLeavingRef.current) return;
-
-            // Solo disparar el abandono si está en la sala de espera
-            if (roomStatusRef.current === "waiting" && roomId) {
-                const sanctumToken = localStorage.getItem("token") || "";
-                const gameToken = localStorage.getItem("game_token") || "";
-
-                const baseUrl = api.defaults.baseURL;
-
-                fetch(`${baseUrl}/rooms/${roomId}/leave`, {
-                    method: "POST",
-                    headers: {
-                        "Accept": "application/json",
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${sanctumToken}`,
-                        "X-Game-Token": gameToken,
-                    },
-                    keepalive: true, // ¡La magia!
-                    body: JSON.stringify({}),
-                }).catch(() => {});
-            }
-        };
-
-        window.addEventListener("beforeunload", handleUnload);
-        return () => window.removeEventListener("beforeunload", handleUnload);
-    }, [roomId]);
 
 	// Listener de sesión multipestaña
 	useEffect(() => {

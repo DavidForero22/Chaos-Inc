@@ -1,4 +1,5 @@
 <?php
+// app/Jobs/InheritBossRoleJob.php
 
 namespace App\Jobs;
 

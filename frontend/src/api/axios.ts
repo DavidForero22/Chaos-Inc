@@ -52,7 +52,11 @@ api.interceptors.response.use(
 
 		if (status === 401 && !isAuthRoute) {
 			// Si es un 401 de una ruta exclusiva de sala, solo borar el game_token
-			if (url.includes("/sync") || url.includes("/leave")) {
+			if (
+				url.includes("/sync") ||
+				url.includes("/leave") ||
+				url.includes("/report-disconnect")
+			) {
 				localStorage.removeItem("game_token");
 				logWithTime(
 					"[Sala] Sesión de juego caducada. Limpiando game_token...",

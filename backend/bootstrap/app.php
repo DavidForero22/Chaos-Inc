@@ -16,16 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-    $middleware->web(append: [
-        \Illuminate\Http\Middleware\HandleCors::class,
-    ]);
-    $middleware->api(append: [
-        \Illuminate\Http\Middleware\HandleCors::class,
-    ]);
-    $middleware->validateCsrfTokens(except: [
-        'broadcasting/auth',
-    ]);
-})
+        $middleware->web(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        $middleware->api(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        $middleware->validateCsrfTokens(except: [
+            'broadcasting/auth',
+            'api/v1/webhooks/reverb',
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
 
         $exceptions->render(function (RoomException $e, Request $request) {
