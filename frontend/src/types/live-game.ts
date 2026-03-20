@@ -55,5 +55,6 @@ export interface GameData {
 		acting_boss_disconnected: boolean;
 		ending_soon: boolean;
 		has_acting_boss: boolean;
+		effectively_over: boolean;
 	};
 }

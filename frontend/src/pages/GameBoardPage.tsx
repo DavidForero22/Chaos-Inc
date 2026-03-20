@@ -28,8 +28,8 @@ export default function GameBoardPage() {
 		isFirstLoad,
 		setIsFirstLoad,
 		gameOver,
-		showActingBossModal, 
-        setShowActingBossModal
+		showActingBossModal,
+		setShowActingBossModal,
 	} = useLiveGame(id);
 
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -44,7 +44,7 @@ export default function GameBoardPage() {
 		gameData?.game.boss_disconnected,
 		gameData?.game.acting_boss_disconnected,
 		gameData?.game.ending_soon,
-		gameData?.game.has_acting_boss
+		gameData?.game.has_acting_boss,
 	);
 
 	if (loading) {
@@ -65,6 +65,7 @@ export default function GameBoardPage() {
 	const hasPendingAttack = me.has_pending_attack;
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
+	const isTurnFrozen = game.ending_soon || game.effectively_over;
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
@@ -191,6 +192,7 @@ export default function GameBoardPage() {
 				isMyTurn={isMyTurn}
 				selectedCardId={selectedCardId}
 				hasPendingAttack={hasPendingAttack}
+				endingSoon={isTurnFrozen}
 				opponents={game.opponents}
 				onCardClick={handleCardClick}
 				onEndTurn={handleEndTurn}

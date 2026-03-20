@@ -16,6 +16,7 @@ class GameException extends Exception
     const INVALID_TARGET = 'INVALID_TARGET';
     const CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND';
     const INVALID_ACTION = 'INVALID_ACTION';
+    const CANNOT_SKIP_DURING_ENDING = 'CANNOT_SKIP_DURING_ENDING';
     const GAME_OVER = 'GAME_OVER';
 
     protected string $errorType;

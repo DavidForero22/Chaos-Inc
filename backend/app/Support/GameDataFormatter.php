@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Illuminate\Support\Facades\Redis;
 use App\Support\CastHelper;
+use App\Services\LiveGame\GameFinalizationService;
 
 class GameDataFormatter
 {
@@ -32,6 +33,9 @@ class GameDataFormatter
     {
         $opponents = [];
         $hasActingBoss = false;
+
+        $finalizationService = app(GameFinalizationService::class);
+        $isEffectivelyOver = $finalizationService->isGameEffectivelyOver($roomId);
 
         foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
             $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
@@ -66,6 +70,7 @@ class GameDataFormatter
             'acting_boss_disconnected' => Redis::exists("room:{$roomId}:acting_boss_grace_period"),
             'ending_soon'              => Redis::exists("room:{$roomId}:ending_grace_period"),
             'has_acting_boss'          => $hasActingBoss,
+            'effectively_over'         => $isEffectivelyOver,
         ];
     }
 }

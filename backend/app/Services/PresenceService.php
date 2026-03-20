@@ -25,7 +25,7 @@ class PresenceService
 
         // Si el jugador estaba online, procedemos con la desconexión oficial
         if ($isOnline === '1') {
-            Log::info("PresenceService.php::markOffline - {$playerName} cerró pestaña/ruta. Procesando desconexión...");
+            Log::info("PresenceService.php::markOffline - Los jugadores marcaron a {$playerName} como offline. Procesando desconexión...");
 
             $this->disconnectionService->processInGameDisconnection(
                 $roomId,
@@ -33,7 +33,7 @@ class PresenceService
                 "room:{$roomId}"
             );
         } else {
-            Log::info("PresenceService.php::markOffline - {$playerName} ya estaba offline.");
+            Log::info("PresenceService.php::markOffline - Los jugadores marcaron a {$playerName} como offline, pero ya estaba offline.");
         }
 
         return 'marked offline';
@@ -45,7 +45,7 @@ class PresenceService
 
         // CAMBIO: Si está online ('1'), procesamos la caída porque el testigo sabe más que nosotros
         if ($isOnline === '1') {
-            Log::info("Testigo reportó la caída de {$disconnectedPlayer}. Procesando desconexión...");
+            Log::info("PresenceService.php::processDisconnectReport - Jugador reportó la caída de {$disconnectedPlayer}. Procesando desconexión...");
             $this->disconnectionService->processInGameDisconnection(
                 $roomId,
                 $disconnectedPlayer,
@@ -55,7 +55,7 @@ class PresenceService
         }
 
         // Si ya era '0', significa que mark-offline ya hizo su trabajo
-        Log::info("PresenceService.php: {$disconnectedPlayer} ya estaba offline, nada que hacer.");
+        Log::info("PresenceService.php:: processDisconnectReport: {$disconnectedPlayer} ya estaba offline, nada que hacer.");
         return 'already_offline';
     }
 

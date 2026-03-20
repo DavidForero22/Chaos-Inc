@@ -84,6 +84,14 @@ class TurnService
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
+        if (app(GameFinalizationService::class)->isGameEffectivelyOver($roomId)) {
+            throw new GameException(
+                GameException::CANNOT_SKIP_DURING_ENDING,
+                "No puedes saltar turno mientras la partida está a punto de finalizar.",
+                422
+            );
+        }
+
         if (Redis::exists("room:{$roomId}:pending_attack")) {
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }

@@ -28,7 +28,7 @@ class ReconnectionService
         $disconnectedAt = (int) ($playerData['disconnected_at'] ?? 0);
         // Si ha vuelto en menos de 3 segundos, lo perdonamos (fue un F5 o navegación)
         if (time() - $disconnectedAt <= 3) {
-            Log::info("Reconexión rápida de {$playerName} (F5). Sin penalización.");
+            Log::info("ReconnectionService.php::handleReconnection - Reconexión rápida de {$playerName} (F5). Sin penalización.\n");
 
             // Si era el jefe, cancelamos el timer de herencia que acababa de empezar
             if (($playerData['role'] ?? '') === 'boss') {
@@ -44,20 +44,20 @@ class ReconnectionService
 
         // 1. Si el Jefe Original vuelve
         if ($role === 'boss') {
-            Log::info("ReconnectionService.php::handleReconnection: El jefe {$playerName} se reconectó, ejecutando DisconnectionService::handleBossReconnection");
+            Log::info("ReconnectionService.php::handleReconnection: El jefe {$playerName} se reconectó, ejecutando DisconnectionService::handleBossReconnection\n");
             $this->handleBossReconnection($roomId);
         }
 
         // 2. Si el Becario (Jefe Heredado) vuelve antes de que expire su gracia
         $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
         if ($actingGraceValue === $playerName) {
-            Log::info("ReconnectionService.php::handleReconnection - El jugador (como jefe heredado) {$playerName} se reconectó, ejecutando restoreInternGrace");
+            Log::info("ReconnectionService.php::handleReconnection - El jugador (como jefe heredado) {$playerName} se reconectó, ejecutando restoreInternGrace\n");
             $this->restoreInternGrace($roomId, $playerName, $playerKey);
         }
 
         // 3. Si el Secretario vuelve, prioriza sobre el Becario
         if ($role === 'secretary') {
-            Log::info("ReconnectionService.php::handleReconnection - El secretario {$playerName} se reconectó, ejecutando evaluateSecretaryReturn");
+            Log::info("ReconnectionService.php::handleReconnection - El secretario {$playerName} se reconectó, ejecutando evaluateSecretaryReturn\n");
             $this->evaluateSecretaryReturn($roomId, $playerName, $playerKey);
         }
 

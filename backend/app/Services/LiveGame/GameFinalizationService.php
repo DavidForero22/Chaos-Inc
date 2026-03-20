@@ -235,16 +235,43 @@ class GameFinalizationService
             return;
         }
 
-        if ($roundNumber >= 2) {
+        if ($roundNumber >= 3) {
             Redis::hset("room:{$roomId}", 'game_over', 1);
             Redis::hset("room:{$roomId}", 'winner_role', $winnerRole);
             event(new RoomStateUpdated($roomId));
             $this->finalize($roomId);
 
-            Log::info("GameFinalizationService.php::finalizeVictory - victoria confirmada en {$roomId} para {$winnerRole}");
+            Log::info("GameFinalizationService.php::finalizeVictory - Victoria confirmada en sala {$roomId} para {$winnerRole} ($roundNumber rondas).");
         } else {
-            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes. Cancelando {$roomId}");
+            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes para ganar ($roundNumber). Cancelando victoria en {$roomId}.");
             $this->cancelAndCleanup($roomId);
         }
+    }
+
+    public function isGameEffectivelyOver(string $roomId): bool
+    {
+        $players = Redis::smembers("room:{$roomId}:players");
+        $onlineRoles = [];
+
+        foreach ($players as $pName) {
+            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+            if ($isOnline && !$isDead) {
+                // Consideramos al acting_boss como boss para la lógica de bandos
+                $role = ($pData['acting_boss'] ?? '0') === '1' ? 'boss' : ($pData['role'] ?? '');
+                $onlineRoles[] = $role;
+            }
+        }
+
+        $hasUnion = in_array('union', $onlineRoles);
+        $hasIntern = in_array('intern', $onlineRoles);
+        $hasBossSide = in_array('boss', $onlineRoles) || in_array('secretary', $onlineRoles);
+
+        // Si solo queda un bando online, la partida está "en suspenso"
+        return count($onlineRoles) <= 1 ||
+            (!$hasUnion && !$hasIntern && $hasBossSide) ||
+            (!$hasBossSide && $hasUnion);
     }
 }

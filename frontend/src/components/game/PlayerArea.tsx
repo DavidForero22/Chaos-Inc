@@ -6,6 +6,7 @@ interface PlayerAreaProps {
 	isMyTurn: boolean;
 	selectedCardId: string | null;
 	hasPendingAttack: boolean;
+	endingSoon: boolean;
 	opponents: Opponent[];
 	onCardClick: (card: CardInstance) => void;
 	onEndTurn: () => void;
@@ -17,6 +18,7 @@ export function PlayerArea({
 	isMyTurn,
 	selectedCardId,
 	hasPendingAttack,
+	endingSoon,
 	opponents,
 	onCardClick,
 	onEndTurn,
@@ -106,9 +108,17 @@ export function PlayerArea({
 				) : (
 					<button
 						onClick={onEndTurn}
-						disabled={!isMyTurn || selectedCardId !== null || hasPendingAttack}
+						disabled={
+							!isMyTurn ||
+							selectedCardId !== null ||
+							hasPendingAttack ||
+							endingSoon
+						}
 						className={`px-4 py-2 rounded font-bold text-sm transition ${
-							isMyTurn && selectedCardId === null && !hasPendingAttack
+							isMyTurn &&
+							selectedCardId === null &&
+							!hasPendingAttack &&
+							!endingSoon
 								? "bg-purple-600 hover:bg-purple-500 text-white"
 								: "bg-gray-700 text-gray-500 cursor-not-allowed"
 						}`}
