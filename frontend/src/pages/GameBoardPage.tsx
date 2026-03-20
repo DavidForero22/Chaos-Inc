@@ -15,6 +15,7 @@ import { GameOverModal } from "../components/game/GameOverModal.tsx";
 import { PlayerArea } from "../components/game/PlayerArea.tsx";
 import { GameLog } from "../components/game/GameLog.tsx";
 import { LuckChallengeModal } from "../components/game/LuckChallengeModal.tsx";
+import { GameBanners } from "../components/game/GameBanners.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -172,43 +173,13 @@ export default function GameBoardPage() {
 			)}
 
 			{/* --- BANNERS --- */}
-			{showActingBossWaiting && (
-				<div className="bg-orange-900/40 border border-orange-700 text-orange-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⏳ El jefe heredado se ha desconectado. Esperando 10s para
-					reconexión...
-				</div>
-			)}
-			{showBossWaiting && (
-				<div className="bg-blue-900/40 border border-blue-700 text-blue-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⏳ El jefe se ha desconectado. Esperando 10s para reconexión o
-					sucesión...
-				</div>
-			)}
-			{showInheritanceBanner && (
-				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⚠️ El tiempo expiró. Alguien ha heredado el cargo en secreto.
-				</div>
-			)}
-
-			{showEndingWaiting && (
-				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
-				</div>
-			)}
-
-			{luckResult && (
-				<div
-					className={`px-4 py-2 rounded-lg mb-3 text-center text-sm font-semibold border ${
-						luckResult === "success"
-							? "bg-green-900/40 border-green-700 text-green-300"
-							: "bg-red-900/40 border-red-700 text-red-300"
-					}`}
-				>
-					{luckResult === "success"
-						? "✅ ¡Acertaste! Puedes jugar tu turno."
-						: "❌ Fallaste. Pierdes tu turno."}
-				</div>
-			)}
+			<GameBanners
+				showActingBossWaiting={showActingBossWaiting}
+				showBossWaiting={showBossWaiting}
+				showInheritanceBanner={showInheritanceBanner}
+				showEndingWaiting={showEndingWaiting}
+				luckResult={luckResult}
+			/>
 
 			{/* --- CABECERA --- */}
 			<div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 mb-4 flex justify-between items-center shrink-0">
