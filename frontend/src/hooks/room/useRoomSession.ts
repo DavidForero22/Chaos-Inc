@@ -118,6 +118,12 @@ export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
 			} catch (error: any) {
 				const errorType = error.response?.data?.type;
 
+				if (errorType === "ROOM_NOT_FOUND" || error.response?.status === 404) {
+                    setIsJoining(false); 
+                    navigate("/room-not-found");
+                    return; 
+                }
+
 				if (errorType === "ROOM_FULL") {
 					alert("La sala está llena.");
 					navigate("/");

@@ -78,18 +78,22 @@ export function useLiveGame(roomId: string | undefined) {
 				return;
 			}
 
-			if (status === 404) {
+			// --- REDIRECCIÓN AL 404 ---
+			if (status === 404 || errorType === "ROOM_NOT_FOUND") {
 				isKickedRef.current = true;
-				navigate("/");
+				navigate("/room-not-found");
 				return;
 			}
 
 			console.error("ERROR en /sync:", error);
+
 			if (status === 401 || status === 403) {
 				logWithTime("useLiveGame.ts - Sesión de juego caducada.");
+				alert("Sesión de juego caducada.");
 			} else {
 				alert("Error al sincronizar la sala.");
 			}
+
 			isKickedRef.current = true;
 			navigate("/");
 		} finally {
@@ -130,9 +134,18 @@ export function useLiveGame(roomId: string | undefined) {
 				}
 
 				await syncGame();
-			} catch (error) {
+			} catch (error: any) {
+				const status = error.response?.status;
+				const errorType = error.response?.data?.type;
+
 				logWithTime("useLiveGame.ts - No se pudo reconectar. ", error);
-				navigate("/");
+
+				// --- REDIRECCIÓN AL 404 ---
+				if (status === 404 || errorType === "ROOM_NOT_FOUND") {
+					navigate("/room-not-found");
+				} else {
+					navigate("/");
+				}
 			} finally {
 				setIsConnecting(false);
 			}

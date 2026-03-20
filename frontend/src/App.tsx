@@ -8,6 +8,7 @@ import WaitingRoomPage from "./pages/WaitingRoomPage.tsx";
 import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
+import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
 
 import { useAuthStore } from "./store/useAuthStore.ts";
 import { useEffect } from "react";
@@ -40,6 +41,7 @@ function App() {
 						<Route path="/game/:id" element={<GameBoardPage />} />
 						<Route path="/profile" element={<ProfilePage />} />
 						<Route path="/admin" element={<AdminPage />} />
+						<Route path="/room-not-found" element={<RoomNotFoundPage />} />
 					</Routes>
 				</div>
 			</div>
