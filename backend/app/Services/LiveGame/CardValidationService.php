@@ -3,6 +3,7 @@
 namespace App\Services\LiveGame;
 
 use App\Exceptions\GameException;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class CardValidationService
@@ -56,6 +57,24 @@ class CardValidationService
 
         if ($alreadyHasShield) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes un escudo activo.", 422);
+        }
+    }
+
+    public function validateBlock(string $roomId, string $playerName, string $targetName): void
+    {
+        if ($playerName === $targetName) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes bloquearte a ti mismo.", 422);
+        }
+
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+        $isDead = filter_var(Redis::hget($targetKey, 'is_dead') ?? false, FILTER_VALIDATE_BOOLEAN);
+        if ($isDead) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes bloquear a un jugador eliminado.", 422);
+        }
+
+        $isAlreadyBlocked = CastHelper::toBool(Redis::hget($targetKey, 'is_blocked') ?? 0);
+        if ($isAlreadyBlocked) {
+            throw new GameException(GameException::INVALID_TARGET, "Este jugador ya está bloqueado.", 422);
         }
     }
 }

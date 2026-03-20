@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\RoomStateUpdated;
 use App\Http\Requests\Game\PlayActionRequest;
 use App\Services\LiveGame\LiveGameService;
+use App\Services\LiveGame\TurnService;
+use App\Support\GameMessages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
@@ -93,5 +96,37 @@ class LiveGameController extends Controller
         $this->liveGameService->reactToAttack($id, $playerName, $reaction, $cardId);
 
         return response()->json(['message' => 'Reaction processed'], 200);
+    }
+
+    public function resolveLuckChallenge(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized.'], 401);
+        }
+
+        $challengeKey = "room:{$id}:luck_challenge:{$playerName}";
+
+        if (!Redis::exists($challengeKey)) {
+            return response()->json(['error' => 'No hay ningún desafío activo.'], 422);
+        }
+
+        $correct = Redis::get($challengeKey);
+        $chosen  = $request->input('color');
+
+        Redis::del($challengeKey);
+
+        if ($chosen === $correct) {
+            // Acertó — puede jugar su turno normalmente
+            event(new RoomStateUpdated($id, GameMessages::luckySuccess($playerName)));
+            return response()->json(['result' => 'success']);
+        } else {
+            // Falló — se salta el turno
+            app(TurnService::class)->advanceTurn($id);
+            event(new RoomStateUpdated($id, GameMessages::luckyFail($playerName)));
+            return response()->json(['result' => 'fail']);
+        }
     }
 }

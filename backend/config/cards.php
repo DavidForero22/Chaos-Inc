@@ -47,5 +47,11 @@ return [
             'description' => 'Bloquea automáticamente el siguiente ataque que recibas.',
             'count' => 2,
         ],
+        [
+            'id' => 6,
+            'name' => 'Bloqueo',
+            'description' => 'Bloquea el siguiente turno de un rival.',
+            'count' => 6,
+        ],
     ],
 ];

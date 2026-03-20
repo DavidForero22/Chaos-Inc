@@ -81,7 +81,7 @@ class LiveGameService
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
 
         return [
-            'me' => GameDataFormatter::formatMyData($playerName, $myData, $pendingAttack),
+            'me' => GameDataFormatter::formatMyData($playerName, $myData, $pendingAttack, $roomId),
             'game' => GameDataFormatter::formatGameData($roomId, $room, $playerName)
         ];
     }

@@ -75,6 +75,15 @@ export function PlayerArea({
 					</div>
 				)}
 
+				{me.is_blocked && (
+					<div className="flex justify-between items-center mt-2">
+						<span className="text-xs text-gray-500 uppercase">Estado</span>
+						<span className="text-sm font-bold text-purple-400">
+							🔒 Bloqueado
+						</span>
+					</div>
+				)}
+
 				{Boolean(me.acting_boss) && (
 					<div className="flex justify-between items-center mt-2">
 						<span className="text-xs text-gray-500 uppercase">Cargo</span>

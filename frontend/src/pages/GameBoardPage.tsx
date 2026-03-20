@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- HOOKS ---
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
@@ -14,6 +14,7 @@ import { RoleRevealModal } from "../components/game/RoleRevealModal.tsx";
 import { GameOverModal } from "../components/game/GameOverModal.tsx";
 import { PlayerArea } from "../components/game/PlayerArea.tsx";
 import { GameLog } from "../components/game/GameLog.tsx";
+import { LuckChallengeModal } from "../components/game/LuckChallengeModal.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -31,10 +32,29 @@ export default function GameBoardPage() {
 		gameOver,
 		showActingBossModal,
 		setShowActingBossModal,
-		logs
+		logs,
 	} = useLiveGame(id);
 
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+
+	const [luckResult, setLuckResult] = useState<"success" | "fail" | null>(null);
+	const handleLuckResult = (success: boolean) => {
+		setLuckResult(success ? "success" : "fail");
+	};
+
+	// --- NUEVO EFECTO CON TEMPORIZADOR ---
+	useEffect(() => {
+		// Solo iniciamos el contador si hay un resultado que mostrar
+		if (luckResult !== null) {
+			const timer = setTimeout(() => {
+				setLuckResult(null); // Lo limpiamos a los 4 segundos
+			}, 4000);
+
+			// Importante: Limpiamos el temporizador si el componente se desmonta
+			// o si el luckResult cambia antes de que acabe el tiempo
+			return () => clearTimeout(timer);
+		}
+	}, [luckResult]);
 
 	// --- Lógica de Timers (Extraída) ---
 	const {
@@ -68,6 +88,8 @@ export default function GameBoardPage() {
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
+	const hasLuckChallenge =
+		isMyTurn && !!me.luck_challenge && luckResult === null;
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
@@ -77,6 +99,8 @@ export default function GameBoardPage() {
 		}
 
 		if (!isMyTurn) return;
+
+		if (hasLuckChallenge) return;
 
 		if (card.type === 2 && me.stress > 0)
 			return playTurn(card.id, myPlayerName);
@@ -105,7 +129,13 @@ export default function GameBoardPage() {
 	};
 
 	const handleEndTurn = async () => {
-		if (!isMyTurn || selectedCardId !== null || hasPendingAttack) return;
+		if (
+			!isMyTurn ||
+			selectedCardId !== null ||
+			hasPendingAttack ||
+			hasLuckChallenge
+		)
+			return;
 		await endTurn();
 	};
 
@@ -133,7 +163,15 @@ export default function GameBoardPage() {
 				/>
 			)}
 
-			{/* --- ALERTAS DE RECONEXIÓN --- */}
+			{isMyTurn && me.luck_challenge && luckResult === null && (
+				<LuckChallengeModal
+					roomId={id!}
+					colors={me.luck_challenge}
+					onResult={handleLuckResult}
+				/>
+			)}
+
+			{/* --- BANNERS --- */}
 			{showActingBossWaiting && (
 				<div className="bg-orange-900/40 border border-orange-700 text-orange-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
 					⏳ El jefe heredado se ha desconectado. Esperando 10s para
@@ -155,6 +193,20 @@ export default function GameBoardPage() {
 			{showEndingWaiting && (
 				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
 					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
+				</div>
+			)}
+
+			{luckResult && (
+				<div
+					className={`px-4 py-2 rounded-lg mb-3 text-center text-sm font-semibold border ${
+						luckResult === "success"
+							? "bg-green-900/40 border-green-700 text-green-300"
+							: "bg-red-900/40 border-red-700 text-red-300"
+					}`}
+				>
+					{luckResult === "success"
+						? "✅ ¡Acertaste! Puedes jugar tu turno."
+						: "❌ Fallaste. Pierdes tu turno."}
 				</div>
 			)}
 
@@ -194,7 +246,7 @@ export default function GameBoardPage() {
 				isMyTurn={isMyTurn}
 				selectedCardId={selectedCardId}
 				hasPendingAttack={hasPendingAttack}
-				endingSoon={isTurnFrozen}
+				endingSoon={isTurnFrozen || hasLuckChallenge}
 				opponents={game.opponents}
 				onCardClick={handleCardClick}
 				onEndTurn={handleEndTurn}

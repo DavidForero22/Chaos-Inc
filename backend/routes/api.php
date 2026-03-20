@@ -24,7 +24,7 @@ Route::prefix('v1')->group(function () {
     // Ver el listado de salas debe ser público
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::get('/rooms/{id}', [RoomController::class, 'show']);
-    
+
     /*
     |--------------------------------------------------------------------------
     | Rutas Protegidas (Requieren token de Sanctum)
@@ -49,6 +49,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/rooms/{id}/report-disconnect', [PresenceController::class, 'reportDisconnect']);
         Route::post('/rooms/{id}/report-lobby-disconnect', [PresenceController::class, 'reportLobbyDisconnect']);
 
+        Route::post('/rooms/{id}/luck-challenge', [LiveGameController::class, 'resolveLuckChallenge']);
 
         Route::post('/rooms', [RoomController::class, 'store']);
 

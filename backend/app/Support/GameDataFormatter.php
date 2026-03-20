@@ -8,10 +8,22 @@ use App\Services\LiveGame\GameFinalizationService;
 
 class GameDataFormatter
 {
-    public static function formatMyData(string $playerName, array $myData, array $pendingAttack): array
+    public static function formatMyData(string $playerName, array $myData, array $pendingAttack, $roomId): array
     {
         $hasIncomingAttack = !empty($pendingAttack) && ($pendingAttack['target'] ?? null) === $playerName;
         $hasPendingAttack  = !empty($pendingAttack) && ($pendingAttack['attacker'] ?? null) === $playerName;
+
+        $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
+        $hasChallenge = Redis::exists($challengeKey);
+        $correct      = $hasChallenge ? Redis::get($challengeKey) : null;
+
+        // Generar los 4 colores barajados para mostrar al jugador
+        $challengeColors = null;
+        if ($hasChallenge) {
+            $colors = ['red', 'blue', 'green', 'yellow'];
+            shuffle($colors);
+            $challengeColors = $colors;
+        }
 
         return [
             'name'                  => $playerName,
@@ -26,6 +38,9 @@ class GameDataFormatter
             'has_pending_attack'    => $hasPendingAttack,
             'has_shield'            => CastHelper::toBool($myData['has_shield'] ?? 0),
             'acting_boss'           => CastHelper::toBool($myData['acting_boss'] ?? 0),
+            'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),
+            'luck_challenge'        => $challengeColors,
+
         ];
     }
 
@@ -56,6 +71,7 @@ class GameDataFormatter
                 'is_online'   => CastHelper::toBool($pData['is_online'] ?? 1),
                 'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
                 'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
+                'is_blocked' => CastHelper::toBool($pData['is_blocked'] ?? 0),
             ];
         }
 

@@ -33,12 +33,16 @@ export function OpponentsBoard({
 			{opponents.map((player) => {
 				const isStealSelected = selectedCardType === 4;
 				const isUnstealable = isStealSelected && player.cards_count === 0;
+				const isBlockSelected = selectedCardType === 6;
+				const isAlreadyBlocked = isBlockSelected && player.is_blocked;
 
 				const canBeTargeted =
 					isMyTurn &&
 					selectedCardId !== null &&
 					player.is_online &&
-					!isUnstealable;
+					!isUnstealable &&
+					!isAlreadyBlocked &&
+					!player.is_dead;
 
 				const offlineStyles = !player.is_online
 					? "opacity-40 grayscale scale-95 border-gray-900"
@@ -88,6 +92,15 @@ export function OpponentsBoard({
 								title="Este jugador ha muerto"
 							>
 								💀
+							</div>
+						)}
+
+						{player.is_blocked && (
+							<div
+								className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
+								title="Este jugador está bloqueado"
+							>
+								🔒
 							</div>
 						)}
 

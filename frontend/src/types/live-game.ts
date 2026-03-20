@@ -13,6 +13,7 @@ export interface Opponent {
 	cards_count: number;
 	has_shield: boolean;
 	acting_boss: boolean;
+	is_blocked: boolean;
 }
 
 /**
@@ -37,6 +38,8 @@ export interface MyData {
 	has_shield: boolean;
 	has_pending_attack: boolean;
 	acting_boss: boolean;
+	is_blocked: boolean;
+	luck_challenge: string[] | null;
 }
 
 /**

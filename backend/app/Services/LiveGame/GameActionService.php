@@ -62,6 +62,7 @@ class GameActionService
             2 => $this->cardValidationService->validateHeal($roomId, $playerName),
             4 => $this->cardValidationService->validateSteal($roomId, $playerName, $targetName),
             5 => $this->cardValidationService->validateShield($roomId, $playerName, $targetName),
+            6 => $this->cardValidationService->validateBlock($roomId, $playerName, $targetName),
             default => null,
         };
 
@@ -70,6 +71,7 @@ class GameActionService
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
             5 => $this->cardEffectService->applyShield($roomId, $playerName),
+            6 => $this->cardEffectService->applyBlock($roomId, $targetName),
             default => null,
         };
 
@@ -82,6 +84,7 @@ class GameActionService
             2 => GameMessages::healed($playerName),
             4 => GameMessages::stolen($playerName, $targetName),
             5 => GameMessages::shielded($playerName),
+            6 => GameMessages::blocked($playerName, $targetName),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));

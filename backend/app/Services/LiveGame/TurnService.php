@@ -57,6 +57,15 @@ class TurnService
                     Redis::hincrby($roomKey, 'round_number', 1);
                 }
 
+                // Si el siguiente jugador está bloqueado, crear el minijuego
+                $isBlocked = Redis::hget($playerKey, 'is_blocked') === '1';
+                if ($isBlocked) {
+                    Redis::hset($playerKey, 'is_blocked', 0);
+                    $colors = ['red', 'blue', 'green', 'yellow'];
+                    $correct = $colors[array_rand($colors)];
+                    Redis::setex("room:{$roomId}:luck_challenge:{$nextPlayer}", 60, $correct);
+                }
+
                 break;
             }
         }

@@ -67,4 +67,9 @@ class CardEffectService
         $playerKey = "room:{$roomId}:player:{$playerName}";
         Redis::hset($playerKey, 'has_shield', 1);
     }
+
+    public function applyBlock(string $roomId, string $targetName): void
+    {
+        Redis::hset("room:{$roomId}:player:{$targetName}", 'is_blocked', 1);
+    }
 }

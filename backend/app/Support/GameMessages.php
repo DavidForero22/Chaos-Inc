@@ -40,6 +40,21 @@ class GameMessages
         return "{$player} ha sido eliminado.";
     }
 
+    public static function blocked(string $player, string $target): string
+    {
+        return "{$player} ha bloqueado el turno de {$target}.";
+    }
+
+    public static function luckySuccess(string $player): string
+    {
+        return "{$player} superó la prueba de suerte y puede jugar su turno.";
+    }
+
+    public static function luckyFail(string $player): string
+    {
+        return "{$player} falló la prueba de suerte y pierde su turno.";
+    }
+
     // Conexiones
     public static function disconnected(string $player): string
     {
