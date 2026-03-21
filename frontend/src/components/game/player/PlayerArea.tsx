@@ -53,6 +53,7 @@ export function PlayerArea({
 				incomingAttack={me.incoming_attack}
 				opponents={opponents}
 				hasPendingAttack={hasPendingAttack}
+				hasPendingMultiAttack={hasPendingMultiAttack}
 			/>
 
 			{/* Botones de acción */}

@@ -13,6 +13,7 @@ interface PlayerHandProps {
 	incomingAttack: boolean;
 	opponents: Opponent[];
 	hasPendingAttack: boolean;
+	hasPendingMultiAttack: boolean;
 }
 
 export function PlayerHand({
@@ -23,6 +24,7 @@ export function PlayerHand({
 	incomingAttack,
 	opponents,
 	hasPendingAttack,
+	hasPendingMultiAttack,
 }: PlayerHandProps) {
 	// Helper para no repetir código dentro del map
 	const anyOpponentHasCards = opponents.some(
@@ -39,7 +41,8 @@ export function PlayerHand({
 					// --- REGLAS DE NEGOCIO (DESHABILITACIONES) ---
 					const isHealDisabled = card.type === 2 && me.stress <= 0;
 					const isAttackDisabled = card.type === 1 && me.attack_used_this_turn;
-					const isDodgeDisabled = card.type === 3 && !incomingAttack;
+					const isDodgeDisabled =
+						card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
 					const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
 					const isShieldDisabled = card.type === 5 && me.has_shield;
 					const isBlockDisabled =
@@ -47,16 +50,17 @@ export function PlayerHand({
 						!opponents.some((o) => !o.is_dead && o.is_online && !o.is_blocked);
 
 					const isDisabled =
-                        isHealDisabled ||
-                        isAttackDisabled ||
-                        isDodgeDisabled ||
-                        isStealDisabled ||
-                        isShieldDisabled ||
-                        isBlockDisabled;
+						isHealDisabled ||
+						isAttackDisabled ||
+						isDodgeDisabled ||
+						isStealDisabled ||
+						isShieldDisabled ||
+						isBlockDisabled;
 
 					// --- ESTADOS INTERACTIVOS ---
 					const isDodge = card.type === 3;
-					const canUseDodgeNow = incomingAttack && isDodge;
+					const canUseDodgeNow =
+						(incomingAttack || hasPendingMultiAttack) && isDodge;
 
 					// Solo es seleccionable si:
 					// 1. Es mi turno, no está bloqueada por reglas, y no estoy esperando resolver un ataque propio
