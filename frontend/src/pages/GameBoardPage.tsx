@@ -9,13 +9,13 @@ import { useReconnectionTimers } from "../hooks/game/useReconnectionTimers.ts";
 import type { CardInstance, Opponent } from "../types/live-game.ts";
 
 // --- COMPONENTES ---
-import { OpponentsBoard } from "../components/game/OpponentsBoard.tsx";
-import { RoleRevealModal } from "../components/game/RoleRevealModal.tsx";
-import { GameOverModal } from "../components/game/GameOverModal.tsx";
-import { PlayerArea } from "../components/game/PlayerArea.tsx";
-import { GameLog } from "../components/game/GameLog.tsx";
-import { LuckChallengeModal } from "../components/game/LuckChallengeModal.tsx";
-import { GameBanners } from "../components/game/GameBanners.tsx";
+import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
+import { RoleRevealModal } from "../components/game/overlays/RoleRevealModal.tsx";
+import { GameOverModal } from "../components/game/overlays/GameOverModal.tsx";
+import { PlayerArea } from "../components/game/player/PlayerArea.tsx";
+import { GameLog } from "../components/game/board/GameLog.tsx";
+import { LuckChallengeModal } from "../components/game/overlays/LuckChallengeModal.tsx";
+import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();

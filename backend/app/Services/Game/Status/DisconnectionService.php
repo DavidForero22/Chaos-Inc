@@ -190,6 +190,6 @@ class DisconnectionService
 
         // 3. Avanzar el turno
         app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
-        event(new RoomStateUpdated($roomId, GameMessages::disconnected($playerName)));
+        event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
     }
 }

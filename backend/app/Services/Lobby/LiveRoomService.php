@@ -10,7 +10,6 @@ use App\Exceptions\RoomException;
 use App\Services\LiveGame\DisconnectionService;
 use App\Services\LiveGame\GameFinalizationService;
 use App\Services\LiveGame\ReconnectionService;
-use App\Support\GameMessages;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -47,7 +46,6 @@ class LiveRoomService
         else if ($room['status'] === 'in_game') {
             $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}");
             $this->reconnectionService->handleReconnection($roomId, $playerName, $playerData);
-            event(new RoomStateUpdated($roomId, GameMessages::reconnected($playerName)));
         }
 
         $gameToken = $this->tokenService->refreshPlayerToken($roomId, $playerName);

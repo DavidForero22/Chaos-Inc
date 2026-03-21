@@ -8,9 +8,10 @@ use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Http\Resources\GameDataResource;
+use App\Http\Resources\MyDataResource;
 use Illuminate\Support\Facades\Redis;
 use App\Support\LiveGameHelper;
-use App\Support\GameDataFormatter;
 
 class LiveGameService
 {
@@ -81,33 +82,18 @@ class LiveGameService
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
 
         return [
-            'me' => GameDataFormatter::formatMyData($playerName, $myData, $pendingAttack, $roomId),
-            'game' => GameDataFormatter::formatGameData($roomId, $room, $playerName)
+            'me'   => new MyDataResource([
+                'playerName'    => $playerName,
+                'myData'        => $myData,
+                'pendingAttack' => $pendingAttack,
+                'roomId'        => $roomId,
+            ]),
+            'game' => new GameDataResource([
+                'roomId'       => $roomId,
+                'room'         => $room,
+                'myPlayerName' => $playerName,
+            ])
         ];
-    }
-
-    // =========================================================================
-    // DELEGACIONES
-    // =========================================================================
-
-    public function endTurn(string $roomId, string $playerName): void
-    {
-        $this->turnService->endTurn($roomId, $playerName);
-    }
-
-    public function checkAndAdvanceTurnOnDisconnect(string $roomId, string $disconnectedPlayer): void
-    {
-        $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $disconnectedPlayer);
-    }
-
-    public function playAction(string $roomId, string $playerName, string $cardId, string $targetName): void
-    {
-        $this->gameActionService->playAction($roomId, $playerName, $cardId, $targetName);
-    }
-
-    public function reactToAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
-    {
-        $this->gameActionService->reactToAttack($roomId, $playerName, $reaction, $cardId);
     }
 
     // =========================================================================
@@ -157,7 +143,6 @@ class LiveGameService
     private function finalizeGameSetup(string $roomId, string $bossPlayerName, array $deck, array $players): void
     {
         Redis::hset("room:{$roomId}", 'current_turn_player_id', $bossPlayerName);
-        Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
         Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
         Redis::setex("room:{$roomId}:deck", 86400, json_encode($deck));
 

@@ -1,6 +1,7 @@
 // src/components/game/RoleRevealModal.tsx
 
-import type { MyData } from "../../types/live-game.ts";
+import type { MyData } from "../../../types/live-game.ts";
+import { Modal } from "../../ui/Modal.tsx";
 
 type DisplayRole = MyData["role"] | "acting_boss";
 
@@ -73,39 +74,35 @@ export function RoleRevealModal({
 	const config = ROLE_CONFIG[displayKey];
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-			<div className="bg-gray-800 border border-gray-600 rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 text-center">
-				{/* Etiqueta superior dinámica (Advertencia o Rol Normal) */}
-				<p
-					className={`text-xs uppercase font-bold tracking-widest mb-4 ${
-						config.isWarning ? "text-yellow-400" : "text-gray-400"
-					}`}
-				>
-					{config.titleLabel}
+		<Modal>
+			<p
+				className={`text-xs uppercase font-bold tracking-widest mb-4 ${
+					config.isWarning ? "text-yellow-400" : "text-gray-400"
+				}`}
+			>
+				{config.titleLabel}
+			</p>
+
+			<div className="text-6xl mb-4">{config.emoji}</div>
+			<h2 className={`text-3xl font-black mb-2 ${config.color}`}>
+				{config.label}
+			</h2>
+
+			<div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mt-4 mb-6">
+				<p className="text-xs text-gray-500 uppercase font-bold mb-2">
+					{config.isWarning ? "Tu nueva misión" : "Tu objetivo"}
 				</p>
-
-				<div className="text-6xl mb-4">{config.emoji}</div>
-
-				<h2 className={`text-3xl font-black mb-2 ${config.color}`}>
-					{config.label}
-				</h2>
-
-				<div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mt-4 mb-6">
-					<p className="text-xs text-gray-500 uppercase font-bold mb-2">
-						{config.isWarning ? "Tu nueva misión" : "Tu objetivo"}
-					</p>
-					<p className="text-gray-300 text-sm leading-relaxed">
-						{config.objective}
-					</p>
-				</div>
-
-				<button
-					onClick={onClose}
-					className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
-				>
-					¡Entendido!
-				</button>
+				<p className="text-gray-300 text-sm leading-relaxed">
+					{config.objective}
+				</p>
 			</div>
-		</div>
+
+			<button
+				onClick={onClose}
+				className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
+			>
+				¡Entendido!
+			</button>
+		</Modal>
 	);
 }

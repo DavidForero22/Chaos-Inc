@@ -37,6 +37,8 @@ class ReconnectionService
             return;
         }
 
+        event(new RoomStateUpdated($roomId, __('game.reconnected', ['player' => $playerName])));
+
         // Penalización por haber caído
         Redis::hset($playerKey, 'skip_next_turn', 1);
 
@@ -86,7 +88,7 @@ class ReconnectionService
         event(new RoomStateUpdated($roomId));
     }
 
-    private function evaluateSecretaryReturn(string $roomId, string $playerName, string $playerKey): void
+    private function evaluateSecretaryReturn(string $roomId, string $playerKey): void
     {
         $bossStillOffline = false;
         $players = Redis::smembers("room:{$roomId}:players");

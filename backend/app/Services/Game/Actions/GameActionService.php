@@ -80,11 +80,11 @@ class GameActionService
         Redis::hincrby($playerKey, 'cards_played', 1);
 
         $logMessage = match ($cardType) {
-            1 => GameMessages::attacked($playerName, $targetName),
-            2 => GameMessages::healed($playerName),
-            4 => GameMessages::stolen($playerName, $targetName),
-            5 => GameMessages::shielded($playerName),
-            6 => GameMessages::blocked($playerName, $targetName),
+            1 => __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),
+            2 => __('game.healed', ['player' => $playerName]),
+            4 => __('game.stolen', ['player' => $playerName, 'target' => $targetName]),
+            5 => __('game.shielded', ['player' => $playerName]),
+            6 => __('game.blocked', ['player' => $playerName, 'target' => $targetName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));
@@ -138,8 +138,9 @@ class GameActionService
         }
 
         $logMessage = $reaction === 'dodge'
-            ? GameMessages::dodged($playerName)
-            : GameMessages::tookDamage($playerName);
+            ? __('game.dodged', ['player' => $playerName])
+            : __('game.tookDamage', ['player' => $playerName]);
+
         event(new RoomStateUpdated($roomId, $logMessage));
     }
 
@@ -218,5 +219,31 @@ class GameActionService
             event(new RoomStateUpdated($roomId));
             $this->finalizationService->finalize($roomId);
         }
+    }
+
+    public function resolveLuckChallenge(string $roomId, string $playerName, string $chosenColor): bool
+    {
+        $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
+
+        if (!Redis::exists($challengeKey)) {
+            throw new \Exception('No hay ningún desafío activo.');
+        }
+
+        $correct = Redis::get($challengeKey);
+        Redis::del($challengeKey);
+
+        if ($chosenColor === $correct) {
+            // Acertó
+            $msg = __('game.luckySuccess', ['player' => $playerName]);
+            event(new RoomStateUpdated($roomId, $msg));
+            return true;
+        } 
+        
+        // Falló
+        app(TurnService::class)->advanceTurn($roomId);
+        $msg = __('game.luckyFail', ['player' => $playerName]);
+        event(new RoomStateUpdated($roomId, $msg));
+        
+        return false;
     }
 }

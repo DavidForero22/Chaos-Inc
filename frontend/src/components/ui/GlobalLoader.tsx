@@ -1,4 +1,4 @@
-import { useLoadingStore } from "../store/useLoadingStore";
+import { useLoadingStore } from "../../store/useLoadingStore";
 
 export function GlobalLoader() {
 	const requestCount = useLoadingStore((state) => state.requestCount);

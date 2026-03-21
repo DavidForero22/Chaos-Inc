@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\RoomStateUpdated;
 use App\Http\Requests\Game\PlayActionRequest;
+use App\Services\LiveGame\GameActionService;
 use App\Services\LiveGame\LiveGameService;
 use App\Services\LiveGame\TurnService;
-use App\Support\GameMessages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 
 class LiveGameController extends Controller
 {
     protected $liveGameService;
+    protected $gameActionService;
+    protected $turnService;
 
-    public function __construct(LiveGameService $liveGameService)
+    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, TurnService $turnService)
     {
         $this->liveGameService = $liveGameService;
+        $this->gameActionService = $gameActionService;
+        $this->turnService = $turnService;
     }
 
     public function start(Request $request, $id)
@@ -57,7 +60,7 @@ class LiveGameController extends Controller
         }
 
         // Llamamos al servicio con los datos validados
-        $this->liveGameService->playAction(
+        $this->gameActionService->playAction(
             $id,
             $playerName,
             $request->input('card_id'),
@@ -76,7 +79,7 @@ class LiveGameController extends Controller
             return response()->json(['error' => 'Unauthorized or expired token.'], 401);
         }
 
-        $this->liveGameService->endTurn($id, $playerName);
+        $this->turnService->endTurn($id, $playerName);
 
         return response()->json(['message' => 'Turn ended'], 200);
     }
@@ -93,7 +96,7 @@ class LiveGameController extends Controller
         $reaction = $request->input('reaction'); // 'dodge' o 'accept'
         $cardId = $request->input('card_id'); // opcional, solo para esquivar
 
-        $this->liveGameService->reactToAttack($id, $playerName, $reaction, $cardId);
+        $this->gameActionService->reactToAttack($id, $playerName, $reaction, $cardId);
 
         return response()->json(['message' => 'Reaction processed'], 200);
     }
@@ -107,26 +110,14 @@ class LiveGameController extends Controller
             return response()->json(['error' => 'Unauthorized.'], 401);
         }
 
-        $challengeKey = "room:{$id}:luck_challenge:{$playerName}";
+        $chosen = $request->input('color');
 
-        if (!Redis::exists($challengeKey)) {
-            return response()->json(['error' => 'No hay ningún desafío activo.'], 422);
-        }
-
-        $correct = Redis::get($challengeKey);
-        $chosen  = $request->input('color');
-
-        Redis::del($challengeKey);
-
-        if ($chosen === $correct) {
-            // Acertó — puede jugar su turno normalmente
-            event(new RoomStateUpdated($id, GameMessages::luckySuccess($playerName)));
-            return response()->json(['result' => 'success']);
-        } else {
-            // Falló — se salta el turno
-            app(TurnService::class)->advanceTurn($id);
-            event(new RoomStateUpdated($id, GameMessages::luckyFail($playerName)));
-            return response()->json(['result' => 'fail']);
+        try {
+            $success = $this->gameActionService->resolveLuckChallenge($id, $playerName, $chosen);
+            
+            return response()->json(['result' => $success ? 'success' : 'fail']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 }
