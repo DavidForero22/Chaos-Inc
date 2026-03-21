@@ -3,6 +3,7 @@
 
 namespace App\Services\Game\Actions;
 
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class CardEffectService
@@ -72,5 +73,67 @@ class CardEffectService
     public function applyBlock(string $roomId, string $targetName): void
     {
         Redis::hset("room:{$roomId}:player:{$targetName}", 'is_blocked', 1);
+    }
+
+    public function applyAttackAll(string $roomId, string $playerName): void
+    {
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        Redis::hset($playerKey, 'attack_used_this_turn', 1);
+
+        $players = Redis::smembers("room:{$roomId}:players");
+        $pendingTargets = [];
+
+        foreach ($players as $target) {
+            if ($target === $playerName) continue;
+
+            $targetKey = "room:{$roomId}:player:{$target}";
+            $pData     = Redis::hgetall($targetKey);
+            $isDead    = CastHelper::toBool($pData['is_dead'] ?? false);
+            $isOnline  = ($pData['is_online'] ?? '1') !== '0';
+
+            if ($isDead || !$isOnline) continue;
+
+            $hasShield = ($pData['has_shield'] ?? '0') === '1';
+            $targetCards = json_decode($pData['cards'] ?? '[]', true);
+            $hasDodge  = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+
+            if ($hasShield) {
+                // Escudo absorbe y se rompe
+                Redis::hset($targetKey, 'has_shield', 0);
+            } elseif ($hasDodge) {
+                // Puede esquivar — añadir a pendientes
+                $pendingTargets[] = $target;
+            } else {
+                // Daño directo
+                app(GameActionService::class)->applyDamageAndCheck($roomId, $playerName, $target);
+            }
+        }
+
+        if (!empty($pendingTargets)) {
+            Redis::set(
+                "room:{$roomId}:pending_multi_attack",
+                json_encode([
+                    'attacker' => $playerName,
+                    'targets'  => $pendingTargets,
+                    'dodgers'  => [],
+                ])
+            );
+        }
+    }
+
+    public function applyHealAll(string $roomId): void
+    {
+        $players = Redis::smembers("room:{$roomId}:players");
+
+        foreach ($players as $target) {
+            $targetKey   = "room:{$roomId}:player:{$target}";
+            $pData       = Redis::hgetall($targetKey);
+            $isDead    = CastHelper::toBool($pData['is_dead'] ?? 0);
+            $currentStress = (int) ($pData['stress'] ?? 0);
+
+            if (!$isDead && $currentStress > 0) {
+                Redis::hincrby($targetKey, 'stress', -1);
+            }
+        }
     }
 }

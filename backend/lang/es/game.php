@@ -1,4 +1,5 @@
 <?php
+// lang/es/game.php
 
 return [
     // Acciones de cartas
@@ -10,6 +11,9 @@ return [
     'tookDamage' => ':player no ha esquivado el ataque.',
     'eliminated' => ':player ha sido eliminado.',
     'blocked'    => ':player ha bloqueado el turno de :target.',
+    'attacked_all'   => ':attacker ha atacado a :targets.',
+    'healed_all'     => ':player ha curado a todos los jugadores.',
+    'multi_dodged'   => ':dodgers esquivaron el ataque.',
 
     // Suerte
     'luckySuccess' => ':player superó la prueba de suerte y puede jugar su turno.',

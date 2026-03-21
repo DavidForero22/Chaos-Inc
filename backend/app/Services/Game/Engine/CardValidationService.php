@@ -78,4 +78,14 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "Este jugador ya está bloqueado.", 422);
         }
     }
+
+    public function validateAttackAll(string $roomId, string $playerName): void
+    {
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $alreadyAttacked = (int) (Redis::hget($playerKey, 'attack_used_this_turn') ?? 0);
+
+        if ($alreadyAttacked === 1) {
+            throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque en este turno.", 422);
+        }
+    }
 }

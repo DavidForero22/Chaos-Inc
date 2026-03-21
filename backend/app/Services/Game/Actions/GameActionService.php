@@ -59,21 +59,26 @@ class GameActionService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
 
+        // Match de validación
         match ($cardType) {
             1 => $this->cardValidationService->validateAttack($roomId, $playerName, $targetName),
             2 => $this->cardValidationService->validateHeal($roomId, $playerName),
             4 => $this->cardValidationService->validateSteal($roomId, $playerName, $targetName),
             5 => $this->cardValidationService->validateShield($roomId, $playerName, $targetName),
             6 => $this->cardValidationService->validateBlock($roomId, $playerName, $targetName),
+            7 => $this->cardValidationService->validateAttackAll($roomId, $playerName),
             default => null,
         };
 
+        // Match de efecto
         match ($cardType) {
             1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
             5 => $this->cardEffectService->applyShield($roomId, $playerName),
             6 => $this->cardEffectService->applyBlock($roomId, $targetName),
+            7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
+            8 => $this->cardEffectService->applyHealAll($roomId),
             default => null,
         };
 
@@ -97,12 +102,15 @@ class GameActionService
             Redis::hincrby($playerKey, 'cards_played', 1);
         }
 
+        // Match de log
         $logMessage = match ($cardType) {
             1 => __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),
             2 => __('game.healed', ['player' => $playerName]),
             4 => __('game.stolen', ['player' => $playerName, 'target' => $targetName]),
             5 => __('game.shielded', ['player' => $playerName]),
             6 => __('game.blocked', ['player' => $playerName, 'target' => $targetName]),
+            7 => null, // el log se construye en reactToMultiAttack cuando todos responden
+            8 => __('game.healed_all', ['player' => $playerName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));
@@ -255,13 +263,84 @@ class GameActionService
             $msg = __('game.luckySuccess', ['player' => $playerName]);
             event(new RoomStateUpdated($roomId, $msg));
             return true;
-        } 
-        
+        }
+
         // Falló
         app(TurnService::class)->advanceTurn($roomId);
         $msg = __('game.luckyFail', ['player' => $playerName]);
         event(new RoomStateUpdated($roomId, $msg));
-        
+
         return false;
+    }
+
+    public function reactToMultiAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
+    {
+        $pendingKey = "room:{$roomId}:pending_multi_attack";
+
+        if (!Redis::exists($pendingKey)) {
+            throw new GameException(GameException::INVALID_ACTION, "No hay ningún ataque múltiple pendiente.", 422);
+        }
+
+        $pending = json_decode(Redis::get($pendingKey), true);
+
+        if (!in_array($playerName, $pending['targets'] ?? [])) {
+            throw new GameException(GameException::INVALID_ACTION, "No eres objetivo de este ataque.", 403);
+        }
+
+        $targetKey = "room:{$roomId}:player:{$playerName}";
+
+        if ($reaction === 'dodge') {
+            if (!$cardId) {
+                throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
+            }
+
+            $cards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+            $cardIndex = null;
+            foreach ($cards as $index => $card) {
+                if (($card['id'] ?? null) === $cardId && ($card['type'] ?? null) === 3) {
+                    $cardIndex = $index;
+                    break;
+                }
+            }
+
+            if ($cardIndex === null) {
+                throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes una carta de esquive válida.", 422);
+            }
+
+            array_splice($cards, $cardIndex, 1);
+            Redis::hset($targetKey, 'cards', json_encode($cards));
+
+            $pending['dodgers'][] = $playerName;
+        } elseif ($reaction === 'accept') {
+            $this->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
+        } else {
+            throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
+        }
+
+        // Eliminar al jugador de los pendientes
+        $pending['targets'] = array_values(array_filter(
+            $pending['targets'],
+            fn($t) => $t !== $playerName
+        ));
+
+        if (empty($pending['targets'])) {
+            // Respuesta confirmada — limpiar y emitir log final
+            Redis::del($pendingKey);
+
+            $allTargets = Redis::smembers("room:{$roomId}:players");
+            $attacked = array_filter($allTargets, fn($p) => $p !== $pending['attacker']);
+            $targetsStr = implode(', ', $attacked);
+            $logMessage = __('game.attacked_all', ['attacker' => $pending['attacker'], 'targets' => $targetsStr]);
+
+            if (!empty($pending['dodgers'])) {
+                $logMessage .= ' ' . __('game.multi_dodged', ['dodgers' => implode(', ', $pending['dodgers'])]);
+            }
+
+            event(new RoomStateUpdated($roomId, $logMessage));
+        } else {
+            // Aún quedan jugadores por responder
+            Redis::set($pendingKey, json_encode($pending));
+            event(new RoomStateUpdated($roomId, null));
+        }
     }
 }

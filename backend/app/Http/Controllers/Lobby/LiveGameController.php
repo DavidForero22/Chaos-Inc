@@ -116,10 +116,27 @@ class LiveGameController extends Controller
 
         try {
             $success = $this->gameActionService->resolveLuckChallenge($id, $playerName, $chosen);
-            
+
             return response()->json(['result' => $success ? 'success' : 'fail']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
+    }
+
+    public function reactMulti(Request $request, $id)
+    {
+        $gameToken  = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $reaction = $request->input('reaction');
+        $cardId   = $request->input('card_id');
+
+        $this->gameActionService->reactToMultiAttack($id, $playerName, $reaction, $cardId);
+
+        return response()->json(['message' => 'Reaction processed.'], 200);
     }
 }

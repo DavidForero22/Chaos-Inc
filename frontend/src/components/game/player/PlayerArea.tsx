@@ -1,6 +1,10 @@
 import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";
-import type { CardInstance, MyData, Opponent } from "../../../types/live-game.ts";
+import type {
+	CardInstance,
+	MyData,
+	Opponent,
+} from "../../../types/live-game.ts";
 
 interface PlayerAreaProps {
 	me: MyData;
@@ -12,6 +16,8 @@ interface PlayerAreaProps {
 	onCardClick: (card: CardInstance) => void;
 	onEndTurn: () => void;
 	onReactToAttack: (action: "accept" | "dodge") => void;
+	hasPendingMultiAttack: boolean;
+	onReactToMultiAttack: (action: "accept" | "dodge", cardId?: string) => void;
 }
 
 export function PlayerArea({
@@ -24,6 +30,8 @@ export function PlayerArea({
 	onCardClick,
 	onEndTurn,
 	onReactToAttack,
+	hasPendingMultiAttack,
+	onReactToMultiAttack,
 }: PlayerAreaProps) {
 	return (
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
@@ -52,6 +60,13 @@ export function PlayerArea({
 				{me.incoming_attack ? (
 					<button
 						onClick={() => onReactToAttack("accept")}
+						className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
+					>
+						Asumir daño
+					</button>
+				) : hasPendingMultiAttack ? (
+					<button
+						onClick={() => onReactToMultiAttack("accept")}
 						className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
 					>
 						Asumir daño

@@ -43,6 +43,7 @@ export default function GameBoardPage() {
 	const playTurn = useGameStore((state) => state.playTurn);
 	const endTurn = useGameStore((state) => state.endTurn);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
+	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
 
 	// Estado Local UI
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -78,6 +79,7 @@ export default function GameBoardPage() {
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
 	const hasPendingAttack = me.has_pending_attack;
+	const hasPendingMultiAttack = me.has_pending_multi_attack ?? false;
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
@@ -86,19 +88,38 @@ export default function GameBoardPage() {
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
-		if (me.incoming_attack && card.type === 3) {
-			reactToAttack("dodge", card.id);
+		// Esquive: se puede esquivar tanto ataques simples como masivos
+		if ((me.incoming_attack || hasPendingMultiAttack) && card.type === 3) {
+			if (hasPendingMultiAttack) {
+				reactToMultiAttack("dodge", card.id);
+			} else {
+				reactToAttack("dodge", card.id);
+			}
 			return;
 		}
 
+		// Fuera de tu turno o con prueba de suerte pendiente, no se puede jugar
 		if (!isMyTurn || hasLuckChallenge) return;
 
+		// Curación propia — solo si tienes estrés
 		if (card.type === 2 && me.stress > 0)
 			return playTurn(card.id, myPlayerName);
+
+		// Ataque simple — solo uno por turno
 		if (card.type === 1 && me.attack_used_this_turn) return;
+
+		// Escudo — solo si no tienes uno activo
 		if (card.type === 5 && !me.has_shield)
 			return playTurn(card.id, myPlayerName);
 
+		// Ataque masivo — solo uno por turno, se juega directamente sin seleccionar objetivo
+		if (card.type === 7 && !me.attack_used_this_turn)
+			return playTurn(card.id, myPlayerName);
+
+		// Curación masiva — se juega directamente, el backend cura a todos
+		if (card.type === 8) return playTurn(card.id, myPlayerName);
+
+		// Resto de cartas (ataque, robo...): flujo de selección de objetivo
 		setSelectedCardId((prev) => (prev === card.id ? null : card.id));
 	};
 
@@ -187,6 +208,8 @@ export default function GameBoardPage() {
 				onCardClick={handleCardClick}
 				onEndTurn={handleEndTurn}
 				onReactToAttack={reactToAttack}
+				hasPendingMultiAttack={hasPendingMultiAttack}
+				onReactToMultiAttack={reactToMultiAttack}
 			/>
 
 			<GameLog />

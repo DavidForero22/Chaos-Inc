@@ -40,6 +40,10 @@ interface GameState {
 		reaction: "dodge" | "accept",
 		cardId?: string,
 	) => Promise<boolean>;
+	reactToMultiAttack: (
+		reaction: "dodge" | "accept",
+		cardId?: string,
+	) => Promise<boolean>;
 	endTurn: () => Promise<void>;
 	resetStore: () => void;
 }
@@ -170,6 +174,27 @@ export const useGameStore = create<GameState>((set, get) => ({
 		} catch (error: any) {
 			logWithTime("useGameStore.ts - Error reacting to attack. ", error);
 			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
+			return false;
+		}
+	},
+
+	reactToMultiAttack: async (reaction, cardId) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return false;
+
+		try {
+			await api.post(`/rooms/${roomId}/react-multi`, {
+				reaction,
+				card_id: cardId,
+			});
+			await syncGame();
+			return true;
+		} catch (error: any) {
+			logWithTime("useGameStore.ts - Error reacting to multi attack. ", error);
+			alert(
+				error.response?.data?.message ||
+					"Error al reaccionar al ataque masivo.",
+			);
 			return false;
 		}
 	},

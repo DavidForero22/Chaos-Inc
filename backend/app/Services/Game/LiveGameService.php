@@ -84,12 +84,14 @@ class LiveGameService
 
         $myData = Redis::hgetall($playerKey);
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
+        $pendingMultiAttack = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
 
         return [
             'me'   => new MyDataResource([
                 'playerName'    => $playerName,
                 'myData'        => $myData,
                 'pendingAttack' => $pendingAttack,
+                'pendingMultiAttack' => $pendingMultiAttack,
                 'roomId'        => $roomId,
             ]),
             'game' => new GameDataResource([
