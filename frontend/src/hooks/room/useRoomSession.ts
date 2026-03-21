@@ -1,188 +1,103 @@
 // src/hooks/room/useRoomSession.ts
-
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import api from "../../api/axios";
-import type { RoomData } from "../../types/api.ts";
-import { logWithTime } from "../../utils/logger.ts";
+import { useRoomStore } from "../../store/useRoomStore";
+// import { logWithTime } from "../../utils/logger";
 
-interface UseRoomSessionProps {
-	roomId: string | undefined;
-	myPlayerName: string | null;
-}
-
-export function useRoomSession({ roomId, myPlayerName }: UseRoomSessionProps) {
+export function useRoomSession(
+	roomId: string | undefined,
+	myPlayerName: string | null,
+) {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	const [room, setRoom] = useState<RoomData | null>(null);
-	const [isJoining, setIsJoining] = useState(true);
-	const [needsPassword, setNeedsPassword] = useState(false);
-	const [passwordError, setPasswordError] = useState("");
+	const {
+		room,
+		isJoining,
+		needsPassword,
+		passwordError,
+		setRoomId,
+		attemptJoin,
+		leaveRoom,
+		fetchRoomData,
+		resetRoomStore,
+	} = useRoomStore();
 
-	const roomStatusRef = useRef<string | null>(null);
-	const isLeavingRef = useRef(false);
-	const isJoiningRef = useRef(true);
-	const isAttemptingRef = useRef(false);
-	const myPlayerNameRef = useRef(myPlayerName);
-
+	// Inicializar y limpiar
 	useEffect(() => {
-		myPlayerNameRef.current = myPlayerName;
-	}, [myPlayerName]);
+		setRoomId(roomId || null);
+		return () => resetRoomStore();
+	}, [roomId, setRoomId, resetRoomStore]);
 
-	const handleLeaveRoom = useCallback(async () => {
-		if (!roomId) return;
-		isLeavingRef.current = true;
+	// Intentar entrar automáticamente si tenemos nombre
+	useEffect(() => {
+		if (myPlayerName && roomId) {
+			attemptJoin("", myPlayerName).catch((err) => {
+				const type = err.response?.data?.type;
+				if (type === "ROOM_NOT_FOUND" || err.response?.status === 404)
+					navigate("/room-not-found");
+				else if (type === "ROOM_FULL" || type === "GAME_ALREADY_STARTED") {
+					alert(err.response?.data?.error || "Error al entrar");
+					navigate("/");
+				}
+			});
+		}
+	}, [myPlayerName, roomId, attemptJoin, navigate]);
 
-		try {
-			// El interceptor de Axios inyecta el X-Game-Token y el Bearer Token automáticamente
-			await api.post(`/rooms/${roomId}/leave`);
-		} catch (error) {
-			console.error("Error leaving room:", error);
-		} finally {
-			logWithTime(
-				"useRoomSession.ts::handleLeaveRoom - Te has salido de la sala.",
-				null,
-			);
+	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
+	useEffect(() => {
+		console.log(
+			"[Vigilante] room:",
+			room?.players,
+			"myPlayerName:",
+			myPlayerName,
+			"isJoining:",
+			isJoining,
+			"needsPassword:",
+			needsPassword,
+		);
+		if (!room || !myPlayerName || isJoining || needsPassword) return;
+		const stillInRoom = room.players?.includes(myPlayerName) ?? true;
+		console.log("[Vigilante] stillInRoom:", stillInRoom);
+		if (!stillInRoom) {
+			// logWithTime(
+			// 	"[Vigilante] ⚠️ Jugador no encontrado en sala, redirigiendo...",
+			// );
+			alert("Has sido expulsado de la sala.");
 			localStorage.removeItem("game_token");
+			resetRoomStore();
 			navigate("/");
 		}
-	}, [roomId, navigate]);
+	}, [room, myPlayerName, isJoining, needsPassword, navigate, resetRoomStore]);
 
-	const fetchRoomData = useCallback(async () => {
-		if (!roomId) return;
-		try {
-			const res = await api.get("/rooms");
-			const currentRoom = res.data.find((r: RoomData) => r.room_id === roomId);
-
-			if (currentRoom) {
-				if (
-					myPlayerNameRef.current &&
-					!isJoiningRef.current &&
-					!isLeavingRef.current
-				) {
-					const imStillInRoom =
-						currentRoom.players?.includes(myPlayerNameRef.current) ?? false;
-					if (!imStillInRoom) {
-						alert("Ya no estás en esta sala.");
-						localStorage.removeItem("game_token");
-						navigate("/");
-						return;
-					}
-				}
-
-				setRoom(currentRoom);
-				roomStatusRef.current = currentRoom.status;
-
-				if (
-					currentRoom.status === "in_game" &&
-					location.pathname.includes(`/room/`)
-				) {
-					navigate(`/game/${roomId}`, {
-						state: { playerName: myPlayerNameRef.current },
-						replace: true,
-					});
-					return;
-				}
-			} else {
-				navigate("/");
-			}
-		} catch (error) {
-			console.error("Error loading the room", error);
-		}
-	}, [roomId, navigate, location.pathname]);
-
-	const attemptJoin = useCallback(
-		async (pwd = "") => {
-			if (!roomId || !myPlayerName) return;
-			if (isAttemptingRef.current) return;
-
-			isAttemptingRef.current = true;
-
-			try {
-				setPasswordError("");
-
-				const res = await api.post(`/rooms/${roomId}/join`, {
-					password: pwd,
-				});
-
-				if (res.data.game_token) {
-					localStorage.setItem("game_token", res.data.game_token);
-				}
-
-				setNeedsPassword(false);
-				setIsJoining(false);
-				isJoiningRef.current = false;
-
-				await fetchRoomData();
-			} catch (error: any) {
-				const errorType = error.response?.data?.type;
-
-				if (errorType === "ROOM_NOT_FOUND" || error.response?.status === 404) {
-                    setIsJoining(false); 
-                    navigate("/room-not-found");
-                    return; 
-                }
-
-				if (errorType === "ROOM_FULL") {
-					alert("La sala está llena.");
-					navigate("/");
-					return;
-				}
-				if (
-					errorType === "PASSWORD_REQUIRED" ||
-					errorType === "INCORRECT_PASSWORD"
-				) {
-					setNeedsPassword(true);
-					if (errorType === "INCORRECT_PASSWORD")
-						setPasswordError("Contraseña incorrecta. Inténtalo de nuevo.");
-					setIsJoining(false);
-					return;
-				}
-				if (errorType === "GAME_ALREADY_STARTED") {
-					alert("La partida ya ha comenzado.");
-					navigate("/");
-					return;
-				}
-				// Si salta el error de "Ya estás en otra sala" (ALREADY_IN_ANOTHER_ROOM), se mostrará aquí:
-				alert(error.response?.data?.error || "No puedes acceder a esta sala.");
-				navigate("/");
-			} finally {
-				isAttemptingRef.current = false;
-			}
-		},
-		[roomId, myPlayerName, fetchRoomData, navigate],
-	);
-
-	// Montaje inicial
+	// Vigilante de redirección a partida
 	useEffect(() => {
-		if (myPlayerName && isJoiningRef.current) {
-			attemptJoin();
-		} else if (!myPlayerName) {
-			setIsJoining(false);
+		if (room?.status === "in_game" && location.pathname.includes(`/room/`)) {
+			navigate(`/game/${roomId}`, { replace: true });
 		}
-	}, [myPlayerName, attemptJoin]);
+	}, [room?.status, roomId, navigate, location.pathname]);
 
-	// Listener de sesión multipestaña
+	// Sync multi-pestaña (Logout)
 	useEffect(() => {
-		const handleStorageChange = (e: StorageEvent) => {
+		const handleStorage = (e: StorageEvent) => {
 			if (e.key === "user" && e.newValue === null) {
-				handleLeaveRoom();
+				leaveRoom().then(() => navigate("/"));
 			}
 		};
-		window.addEventListener("storage", handleStorageChange);
-
-		return () => window.removeEventListener("storage", handleStorageChange);
-	}, [handleLeaveRoom]);
+		window.addEventListener("storage", handleStorage);
+		return () => window.removeEventListener("storage", handleStorage);
+	}, [leaveRoom, navigate]);
 
 	return {
 		room,
 		isJoining,
 		needsPassword,
 		passwordError,
-		attemptJoin,
-		handleLeaveRoom,
+		attemptJoin: (pwd: string = "") => attemptJoin(pwd, myPlayerName || ""),
+		handleLeaveRoom: async () => {
+			await leaveRoom();
+			navigate("/");
+		},
 		fetchRoomData,
-		roomStatusRef,
 	};
 }
