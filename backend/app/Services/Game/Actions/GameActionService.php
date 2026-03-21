@@ -77,9 +77,25 @@ class GameActionService
             default => null,
         };
 
-        array_splice($cards, $cardIndex, 1);
-        Redis::hset($playerKey, 'cards', json_encode($cards));
-        Redis::hincrby($playerKey, 'cards_played', 1);
+        // Recargar la mano de Redis, por si algún efecto (como Robar) la modificó
+        $updatedCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+        if (!is_array($updatedCards)) $updatedCards = [];
+
+        // Buscar de nuevo el índice de la carta que acaba de jugar para borrarla
+        $newCardIndex = null;
+        foreach ($updatedCards as $index => $card) {
+            if (($card['id'] ?? null) === $cardId) {
+                $newCardIndex = $index;
+                break;
+            }
+        }
+
+        // Si la encuentra, borrar y guardar el estado final
+        if ($newCardIndex !== null) {
+            array_splice($updatedCards, $newCardIndex, 1);
+            Redis::hset($playerKey, 'cards', json_encode($updatedCards));
+            Redis::hincrby($playerKey, 'cards_played', 1);
+        }
 
         $logMessage = match ($cardType) {
             1 => __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),

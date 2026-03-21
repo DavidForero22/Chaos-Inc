@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class CleanupRoomJob implements ShouldQueue
@@ -25,15 +26,15 @@ class CleanupRoomJob implements ShouldQueue
 
         // Verificar si la sala aún existe antes de borrar
         if (!Redis::exists("room:{$this->roomId}")) {
-            fwrite(STDOUT, "CleanupRoomJob: La sala {$this->roomId} ya no existe, saltando.\n");
+            Log::info( "CleanupRoomJob.php: La sala {$this->roomId} ya no existe, saltando.\n");
             return;
         }
 
-        fwrite(STDOUT, "CleanupRoomJob: Borrando datos de la sala {$this->roomId}");
+        Log::info( "CleanupRoomJob.php: Borrando datos de la sala {$this->roomId}");
 
         $playerNames = Redis::smembers("room:{$this->roomId}:players");
         $finalizationService->cleanupRedis($this->roomId, $playerNames);
         event(new RoomListUpdated($this->roomId));
-        fwrite(STDOUT, "CleanupRoomJob: Sala {$this->roomId} eliminada y lista de salas actualizada.\n");
+        Log::info( "CleanupRoomJob.php: Sala {$this->roomId} eliminada y lista de salas actualizada.\n");
     }
 }

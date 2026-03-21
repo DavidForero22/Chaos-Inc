@@ -1,5 +1,9 @@
 import { Card } from "../ui/Card.tsx";
-import type { CardInstance, MyData, Opponent } from "../../../types/live-game.ts";
+import type {
+	CardInstance,
+	MyData,
+	Opponent,
+} from "../../../types/live-game.ts";
 
 interface PlayerHandProps {
 	me: MyData;
@@ -38,13 +42,17 @@ export function PlayerHand({
 					const isDodgeDisabled = card.type === 3 && !incomingAttack;
 					const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
 					const isShieldDisabled = card.type === 5 && me.has_shield;
+					const isBlockDisabled =
+						card.type === 6 &&
+						!opponents.some((o) => !o.is_dead && o.is_online && !o.is_blocked);
 
 					const isDisabled =
-						isHealDisabled ||
-						isAttackDisabled ||
-						isDodgeDisabled ||
-						isStealDisabled ||
-						isShieldDisabled;
+                        isHealDisabled ||
+                        isAttackDisabled ||
+                        isDodgeDisabled ||
+                        isStealDisabled ||
+                        isShieldDisabled ||
+                        isBlockDisabled;
 
 					// --- ESTADOS INTERACTIVOS ---
 					const isDodge = card.type === 3;

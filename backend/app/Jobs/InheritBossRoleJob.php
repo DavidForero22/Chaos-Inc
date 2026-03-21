@@ -7,6 +7,7 @@ use App\Services\Game\Status\DisconnectionService;
 use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class InheritBossRoleJob implements ShouldQueue
@@ -27,7 +28,7 @@ class InheritBossRoleJob implements ShouldQueue
             Redis::hget("room:{$this->roomId}", 'game_over') === '1' ||
             Redis::exists("room:{$this->roomId}:ending_grace_period")
         ) {
-            fwrite(STDOUT, "InheritBossRoleJob: Partida terminando, abortando herencia.\n");
+            Log::info( "InheritBossRoleJob: Partida terminando en $this->roomId, abortando herencia.\n");
             return;
         }
 
@@ -36,7 +37,7 @@ class InheritBossRoleJob implements ShouldQueue
 
         // Si las llaves no   existen, es porque el jugador se reconectó
         if (!$hasBossGrace && !$hasActingGrace) {
-            fwrite(STDOUT, "InheritBossRoleJob: No hay llaves de gracia (jugador reconectado o ya procesado), abortando.\n");
+            Log::info( "InheritBossRoleJob.php: No hay llaves de gracia (jugador reconectado o ya procesado) en sala $this->roomId, abortando.\n");
             return;
         }
 
@@ -46,13 +47,13 @@ class InheritBossRoleJob implements ShouldQueue
         $players = Redis::smembers("room:{$this->roomId}:players");
         foreach ($players as $name) {
             if (Redis::hget("room:{$this->roomId}:player:{$name}", 'acting_boss') === '1') {
-                fwrite(STDOUT, "InheritBossRoleJob: acting_boss ya existe en {$name}, comprobando victoria.\n");
+                Log::info( "InheritBossRoleJob.php: acting_boss ya existe en {$name} en sala $this->roomId, comprobando victoria.\n");
                 $finalizationService->checkDisconnectionVictory($this->roomId);
                 return;
             }
         }
 
-        fwrite(STDOUT, "InheritBossRoleJob: heredando cargo.\n");
+        Log::info( "InheritBossRoleJob.php: heredando cargo en la sala $this->roomId.\n");
         $disconnectionService->inheritBossRole($this->roomId);
 
         // Tras heredar, comprobar si la partida tiene condición de victoria
