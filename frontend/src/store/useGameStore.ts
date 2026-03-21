@@ -1,0 +1,183 @@
+// src/store/useGameStore.ts
+
+import { create } from "zustand";
+import api from "../api/axios";
+import { logWithTime } from "../utils/logger";
+import type { GameData } from "../types/live-game";
+
+export interface LogEntry {
+	id: string;
+	timestamp: string;
+	message: string;
+}
+
+interface GameState {
+	// --- ESTADOS ---
+	roomId: string | null;
+	gameData: GameData | null;
+	loading: boolean;
+	isConnecting: boolean;
+	isFirstLoad: boolean;
+	gameOver: boolean;
+	showActingBossModal: boolean;
+	logs: LogEntry[];
+
+	// --- ACCIONES DE ESTADO LOCAL ---
+	setRoomId: (id: string | null) => void;
+	setGameData: (data: GameData | null) => void;
+	setLoading: (loading: boolean) => void;
+	setIsConnecting: (isConnecting: boolean) => void;
+	setIsFirstLoad: (isFirstLoad: boolean) => void;
+	setGameOver: (gameOver: boolean) => void;
+	setShowActingBossModal: (show: boolean) => void;
+	addLog: (message: string) => void;
+	clearLogs: () => void;
+
+	// --- ACCIONES DE RED (API) ---
+	syncGame: () => Promise<void>;
+	playTurn: (cardId: string, targetName: string) => Promise<boolean>;
+	reactToAttack: (
+		reaction: "dodge" | "accept",
+		cardId?: string,
+	) => Promise<boolean>;
+	endTurn: () => Promise<void>;
+	resetStore: () => void;
+}
+
+export const useGameStore = create<GameState>((set, get) => ({
+	// Estado inicial
+	roomId: null,
+	gameData: null,
+	loading: true,
+	isConnecting: true,
+	isFirstLoad: true,
+	gameOver: false,
+	showActingBossModal: false,
+	logs: [],
+
+	// Setters básicos
+	setRoomId: (id) => set({ roomId: id }),
+	setGameData: (data) => set({ gameData: data }),
+	setLoading: (loading) => set({ loading }),
+	setIsConnecting: (isConnecting) => set({ isConnecting }),
+	setIsFirstLoad: (isFirstLoad) => set({ isFirstLoad }),
+	setGameOver: (gameOver) => set({ gameOver }),
+	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
+
+	addLog: (message) =>
+		set((state) => {
+			const now = new Date();
+			const timestamp = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
+			const newEntry: LogEntry = {
+				id: crypto.randomUUID(),
+				timestamp,
+				message,
+			};
+			return { logs: [...state.logs, newEntry] };
+		}),
+	clearLogs: () => set({ logs: [] }),
+
+	resetStore: () =>
+		set({
+			roomId: null,
+			gameData: null,
+			loading: true,
+			isConnecting: true,
+			isFirstLoad: true,
+			gameOver: false,
+			showActingBossModal: false,
+			logs: [],
+		}),
+
+	// --- ACCIONES DE RED ---
+
+	syncGame: async () => {
+		const { roomId } = get();
+		if (!roomId) return;
+
+		if (!localStorage.getItem("game_token")) {
+			console.warn(
+				"Ignorando sync prematuro: aún estamos obteniendo el token.",
+			);
+			return;
+		}
+
+		try {
+			set({ loading: true });
+			const res = await api.post(`/rooms/${roomId}/sync`);
+
+			if (!res || res.data === null) {
+				return;
+			}
+
+			const newGameData = res.data;
+			const currentData = get().gameData;
+
+			// Lógica de herencia de jefe
+			const isNowActingBoss = newGameData?.me?.acting_boss === true;
+			const wasActingBoss = currentData?.me?.acting_boss === true;
+
+			if (isNowActingBoss && !wasActingBoss) {
+				logWithTime(
+					"useGameStore.ts - Cambio detectado: ¡Eres el nuevo Jefe Heredado!",
+				);
+				set({ showActingBossModal: true });
+			}
+
+			set({ gameData: newGameData });
+
+			if (newGameData.game?.game_over) {
+				set({ gameOver: true });
+				localStorage.removeItem("game_token");
+			}
+		} catch (error: any) {
+			console.error("ERROR en /sync:", error);
+			throw error;
+		} finally {
+			set({ loading: false });
+		}
+	},
+
+	playTurn: async (cardId, targetName) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return false;
+
+		try {
+			await api.post(`/rooms/${roomId}/action`, {
+				card_id: cardId,
+				target_name: targetName,
+			});
+			await syncGame();
+			return true;
+		} catch (error: any) {
+			logWithTime("useGameStore.ts - Error playing turn. ", error);
+			alert(error.response?.data?.message || "Error al jugar la carta.");
+			return false;
+		}
+	},
+
+	reactToAttack: async (reaction, cardId) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return false;
+
+		try {
+			await api.post(`/rooms/${roomId}/react`, {
+				reaction,
+				card_id: cardId,
+			});
+			await syncGame();
+			return true;
+		} catch (error: any) {
+			logWithTime("useGameStore.ts - Error reacting to attack. ", error);
+			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
+			return false;
+		}
+	},
+
+	endTurn: async () => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return;
+		await api.post(`/rooms/${roomId}/end-turn`, {});
+		await syncGame();
+	},
+}));

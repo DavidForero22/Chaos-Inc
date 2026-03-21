@@ -1,18 +1,17 @@
+import { useReconnectionTimers } from "../../../hooks/game/useReconnectionTimers";
+
 interface GameBannersProps {
-	showActingBossWaiting: boolean;
-	showBossWaiting: boolean;
-	showInheritanceBanner: boolean;
-	showEndingWaiting: boolean;
 	luckResult: "success" | "fail" | null;
 }
 
-export function GameBanners({
-	showActingBossWaiting,
-	showBossWaiting,
-	showInheritanceBanner,
-	showEndingWaiting,
-	luckResult,
-}: GameBannersProps) {
+export function GameBanners({ luckResult }: GameBannersProps) {
+	const {
+		showActingBossWaiting,
+		showBossWaiting,
+		showInheritanceBanner,
+		showEndingWaiting,
+	} = useReconnectionTimers();
+
 	return (
 		<div className="flex flex-col gap-2 mb-4">
 			{showActingBossWaiting && (

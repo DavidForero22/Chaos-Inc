@@ -1,81 +1,49 @@
 // src/hooks/game/useLiveGame.ts
 
-import api from "../../api/axios.ts";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../api/axios.ts";
 
 // -- HOOKS CUSTOM --
 import { useGameSockets } from "./useGameSockets.ts";
 import { usePlayerIdentity } from "../usePlayerIdentity.ts";
-import { useGameActions } from "./useGameActions.ts";
-import { useGameLog } from "./useGameLog.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
-
-// -- INTERFACES --
-import type { GameData } from "../../types/live-game.ts";
+import { useGameStore } from "../../store/useGameStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
 	const { myPlayerName } = usePlayerIdentity();
 	const { token } = useAuthStore();
 
-	// -- ESTADOS CENTRALES DE LA PARTIDA --
-	const [gameData, setGameData] = useState<GameData | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [isConnecting, setIsConnecting] = useState(true);
-	const [isFirstLoad, setIsFirstLoad] = useState(true);
-	const [gameOver, setGameOver] = useState(false);
-
-	// -- ESTADO PARA EL MODAL DE NUEVO JEFE (HERENCIA) --
-	const [showActingBossModal, setShowActingBossModal] = useState(false);
-	const prevActingBossRef = useRef(false);
-
 	const isKickedRef = useRef(false);
-	const syncRequestIdRef = useRef(0);
 
-	// -- LOGS DE PARTIDA --
-	const { logs, addLog } = useGameLog();
+	// -- EXTRAEMOS LO NECESARIO DEL STORE --
+	const setRoomId = useGameStore((state) => state.setRoomId);
+	const syncGameStore = useGameStore((state) => state.syncGame);
+	const setIsConnecting = useGameStore((state) => state.setIsConnecting);
+	const isConnecting = useGameStore((state) => state.isConnecting);
+	const resetStore = useGameStore((state) => state.resetStore);
 
-	// -- 1. FUNCIÓN DE SINCRONIZACIÓN (FETCH) --
-	const syncGame = useCallback(async () => {
-		if (!roomId || !myPlayerName || !token) return;
-		if (isKickedRef.current) return;
+	// -- 1. INICIALIZAR EL ROOM ID Y LIMPIAR AL SALIR --
+	useEffect(() => {
+		setRoomId(roomId || null);
+		return () => resetStore();
+	}, [roomId, setRoomId, resetStore]);
 
-		if (!localStorage.getItem("game_token")) {
-			console.warn(
-				"Ignorando sync prematuro: aún estamos obteniendo el token.",
-			);
-			return;
-		}
-
-		const currentSyncId = ++syncRequestIdRef.current;
+	// -- 2. WRAPPER DE SINCRONIZACIÓN (Maneja las redirecciones) --
+	const handleSync = useCallback(async () => {
+		if (isKickedRef.current || !roomId) return;
 
 		try {
-			const res = await api.post(`/rooms/${roomId}/sync`);
-
-			// En la espera, si se envió otra peticion, ignorar esta.
-			if (currentSyncId !== syncRequestIdRef.current) return;
-
-			if (!res || res.data === null) {
-				isKickedRef.current = true;
-				navigate("/");
-				return;
-			}
-
-			setGameData(res.data);
-
-			if (res.data.game?.game_over) {
-				setGameOver(true);
-				localStorage.removeItem("game_token");
-			}
+			await syncGameStore();
 		} catch (error: any) {
 			if (isKickedRef.current) return;
 
-			const errorType = error.response?.data?.type;
 			const status = error.response?.status;
+			const errorType = error.response?.data?.type;
 
 			if (errorType === "GAME_NOT_STARTED") {
 				console.warn("Waiting for Redis initialization...");
@@ -100,51 +68,29 @@ export function useLiveGame(roomId: string | undefined) {
 
 			isKickedRef.current = true;
 			navigate("/");
-		} finally {
-			setLoading(false);
 		}
-	}, [roomId, navigate, myPlayerName, token]);
+	}, [roomId, syncGameStore, navigate]);
 
-	// -- 2. ACCIONES DEL JUGADOR --
-	const { playTurn, endTurn, reactToAttack } = useGameActions(roomId, syncGame);
-
-	// -- 3. VIGILANTE DE HERENCIA (MODAL REACTIVO) --
-	useEffect(() => {
-		// Comprobamos si en los datos que acaban de llegar somos acting_boss
-		const isNowActingBoss = gameData?.me?.acting_boss === true;
-		const wasActingBoss = prevActingBossRef.current;
-
-		// Si el estado cambia de false a true, disparamos el modal
-		if (isNowActingBoss && !wasActingBoss) {
-			logWithTime(
-				"useLiveGame.ts - Cambio detectado: ¡Eres el nuevo Jefe Heredado!",
-			);
-			setShowActingBossModal(true);
-		}
-
-		prevActingBossRef.current = isNowActingBoss;
-	}, [gameData?.me?.acting_boss]);
-
-	// -- 4. RECONEXIÓN INICIAL (JOIN) --
+	// -- 3. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
 			if (!roomId || !myPlayerName || !token) return;
 
 			try {
+				setIsConnecting(true);
 				const res = await api.post(`/rooms/${roomId}/join`);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
 				}
 
-				await syncGame();
+				await handleSync();
 			} catch (error: any) {
 				const status = error.response?.status;
 				const errorType = error.response?.data?.type;
 
 				logWithTime("useLiveGame.ts - No se pudo reconectar. ", error);
 
-				// --- REDIRECCIÓN AL 404 ---
 				if (status === 404 || errorType === "ROOM_NOT_FOUND") {
 					navigate("/room-not-found");
 				} else {
@@ -156,9 +102,9 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, myPlayerName, token, syncGame, navigate]);
+	}, [roomId, myPlayerName, token, handleSync, navigate, setIsConnecting]);
 
-	// -- 5. MARCAR OFFLINE AL CERRAR PESTAÑA --
+	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA --
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
@@ -185,27 +131,10 @@ export function useLiveGame(roomId: string | undefined) {
 		return () => window.removeEventListener("pagehide", handleUnload);
 	}, [roomId]);
 
-	// -- 6. ESCUCHA DE SOCKETS (AHORA SIMPLIFICADA) --
-	useGameSockets({
-		roomId,
-		refreshGameData: isConnecting || gameOver ? () => {} : syncGame,
-		addLog 
-	});
+	// -- 5. ESCUCHA DE SOCKETS --
+	useGameSockets({ roomId });
 
 	return {
-		// Datos
-		gameData,
-		loading,
-		myPlayerName,
-		isFirstLoad,
-		setIsFirstLoad,
-		gameOver,
-		showActingBossModal,
-		setShowActingBossModal,
-		// Acciones
-		playTurn,
-		endTurn,
-		reactToAttack,
-		logs,
+		isConnecting,
 	};
 }

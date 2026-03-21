@@ -1,12 +1,13 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-// --- HOOKS ---
+// --- HOOKS & STORE ---
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
-import { useReconnectionTimers } from "../hooks/game/useReconnectionTimers.ts";
+import { useGameStore } from "../store/useGameStore.ts";
+import { usePlayerIdentity } from "../hooks/usePlayerIdentity.ts";
 
 // --- TIPOS ---
-import type { CardInstance, Opponent } from "../types/live-game.ts";
+import type { CardInstance } from "../types/live-game.ts";
 
 // --- COMPONENTES ---
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
@@ -20,57 +21,48 @@ import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 export default function GameBoardPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
+	const { myPlayerName } = usePlayerIdentity();
 
-	const {
-		gameData,
-		loading,
-		myPlayerName,
-		playTurn,
-		endTurn,
-		reactToAttack,
-		isFirstLoad,
-		setIsFirstLoad,
-		gameOver,
-		showActingBossModal,
-		setShowActingBossModal,
-		logs,
-	} = useLiveGame(id);
+	// Iniciar el controlador del ciclo de vida (sockets, reconnect, offline handler)
+	const { isConnecting } = useLiveGame(id);
 
+	// Extraer  el estado global directamente de Zustand
+	const gameData = useGameStore((state) => state.gameData);
+	const loading = useGameStore((state) => state.loading);
+	const isFirstLoad = useGameStore((state) => state.isFirstLoad);
+	const setIsFirstLoad = useGameStore((state) => state.setIsFirstLoad);
+	const gameOver = useGameStore((state) => state.gameOver);
+	const showActingBossModal = useGameStore(
+		(state) => state.showActingBossModal,
+	);
+	const setShowActingBossModal = useGameStore(
+		(state) => state.setShowActingBossModal,
+	);
+
+	// Acciones del Store
+	const playTurn = useGameStore((state) => state.playTurn);
+	const endTurn = useGameStore((state) => state.endTurn);
+	const reactToAttack = useGameStore((state) => state.reactToAttack);
+
+	// Estado Local UI
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-
 	const [luckResult, setLuckResult] = useState<"success" | "fail" | null>(null);
+
 	const handleLuckResult = (success: boolean) => {
 		setLuckResult(success ? "success" : "fail");
 	};
 
-	// --- NUEVO EFECTO CON TEMPORIZADOR ---
+	// --- EFECTO CON TEMPORIZADOR PARA PRUEBA DE SUERTE ---
 	useEffect(() => {
-		// Solo iniciamos el contador si hay un resultado que mostrar
 		if (luckResult !== null) {
 			const timer = setTimeout(() => {
-				setLuckResult(null); // Lo limpiamos a los 4 segundos
+				setLuckResult(null);
 			}, 4000);
-
-			// Importante: Limpiamos el temporizador si el componente se desmonta
-			// o si el luckResult cambia antes de que acabe el tiempo
 			return () => clearTimeout(timer);
 		}
 	}, [luckResult]);
 
-	// --- Lógica de Timers (Extraída) ---
-	const {
-		showBossWaiting,
-		showActingBossWaiting,
-		showEndingWaiting,
-		showInheritanceBanner,
-	} = useReconnectionTimers(
-		gameData?.game.boss_disconnected,
-		gameData?.game.acting_boss_disconnected,
-		gameData?.game.ending_soon,
-		gameData?.game.has_acting_boss,
-	);
-
-	if (loading) {
+	if (loading || isConnecting) {
 		return (
 			<div className="flex flex-col items-center justify-center h-[70vh]">
 				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
@@ -99,9 +91,7 @@ export default function GameBoardPage() {
 			return;
 		}
 
-		if (!isMyTurn) return;
-
-		if (hasLuckChallenge) return;
+		if (!isMyTurn || hasLuckChallenge) return;
 
 		if (card.type === 2 && me.stress > 0)
 			return playTurn(card.id, myPlayerName);
@@ -110,23 +100,6 @@ export default function GameBoardPage() {
 			return playTurn(card.id, myPlayerName);
 
 		setSelectedCardId((prev) => (prev === card.id ? null : card.id));
-	};
-
-	const handleOpponentClick = (targetName: string, isOnline: boolean) => {
-		if (!isMyTurn || selectedCardId === null || !isOnline) return;
-
-		const selectedCard = me.cards.find(
-			(c: CardInstance) => c.id === selectedCardId,
-		);
-		if (selectedCard?.type === 4) {
-			const target = game.opponents.find(
-				(o: Opponent) => o.name === targetName,
-			);
-			if (!target || target.cards_count === 0) return;
-		}
-
-		playTurn(selectedCardId, targetName);
-		setSelectedCardId(null);
 	};
 
 	const handleEndTurn = async () => {
@@ -150,7 +123,7 @@ export default function GameBoardPage() {
 
 			{showActingBossModal && (
 				<RoleRevealModal
-					role={gameData?.me?.role}
+					role={me.role}
 					isActingBoss={true}
 					onClose={() => setShowActingBossModal(false)}
 				/>
@@ -173,13 +146,7 @@ export default function GameBoardPage() {
 			)}
 
 			{/* --- BANNERS --- */}
-			<GameBanners
-				showActingBossWaiting={showActingBossWaiting}
-				showBossWaiting={showBossWaiting}
-				showInheritanceBanner={showInheritanceBanner}
-				showEndingWaiting={showEndingWaiting}
-				luckResult={luckResult}
-			/>
+			<GameBanners luckResult={luckResult} />
 
 			{/* --- CABECERA --- */}
 			<div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 mb-4 flex justify-between items-center shrink-0">
@@ -204,11 +171,9 @@ export default function GameBoardPage() {
 
 			{/* --- TABLERO --- */}
 			<OpponentsBoard
-				opponents={game.opponents}
-				isMyTurn={isMyTurn}
 				selectedCardId={selectedCardId}
 				selectedCardType={selectedCardType}
-				onOpponentClick={handleOpponentClick}
+				onCardPlayed={() => setSelectedCardId(null)}
 			/>
 
 			{/* --- ZONA DEL JUGADOR--- */}
@@ -224,7 +189,7 @@ export default function GameBoardPage() {
 				onReactToAttack={reactToAttack}
 			/>
 
-			<GameLog logs={logs} />
+			<GameLog />
 		</div>
 	);
 }

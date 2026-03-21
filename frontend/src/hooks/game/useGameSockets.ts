@@ -1,29 +1,16 @@
 // src/hooks/game/useGameSockets.ts
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import echo from "../../echo";
 import { logWithTime } from "../../utils/logger";
 import api from "../../api/axios";
+import { useGameStore } from "../../store/useGameStore.ts";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;
-	refreshGameData: () => void;
-	addLog: (message: string) => void;
 }
 
-export function useGameSockets({
-	roomId,
-	refreshGameData,
-	addLog 
-}: UseGameSocketsProps) {
-	const refreshRef = useRef(refreshGameData);
-	useEffect(() => {
-		refreshRef.current = refreshGameData;
-	}, [refreshGameData]);
-
-	const addLogRef = useRef(addLog);
-    useEffect(() => { addLogRef.current = addLog; }, [addLog]);
-
+export function useGameSockets({ roomId }: UseGameSocketsProps) {
 	useEffect(() => {
 		if (!roomId) return;
 
@@ -53,17 +40,28 @@ export function useGameSockets({
 					.post(`/rooms/${roomId}/report-disconnect`, {
 						disconnected_player: user.username,
 					})
-					.then(() =>
-						logWithTime(`report-disconnect enviado para ${user.username}`),
-					)
-					.catch(() => {});
+					.then(() => {
+						logWithTime(`report-disconnect enviado para ${user.username}`);
 
-				refreshRef.current();
+						const state = useGameStore.getState();
+						if (!state.isConnecting && !state.gameOver) {
+							state.syncGame();
+						}
+					})
+					.catch(() => {});
 			})
 			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
 				logWithTime("useGameSockets.ts - Estado actualizado.");
-				if (data.log_message) addLogRef.current(data.log_message);
-				refreshRef.current();
+
+				const state = useGameStore.getState();
+
+				if (data.log_message) {
+					state.addLog(data.log_message);
+				}
+
+				if (!state.isConnecting && !state.gameOver) {
+					state.syncGame();
+				}
 			});
 
 		return () => {

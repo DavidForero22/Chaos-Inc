@@ -1,25 +1,41 @@
+// src/components/game/board/GameLog.tsx
+
 import { useState, useEffect, useRef } from "react";
-import type { LogEntry } from "../../../hooks/game/useGameLog";
+import { useGameStore } from "../../../store/useGameStore"; 
 
-interface GameLogProps {
-	logs: LogEntry[];
-}
+export function GameLog() {
+	const logs = useGameStore((state) => state.logs);
 
-export function GameLog({ logs }: GameLogProps) {
+	// Estado local de la UI
 	const [isOpen, setIsOpen] = useState(false);
 	const [hasNew, setHasNew] = useState(false);
-	const prevLengthRef = useRef(logs.length);
 
+	const prevLengthRef = useRef(logs.length);
+	const scrollRef = useRef<HTMLDivElement>(null);
+
+	// --- Efecto para notificaciones y auto-scroll ---
 	useEffect(() => {
+		// ¿Hay mensajes nuevos y está cerrado? Ponemos el puntito azul
 		if (logs.length > prevLengthRef.current && !isOpen) {
 			setHasNew(true);
 		}
 		prevLengthRef.current = logs.length;
+
+		// Auto-scroll hacia abajo si entran mensajes mientras está abierto
+		if (isOpen && scrollRef.current) {
+			scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+		}
 	}, [logs.length, isOpen]);
 
 	const handleOpen = () => {
 		setIsOpen(true);
 		setHasNew(false);
+		// Hacemos scroll al fondo nada más abrirlo
+		setTimeout(() => {
+			if (scrollRef.current) {
+				scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+			}
+		}, 10);
 	};
 
 	return (
@@ -31,7 +47,7 @@ export function GameLog({ logs }: GameLogProps) {
 			>
 				📋 Log
 				{hasNew && (
-					<span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
+					<span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full animate-pulse"></span>
 				)}
 			</button>
 
@@ -50,7 +66,10 @@ export function GameLog({ logs }: GameLogProps) {
 						</button>
 					</div>
 
-					<div className="overflow-y-auto flex flex-col gap-1 p-3">
+					<div
+						ref={scrollRef}
+						className="overflow-y-auto flex flex-col gap-1 p-3 no-scrollbar"
+					>
 						{logs.length === 0 ? (
 							<p className="text-gray-600 text-xs text-center py-4">
 								Aún no hay eventos registrados.
