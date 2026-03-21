@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import type { LogEntry } from "../../hooks/game/useGameLog.ts";
+import type { LogEntry } from "../../../hooks/game/useGameLog";
 
 interface GameLogProps {
 	logs: LogEntry[];
 }
 
 export function GameLog({ logs }: GameLogProps) {
-	const [isOpen, setIsOpen] = useState(true);
+	const [isOpen, setIsOpen] = useState(false);
 	const [hasNew, setHasNew] = useState(false);
 	const prevLengthRef = useRef(logs.length);
 
