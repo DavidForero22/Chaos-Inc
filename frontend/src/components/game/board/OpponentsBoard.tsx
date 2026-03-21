@@ -31,41 +31,83 @@ export function OpponentsBoard({
 			)}
 
 			{opponents.map((player) => {
+				// --- REGLAS DE SELECCIÓN ---
 				const isStealSelected = selectedCardType === 4;
 				const isUnstealable = isStealSelected && player.cards_count === 0;
+
 				const isBlockSelected = selectedCardType === 6;
 				const isAlreadyBlocked = isBlockSelected && player.is_blocked;
 
-				const canBeTargeted =
-					isMyTurn &&
-					selectedCardId !== null &&
-					player.is_online &&
-					!isUnstealable &&
-					!isAlreadyBlocked &&
-					!player.is_dead;
+				const isTargetingCard =
+					selectedCardType === 1 ||
+					selectedCardType === 4 ||
+					selectedCardType === 6;
+				const isCardActive = isMyTurn && selectedCardId !== null;
+
+				// --- 1. LÓGICA DE ESTADO Y TOOLTIPS ---
+				let tooltipMessage = "";
+				let isUnclickable = false;
+
+				// Primero validamos los estados permanentes (Prioridad máxima)
+				if (player.is_dead) {
+					tooltipMessage = "Este jugador ha sido despedido (Muerto).";
+					isUnclickable = true;
+				} else if (!player.is_online) {
+					tooltipMessage = "Este jugador está en pausa (Offline).";
+					isUnclickable = true;
+				}
+				// Luego validamos si es un objetivo inválido para la carta actual
+				else if (isCardActive && isTargetingCard) {
+					if (isUnstealable) {
+						tooltipMessage = "La mesa de este jugador está vacía (0 cartas).";
+						isUnclickable = true;
+					} else if (isAlreadyBlocked) {
+						tooltipMessage = "Este jugador ya está sufriendo una auditoría.";
+						isUnclickable = true;
+					}
+				}
+
+				// ¿Es un objetivo válido para disparar ahora mismo?
+				const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
+
+				// --- 2. ESTILOS DINÁMICOS ---
+				const roleStyles =
+					player.role === "boss" ? "border-yellow-600" : "border-gray-700";
 
 				const offlineStyles = !player.is_online
 					? "opacity-40 grayscale scale-95 border-gray-900"
 					: "";
-				const targetStyles = canBeTargeted
-					? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50"
-					: "";
-				const roleStyles =
-					player.role === "boss" ? "border-yellow-600" : "border-gray-700";
 
 				const deadStyles = player.is_dead
-					? "opacity-50 grayscale border-red-900"
+					? "opacity-50 grayscale scale-95 border-red-900"
 					: "";
+
+				// Estilo para cuando no le puedes lanzar la carta (pero está vivo y online)
+				const invalidTargetStyles =
+					isUnclickable && !player.is_dead && player.is_online
+						? "opacity-30 grayscale scale-95 border-gray-600"
+						: "";
+
+				// Controlamos el cursor: Cruz para apuntar, Prohibido si no se puede, normal si no hay carta
+				const cursorStyles = canBeTargeted
+					? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50"
+					: isUnclickable
+						? "cursor-not-allowed"
+						: "cursor-default";
 
 				return (
 					<div
 						key={player.name}
-						onClick={() => onOpponentClick(player.name, player.is_online)}
+						onClick={() => {
+							if (isUnclickable) return; // Bloqueo absoluto de clics inválidos
+							onOpponentClick(player.name, player.is_online);
+						}}
 						className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
-    						${roleStyles} ${targetStyles} ${offlineStyles} ${deadStyles}
-						`}
+                            ${roleStyles} ${offlineStyles} ${deadStyles} ${invalidTargetStyles} ${cursorStyles}
+                        `}
+						title={tooltipMessage || undefined}
 					>
-						{/* 👈 INDICADOR OFFLINE */}
+						{/* 👈 INDICADORES VISUALES (Se mantienen igual) */}
 						{!player.is_online && (
 							<div className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">
 								🔌 OFFLINE
@@ -73,14 +115,21 @@ export function OpponentsBoard({
 						)}
 
 						{player.role === "boss" && (
-							<div className="text-2xl mb-1" title="Este jugador es el Jefe">
+							<div
+								className="text-2xl mb-1"
+								title={tooltipMessage ? undefined : "Este jugador es el Jefe"}
+							>
 								👑
 							</div>
 						)}
 						{player.has_shield && (
 							<div
 								className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
-								title="Este jugador tiene un escudo activo"
+								title={
+									tooltipMessage
+										? undefined
+										: "Este jugador tiene un escudo activo"
+								}
 							>
 								🛡️
 							</div>
@@ -98,7 +147,9 @@ export function OpponentsBoard({
 						{player.is_blocked && (
 							<div
 								className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
-								title="Este jugador está bloqueado"
+								title={
+									tooltipMessage ? undefined : "Este jugador está bloqueado"
+								}
 							>
 								🔒
 							</div>
