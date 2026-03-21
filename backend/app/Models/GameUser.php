@@ -1,4 +1,5 @@
 <?php
+// app/Models/GameUser.php
 
 namespace App\Models;
 

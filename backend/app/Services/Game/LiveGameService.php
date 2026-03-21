@@ -1,7 +1,7 @@
 <?php
-// app/Services/LiveGame/LiveGameService.php
+// app/Services/Game/LiveGameService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game;
 
 use App\Events\GameStarted;
 use App\Events\RoomListUpdated;
@@ -10,6 +10,10 @@ use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use App\Http\Resources\GameDataResource;
 use App\Http\Resources\MyDataResource;
+use App\Services\Game\Actions\GameActionService;
+use App\Services\Game\Engine\DeckService;
+use App\Services\Game\Engine\TurnService;
+use App\Services\Game\Status\DisconnectionService;
 use Illuminate\Support\Facades\Redis;
 use App\Support\LiveGameHelper;
 

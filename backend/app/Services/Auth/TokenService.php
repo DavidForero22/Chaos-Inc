@@ -1,7 +1,7 @@
 <?php
-// app/Services/TokenService.php
+// app/Services/Auth/TokenService.php
 
-namespace App\Services;
+namespace App\Services\Auth;
 
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;

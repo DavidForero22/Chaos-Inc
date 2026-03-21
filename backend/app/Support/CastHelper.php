@@ -1,5 +1,6 @@
 <?php
 // app/Support/CastHelper.php
+
 namespace App\Support;
 
 class CastHelper

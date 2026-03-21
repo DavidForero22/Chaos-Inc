@@ -1,14 +1,13 @@
 <?php
-// app/Http/Controllers/LiveRoomController.php
+// app/Http/Controllers/Lobby/LiveRoomController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Lobby;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\JoinRoomRequest;
 use App\Http\Requests\Room\KickPlayerRequest;
-use App\Services\LiveGame\DisconnectionService;
-use App\Services\LiveRoomService;
+use App\Services\Lobby\LiveRoomService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class LiveRoomController extends Controller

@@ -1,15 +1,16 @@
 <?php
-// app/Services/LiveRoomService.php
+// app/Services/Lobby/LiveRoomService.php
 
-namespace App\Services;
+namespace App\Services\Lobby;
 
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
-use App\Services\LiveGame\DisconnectionService;
-use App\Services\LiveGame\GameFinalizationService;
-use App\Services\LiveGame\ReconnectionService;
+use App\Services\Auth\TokenService;
+use App\Services\Game\Status\DisconnectionService;
+use App\Services\Game\Status\GameFinalizationService;
+use App\Services\Game\Status\ReconnectionService;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;

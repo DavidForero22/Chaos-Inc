@@ -1,9 +1,9 @@
 <?php
+// app/Services/Lobby/PresenceService.php
 
-namespace App\Services;
+namespace App\Services\Lobby;
 
-use App\Services\LiveGame\DisconnectionService;
-use App\Services\LiveRoomService;
+use App\Services\Game\Status\DisconnectionService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 

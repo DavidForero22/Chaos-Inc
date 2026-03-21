@@ -1,14 +1,15 @@
 <?php
 // /routes/api.php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\GameController;
+use App\Http\Controllers\Admin\RoomController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\GameController;
-use App\Http\Controllers\LiveGameController;
-use App\Http\Controllers\LiveRoomController;
-use App\Http\Controllers\PresenceController;
-use App\Http\Controllers\RoomController;
+use App\Http\Controllers\Lobby\LiveGameController;
+use App\Http\Controllers\Lobby\LiveRoomController;
+use App\Http\Controllers\Lobby\PresenceController;
+use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------

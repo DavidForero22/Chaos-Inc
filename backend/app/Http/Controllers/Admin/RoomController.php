@@ -1,9 +1,11 @@
 <?php
+// app/Http/Controllers/Admin/RoomController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\StoreRoomRequest;
-use App\Services\RoomService;
+use App\Services\Admin\RoomService;
 
 class RoomController extends Controller
 {

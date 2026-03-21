@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
-import { GlobalLoader } from "./components/GlobalLoader.tsx";
+import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 
 // -- PÁGINAS --
 import MainMenuPage from "./pages/MainMenuPage.tsx";

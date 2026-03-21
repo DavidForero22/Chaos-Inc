@@ -1,4 +1,5 @@
 <?php
+// app/Http/Resources/MyDataResource.php
 
 namespace App\Http\Resources;
 

@@ -1,7 +1,7 @@
 <?php
-// app/Services/RoomService.php
+// app/Services/Admin/RoomService.php
 
-namespace App\Services;
+namespace App\Services\Admin;
 
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;

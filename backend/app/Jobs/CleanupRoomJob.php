@@ -1,15 +1,16 @@
 <?php
+// app/Jobs/CleanupRoomJob.php
 
 namespace App\Jobs;
 
 use App\Events\RoomListUpdated;
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
-use App\Services\LiveGame\GameFinalizationService;
 
 class CleanupRoomJob implements ShouldQueue
 {

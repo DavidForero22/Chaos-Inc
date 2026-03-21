@@ -24,7 +24,10 @@ class RoomStateUpdated implements ShouldBroadcastNow
 
     public function broadcastWith(): array
     {
-        return ['log_message' => $this->logMessage];
+        return [
+            'roomId'      => $this->roomId,
+            'log_message' => $this->logMessage,
+        ];
     }
 
     public function broadcastOn(): array

@@ -1,6 +1,7 @@
 <?php
+// app/Services/Game/Engine/DeckService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Engine;
 
 use Illuminate\Support\Facades\Redis;
 

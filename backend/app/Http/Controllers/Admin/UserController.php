@@ -1,12 +1,13 @@
 <?php
-// app/Http/Controllers/UserController.php
+// app/Http/Controllers/Admin/UserController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Services\UserService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
+use App\Services\Admin\UserService;
 use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller

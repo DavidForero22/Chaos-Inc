@@ -1,6 +1,7 @@
 <?php
+// app/Services/Game/Engine/RoomStateUpdated.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Engine;
 
 use App\Exceptions\GameException;
 use App\Support\CastHelper;

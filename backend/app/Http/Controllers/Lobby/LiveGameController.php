@@ -1,11 +1,13 @@
 <?php
+// app/Http/Controllers/Lobby/LiveGameController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Lobby;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\PlayActionRequest;
-use App\Services\LiveGame\GameActionService;
-use App\Services\LiveGame\LiveGameService;
-use App\Services\LiveGame\TurnService;
+use App\Services\Game\Actions\GameActionService;
+use App\Services\Game\Engine\TurnService;
+use App\Services\Game\LiveGameService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
 

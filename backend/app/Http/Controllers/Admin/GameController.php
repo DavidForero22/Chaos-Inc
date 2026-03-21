@@ -1,11 +1,12 @@
 <?php
+// app/Http/Controllers/Admin/GameController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
-use App\Services\GameService;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\StoreGameRequest;
 use App\Http\Resources\GameResource;
-use App\Models\Game;
+use App\Services\Admin\GameService;
 use Illuminate\Http\Request;
 
 class GameController extends Controller

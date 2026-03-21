@@ -3,8 +3,8 @@
 
 namespace App\Jobs;
 
-use App\Services\LiveGame\DisconnectionService;
-use App\Services\LiveGame\GameFinalizationService;
+use App\Services\Game\Status\DisconnectionService;
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Redis;

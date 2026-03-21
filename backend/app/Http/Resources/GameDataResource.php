@@ -1,12 +1,13 @@
 <?php
+// app/Http/Resources/GameDataResource.php
 
 namespace App\Http\Resources;
 
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Redis;
 use App\Support\CastHelper;
-use App\Services\LiveGame\GameFinalizationService;
 
 class GameDataResource extends JsonResource
 {

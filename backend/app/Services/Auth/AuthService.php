@@ -1,9 +1,10 @@
 <?php
-// App/Services/AuthService.php
+// App/Services/Auth/AuthService.php
 
-namespace App\Services;
+namespace App\Services\Auth;
 
 use App\Models\User;
+use App\Services\Admin\UserService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;

@@ -1,6 +1,7 @@
 <?php
+// app/Services/Admin/GameService.php
 
-namespace App\Services;
+namespace App\Services\Admin;
 
 use App\Models\Game;
 use Illuminate\Support\Facades\DB;

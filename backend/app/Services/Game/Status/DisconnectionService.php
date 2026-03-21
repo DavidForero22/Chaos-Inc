@@ -1,11 +1,11 @@
 <?php
-// app/Services/DisconnectionService.php
+// app/Services/Game/Status/DisconnectionService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Status;
 
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
-use App\Support\GameMessages;
+use App\Services\Game\Engine\TurnService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -13,6 +13,7 @@ class DisconnectionService
 {
     public function __construct(
         protected GameFinalizationService $finalizationService,
+        protected TurnService $turnService,
     ) {}
 
     /**
@@ -189,7 +190,7 @@ class DisconnectionService
         $this->finalizationService->checkDisconnectionVictory($roomId);
 
         // 3. Avanzar el turno
-        app(LiveGameService::class)->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
+       $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
         event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
     }
 }

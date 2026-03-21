@@ -1,8 +1,9 @@
 <?php
+// app/Jobs/CheckVictoryJob.php
 
 namespace App\Jobs;
 
-use App\Services\LiveGame\GameFinalizationService;
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Redis;

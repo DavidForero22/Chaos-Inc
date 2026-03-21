@@ -1,6 +1,7 @@
 <?php
+// app/Services/Game/Actions/CardEffectService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Actions;
 
 use Illuminate\Support\Facades\Redis;
 

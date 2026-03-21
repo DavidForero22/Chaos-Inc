@@ -1,13 +1,15 @@
 <?php
-// app/Services/LiveGame/RoomStateUpdated.php
+// app/Services/Game/Actions/RoomStateUpdated.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Actions;
 
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Services\Game\Engine\CardValidationService;
+use App\Services\Game\Engine\TurnService;
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Support\Facades\Redis;
-use App\Support\GameMessages;
 
 class GameActionService
 {

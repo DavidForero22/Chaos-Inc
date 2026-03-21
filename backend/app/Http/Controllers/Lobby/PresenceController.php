@@ -1,8 +1,10 @@
 <?php
+// app/Http/Controllers/Lobby/PresenceController.php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Lobby;
 
-use App\Services\PresenceService;
+use App\Http\Controllers\Controller;
+use App\Services\Lobby\PresenceService;
 use Illuminate\Http\Request;
 
 class PresenceController extends Controller

@@ -1,11 +1,12 @@
 <?php
-// app/Services/LiveGame/TurnService.php
+// app/Services/Game/Engine/TurnService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Engine;
 
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Support\Facades\Redis;
 
 class TurnService

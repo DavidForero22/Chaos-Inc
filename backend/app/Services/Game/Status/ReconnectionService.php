@@ -1,7 +1,7 @@
 <?php
-// app/Services/LiveGame/ReconnectionService.php
+// app/Services/Game/Status/ReconnectionService.php
 
-namespace App\Services\LiveGame;
+namespace App\Services\Game\Status;
 
 use App\Events\RoomStateUpdated;
 use Illuminate\Support\Facades\Log;

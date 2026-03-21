@@ -1,4 +1,5 @@
 <?php
+// app/Support/LiveGameHelper.php
 
 namespace App\Support;
 
