@@ -116,7 +116,7 @@ export function OpponentsBoard({
 
 						{player.role === "boss" && (
 							<div
-								className="text-2xl mb-1"
+								className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-lg z-40"
 								title={tooltipMessage ? undefined : "Este jugador es el Jefe"}
 							>
 								👑
