@@ -65,5 +65,11 @@ return [
             'description'       => 'Cura a todos los jugadores en 1 punto de estrés.',
             'count'             => 3,
         ],
+        [
+            'id'                => 9,
+            'name'              => 'Sabotaje',
+            'description'       => 'Obliga a un rival a descartar una carta de su mano.',
+            'count'             => 6,
+        ],
     ],
 ];

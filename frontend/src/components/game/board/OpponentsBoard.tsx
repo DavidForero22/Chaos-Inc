@@ -50,7 +50,7 @@ export function OpponentsBoard({
 			{opponents.map((player: Opponent) => {
 				// --- REGLAS DE SELECCIÓN ---
 				const isCardActive = isMyTurn && selectedCardId !== null;
-				const isTargetingCard = [1, 4, 6].includes(selectedCardType || 0);
+				const isTargetingCard = [1, 4, 6, 9].includes(selectedCardType || 0);
 
 				const isUnstealable =
 					selectedCardType === 4 && player.cards_count === 0;
@@ -60,21 +60,27 @@ export function OpponentsBoard({
 					player.conditions?.is_blocked ?? (player as any).is_blocked;
 				const isAlreadyBlocked = selectedCardType === 6 && isPlayerBlocked;
 
+				const isSabotageUntargetable =
+					selectedCardType === 9 && player.cards_count === 0;
+
 				let tooltipMessage = "";
 				let isUnclickable = false;
 
 				if (player.is_dead) {
-					tooltipMessage = "Este jugador ha sido despedido (Muerto).";
+					tooltipMessage = "Este jugador está muerto.";
 					isUnclickable = true;
 				} else if (!player.is_online) {
-					tooltipMessage = "Este jugador está en pausa (Offline).";
+					tooltipMessage = "Este jugador está en desconectado.";
 					isUnclickable = true;
 				} else if (isCardActive && isTargetingCard) {
 					if (isUnstealable) {
-						tooltipMessage = "La mesa de este jugador está vacía (0 cartas).";
+						tooltipMessage = "Este jugador no tiene cartas..";
 						isUnclickable = true;
 					} else if (isAlreadyBlocked) {
-						tooltipMessage = "Este jugador ya está sufriendo una auditoría.";
+						tooltipMessage = "Este jugador ya bloqueado.";
+						isUnclickable = true;
+					} else if (isSabotageUntargetable) {
+						tooltipMessage = "Este jugador no tiene cartas que descartar.";
 						isUnclickable = true;
 					}
 				}

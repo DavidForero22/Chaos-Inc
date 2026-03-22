@@ -47,28 +47,30 @@ class MyDataResource extends JsonResource
 
         return [
             // Identidad y Vitalidad (Base)
-            'name'           => $playerName,
-            'role'           => $myData['role'],
-            'stress'         => $currentStress,
-            'is_dead'        => CastHelper::toBool($myData['is_dead'] ?? 0),
-            'is_online'      => CastHelper::toBool($myData['is_online'] ?? 1),
+            'name'                      => $playerName,
+            'role'                      => $myData['role'],
+            'stress'                    => $currentStress,
+            'is_dead'                   => CastHelper::toBool($myData['is_dead'] ?? 0),
+            'is_online'                 => CastHelper::toBool($myData['is_online'] ?? 1),
 
             // Recursos del jugador
-            'cards'          => json_decode($myData['cards'] ?? '[]'),
-            'max_hand_size'  => $maxHandSize,
+            'cards'                     => json_decode($myData['cards'] ?? '[]'),
+            'max_hand_size'             => $maxHandSize,
 
             // Condiciones / Estados alterados (Buffs / Debuffs)
             'conditions'     => [
-                'has_shield'     => CastHelper::toBool($myData['has_shield'] ?? 0),
-                'acting_boss'    => CastHelper::toBool($myData['acting_boss'] ?? 0),
-                'is_blocked'     => CastHelper::toBool($myData['is_blocked'] ?? 0),
-                'skip_next_turn' => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
+                'has_shield'            => CastHelper::toBool($myData['has_shield'] ?? 0),
+                'acting_boss'           => CastHelper::toBool($myData['acting_boss'] ?? 0),
+                'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),
+                'skip_next_turn'        => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
+                'must_discard'          => CastHelper::toBool($myData['must_discard'] ?? 0),
+                'must_discard_by'       => $myData['must_discard_by'] ?? null,
             ],
 
             // Límites del turno actual
             'turn_limits'    => [
-                'single_attack_used' => CastHelper::toBool($myData['single_attack_used_this_turn'] ?? 0),
-                'multi_attack_used'  => CastHelper::toBool($myData['multi_attack_used_this_turn'] ?? 0),
+                'single_attack_used'    => CastHelper::toBool($myData['single_attack_used_this_turn'] ?? 0),
+                'multi_attack_used'     => CastHelper::toBool($myData['multi_attack_used_this_turn'] ?? 0),
             ],
 
             // Estado de Combate (Acciones pendientes)
@@ -82,7 +84,7 @@ class MyDataResource extends JsonResource
             ],
 
             // Eventos especiales
-            'luck_challenge' => $challengeColors,
+            'luck_challenge'           => $challengeColors,
         ];
     }
 }

@@ -107,6 +107,10 @@ class TurnService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }
 
+        if (Redis::exists("room:{$roomId}:pending_sabotage")) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un sabotaje pendiente de resolver.", 422);
+        }
+
         // Validar límite de cartas en mano
         $playerData  = Redis::hgetall($playerKey);
         $currentStress  = (int) ($playerData['stress'] ?? 0);

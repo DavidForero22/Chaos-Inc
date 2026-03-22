@@ -6,6 +6,7 @@ import type {
 	MyData,
 	Opponent,
 } from "../../../types/live-game.ts";
+import { useEffect } from "react";
 
 interface PlayerAreaProps {
 	me: MyData;
@@ -21,6 +22,7 @@ interface PlayerAreaProps {
 	onReactToMultiAttack: (action: "accept" | "dodge", cardId?: string) => void;
 	isAttackerWaiting: boolean;
 	onDiscardCards?: (cardIds: string[]) => void;
+	hasPendingSabotage?: boolean;
 }
 
 export function PlayerArea({
@@ -37,6 +39,7 @@ export function PlayerArea({
 	onReactToMultiAttack,
 	isAttackerWaiting,
 	onDiscardCards,
+	hasPendingSabotage = false,
 }: PlayerAreaProps) {
 	const {
 		isDiscardMode,
@@ -45,7 +48,10 @@ export function PlayerArea({
 		toggleCard,
 		confirmDiscard,
 		cancelDiscard,
-	} = useDiscardMode(onDiscardCards);
+	} = useDiscardMode(
+		onDiscardCards,
+		me.conditions.must_discard ? 1 : undefined,
+	);
 
 	const currentCardsCount = me.cards.length;
 	const projectedCardsCount = currentCardsCount - cardsToDiscard.length;
@@ -60,16 +66,33 @@ export function PlayerArea({
 		}
 	};
 
+	// Forzar modo descarte cuando el jugador es saboteado
+	useEffect(() => {
+		if (me.conditions.must_discard && !isDiscardMode) {
+			setIsDiscardMode(true);
+		}
+		if (!me.conditions.must_discard && isDiscardMode) {
+			cancelDiscard();
+		}
+	}, [me.conditions.must_discard]);
+
 	const canEndTurn =
 		isMyTurn &&
 		selectedCardId === null &&
 		!hasPendingAttack &&
 		!endingSoon &&
 		!isAttackerWaiting &&
-		!isOverLimit;
+		!isOverLimit &&
+		!me.conditions.must_discard &&
+		!hasPendingSabotage;
 
 	const canDiscard =
-		isMyTurn && !endingSoon && !isAttackerWaiting && !hasPendingAttack;
+		isMyTurn &&
+		!endingSoon &&
+		!isAttackerWaiting &&
+		!hasPendingAttack &&
+		!me.conditions.must_discard &&
+		!hasPendingSabotage;
 
 	return (
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
@@ -95,6 +118,16 @@ export function PlayerArea({
 				</div>
 			)}
 
+			{me.conditions.must_discard && (
+				<div className="absolute -top-4 left-4 bg-red-700 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-red-500 animate-pulse">
+					⚠️{" "}
+					{me.conditions.must_discard_by
+						? `${me.conditions.must_discard_by} te ha saboteado.`
+						: "Has sido saboteado."}{" "}
+					Debes descartar una carta antes de continuar.
+				</div>
+			)}
+
 			<PlayerStats me={me} />
 
 			<PlayerHand
@@ -109,6 +142,7 @@ export function PlayerArea({
 				isAttackerWaiting={isAttackerWaiting}
 				isDiscardMode={isDiscardMode}
 				cardsToDiscard={cardsToDiscard}
+				hasPendingSabotage={hasPendingSabotage}
 			/>
 
 			<div className="ml-auto flex flex-col items-end gap-2">
@@ -144,14 +178,14 @@ export function PlayerArea({
 				) : (
 					<div className="flex flex-col gap-2 items-end">
 						{/* DESCARTE — encima de terminar turno */}
-						{isDiscardMode ? (
+						{isDiscardMode && !me.conditions.must_discard ? (
 							<button
 								onClick={cancelDiscard}
 								className="px-4 py-2 rounded font-bold text-sm transition bg-orange-600 hover:bg-orange-500 text-white"
 							>
 								Cancelar
 							</button>
-						) : (
+						) : !isDiscardMode ? (
 							<button
 								onClick={() => setIsDiscardMode(true)}
 								disabled={!canDiscard}
@@ -163,7 +197,7 @@ export function PlayerArea({
 							>
 								Descartar
 							</button>
-						)}
+						) : null}
 
 						{/* TERMINAR TURNO — se transforma en Confirmar Descarte */}
 						{isDiscardMode ? (

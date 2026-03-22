@@ -93,9 +93,14 @@ export default function GameBoardPage() {
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
+
 	const hasLuckChallenge =
 		isMyTurn && !!me.luck_challenge && luckResult === null;
 	const isAttackerWaiting = me.combat_state.is_attacking_multi;
+
+	const hasPendingSabotage =
+		!!game.player_pending_sabotage &&
+		game.player_pending_sabotage !== myPlayerName;
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
@@ -189,6 +194,7 @@ export default function GameBoardPage() {
 				showEndingWaiting={showEndingWaiting}
 				showInheritanceBanner={showInheritanceBanner}
 				multiAttackSecondsLeft={multiAttackSecondsLeft}
+				playerPendingSabotage={game.player_pending_sabotage}
 			/>
 
 			{/* --- CABECERA --- */}
@@ -234,6 +240,7 @@ export default function GameBoardPage() {
 				onReactToMultiAttack={reactToMultiAttack}
 				isAttackerWaiting={isAttackerWaiting}
 				onDiscardCards={discardCards}
+				hasPendingSabotage={hasPendingSabotage}
 			/>
 
 			<GameLog />

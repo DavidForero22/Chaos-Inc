@@ -11,6 +11,8 @@ export interface PlayerConditions {
 	acting_boss: boolean;
 	is_blocked: boolean;
 	skip_next_turn: boolean;
+	must_discard: boolean;
+	must_discard_by: string | null;
 }
 
 export interface TurnLimits {
@@ -93,5 +95,6 @@ export interface GameData {
 		pending_single_attack_target: string | null;
 		pending_multi_attack_targets: string[];
 		player_in_luck_challenge: string | null;
+		player_pending_sabotage: string | null;
 	};
 }

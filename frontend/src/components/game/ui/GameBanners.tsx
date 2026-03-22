@@ -10,6 +10,7 @@ interface GameBannersProps {
 	showEndingWaiting: boolean;
 	showInheritanceBanner: boolean;
 	multiAttackSecondsLeft: number | null;
+	playerPendingSabotage?: string | null;
 }
 
 export function GameBanners({
@@ -19,6 +20,7 @@ export function GameBanners({
 	showEndingWaiting,
 	showInheritanceBanner,
 	multiAttackSecondsLeft,
+	playerPendingSabotage,
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
 	const { myPlayerName } = usePlayerIdentity();
@@ -98,6 +100,12 @@ export function GameBanners({
 						{multiAttackSecondsLeft}s
 					</span>{" "}
 					o recibirás daño.
+				</div>
+			)}
+
+			{playerPendingSabotage && playerPendingSabotage !== myPlayerName && (
+				<div className="bg-purple-900/40 border border-purple-700 text-purple-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
+					⏳ {playerPendingSabotage} está decidiendo qué carta descartar...
 				</div>
 			)}
 

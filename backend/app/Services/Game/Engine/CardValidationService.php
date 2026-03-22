@@ -109,4 +109,28 @@ class CardValidationService
             throw new GameException(GameException::INVALID_ACTION, "Ningún jugador tiene estrés que curar.", 422);
         }
     }
+
+    public function validateSabotage(string $roomId, string $playerName, string $targetName): void
+    {
+        if ($playerName === $targetName) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes sabotearte a ti mismo.", 422);
+        }
+
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+
+        $isDead = CastHelper::toBool(Redis::hget($targetKey, 'is_dead') ?? 0);
+        if ($isDead) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes sabotear a un jugador eliminado.", 422);
+        }
+
+        $isOnline = CastHelper::toBool(Redis::hget($targetKey, 'is_online') ?? 1);
+        if (!$isOnline) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes sabotear a un jugador desconectado.", 422);
+        }
+
+        $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+        if (!is_array($targetCards) || empty($targetCards)) {
+            throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas que descartar.", 422);
+        }
+    }
 }

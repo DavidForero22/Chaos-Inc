@@ -13,6 +13,7 @@ return [
     'eliminated'            => ':player ha sido eliminado.',
     'blocked'               => ':player ha bloqueado el turno de :target.',
     'healed_all'            => ':player ha curado a todos los jugadores.',
+    'sabotaged'             => ':player ha saboteado a :target, obligándole a descartar una carta.',
 
     // Ataque múltiple
     'multi_attack_started'  => ':attacker ha lanzado un ataque masivo.',

@@ -15,8 +15,9 @@ interface PlayerHandProps {
 	hasPendingAttack: boolean;
 	hasPendingMultiAttack: boolean;
 	isAttackerWaiting: boolean;
-	isDiscardMode?: boolean; // ← nuevo
-	cardsToDiscard?: string[]; // ← nuevo
+	isDiscardMode?: boolean;
+	cardsToDiscard?: string[];
+	hasPendingSabotage?: boolean;
 }
 
 export function PlayerHand({
@@ -31,6 +32,7 @@ export function PlayerHand({
 	isAttackerWaiting,
 	isDiscardMode = false,
 	cardsToDiscard = [],
+	hasPendingSabotage = false,
 }: PlayerHandProps) {
 	const anyOpponentHasCards = opponents.some(
 		(o) => o.cards_count > 0 && o.is_online,
@@ -63,6 +65,11 @@ export function PlayerHand({
 							return !o.is_dead && o.is_online && !isBlocked;
 						});
 					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
+					const isSabotageDisabled =
+						card.type === 9 &&
+						!opponents.some(
+							(o) => !o.is_dead && o.is_online && o.cards_count > 0,
+						);
 
 					const isDisabled =
 						isHealDisabled ||
@@ -72,7 +79,8 @@ export function PlayerHand({
 						isShieldDisabled ||
 						isBlockDisabled ||
 						isHealAllDisabled ||
-						isAttackAllDisabled;
+						isAttackAllDisabled ||
+						isSabotageDisabled;
 
 					const isDodge = card.type === 3;
 					const canUseDodgeNow =
@@ -80,12 +88,13 @@ export function PlayerHand({
 
 					// En modo descarte todas las cartas son seleccionables
 					const isSelectable = isDiscardMode
-						? true
-						: (isMyTurn &&
-								!isDisabled &&
-								!hasPendingAttack &&
-								!isAttackerWaiting) ||
-							canUseDodgeNow;
+        ? true
+        : (isMyTurn &&
+            !isDisabled &&
+            !hasPendingAttack &&
+            !isAttackerWaiting &&
+            !hasPendingSabotage) || 
+          canUseDodgeNow;
 
 					return (
 						<Card

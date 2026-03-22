@@ -79,6 +79,12 @@ class GameDataResource extends JsonResource
             'pending_single_attack_target' => $pendingAttackTarget,
             'pending_multi_attack_targets' => $pendingMultiAttackTargets,
             'player_in_luck_challenge'     => $playerInLuckChallenge,
+            'player_pending_sabotage'      => $this->getPlayerPendingSabotage($roomId),
         ];
+    }
+
+    private static function getPlayerPendingSabotage(string $roomId): ?string
+    {
+        return Redis::get("room:{$roomId}:pending_sabotage") ?: null;
     }
 }

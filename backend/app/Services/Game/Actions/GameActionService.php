@@ -37,6 +37,10 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }
 
+        if (Redis::exists("room:{$roomId}:pending_sabotage")) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un sabotaje pendiente de resolver.", 422);
+        }
+
         $pendingMulti = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
         if (!empty($pendingMulti) && ($pendingMulti['attacker'] ?? null) === $playerName) {
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque masivo pendiente de resolver.", 422);
@@ -74,6 +78,7 @@ class GameActionService
             6 => $this->cardValidationService->validateBlock($roomId, $playerName, $targetName),
             7 => $this->cardValidationService->validateAttackAll($roomId, $playerName),
             8 => $this->cardValidationService->validateHealAll($roomId),
+            9 => $this->cardValidationService->validateSabotage($roomId, $playerName, $targetName),
             default => null,
         };
 
@@ -86,6 +91,7 @@ class GameActionService
             6 => $this->cardEffectService->applyBlock($roomId, $targetName),
             7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
             8 => $this->cardEffectService->applyHealAll($roomId),
+            9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
             default => null,
         };
 
@@ -120,6 +126,7 @@ class GameActionService
             6 => __('game.blocked', ['player' => $playerName, 'target' => $targetName]),
             7 => null, // el log se construye en reactToMultiAttack cuando todos responden
             8 => __('game.healed_all', ['player' => $playerName]),
+            9 => __('game.sabotaged', ['player' => $playerName, 'target' => $targetName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));
@@ -378,6 +385,11 @@ class GameActionService
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
+        $pendingSabotageTarget = Redis::get("room:{$roomId}:pending_sabotage");
+        if ($pendingSabotageTarget && $pendingSabotageTarget !== $playerName) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un sabotaje pendiente de resolver.", 422);
+        }
+
         $playerKey  = "room:{$roomId}:player:{$playerName}";
         $playerData = Redis::hgetall($playerKey);
         $cards      = json_decode($playerData['cards'] ?? '[]', true);
@@ -393,8 +405,14 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos una carta para descartar.", 422);
         }
 
-        if (count($cards) <= $maxHandSize) {
+        $mustDiscard = CastHelper::toBool($playerData['must_discard'] ?? 0);
+
+        if (!$mustDiscard && count($cards) <= $maxHandSize) {
             throw new GameException(GameException::INVALID_ACTION, "No necesitas descartar cartas, estás dentro del límite.", 422);
+        }
+
+        if ($mustDiscard && count($cardIdsToDiscard) !== 1) {
+            throw new GameException(GameException::INVALID_ACTION, "Debes descartar exactamente una carta.", 422);
         }
 
         $resultingCount = count($cards) - count($cardIdsToDiscard);
@@ -421,6 +439,9 @@ class GameActionService
             'count'  => $discardedCount,
         ]);
 
+        Redis::hset($playerKey, 'must_discard', 0);
+        Redis::hdel($playerKey, 'must_discard_by');
+        Redis::del("room:{$roomId}:pending_sabotage");
         event(new RoomStateUpdated($roomId, $logMessage));
     }
 }

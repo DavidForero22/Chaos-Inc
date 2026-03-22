@@ -156,4 +156,11 @@ class CardEffectService
             }
         }
     }
+
+    public function applySabotage(string $roomId, string $playerName, string $targetName): void
+    {
+        Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard', 1);
+        Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard_by', $playerName);
+        Redis::set("room:{$roomId}:pending_sabotage", $targetName);
+    }
 }
