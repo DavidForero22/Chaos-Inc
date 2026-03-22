@@ -52,6 +52,7 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/rooms/{id}/luck-challenge', [LiveGameController::class, 'resolveLuckChallenge']);
         Route::post('/rooms/{id}/react-multi', [LiveGameController::class, 'reactMulti']);
+        Route::post('/rooms/{id}/discard', [LiveGameController::class, 'discard']);
 
         Route::post('/rooms', [RoomController::class, 'store']);
 

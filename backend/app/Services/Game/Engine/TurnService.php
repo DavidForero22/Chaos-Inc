@@ -83,7 +83,8 @@ class TurnService
 
     public function endTurn(string $roomId, string $playerName): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomKey   = "room:{$roomId}";
+        $playerKey = "room:{$roomId}:player:{$playerName}";
 
         if (!Redis::exists($roomKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
@@ -106,8 +107,25 @@ class TurnService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }
 
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'single_attack_used_this_turn', 0);
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'multi_attack_used_this_turn', 0);
+        // Validar límite de cartas en mano
+        $playerData  = Redis::hgetall($playerKey);
+        $currentStress  = (int) ($playerData['stress'] ?? 0);
+        $isBossOrActing = ($playerData['role'] ?? '') === 'boss'
+            || filter_var($playerData['acting_boss'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $maxStress   = $isBossOrActing ? 5 : 4;
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
+        $currentCards = json_decode($playerData['cards'] ?? '[]', true);
+
+        if (count($currentCards) > $maxHandSize) {
+            throw new GameException(
+                GameException::INVALID_ACTION,
+                "Debes descartar cartas antes de terminar tu turno. Máximo permitido: {$maxHandSize}.",
+                422
+            );
+        }
+
+        Redis::hset($playerKey, 'single_attack_used_this_turn', 0);
+        Redis::hset($playerKey, 'multi_attack_used_this_turn', 0);
 
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));

@@ -65,6 +65,7 @@ export interface CardInstance {
 export interface MyData extends BasePlayer {
 	role: PlayerRole;
 	cards: CardInstance[];
+	max_hand_size: number;
 	conditions: PlayerConditions;
 	turn_limits: TurnLimits;
 	combat_state: CombatState;

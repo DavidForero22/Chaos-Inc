@@ -40,6 +40,7 @@ interface GameState {
 		cardId?: string,
 	) => Promise<boolean>;
 	endTurn: () => Promise<void>;
+	discardCards: (cardIds: string[]) => Promise<void>;
 	resetStore: () => void;
 }
 
@@ -189,5 +190,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 		if (!roomId) return;
 		await api.post(`/rooms/${roomId}/end-turn`, {});
 		await syncGame();
+	},
+
+	discardCards: async (cardIds: string[]) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return;
+
+		try {
+			await api.post(`/rooms/${roomId}/discard`, { card_ids: cardIds });
+			await syncGame();
+		} catch (error: any) {
+			alert(error.response?.data?.message || "Error al descartar cartas.");
+		}
 	},
 }));

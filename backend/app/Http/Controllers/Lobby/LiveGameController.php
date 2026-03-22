@@ -61,7 +61,6 @@ class LiveGameController extends Controller
             return response()->json(['error' => 'Unauthorized or expired token.'], 401);
         }
 
-        // Llamamos al servicio con los datos validados
         $this->gameActionService->playAction(
             $id,
             $playerName,
@@ -95,8 +94,8 @@ class LiveGameController extends Controller
             return response()->json(['error' => 'Unauthorized or expired token.'], 401);
         }
 
-        $reaction = $request->input('reaction'); // 'dodge' o 'accept'
-        $cardId = $request->input('card_id'); // opcional, solo para esquivar
+        $reaction = $request->input('reaction');
+        $cardId = $request->input('card_id');
 
         $this->gameActionService->reactToAttack($id, $playerName, $reaction, $cardId);
 
@@ -138,5 +137,24 @@ class LiveGameController extends Controller
         $this->gameActionService->reactToMultiAttack($id, $playerName, $reaction, $cardId);
 
         return response()->json(['message' => 'Reaction processed.'], 200);
+    }
+
+    public function discard(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $request->validate([
+            'card_ids'   => 'required|array',
+            'card_ids.*' => 'string'
+        ]);
+
+        $this->gameActionService->discardCards($id, $playerName, $request->input('card_ids'));
+
+        return response()->json(['message' => 'Cards discarded successfully'], 200);
     }
 }

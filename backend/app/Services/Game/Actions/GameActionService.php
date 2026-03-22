@@ -9,6 +9,7 @@ use App\Exceptions\RoomException;
 use App\Services\Game\Engine\CardValidationService;
 use App\Services\Game\Engine\TurnService;
 use App\Services\Game\Status\GameFinalizationService;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class GameActionService
@@ -362,5 +363,64 @@ class GameActionService
             Redis::set($pendingKey, json_encode($pending));
             event(new RoomStateUpdated($roomId, null));
         }
+    }
+
+    public function discardCards(string $roomId, string $playerName, array $cardIdsToDiscard): void
+    {
+        $roomKey = "room:{$roomId}";
+
+        if (!Redis::exists($roomKey)) {
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        if ($currentTurn !== $playerName) {
+            throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
+        }
+
+        $playerKey  = "room:{$roomId}:player:{$playerName}";
+        $playerData = Redis::hgetall($playerKey);
+        $cards      = json_decode($playerData['cards'] ?? '[]', true);
+        if (!is_array($cards)) $cards = [];
+
+        $currentStress  = (int) ($playerData['stress'] ?? 0);
+        $isBossOrActing = ($playerData['role'] ?? '') === 'boss'
+            || CastHelper::toBool($playerData['acting_boss'] ?? 0);
+        $maxStress   = $isBossOrActing ? 5 : 4;
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
+
+        if (count($cardIdsToDiscard) === 0) {
+            throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos una carta para descartar.", 422);
+        }
+
+        if (count($cards) <= $maxHandSize) {
+            throw new GameException(GameException::INVALID_ACTION, "No necesitas descartar cartas, estás dentro del límite.", 422);
+        }
+
+        $resultingCount = count($cards) - count($cardIdsToDiscard);
+        if ($resultingCount < 1) {
+            throw new GameException(GameException::INVALID_ACTION, "No puedes descartar todas tus cartas. Debes conservar al menos 1.", 422);
+        }
+
+        $initialCardCount = count($cards);
+
+        $updatedCards = array_values(array_filter($cards, function ($card) use ($cardIdsToDiscard) {
+            return !in_array($card['id'] ?? null, $cardIdsToDiscard);
+        }));
+
+        $discardedCount = $initialCardCount - count($updatedCards);
+
+        if ($discardedCount !== count($cardIdsToDiscard)) {
+            throw new GameException(GameException::CARD_NOT_IN_HAND, "Algunas cartas seleccionadas ya no están en tu mano.", 422);
+        }
+
+        Redis::hset($playerKey, 'cards', json_encode($updatedCards));
+
+        $logMessage = __('game.discarded', [
+            'player' => $playerName,
+            'count'  => $discardedCount,
+        ]);
+
+        event(new RoomStateUpdated($roomId, $logMessage));
     }
 }

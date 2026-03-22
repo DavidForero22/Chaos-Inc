@@ -38,16 +38,24 @@ class MyDataResource extends JsonResource
             $challengeColors = $colors;
         }
 
+        // CÁLCULO DEL LÍMITE DE CARTAS EN MANO
+        $currentStress = (int) $myData['stress'];
+        $isBossOrActing = $myData['role'] === 'boss' || CastHelper::toBool($myData['acting_boss'] ?? 0);
+        $maxStress = $isBossOrActing ? 5 : 4;
+
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
+
         return [
             // Identidad y Vitalidad (Base)
             'name'           => $playerName,
             'role'           => $myData['role'],
-            'stress'         => (int) $myData['stress'],
+            'stress'         => $currentStress,
             'is_dead'        => CastHelper::toBool($myData['is_dead'] ?? 0),
             'is_online'      => CastHelper::toBool($myData['is_online'] ?? 1),
 
             // Recursos del jugador
             'cards'          => json_decode($myData['cards'] ?? '[]'),
+            'max_hand_size'  => $maxHandSize,
 
             // Condiciones / Estados alterados (Buffs / Debuffs)
             'conditions'     => [

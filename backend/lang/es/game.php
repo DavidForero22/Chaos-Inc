@@ -28,4 +28,7 @@ return [
     // Conexiones
     'disconnected'          => ':player se ha desconectado.',
     'reconnected'           => ':player se ha reconectado.',
+
+    // Acciones de partida
+    'discarded' => ':player ha descartado :count cartas.',
 ];

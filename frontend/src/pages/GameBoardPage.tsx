@@ -44,6 +44,7 @@ export default function GameBoardPage() {
 	const endTurn = useGameStore((state) => state.endTurn);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+	const { discardCards } = useGameStore();
 
 	const {
 		showBossWaiting,
@@ -232,6 +233,7 @@ export default function GameBoardPage() {
 				hasPendingMultiAttack={hasPendingMultiAttack}
 				onReactToMultiAttack={reactToMultiAttack}
 				isAttackerWaiting={isAttackerWaiting}
+				onDiscardCards={discardCards}
 			/>
 
 			<GameLog />
