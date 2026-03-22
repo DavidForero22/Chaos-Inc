@@ -29,7 +29,6 @@ export default function GameBoardPage() {
 
 	// Extraer  el estado global directamente de Zustand
 	const gameData = useGameStore((state) => state.gameData);
-	const loading = useGameStore((state) => state.loading);
 	const isFirstLoad = useGameStore((state) => state.isFirstLoad);
 	const setIsFirstLoad = useGameStore((state) => state.setIsFirstLoad);
 	const gameOver = useGameStore((state) => state.gameOver);
@@ -72,18 +71,19 @@ export default function GameBoardPage() {
 		}
 	}, [luckResult]);
 
-	if (loading || isConnecting) {
+	// --- PANTALLA DE CARGA INICIAL ---
+	if (isConnecting || !gameData) {
 		return (
 			<div className="flex flex-col items-center justify-center h-[70vh]">
 				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
 				<h2 className="text-xl text-gray-400 animate-pulse">
-					Repartiendo cartas...
+					Conectando con la oficina...
 				</h2>
 			</div>
 		);
 	}
 
-	if (!gameData || !myPlayerName) return null;
+	if (!myPlayerName) return null;
 
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;

@@ -3,13 +3,14 @@
 
 namespace App\Services\Game\Actions;
 
+use App\Events\RoomStateUpdated;
 use App\Jobs\ResolveMultiAttackJob;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class CardEffectService
 {
-    public function applyAttack(string $roomId, string $playerName, string $targetName): void
+    public function applyAttack(string $roomId, string $playerName, string $targetName): ?string
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $targetKey = "room:{$roomId}:player:{$targetName}";
@@ -24,15 +25,18 @@ class CardEffectService
         if ($hasShield) {
             // El escudo bloquea el ataque y se rompe
             Redis::hset($targetKey, 'has_shield', 0);
+            return 'shield_broken';
         } elseif ($hasDodge) {
             // El objetivo puede esquivar, el ataque queda en pausa
             Redis::hmset("room:{$roomId}:pending_attack", [
                 'attacker' => $playerName,
                 'target'   => $targetName,
             ]);
+            return null; // (Opcional) devolvemos pending por si queremos usarlo
         } else {
             // Si no hay defensa, el daño entra directo
             app(GameActionService::class)->applyDamageAndCheck($roomId, $playerName, $targetName);
+            return 'direct_damage'; // (Opcional)
         }
     }
 
@@ -83,6 +87,7 @@ class CardEffectService
 
         $players = Redis::smembers("room:{$roomId}:players");
         $pendingTargets = [];
+        $shieldUsers = [];
 
         foreach ($players as $target) {
             if ($target === $playerName) continue;
@@ -101,6 +106,7 @@ class CardEffectService
             if ($hasShield) {
                 // Escudo absorbe y se rompe
                 Redis::hset($targetKey, 'has_shield', 0);
+                $shieldUsers[] = $target; // Guardamos quién gastó escudo
             } elseif ($hasDodge) {
                 // Puede esquivar — añadir a pendientes
                 $pendingTargets[] = $target;
@@ -114,14 +120,25 @@ class CardEffectService
             Redis::set(
                 "room:{$roomId}:pending_multi_attack",
                 json_encode([
-                    'attacker' => $playerName,
-                    'targets'  => $pendingTargets,
-                    'dodgers'  => [],
+                    'attacker'  => $playerName,
+                    'targets'   => $pendingTargets,
+                    'dodgers'   => [],
+                    'shielders' => $shieldUsers,
                 ])
             );
-        }
 
-        ResolveMultiAttackJob::dispatch($roomId)->delay(15);
+            ResolveMultiAttackJob::dispatch($roomId)->delay(15);
+
+            // Emitimos evento para que el frontend actualice escudos rotos y muestre temporizadores
+            event(new RoomStateUpdated($roomId, __('game.multi_attack_started', ['attacker' => $playerName])));
+        } else {
+            // No hay nadie que deba decidir. Resolvemos al instante.
+            $logMessage = __('game.attacked_all_resolved', ['attacker' => $playerName]);
+            if (!empty($shieldUsers)) {
+                $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $shieldUsers)]);
+            }
+            event(new RoomStateUpdated($roomId, $logMessage));
+        }
     }
 
     public function applyHealAll(string $roomId): void

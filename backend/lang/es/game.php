@@ -3,23 +3,29 @@
 
 return [
     // Acciones de cartas
-    'attacked'   => ':attacker ha atacado a :target.',
-    'healed'     => ':player se ha curado.',
-    'stolen'     => ':player le ha robado una carta a :target.',
-    'shielded'   => ':player se ha puesto un escudo.',
-    'dodged'     => ':player ha esquivado el ataque.',
-    'tookDamage' => ':player no ha esquivado el ataque.',
-    'eliminated' => ':player ha sido eliminado.',
-    'blocked'    => ':player ha bloqueado el turno de :target.',
-    'attacked_all'   => ':attacker ha atacado a :targets.',
-    'healed_all'     => ':player ha curado a todos los jugadores.',
-    'multi_dodged'   => ':dodgers esquivaron el ataque.',
+    'attacked'              => ':attacker ha atacado a :target.',
+    'healed'                => ':player se ha curado.',
+    'stolen'                => ':player le ha robado una carta a :target.',
+    'shielded'              => ':player se ha puesto un escudo.',
+    'dodged'                => ':player ha esquivado el ataque de :attacker.',
+    'attack_shield_broken'  => ':attacker atacó a :target, pero su escudo absorbió el daño y se rompió.',
+    'tookDamage'            => ':player no ha esquivado el ataque de :attacker.',
+    'eliminated'            => ':player ha sido eliminado.',
+    'blocked'               => ':player ha bloqueado el turno de :target.',
+    'healed_all'            => ':player ha curado a todos los jugadores.',
+
+    // Ataque múltiple
+    'multi_attack_started'  => ':attacker ha lanzado un ataque masivo.',
+    'attacked_all'          => ':attacker ha atacado a :targets.',
+    'attacked_all_resolved' => ':attacker ha dañado a todos.',
+    'shields_broken'        => 'El escudo de :shielders absorbió el daño y se rompió.',
+    'multi_dodged'          => ':dodgers esquivaron el ataque.',
 
     // Suerte
-    'luckySuccess' => ':player superó la prueba de suerte y puede jugar su turno.',
-    'luckyFail'    => ':player falló la prueba de suerte y pierde su turno.',
+    'luckySuccess'          => ':player superó la prueba de suerte y puede jugar su turno.',
+    'luckyFail'             => ':player falló la prueba de suerte y pierde su turno.',
 
     // Conexiones
-    'disconnected' => ':player se ha desconectado.',
-    'reconnected'  => ':player se ha reconectado.',
+    'disconnected'          => ':player se ha desconectado.',
+    'reconnected'           => ':player se ha reconectado.',
 ];

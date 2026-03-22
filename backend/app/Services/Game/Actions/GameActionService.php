@@ -77,7 +77,7 @@ class GameActionService
         };
 
         // Match de efecto
-        match ($cardType) {
+        $effectResult = match ($cardType) {
             1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
@@ -110,7 +110,9 @@ class GameActionService
 
         // Match de log
         $logMessage = match ($cardType) {
-            1 => __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),
+            1 => ($effectResult === 'shield_broken')
+                ? __('game.attack_shield_broken', ['attacker' => $playerName, 'target' => $targetName])
+                : __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),
             2 => __('game.healed', ['player' => $playerName]),
             4 => __('game.stolen', ['player' => $playerName, 'target' => $targetName]),
             5 => __('game.shielded', ['player' => $playerName]),
@@ -169,9 +171,17 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
 
+        $attackerName = $pending['attacker'];
+
         $logMessage = $reaction === 'dodge'
-            ? __('game.dodged', ['player' => $playerName])
-            : __('game.tookDamage', ['player' => $playerName]);
+            ? __('game.dodged', [
+                'player'   => $playerName,
+                'attacker' => $attackerName
+            ])
+            : __('game.tookDamage', [
+                'player'   => $playerName,
+                'attacker' => $attackerName
+            ]);
 
         event(new RoomStateUpdated($roomId, $logMessage));
     }
@@ -340,6 +350,10 @@ class GameActionService
 
             if (!empty($pending['dodgers'])) {
                 $logMessage .= ' ' . __('game.multi_dodged', ['dodgers' => implode(', ', $pending['dodgers'])]);
+            }
+
+            if (!empty($pending['shielders'])) {
+                $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $pending['shielders'])]);
             }
 
             event(new RoomStateUpdated($roomId, $logMessage));

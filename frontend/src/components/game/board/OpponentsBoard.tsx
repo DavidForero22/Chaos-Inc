@@ -82,7 +82,10 @@ export function OpponentsBoard({
 				return (
 					<div
 						key={player.name}
-						onClick={() => handleAction(player.name, player.is_online)}
+						onClick={() => {
+							if (isUnclickable) return;
+							handleAction(player.name, player.is_online);
+						}}
 						className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
                             ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}
                             ${!player.is_online ? "opacity-40 grayscale scale-95" : ""}

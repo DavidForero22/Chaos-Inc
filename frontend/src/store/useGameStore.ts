@@ -15,7 +15,6 @@ interface GameState {
 	// --- ESTADOS ---
 	roomId: string | null;
 	gameData: GameData | null;
-	loading: boolean;
 	isConnecting: boolean;
 	isFirstLoad: boolean;
 	gameOver: boolean;
@@ -25,7 +24,6 @@ interface GameState {
 	// --- ACCIONES DE ESTADO LOCAL ---
 	setRoomId: (id: string | null) => void;
 	setGameData: (data: GameData | null) => void;
-	setLoading: (loading: boolean) => void;
 	setIsConnecting: (isConnecting: boolean) => void;
 	setIsFirstLoad: (isFirstLoad: boolean) => void;
 	setGameOver: (gameOver: boolean) => void;
@@ -52,7 +50,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 	// Estado inicial
 	roomId: null,
 	gameData: null,
-	loading: true,
 	isConnecting: true,
 	isFirstLoad: true,
 	gameOver: false,
@@ -62,7 +59,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 	// Setters básicos
 	setRoomId: (id) => set({ roomId: id }),
 	setGameData: (data) => set({ gameData: data }),
-	setLoading: (loading) => set({ loading }),
 	setIsConnecting: (isConnecting) => set({ isConnecting }),
 	setIsFirstLoad: (isFirstLoad) => set({ isFirstLoad }),
 	setGameOver: (gameOver) => set({ gameOver }),
@@ -85,7 +81,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 		set({
 			roomId: null,
 			gameData: null,
-			loading: true,
 			isConnecting: true,
 			isFirstLoad: true,
 			gameOver: false,
@@ -107,7 +102,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 
 		try {
-			set({ loading: true });
 			const res = await api.post(`/rooms/${roomId}/sync`);
 
 			if (!res || res.data === null) {
@@ -137,8 +131,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 		} catch (error: any) {
 			console.error("ERROR en /sync:", error);
 			throw error;
-		} finally {
-			set({ loading: false });
 		}
 	},
 
@@ -190,7 +182,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 			return true;
 		} catch (error: any) {
-			// Ignorar 422 — puede que el job ya resolvió el ataque
 			if (error.response?.status === 422) return false;
 			logWithTime("useGameStore.ts - Error reacting to multi attack. ", error);
 			alert(

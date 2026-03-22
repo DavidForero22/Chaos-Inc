@@ -20,8 +20,10 @@ class ResolveMultiAttackJob implements ShouldQueue
     {
         $pending = json_decode(Redis::get("room:{$this->roomId}:pending_multi_attack") ?? 'null', true);
 
+        // Si el ataque se resolvió rápido porque todos respondieron antes de los 15s,
+        // esto estará vacío y el job termina silenciosamente sin hacer nada.
         if (empty($pending) || empty($pending['targets'])) {
-            return; 
+            return;
         }
 
         // Aplicar daño a los que no respondieron
@@ -32,14 +34,23 @@ class ResolveMultiAttackJob implements ShouldQueue
         Redis::del("room:{$this->roomId}:pending_multi_attack");
 
         // Construir log final
-        $dodgers = $pending['dodgers'] ?? [];
+        $dodgers   = $pending['dodgers'] ?? [];
+        $shielders = $pending['shielders'] ?? [];
+
+        // En el mensaje general, juntar a todos los que sufrieron el ataque de una forma u otra
+        $allTargets = array_merge($pending['targets'], $dodgers, $shielders);
+
         $logMessage = __('game.attacked_all', [
             'attacker' => $pending['attacker'],
-            'targets'  => implode(', ', array_merge($pending['targets'], $dodgers)),
+            'targets'  => implode(', ', $allTargets),
         ]);
 
         if (!empty($dodgers)) {
             $logMessage .= ' ' . __('game.multi_dodged', ['dodgers' => implode(', ', $dodgers)]);
+        }
+
+        if (!empty($shielders)) {
+            $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $shielders)]);
         }
 
         event(new RoomStateUpdated($this->roomId, $logMessage));
