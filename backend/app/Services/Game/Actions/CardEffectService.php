@@ -3,6 +3,7 @@
 
 namespace App\Services\Game\Actions;
 
+use App\Jobs\ResolveMultiAttackJob;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
@@ -119,6 +120,8 @@ class CardEffectService
                 ])
             );
         }
+
+        ResolveMultiAttackJob::dispatch($roomId)->delay(15);
     }
 
     public function applyHealAll(string $roomId): void

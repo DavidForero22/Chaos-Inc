@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 import { useGameStore } from "../store/useGameStore.ts";
 import { usePlayerIdentity } from "../hooks/usePlayerIdentity.ts";
+import { useGameTimers } from "../hooks/game/useGameTimers.ts";
 
 // --- TIPOS ---
 import type { CardInstance } from "../types/live-game.ts";
@@ -44,6 +45,14 @@ export default function GameBoardPage() {
 	const endTurn = useGameStore((state) => state.endTurn);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+
+	const {
+		showBossWaiting,
+		showActingBossWaiting,
+		showEndingWaiting,
+		showInheritanceBanner,
+		multiAttackSecondsLeft,
+	} = useGameTimers();
 
 	// Estado Local UI
 	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -85,6 +94,7 @@ export default function GameBoardPage() {
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasLuckChallenge =
 		isMyTurn && !!me.luck_challenge && luckResult === null;
+	const isAttackerWaiting = me.has_pending_multi_attack_as_attacker ?? false;
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
@@ -99,7 +109,7 @@ export default function GameBoardPage() {
 		}
 
 		// Fuera de tu turno o con prueba de suerte pendiente, no se puede jugar
-		if (!isMyTurn || hasLuckChallenge) return;
+		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
 
 		// Curación propia — solo si tienes estrés
 		if (card.type === 2 && me.stress > 0)
@@ -128,7 +138,8 @@ export default function GameBoardPage() {
 			!isMyTurn ||
 			selectedCardId !== null ||
 			hasPendingAttack ||
-			hasLuckChallenge
+			hasLuckChallenge ||
+			isAttackerWaiting
 		)
 			return;
 		await endTurn();
@@ -167,7 +178,14 @@ export default function GameBoardPage() {
 			)}
 
 			{/* --- BANNERS --- */}
-			<GameBanners luckResult={luckResult} />
+			<GameBanners
+				luckResult={luckResult}
+				showBossWaiting={showBossWaiting}
+				showActingBossWaiting={showActingBossWaiting}
+				showEndingWaiting={showEndingWaiting}
+				showInheritanceBanner={showInheritanceBanner}
+				multiAttackSecondsLeft={multiAttackSecondsLeft}
+			/>
 
 			{/* --- CABECERA --- */}
 			<div className="bg-gray-800 p-4 rounded-xl shadow-lg border border-gray-700 mb-4 flex justify-between items-center shrink-0">
@@ -210,6 +228,7 @@ export default function GameBoardPage() {
 				onReactToAttack={reactToAttack}
 				hasPendingMultiAttack={hasPendingMultiAttack}
 				onReactToMultiAttack={reactToMultiAttack}
+				isAttackerWaiting={isAttackerWaiting}
 			/>
 
 			<GameLog />

@@ -1,17 +1,20 @@
-import { useReconnectionTimers } from "../../../hooks/game/useReconnectionTimers";
-
 interface GameBannersProps {
 	luckResult: "success" | "fail" | null;
+	showBossWaiting: boolean;
+	showActingBossWaiting: boolean;
+	showEndingWaiting: boolean;
+	showInheritanceBanner: boolean;
+	multiAttackSecondsLeft: number | null;
 }
 
-export function GameBanners({ luckResult }: GameBannersProps) {
-	const {
-		showActingBossWaiting,
-		showBossWaiting,
-		showInheritanceBanner,
-		showEndingWaiting,
-	} = useReconnectionTimers();
-
+export function GameBanners({
+	luckResult,
+	showBossWaiting,
+	showActingBossWaiting,
+	showEndingWaiting,
+	showInheritanceBanner,
+	multiAttackSecondsLeft,
+}: GameBannersProps) {
 	return (
 		<div className="flex flex-col gap-2 mb-4">
 			{showActingBossWaiting && (
@@ -37,6 +40,14 @@ export function GameBanners({ luckResult }: GameBannersProps) {
 			{showEndingWaiting && (
 				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
 					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
+				</div>
+			)}
+
+			{multiAttackSecondsLeft !== null && (
+				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
+					⚔️ ¡Ataque masivo! Decide en{" "}
+					<span className="font-mono">{multiAttackSecondsLeft}s</span> o
+					recibirás daño automáticamente.
 				</div>
 			)}
 

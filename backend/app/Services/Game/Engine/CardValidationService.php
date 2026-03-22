@@ -88,4 +88,25 @@ class CardValidationService
             throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque en este turno.", 422);
         }
     }
+
+    public function validateHealAll(string $roomId): void
+    {
+        $players = Redis::smembers("room:{$roomId}:players");
+        $anyHasStress = false;
+
+        foreach ($players as $pName) {
+            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
+            $isDead = CastHelper::toBool($pData['is_dead'] ?? 0);
+            $stress = (int) ($pData['stress'] ?? 0);
+
+            if (!$isDead && $stress > 0) {
+                $anyHasStress = true;
+                break;
+            }
+        }
+
+        if (!$anyHasStress) {
+            throw new GameException(GameException::INVALID_ACTION, "Ningún jugador tiene estrés que curar.", 422);
+        }
+    }
 }

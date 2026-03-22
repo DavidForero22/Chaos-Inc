@@ -48,6 +48,7 @@ export interface MyData extends BasePlayer {
 	incoming_attack: boolean;
 	has_pending_attack: boolean;
 	has_pending_multi_attack: boolean;
+	has_pending_multi_attack_as_attacker: boolean;
 	luck_challenge: string[] | null;
 }
 

@@ -24,6 +24,10 @@ class MyDataResource extends JsonResource
         $hasPendingMultiAttack = !empty($pendingMultiAttack)
             && in_array($playerName, $pendingMultiAttack['targets'] ?? []);
 
+        $hasPendingMultiAsAttacker = !empty($pendingMultiAttack)
+            && ($pendingMultiAttack['attacker'] ?? null) === $playerName
+            && !empty($pendingMultiAttack['targets'] ?? []);
+
 
         $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
         $hasChallenge = Redis::exists($challengeKey);
@@ -47,6 +51,7 @@ class MyDataResource extends JsonResource
             'incoming_attack'       => $hasIncomingAttack,
             'has_pending_attack'    => $hasPendingAttack,
             'has_pending_multi_attack' => $hasPendingMultiAttack,
+            'has_pending_multi_attack_as_attacker' => $hasPendingMultiAsAttacker,
             'has_shield'            => CastHelper::toBool($myData['has_shield'] ?? 0),
             'acting_boss'           => CastHelper::toBool($myData['acting_boss'] ?? 0),
             'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),

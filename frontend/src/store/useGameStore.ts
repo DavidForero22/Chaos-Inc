@@ -190,6 +190,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 			return true;
 		} catch (error: any) {
+			// Ignorar 422 — puede que el job ya resolvió el ataque
+			if (error.response?.status === 422) return false;
 			logWithTime("useGameStore.ts - Error reacting to multi attack. ", error);
 			alert(
 				error.response?.data?.message ||

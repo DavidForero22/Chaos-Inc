@@ -18,6 +18,7 @@ interface PlayerAreaProps {
 	onReactToAttack: (action: "accept" | "dodge") => void;
 	hasPendingMultiAttack: boolean;
 	onReactToMultiAttack: (action: "accept" | "dodge", cardId?: string) => void;
+	isAttackerWaiting: boolean;
 }
 
 export function PlayerArea({
@@ -32,6 +33,7 @@ export function PlayerArea({
 	onReactToAttack,
 	hasPendingMultiAttack,
 	onReactToMultiAttack,
+	isAttackerWaiting,
 }: PlayerAreaProps) {
 	return (
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
@@ -54,6 +56,7 @@ export function PlayerArea({
 				opponents={opponents}
 				hasPendingAttack={hasPendingAttack}
 				hasPendingMultiAttack={hasPendingMultiAttack}
+				isAttackerWaiting={isAttackerWaiting}
 			/>
 
 			{/* Botones de acción */}
@@ -79,13 +82,15 @@ export function PlayerArea({
 							!isMyTurn ||
 							selectedCardId !== null ||
 							hasPendingAttack ||
-							endingSoon
+							endingSoon ||
+							isAttackerWaiting
 						}
 						className={`px-4 py-2 rounded font-bold text-sm transition ${
 							isMyTurn &&
 							selectedCardId === null &&
 							!hasPendingAttack &&
-							!endingSoon
+							!endingSoon &&
+							!isAttackerWaiting
 								? "bg-purple-600 hover:bg-purple-500 text-white"
 								: "bg-gray-700 text-gray-500 cursor-not-allowed"
 						}`}

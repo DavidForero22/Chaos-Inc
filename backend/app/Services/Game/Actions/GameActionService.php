@@ -36,6 +36,11 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }
 
+        $pendingMulti = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
+        if (!empty($pendingMulti) && ($pendingMulti['attacker'] ?? null) === $playerName) {
+            throw new GameException(GameException::INVALID_ACTION, "Hay un ataque masivo pendiente de resolver.", 422);
+        }
+
         if (!Redis::sismember("{$roomKey}:players", $targetName)) {
             throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
         }
@@ -67,6 +72,7 @@ class GameActionService
             5 => $this->cardValidationService->validateShield($roomId, $playerName, $targetName),
             6 => $this->cardValidationService->validateBlock($roomId, $playerName, $targetName),
             7 => $this->cardValidationService->validateAttackAll($roomId, $playerName),
+            8 => $this->cardValidationService->validateHealAll($roomId),
             default => null,
         };
 

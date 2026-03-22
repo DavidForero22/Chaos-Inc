@@ -14,6 +14,7 @@ interface PlayerHandProps {
 	opponents: Opponent[];
 	hasPendingAttack: boolean;
 	hasPendingMultiAttack: boolean;
+	isAttackerWaiting: boolean;
 }
 
 export function PlayerHand({
@@ -25,11 +26,14 @@ export function PlayerHand({
 	opponents,
 	hasPendingAttack,
 	hasPendingMultiAttack,
+	isAttackerWaiting,
 }: PlayerHandProps) {
 	// Helper para no repetir código dentro del map
 	const anyOpponentHasCards = opponents.some(
 		(o) => o.cards_count > 0 && o.is_online,
 	);
+	const anyoneHasStress =
+		opponents.some((o) => !o.is_dead && o.stress > 0) || me.stress > 0;
 
 	return (
 		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
@@ -48,6 +52,9 @@ export function PlayerHand({
 					const isBlockDisabled =
 						card.type === 6 &&
 						!opponents.some((o) => !o.is_dead && o.is_online && !o.is_blocked);
+					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
+					const isAttackAllDisabled =
+						card.type === 7 && me.attack_used_this_turn;
 
 					const isDisabled =
 						isHealDisabled ||
@@ -55,7 +62,9 @@ export function PlayerHand({
 						isDodgeDisabled ||
 						isStealDisabled ||
 						isShieldDisabled ||
-						isBlockDisabled;
+						isBlockDisabled ||
+						isHealAllDisabled ||
+						isAttackAllDisabled;
 
 					// --- ESTADOS INTERACTIVOS ---
 					const isDodge = card.type === 3;
@@ -66,7 +75,11 @@ export function PlayerHand({
 					// 1. Es mi turno, no está bloqueada por reglas, y no estoy esperando resolver un ataque propio
 					// OR 2. Me están atacando y es una carta de esquivar
 					const isSelectable =
-						(isMyTurn && !isDisabled && !hasPendingAttack) || canUseDodgeNow;
+						(isMyTurn &&
+							!isDisabled &&
+							!hasPendingAttack &&
+							!isAttackerWaiting) ||
+						canUseDodgeNow;
 
 					return (
 						<Card
