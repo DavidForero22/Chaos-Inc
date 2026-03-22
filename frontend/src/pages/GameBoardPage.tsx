@@ -87,19 +87,22 @@ export default function GameBoardPage() {
 
 	const { me, game } = gameData;
 	const isMyTurn = game.current_turn === myPlayerName;
-	const hasPendingAttack = me.has_pending_attack;
-	const hasPendingMultiAttack = me.has_pending_multi_attack ?? false;
+	const hasPendingAttack = me.combat_state.is_attacking_single;
+	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasLuckChallenge =
 		isMyTurn && !!me.luck_challenge && luckResult === null;
-	const isAttackerWaiting = me.has_pending_multi_attack_as_attacker ?? false;
+	const isAttackerWaiting = me.combat_state.is_attacking_multi;
 
 	// --- LÓGICA DE JUGABILIDAD ---
 	const handleCardClick = (card: CardInstance) => {
 		// Esquive: se puede esquivar tanto ataques simples como masivos
-		if ((me.incoming_attack || hasPendingMultiAttack) && card.type === 3) {
+		if (
+			(me.combat_state.is_defending_single || hasPendingMultiAttack) &&
+			card.type === 3
+		) {
 			if (hasPendingMultiAttack) {
 				reactToMultiAttack("dodge", card.id);
 			} else {
@@ -116,14 +119,14 @@ export default function GameBoardPage() {
 			return playTurn(card.id, myPlayerName);
 
 		// Ataque simple — solo uno por turno
-		if (card.type === 1 && me.attack_used_this_turn) return;
+		if (card.type === 1 && me.turn_limits.single_attack_used) return;
 
 		// Escudo — solo si no tienes uno activo
-		if (card.type === 5 && !me.has_shield)
+		if (card.type === 5 && !me.conditions.has_shield)
 			return playTurn(card.id, myPlayerName);
 
 		// Ataque masivo — solo uno por turno, se juega directamente sin seleccionar objetivo
-		if (card.type === 7 && !me.attack_used_this_turn)
+		if (card.type === 7 && !me.turn_limits.multi_attack_used)
 			return playTurn(card.id, myPlayerName);
 
 		// Curación masiva — se juega directamente, el backend cura a todos

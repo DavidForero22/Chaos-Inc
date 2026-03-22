@@ -1,5 +1,3 @@
-// src/components/game/board/OpponentsBoard.tsx
-
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
 import type { Opponent } from "../../../types/live-game.ts";
@@ -50,13 +48,17 @@ export function OpponentsBoard({
 			)}
 
 			{opponents.map((player: Opponent) => {
-				// --- REGLAS DE SELECCIÓN (Iguales, pero con datos del Store) ---
+				// --- REGLAS DE SELECCIÓN ---
 				const isCardActive = isMyTurn && selectedCardId !== null;
 				const isTargetingCard = [1, 4, 6].includes(selectedCardType || 0);
 
 				const isUnstealable =
 					selectedCardType === 4 && player.cards_count === 0;
-				const isAlreadyBlocked = selectedCardType === 6 && player.is_blocked;
+
+				// Mantenemos la doble comprobación por si el backend todavía envía la estructura antigua plana
+				const isPlayerBlocked =
+					player.conditions?.is_blocked ?? (player as any).is_blocked;
+				const isAlreadyBlocked = selectedCardType === 6 && isPlayerBlocked;
 
 				let tooltipMessage = "";
 				let isUnclickable = false;
@@ -78,6 +80,12 @@ export function OpponentsBoard({
 				}
 
 				const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
+
+				// Extracción de variables para los iconos, previendo ambos formatos (nuevo y viejo)
+				const hasShield =
+					player.conditions?.has_shield ?? (player as any).has_shield;
+				const isActingBoss =
+					player.conditions?.acting_boss ?? (player as any).acting_boss;
 
 				return (
 					<div
@@ -108,7 +116,13 @@ export function OpponentsBoard({
 							</div>
 						)}
 
-						{player.has_shield && (
+						{isActingBoss && player.role !== "boss" && (
+							<div className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-lg z-40">
+								👑
+							</div>
+						)}
+
+						{hasShield && (
 							<div className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
 								🛡️
 							</div>
@@ -120,7 +134,7 @@ export function OpponentsBoard({
 							</div>
 						)}
 
-						{player.is_blocked && (
+						{isPlayerBlocked && (
 							<div className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
 								🔒
 							</div>

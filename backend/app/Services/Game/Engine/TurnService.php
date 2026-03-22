@@ -106,7 +106,8 @@ class TurnService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque pendiente de resolver.", 422);
         }
 
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'attack_used_this_turn', 0);
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'single_attack_used_this_turn', 0);
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'multi_attack_used_this_turn', 0);
 
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));

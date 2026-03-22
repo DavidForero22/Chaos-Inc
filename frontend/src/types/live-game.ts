@@ -6,16 +6,34 @@
 export type PlayerRole = "boss" | "secretary" | "intern" | "union";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
+export interface PlayerConditions {
+    has_shield: boolean;
+    acting_boss: boolean;
+    is_blocked: boolean;
+    skip_next_turn: boolean;
+}
+
+export interface TurnLimits {
+    single_attack_used: boolean;
+    multi_attack_used: boolean;
+}
+
+export interface CombatState {
+    is_defending_single: boolean;
+    is_defending_multi: boolean;
+    is_attacking_single: boolean;
+    is_attacking_multi: boolean;
+}
+
 /**
  * Datos compartidos entre cualquier tipo de jugador (Tú o los Oponentes)
  */
 export interface BasePlayer {
-	name: string;
-	stress: number;
-	is_dead: boolean;
-	has_shield: boolean;
-	acting_boss: boolean;
-	is_blocked: boolean;
+    name: string;
+    stress: number;
+    is_dead: boolean;
+    is_online: boolean;
+    conditions: Pick<PlayerConditions, 'has_shield' | 'acting_boss' | 'is_blocked'>;
 }
 
 /**
@@ -23,7 +41,6 @@ export interface BasePlayer {
  */
 export interface Opponent extends BasePlayer {
 	role: "boss" | "hidden";
-	is_online: boolean;
 	cards_count: number;
 }
 
@@ -41,15 +58,12 @@ export interface CardInstance {
  * Tipado de mis datos privados (Hereda de BasePlayer)
  */
 export interface MyData extends BasePlayer {
-	role: PlayerRole;
-	cards: CardInstance[];
-	skip_next_turn: boolean;
-	attack_used_this_turn: boolean;
-	incoming_attack: boolean;
-	has_pending_attack: boolean;
-	has_pending_multi_attack: boolean;
-	has_pending_multi_attack_as_attacker: boolean;
-	luck_challenge: string[] | null;
+    role: PlayerRole;
+    cards: CardInstance[];
+    conditions: PlayerConditions;
+    turn_limits: TurnLimits;
+    combat_state: CombatState;
+    luck_challenge: string[] | null;
 }
 
 /**

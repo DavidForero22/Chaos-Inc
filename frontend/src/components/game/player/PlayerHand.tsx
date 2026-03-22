@@ -28,7 +28,6 @@ export function PlayerHand({
 	hasPendingMultiAttack,
 	isAttackerWaiting,
 }: PlayerHandProps) {
-	// Helper para no repetir código dentro del map
 	const anyOpponentHasCards = opponents.some(
 		(o) => o.cards_count > 0 && o.is_online,
 	);
@@ -42,19 +41,27 @@ export function PlayerHand({
 				{me.cards.map((card) => {
 					const isSelected = selectedCardId === card.id;
 
-					// --- REGLAS DE NEGOCIO (DESHABILITACIONES) ---
 					const isHealDisabled = card.type === 2 && me.stress <= 0;
-					const isAttackDisabled = card.type === 1 && me.attack_used_this_turn;
+
+					const isAttackDisabled =
+						card.type === 1 && me.turn_limits.single_attack_used;
+					const isAttackAllDisabled =
+						card.type === 7 && me.turn_limits.multi_attack_used;
+
 					const isDodgeDisabled =
 						card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
 					const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
-					const isShieldDisabled = card.type === 5 && me.has_shield;
+					const isShieldDisabled = card.type === 5 && me.conditions.has_shield;
+
 					const isBlockDisabled =
 						card.type === 6 &&
-						!opponents.some((o) => !o.is_dead && o.is_online && !o.is_blocked);
+						!opponents.some((o) => {
+							const isBlocked =
+								o.conditions?.is_blocked ?? (o as any).is_blocked;
+							return !o.is_dead && o.is_online && !isBlocked;
+						});
+
 					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
-					const isAttackAllDisabled =
-						card.type === 7 && me.attack_used_this_turn;
 
 					const isDisabled =
 						isHealDisabled ||
@@ -66,14 +73,10 @@ export function PlayerHand({
 						isHealAllDisabled ||
 						isAttackAllDisabled;
 
-					// --- ESTADOS INTERACTIVOS ---
 					const isDodge = card.type === 3;
 					const canUseDodgeNow =
 						(incomingAttack || hasPendingMultiAttack) && isDodge;
 
-					// Solo es seleccionable si:
-					// 1. Es mi turno, no está bloqueada por reglas, y no estoy esperando resolver un ataque propio
-					// OR 2. Me están atacando y es una carta de esquivar
 					const isSelectable =
 						(isMyTurn &&
 							!isDisabled &&
@@ -89,7 +92,6 @@ export function PlayerHand({
 							isSelected={isSelected}
 							isHighlighted={canUseDodgeNow}
 							onClick={() => {
-								// Doble check de seguridad por si acaso
 								if (!isSelectable) return;
 								onCardClick(card);
 							}}

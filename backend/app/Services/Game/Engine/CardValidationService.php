@@ -16,10 +16,10 @@ class CardValidationService
         }
 
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        $alreadyAttacked = (int) (Redis::hget($playerKey, 'attack_used_this_turn') ?? 0);
+        $alreadyAttacked = (int) (Redis::hget($playerKey, 'single_attack_used_this_turn') ?? 0);
 
         if ($alreadyAttacked === 1) {
-            throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque en este turno.", 422);
+            throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque individual en este turno.", 422);
         }
     }
 
@@ -82,10 +82,10 @@ class CardValidationService
     public function validateAttackAll(string $roomId, string $playerName): void
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        $alreadyAttacked = (int) (Redis::hget($playerKey, 'attack_used_this_turn') ?? 0);
+        $alreadyAttacked = (int) (Redis::hget($playerKey, 'multi_attack_used_this_turn') ?? 0);
 
         if ($alreadyAttacked === 1) {
-            throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque en este turno.", 422);
+            throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque masivo en este turno.", 422);
         }
     }
 

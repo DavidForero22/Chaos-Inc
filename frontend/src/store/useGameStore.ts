@@ -12,7 +12,6 @@ export interface LogEntry {
 }
 
 interface GameState {
-	// --- ESTADOS ---
 	roomId: string | null;
 	gameData: GameData | null;
 	isConnecting: boolean;
@@ -21,7 +20,6 @@ interface GameState {
 	showActingBossModal: boolean;
 	logs: LogEntry[];
 
-	// --- ACCIONES DE ESTADO LOCAL ---
 	setRoomId: (id: string | null) => void;
 	setGameData: (data: GameData | null) => void;
 	setIsConnecting: (isConnecting: boolean) => void;
@@ -31,7 +29,6 @@ interface GameState {
 	addLog: (message: string) => void;
 	clearLogs: () => void;
 
-	// --- ACCIONES DE RED (API) ---
 	syncGame: () => Promise<void>;
 	playTurn: (cardId: string, targetName: string) => Promise<boolean>;
 	reactToAttack: (
@@ -47,7 +44,6 @@ interface GameState {
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-	// Estado inicial
 	roomId: null,
 	gameData: null,
 	isConnecting: true,
@@ -56,7 +52,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 	showActingBossModal: false,
 	logs: [],
 
-	// Setters básicos
 	setRoomId: (id) => set({ roomId: id }),
 	setGameData: (data) => set({ gameData: data }),
 	setIsConnecting: (isConnecting) => set({ isConnecting }),
@@ -88,8 +83,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 			logs: [],
 		}),
 
-	// --- ACCIONES DE RED ---
-
 	syncGame: async () => {
 		const { roomId } = get();
 		if (!roomId) return;
@@ -111,9 +104,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 			const newGameData = res.data;
 			const currentData = get().gameData;
 
-			// Lógica de herencia de jefe
-			const isNowActingBoss = newGameData?.me?.acting_boss === true;
-			const wasActingBoss = currentData?.me?.acting_boss === true;
+			const isNowActingBoss = newGameData?.me?.conditions?.acting_boss === true;
+			const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
 
 			if (isNowActingBoss && !wasActingBoss) {
 				logWithTime(

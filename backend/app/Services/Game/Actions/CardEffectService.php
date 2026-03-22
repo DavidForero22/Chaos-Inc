@@ -15,8 +15,7 @@ class CardEffectService
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $targetKey = "room:{$roomId}:player:{$targetName}";
 
-        // Marcar que ya usó un ataque este turno
-        Redis::hset($playerKey, 'attack_used_this_turn', 1);
+        Redis::hset($playerKey, 'single_attack_used_this_turn', 1);
 
         $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
         $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
@@ -32,11 +31,11 @@ class CardEffectService
                 'attacker' => $playerName,
                 'target'   => $targetName,
             ]);
-            return null; // (Opcional) devolvemos pending por si queremos usarlo
+            return null;
         } else {
             // Si no hay defensa, el daño entra directo
             app(GameActionService::class)->applyDamageAndCheck($roomId, $playerName, $targetName);
-            return 'direct_damage'; // (Opcional)
+            return 'direct_damage';
         }
     }
 
@@ -83,7 +82,8 @@ class CardEffectService
     public function applyAttackAll(string $roomId, string $playerName): void
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        Redis::hset($playerKey, 'attack_used_this_turn', 1);
+
+        Redis::hset($playerKey, 'multi_attack_used_this_turn', 1);
 
         $players = Redis::smembers("room:{$roomId}:players");
         $pendingTargets = [];
@@ -129,7 +129,7 @@ class CardEffectService
 
             ResolveMultiAttackJob::dispatch($roomId)->delay(15);
 
-            // Emitimos evento para que el frontend actualice escudos rotos y muestre temporizadores
+            // Emitir evento para que el frontend actualice escudos rotos y muestre temporizadores
             event(new RoomStateUpdated($roomId, __('game.multi_attack_started', ['attacker' => $playerName])));
         } else {
             // No hay nadie que deba decidir. Resolvemos al instante.

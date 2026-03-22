@@ -37,31 +37,28 @@ export function PlayerArea({
 }: PlayerAreaProps) {
 	return (
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
-			{me.skip_next_turn && (
+			{me.conditions.skip_next_turn && (
 				<div className="absolute -top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-orange-400 animate-pulse">
 					⚠️ Penalización: Perderás tu próximo turno por inactividad.
 				</div>
 			)}
 
-			{/* Tu Info (Ahora extraída al nuevo componente) */}
 			<PlayerStats me={me} />
 
-			{/* Tus Cartas */}
 			<PlayerHand
 				me={me}
 				isMyTurn={isMyTurn}
 				selectedCardId={selectedCardId}
 				onCardClick={onCardClick}
-				incomingAttack={me.incoming_attack}
+				incomingAttack={me.combat_state.is_defending_single}
 				opponents={opponents}
 				hasPendingAttack={hasPendingAttack}
 				hasPendingMultiAttack={hasPendingMultiAttack}
 				isAttackerWaiting={isAttackerWaiting}
 			/>
 
-			{/* Botones de acción */}
 			<div className="ml-auto flex flex-col items-end gap-2">
-				{me.incoming_attack ? (
+				{me.combat_state.is_defending_single ? (
 					<button
 						onClick={() => onReactToAttack("accept")}
 						className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"

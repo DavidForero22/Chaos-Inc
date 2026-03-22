@@ -28,7 +28,6 @@ class MyDataResource extends JsonResource
             && ($pendingMultiAttack['attacker'] ?? null) === $playerName
             && !empty($pendingMultiAttack['targets'] ?? []);
 
-
         $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
         $hasChallenge = Redis::exists($challengeKey);
 
@@ -40,22 +39,40 @@ class MyDataResource extends JsonResource
         }
 
         return [
-            'name'                  => $playerName,
-            'role'                  => $myData['role'],
-            'stress'                => (int) $myData['stress'],
-            'is_dead'               => CastHelper::toBool($myData['is_dead'] ?? 0),
-            'cards'                 => json_decode($myData['cards'] ?? '[]'),
-            'is_online'             => CastHelper::toBool($myData['is_online'] ?? 1),
-            'skip_next_turn'        => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
-            'attack_used_this_turn' => CastHelper::toBool($myData['attack_used_this_turn'] ?? 0),
-            'incoming_attack'       => $hasIncomingAttack,
-            'has_pending_attack'    => $hasPendingAttack,
-            'has_pending_multi_attack' => $hasPendingMultiAttack,
-            'has_pending_multi_attack_as_attacker' => $hasPendingMultiAsAttacker,
-            'has_shield'            => CastHelper::toBool($myData['has_shield'] ?? 0),
-            'acting_boss'           => CastHelper::toBool($myData['acting_boss'] ?? 0),
-            'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),
-            'luck_challenge'        => $challengeColors,
+            // Identidad y Vitalidad (Base)
+            'name'           => $playerName,
+            'role'           => $myData['role'],
+            'stress'         => (int) $myData['stress'],
+            'is_dead'        => CastHelper::toBool($myData['is_dead'] ?? 0),
+            'is_online'      => CastHelper::toBool($myData['is_online'] ?? 1),
+
+            // Recursos del jugador
+            'cards'          => json_decode($myData['cards'] ?? '[]'),
+
+            // Condiciones / Estados alterados (Buffs / Debuffs)
+            'conditions'     => [
+                'has_shield'     => CastHelper::toBool($myData['has_shield'] ?? 0),
+                'acting_boss'    => CastHelper::toBool($myData['acting_boss'] ?? 0),
+                'is_blocked'     => CastHelper::toBool($myData['is_blocked'] ?? 0),
+                'skip_next_turn' => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
+            ],
+
+            // Límites del turno actual
+            'turn_limits'    => [
+                'single_attack_used' => CastHelper::toBool($myData['single_attack_used_this_turn'] ?? 0),
+                'multi_attack_used'  => CastHelper::toBool($myData['multi_attack_used_this_turn'] ?? 0),
+            ],
+
+            // Estado de Combate (Acciones pendientes)
+            'combat_state'   => [
+                'is_defending_single' => $hasIncomingAttack,
+                'is_defending_multi'  => $hasPendingMultiAttack,
+                'is_attacking_single' => $hasPendingAttack,
+                'is_attacking_multi'  => $hasPendingMultiAsAttacker,
+            ],
+
+            // 6. Eventos especiales
+            'luck_challenge' => $challengeColors,
         ];
     }
 }
