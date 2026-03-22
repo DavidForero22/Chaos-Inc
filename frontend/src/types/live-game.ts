@@ -7,33 +7,38 @@ export type PlayerRole = "boss" | "secretary" | "intern" | "union";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
 export interface PlayerConditions {
-    has_shield: boolean;
-    acting_boss: boolean;
-    is_blocked: boolean;
-    skip_next_turn: boolean;
+	has_shield: boolean;
+	acting_boss: boolean;
+	is_blocked: boolean;
+	skip_next_turn: boolean;
 }
 
 export interface TurnLimits {
-    single_attack_used: boolean;
-    multi_attack_used: boolean;
+	single_attack_used: boolean;
+	multi_attack_used: boolean;
 }
 
 export interface CombatState {
-    is_defending_single: boolean;
-    is_defending_multi: boolean;
-    is_attacking_single: boolean;
-    is_attacking_multi: boolean;
+	is_defending_single: boolean;
+	is_defending_multi: boolean;
+	is_attacking_single: boolean;
+	is_attacking_multi: boolean;
+	attacker_name_single: string | null;
+	attacker_name_multi: string | null;
 }
 
 /**
  * Datos compartidos entre cualquier tipo de jugador (Tú o los Oponentes)
  */
 export interface BasePlayer {
-    name: string;
-    stress: number;
-    is_dead: boolean;
-    is_online: boolean;
-    conditions: Pick<PlayerConditions, 'has_shield' | 'acting_boss' | 'is_blocked'>;
+	name: string;
+	stress: number;
+	is_dead: boolean;
+	is_online: boolean;
+	conditions: Pick<
+		PlayerConditions,
+		"has_shield" | "acting_boss" | "is_blocked"
+	>;
 }
 
 /**
@@ -58,12 +63,12 @@ export interface CardInstance {
  * Tipado de mis datos privados (Hereda de BasePlayer)
  */
 export interface MyData extends BasePlayer {
-    role: PlayerRole;
-    cards: CardInstance[];
-    conditions: PlayerConditions;
-    turn_limits: TurnLimits;
-    combat_state: CombatState;
-    luck_challenge: string[] | null;
+	role: PlayerRole;
+	cards: CardInstance[];
+	conditions: PlayerConditions;
+	turn_limits: TurnLimits;
+	combat_state: CombatState;
+	luck_challenge: string[] | null;
 }
 
 /**
@@ -83,5 +88,9 @@ export interface GameData {
 		ending_soon: boolean;
 		has_acting_boss: boolean;
 		effectively_over: boolean;
+
+		pending_single_attack_target: string | null;
+		pending_multi_attack_targets: string[];
+		player_in_luck_challenge: string | null;
 	};
 }

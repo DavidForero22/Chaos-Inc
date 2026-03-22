@@ -52,6 +52,11 @@ class DisconnectionService
 
         foreach ($players as $name) {
             $pData = Redis::hgetall("room:{$roomId}:player:{$name}");
+            $isDead = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+            // Si el jefe o jefe en funciones está muerto, no tenerlo en cuenta para herencias
+            if ($isDead) continue;
+
             if (($pData['role'] ?? '') === 'boss' && ($pData['is_online'] ?? '1') === '0') {
                 $bossIsOffline = true;
             }
@@ -123,7 +128,6 @@ class DisconnectionService
         Redis::hset("room:{$roomId}:player:{$actingBossName}", 'acting_boss', 0);
         Redis::set("room:{$roomId}:acting_boss_grace_period", $actingBossName);
         InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
-
     }
 
     /**
@@ -159,8 +163,11 @@ class DisconnectionService
 
         Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
         Redis::hset("room:{$roomId}:player:{$playerName}", 'disconnected_at', time());
+
         $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}");
-        Log::info("DisconnectionService.php::processInGameDisconnection - $playerName abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']}");
+        $isDead = filter_var($playerData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
+        Log::info("DisconnectionService.php::processInGameDisconnection - $playerName abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}");
 
         $onlineCount = 0;
         foreach (Redis::smembers("{$roomKey}:players") as $pName) {
@@ -171,6 +178,14 @@ class DisconnectionService
 
         if ($onlineCount === 0) {
             $this->finalizationService->destroyRoom($roomId);
+            return;
+        }
+
+        // --- EXCEPCIÓN DE MUERTOS ---
+        // Si el jugador ya estaba muerto, simplemente avisar al frontend de que se ha ido 
+        // y parar la ejecución. No comprobar herencias, ni turnos, ni victorias.
+        if ($isDead) {
+            event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
             return;
         }
 
@@ -186,11 +201,10 @@ class DisconnectionService
 
         // 2. Comprobamos victoria (incluso si se fue un jugador normal, 
         // o si se fue el jefe y queremos que arranque el contador de fin de partida)
-        // Eliminamos el 'return' para que el turno avance de todos modos.
         $this->finalizationService->checkDisconnectionVictory($roomId);
 
         // 3. Avanzar el turno
-       $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
+        $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
         event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
     }
 }

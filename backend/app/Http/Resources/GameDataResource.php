@@ -19,6 +19,7 @@ class GameDataResource extends JsonResource
 
         $opponents = [];
         $hasActingBoss = false;
+        $playerInLuckChallenge = null;
 
         $finalizationService = app(GameFinalizationService::class);
         $isEffectivelyOver   = $finalizationService->isGameEffectivelyOver($roomId);
@@ -28,6 +29,11 @@ class GameDataResource extends JsonResource
 
             if (CastHelper::toBool($pData['acting_boss'] ?? 0)) {
                 $hasActingBoss = true;
+            }
+
+            // Detectar si este jugador está en un reto de suerte
+            if (Redis::exists("room:{$roomId}:luck_challenge:{$pName}")) {
+                $playerInLuckChallenge = $pName;
             }
 
             if ($pName === $myPlayerName) continue;
@@ -45,6 +51,18 @@ class GameDataResource extends JsonResource
             ];
         }
 
+        // Obtener datos de ataques pendientes
+        $pendingAttackTarget = null;
+        if (Redis::exists("room:{$roomId}:pending_attack")) {
+            $pendingAttackTarget = Redis::hget("room:{$roomId}:pending_attack", 'target');
+        }
+
+        $pendingMultiAttackTargets = [];
+        if (Redis::exists("room:{$roomId}:pending_multi_attack")) {
+            $pendingMultiData = json_decode(Redis::get("room:{$roomId}:pending_multi_attack"), true);
+            $pendingMultiAttackTargets = $pendingMultiData['targets'] ?? [];
+        }
+
         return [
             'current_turn'             => $room['current_turn_player_id'] ?? null,
             'opponents'                => $opponents,
@@ -57,6 +75,10 @@ class GameDataResource extends JsonResource
             'ending_soon'              => Redis::exists("room:{$roomId}:ending_grace_period"),
             'has_acting_boss'          => $hasActingBoss,
             'effectively_over'         => $isEffectivelyOver,
+
+            'pending_single_attack_target' => $pendingAttackTarget,
+            'pending_multi_attack_targets' => $pendingMultiAttackTargets,
+            'player_in_luck_challenge'     => $playerInLuckChallenge,
         ];
     }
 }

@@ -65,13 +65,15 @@ class MyDataResource extends JsonResource
 
             // Estado de Combate (Acciones pendientes)
             'combat_state'   => [
-                'is_defending_single' => $hasIncomingAttack,
-                'is_defending_multi'  => $hasPendingMultiAttack,
-                'is_attacking_single' => $hasPendingAttack,
-                'is_attacking_multi'  => $hasPendingMultiAsAttacker,
+                'is_defending_single'  => $hasIncomingAttack,
+                'is_defending_multi'   => $hasPendingMultiAttack,
+                'is_attacking_single'  => $hasPendingAttack,
+                'is_attacking_multi'   => $hasPendingMultiAsAttacker,
+                'attacker_name_single' => $hasIncomingAttack ? ($pendingAttack['attacker'] ?? null) : null,
+                'attacker_name_multi'  => $hasPendingMultiAttack ? ($pendingMultiAttack['attacker'] ?? null) : null,
             ],
 
-            // 6. Eventos especiales
+            // Eventos especiales
             'luck_challenge' => $challengeColors,
         ];
     }
