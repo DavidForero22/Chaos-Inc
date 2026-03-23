@@ -1,79 +1,29 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-
-// --- HOOKS & STORE ---
+import { useParams } from "react-router-dom";
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
-import { useGameStore } from "../store/useGameStore.ts";
-import { usePlayerIdentity } from "../hooks/usePlayerIdentity.ts";
+import { useGameBoard } from "../hooks/game/useGameBoard.ts";
 import { useGameTimers } from "../hooks/game/useGameTimers.ts";
 
-// --- TIPOS ---
-import type { CardInstance } from "../types/live-game.ts";
-
-// --- COMPONENTES ---
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
-import { RoleRevealModal } from "../components/game/overlays/RoleRevealModal.tsx";
-import { GameOverModal } from "../components/game/overlays/GameOverModal.tsx";
 import { PlayerArea } from "../components/game/player/PlayerArea.tsx";
 import { GameLog } from "../components/game/board/GameLog.tsx";
-import { LuckChallengeModal } from "../components/game/overlays/LuckChallengeModal.tsx";
 import { GameBanners } from "../components/game/ui/GameBanners.tsx";
+import { GameOverlayManager } from "../components/game/overlays/GameOverlayManager.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
-	const navigate = useNavigate();
-	const { myPlayerName } = usePlayerIdentity();
+	const roomId = id!;
 
-	// Iniciar el controlador del ciclo de vida (sockets, reconnect, offline handler)
-	const { isConnecting } = useLiveGame(id);
+	// Iniciar el controlador de WebSockets
+	const { isConnecting } = useLiveGame(roomId);
 
-	// Extraer  el estado global directamente de Zustand
-	const gameData = useGameStore((state) => state.gameData);
-	const isFirstLoad = useGameStore((state) => state.isFirstLoad);
-	const setIsFirstLoad = useGameStore((state) => state.setIsFirstLoad);
-	const gameOver = useGameStore((state) => state.gameOver);
-	const showActingBossModal = useGameStore(
-		(state) => state.showActingBossModal,
-	);
-	const setShowActingBossModal = useGameStore(
-		(state) => state.setShowActingBossModal,
-	);
+	// Banners y Temporizadores
+	const timers = useGameTimers();
 
-	// Acciones del Store
-	const playTurn = useGameStore((state) => state.playTurn);
-	const endTurn = useGameStore((state) => state.endTurn);
-	const reactToAttack = useGameStore((state) => state.reactToAttack);
-	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-	const { discardCards } = useGameStore();
-
-	const {
-		showBossWaiting,
-		showActingBossWaiting,
-		showEndingWaiting,
-		showInheritanceBanner,
-		multiAttackSecondsLeft,
-	} = useGameTimers();
-
-	// Estado Local UI
-	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-	const [luckResult, setLuckResult] = useState<"success" | "fail" | null>(null);
-
-	const handleLuckResult = (success: boolean) => {
-		setLuckResult(success ? "success" : "fail");
-	};
-
-	// --- EFECTO CON TEMPORIZADOR PARA PRUEBA DE SUERTE ---
-	useEffect(() => {
-		if (luckResult !== null) {
-			const timer = setTimeout(() => {
-				setLuckResult(null);
-			}, 4000);
-			return () => clearTimeout(timer);
-		}
-	}, [luckResult]);
+	// El cerebro de la partida
+	const board = useGameBoard();
 
 	// --- PANTALLA DE CARGA INICIAL ---
-	if (isConnecting || !gameData) {
+	if (isConnecting || !board.gameData || !board.me || !board.game) {
 		return (
 			<div className="flex flex-col items-center justify-center h-[70vh]">
 				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
@@ -84,117 +34,19 @@ export default function GameBoardPage() {
 		);
 	}
 
-	if (!myPlayerName) return null;
-
-	const { me, game } = gameData;
-	const isMyTurn = game.current_turn === myPlayerName;
-	const hasPendingAttack = me.combat_state.is_attacking_single;
-	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
-	const selectedCardType =
-		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
-	const isTurnFrozen = game.ending_soon || game.effectively_over;
-
-	const hasLuckChallenge =
-		isMyTurn && !!me.luck_challenge && luckResult === null;
-	const isAttackerWaiting = me.combat_state.is_attacking_multi;
-
-	const hasPendingSabotage =
-		!!game.player_pending_sabotage &&
-		game.player_pending_sabotage !== myPlayerName;
-
-	// --- LÓGICA DE JUGABILIDAD ---
-	const handleCardClick = (card: CardInstance) => {
-		// Esquive: se puede esquivar tanto ataques simples como masivos
-		if (
-			(me.combat_state.is_defending_single || hasPendingMultiAttack) &&
-			card.type === 3
-		) {
-			if (hasPendingMultiAttack) {
-				reactToMultiAttack("dodge", card.id);
-			} else {
-				reactToAttack("dodge", card.id);
-			}
-			return;
-		}
-
-		// Fuera de tu turno o con prueba de suerte pendiente, no se puede jugar
-		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
-
-		// Curación propia — solo si tienes estrés
-		if (card.type === 2 && me.stress > 0)
-			return playTurn(card.id, myPlayerName);
-
-		// Ataque simple — solo uno por turno
-		if (card.type === 1 && me.turn_limits.single_attack_used) return;
-
-		// Escudo — solo si no tienes uno activo
-		if (card.type === 5 && !me.conditions.has_shield)
-			return playTurn(card.id, myPlayerName);
-
-		// Ataque masivo — solo uno por turno, se juega directamente sin seleccionar objetivo
-		if (card.type === 7 && !me.turn_limits.multi_attack_used)
-			return playTurn(card.id, myPlayerName);
-
-		// Curación masiva — se juega directamente, el backend cura a todos
-		if (card.type === 8) return playTurn(card.id, myPlayerName);
-
-		// Resto de cartas (ataque, robo...): flujo de selección de objetivo
-		setSelectedCardId((prev) => (prev === card.id ? null : card.id));
-	};
-
-	const handleEndTurn = async () => {
-		if (
-			!isMyTurn ||
-			selectedCardId !== null ||
-			hasPendingAttack ||
-			hasLuckChallenge ||
-			isAttackerWaiting
-		)
-			return;
-		await endTurn();
-	};
-
-	// --- RENDER ---
+	// --- RENDER DEL TABLERO ---
 	return (
 		<div className="max-w-6xl mx-auto mt-4 flex flex-col h-[85vh]">
-			{/* --- MODALES --- */}
-			{isFirstLoad && (
-				<RoleRevealModal role={me.role} onClose={() => setIsFirstLoad(false)} />
-			)}
+			<GameOverlayManager
+				roomId={roomId}
+				me={board.me}
+				game={board.game}
+				isMyTurn={board.isMyTurn}
+			/>
 
-			{showActingBossModal && (
-				<RoleRevealModal
-					role={me.role}
-					isActingBoss={true}
-					onClose={() => setShowActingBossModal(false)}
-				/>
-			)}
-
-			{gameOver && (
-				<GameOverModal
-					winnerRole={game.winner_role}
-					myRole={me.role}
-					onClose={() => navigate("/")}
-				/>
-			)}
-
-			{isMyTurn && me.luck_challenge && luckResult === null && (
-				<LuckChallengeModal
-					roomId={id!}
-					colors={me.luck_challenge}
-					onResult={handleLuckResult}
-				/>
-			)}
-
-			{/* --- BANNERS --- */}
 			<GameBanners
-				luckResult={luckResult}
-				showBossWaiting={showBossWaiting}
-				showActingBossWaiting={showActingBossWaiting}
-				showEndingWaiting={showEndingWaiting}
-				showInheritanceBanner={showInheritanceBanner}
-				multiAttackSecondsLeft={multiAttackSecondsLeft}
-				playerPendingSabotage={game.player_pending_sabotage}
+				playerPendingSabotage={board.game.player_pending_sabotage}
+				{...timers}
 			/>
 
 			{/* --- CABECERA --- */}
@@ -202,7 +54,7 @@ export default function GameBoardPage() {
 				<h1 className="text-xl font-bold text-white flex items-center gap-2">
 					⚔️ Chaos Inc.
 					<span className="text-xs bg-red-900/50 text-red-400 px-2 py-1 rounded border border-red-700 font-mono">
-						SALA: {id}
+						SALA: {roomId}
 					</span>
 				</h1>
 				<div className="text-right">
@@ -210,38 +62,20 @@ export default function GameBoardPage() {
 						Turno Actual
 					</p>
 					<p className="text-blue-400 font-bold">
-						{isMyTurn ? "👉 TU TURNO" : `👤 ${game.current_turn}`}
+						{board.isMyTurn ? "👉 TU TURNO" : `👤 ${board.game.current_turn}`}
 					</p>
 					<p className="text-gray-500 text-xs mt-1">
-						Ronda {game.round_number} · 🃏 {game.deck_count} cartas
+						Ronda {board.game.round_number} · 🃏 {board.game.deck_count} cartas
 					</p>
 				</div>
 			</div>
 
-			{/* --- TABLERO --- */}
+			{/* --- TABLERO SUPERIOR (Oponentes) --- */}
 			<OpponentsBoard
-				selectedCardId={selectedCardId}
-				selectedCardType={selectedCardType}
-				onCardPlayed={() => setSelectedCardId(null)}
 			/>
 
-			{/* --- ZONA DEL JUGADOR--- */}
-			<PlayerArea
-				me={me}
-				isMyTurn={isMyTurn}
-				selectedCardId={selectedCardId}
-				hasPendingAttack={hasPendingAttack}
-				endingSoon={isTurnFrozen || hasLuckChallenge}
-				opponents={game.opponents}
-				onCardClick={handleCardClick}
-				onEndTurn={handleEndTurn}
-				onReactToAttack={reactToAttack}
-				hasPendingMultiAttack={hasPendingMultiAttack}
-				onReactToMultiAttack={reactToMultiAttack}
-				isAttackerWaiting={isAttackerWaiting}
-				onDiscardCards={discardCards}
-				hasPendingSabotage={hasPendingSabotage}
-			/>
+			{/* --- ZONA INFERIOR (Tú) --- */}
+			<PlayerArea />
 
 			<GameLog />
 		</div>

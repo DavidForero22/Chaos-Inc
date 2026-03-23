@@ -1,28 +1,27 @@
 import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
-import type { Opponent } from "../../../types/live-game.ts";
+import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 
-interface OpponentsBoardProps {
-	selectedCardId: string | null;
-	selectedCardType: number | null;
-	onCardPlayed: () => void;
-}
-
-export function OpponentsBoard({
-	selectedCardId,
-	selectedCardType,
-	onCardPlayed,
-}: OpponentsBoardProps) {
+export function OpponentsBoard() {
 	const { myPlayerName } = usePlayerIdentity();
 
-	// --- SUSCRIPCIÓN AL STORE ---
+	// --- ESTADO GLOBAL (Servidor) ---
 	const gameData = useGameStore((state) => state.gameData);
 	const playTurn = useGameStore((state) => state.playTurn);
 
+	// --- ESTADO LOCAL (UI) ---
+	const { selectedCardId, setSelectedCardId } = useGameUIStore();
+
 	if (!gameData || !myPlayerName) return null;
 
-	const { opponents, current_turn } = gameData.game;
+	const { me, game } = gameData;
+	const { opponents, current_turn } = game;
 	const isMyTurn = current_turn === myPlayerName;
+
+	// Calculamos dinámicamente el tipo de la carta seleccionada
+	const selectedCardType =
+		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 
 	// --- LÓGICA DE CLIC INTERNA ---
 	const handleAction = async (targetName: string, isOnline: boolean) => {
@@ -30,7 +29,7 @@ export function OpponentsBoard({
 
 		const success = await playTurn(selectedCardId, targetName);
 		if (success) {
-			onCardPlayed();
+			setSelectedCardId(null); // Limpiamos la selección si el ataque tuvo éxito
 		}
 	};
 
@@ -55,7 +54,6 @@ export function OpponentsBoard({
 				const isUnstealable =
 					selectedCardType === 4 && player.cards_count === 0;
 
-				// Mantenemos la doble comprobación por si el backend todavía envía la estructura antigua plana
 				const isPlayerBlocked =
 					player.conditions?.is_blocked ?? (player as any).is_blocked;
 				const isAlreadyBlocked = selectedCardType === 6 && isPlayerBlocked;
@@ -87,7 +85,6 @@ export function OpponentsBoard({
 
 				const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
 
-				// Extracción de variables para los iconos, previendo ambos formatos (nuevo y viejo)
 				const hasShield =
 					player.conditions?.has_shield ?? (player as any).has_shield;
 				const isActingBoss =

@@ -25,8 +25,8 @@ export function LuckChallengeModal({
 
 	const handleChoose = async (color: string) => {
 		if (loading || chosen) return;
-		setChosen(color);
 		setLoading(true);
+		setChosen(color);
 
 		try {
 			const res = await api.post(`/rooms/${roomId}/luck-challenge`, { color });

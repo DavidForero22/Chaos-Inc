@@ -2,9 +2,9 @@
 
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 
 interface GameBannersProps {
-	luckResult: "success" | "fail" | null;
 	showBossWaiting: boolean;
 	showActingBossWaiting: boolean;
 	showEndingWaiting: boolean;
@@ -14,7 +14,6 @@ interface GameBannersProps {
 }
 
 export function GameBanners({
-	luckResult,
 	showBossWaiting,
 	showActingBossWaiting,
 	showEndingWaiting,
@@ -24,6 +23,8 @@ export function GameBanners({
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
 	const { myPlayerName } = usePlayerIdentity();
+
+	const luckResult = useGameUIStore((state) => state.luckResult);
 
 	if (!gameData) return null;
 	const { game } = gameData;

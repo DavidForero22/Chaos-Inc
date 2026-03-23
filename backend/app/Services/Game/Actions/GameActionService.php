@@ -7,6 +7,8 @@ use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use App\Services\Game\Engine\CardValidationService;
+use App\Services\Game\Engine\CombatService;
+use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
@@ -15,6 +17,8 @@ use Illuminate\Support\Facades\Redis;
 class GameActionService
 {
     public function __construct(
+        protected CombatService $combatService,
+        protected PlayerHandService $handService,
         protected GameFinalizationService $finalizationService,
         protected CardEffectService $cardEffectService,
         protected CardValidationService $cardValidationService,
@@ -51,23 +55,14 @@ class GameActionService
         }
 
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        $cards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
-        if (!is_array($cards)) $cards = [];
+        $cards = collect(json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true));
 
-        $cardIndex = null;
-        $cardType = null;
-        foreach ($cards as $index => $card) {
-            if (!is_array($card)) continue;
-            if (($card['id'] ?? null) === $cardId) {
-                $cardIndex = $index;
-                $cardType = $card['type'] ?? null;
-                break;
-            }
-        }
-
-        if ($cardIndex === null) {
+        $card = $cards->firstWhere('id', $cardId);
+        if (!$card) {
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
+
+        $cardType = $card['type'];
 
         // Match de validación
         match ($cardType) {
@@ -95,25 +90,7 @@ class GameActionService
             default => null,
         };
 
-        // Recargar la mano de Redis, por si algún efecto (como Robar) la modificó
-        $updatedCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
-        if (!is_array($updatedCards)) $updatedCards = [];
-
-        // Buscar de nuevo el índice de la carta que acaba de jugar para borrarla
-        $newCardIndex = null;
-        foreach ($updatedCards as $index => $card) {
-            if (($card['id'] ?? null) === $cardId) {
-                $newCardIndex = $index;
-                break;
-            }
-        }
-
-        // Si la encuentra, borrar y guardar el estado final
-        if ($newCardIndex !== null) {
-            array_splice($updatedCards, $newCardIndex, 1);
-            Redis::hset($playerKey, 'cards', json_encode($updatedCards));
-            Redis::hincrby($playerKey, 'cards_played', 1);
-        }
+        $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
         // Match de log
         $logMessage = match ($cardType) {
@@ -145,35 +122,17 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de este ataque.", 403);
         }
 
-        $targetKey = "room:{$roomId}:player:{$playerName}";
-
         if ($reaction === 'dodge') {
             if (!$cardId) {
                 throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
             }
 
-            $cards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
-            if (!is_array($cards)) $cards = [];
+            $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-            $cardIndex = null;
-            foreach ($cards as $index => $card) {
-                if (!is_array($card)) continue;
-                if (($card['id'] ?? null) === $cardId && ($card['type'] ?? null) === 3) {
-                    $cardIndex = $index;
-                    break;
-                }
+            if (($card['type'] ?? null) !== 3) {
+                throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
             }
 
-            if ($cardIndex === null) {
-                throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes una carta de esquive válida.", 422);
-            }
-
-            array_splice($cards, $cardIndex, 1);
-            Redis::hset($targetKey, 'cards', json_encode($cards));
-            Redis::del($pendingKey);
-        } elseif ($reaction === 'accept') {
-            $attacker = $pending['attacker'];
-            $this->applyDamageAndCheck($roomId, $attacker, $playerName);
             Redis::del($pendingKey);
         } else {
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
@@ -192,83 +151,6 @@ class GameActionService
             ]);
 
         event(new RoomStateUpdated($roomId, $logMessage));
-    }
-
-    public function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
-    {
-        $targetKey   = "room:{$roomId}:player:{$targetName}";
-        $attackerKey = "room:{$roomId}:player:{$attackerName}";
-        $role        = Redis::hget($targetKey, 'role');
-        $maxStress   = ($role === 'boss') ? 5 : 4;
-
-        Redis::hincrby($targetKey, 'stress', 1);
-        Redis::hincrby($targetKey, 'damage_received', 1);
-        Redis::hincrby($attackerKey, 'damage_dealt', 1);
-
-        $newStress = (int) Redis::hget($targetKey, 'stress');
-
-        if ($newStress >= $maxStress) {
-            Redis::hset($targetKey, 'is_dead', 1);
-            Redis::hincrby($attackerKey, 'eliminations', 1);
-            $this->checkVictory($roomId, $targetName);
-        }
-    }
-
-    private function checkVictory(string $roomId, $targetName): void
-    {
-        $roomKey = "room:{$roomId}";
-        $players = Redis::smembers("room:{$roomId}:players");
-
-        $bossAlive       = false;
-        $internAlive     = false;
-        $unionAliveCount = 0;
-        $totalAlive      = 0;
-
-        // Recolectar el estado exacto de la mesa
-        foreach ($players as $name) {
-            $data   = Redis::hgetall("room:{$roomId}:player:{$name}");
-            $isDead = filter_var($data['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
-            $role   = $data['role'] ?? '';
-            $isActingBoss = ($data['acting_boss'] ?? '0') === '1';
-
-            if (!$isDead) {
-                $totalAlive++;
-                // El jefe efectivo es el real o quien tenga acting_boss
-                if ($role === 'boss' || $isActingBoss) $bossAlive = true;
-                if ($role === 'union')  $unionAliveCount++;
-                if ($role === 'intern' && !$isActingBoss) $internAlive = true;
-            }
-        }
-        $winnerRole = null;
-
-        // Evaluar condiciones de victoria de forma jerárquica
-
-        if (!$bossAlive) {
-            // Si el jefe muere, el juego termina. ¿Quién gana?
-            if ($totalAlive === 1 && $internAlive) {
-                // El Becario es el único superviviente de toda la partida
-                $winnerRole = 'intern';
-            } else {
-                // Si queda alguien más vivo además del Becario o si el Becario también murió, la victoria es para el Sindicato.
-                $winnerRole = 'union';
-            }
-        } elseif ($unionAliveCount === 0 && !$internAlive) {
-            // Si el Jefe sigue vivo y todas las amenazas están muertas
-            $winnerRole = 'boss';
-        }
-
-        if ($winnerRole === null && $targetName !== null) {
-            event(new RoomStateUpdated($roomId, "{$targetName} ha sido eliminado."));
-        }
-
-        // Si hay un ganador, procesar el final de la partida
-        if ($winnerRole !== null) {
-            Redis::hset($roomKey, 'game_over', 1);
-            Redis::hset($roomKey, 'winner_role', $winnerRole);
-
-            event(new RoomStateUpdated($roomId));
-            $this->finalizationService->finalize($roomId);
-        }
     }
 
     public function resolveLuckChallenge(string $roomId, string $playerName, string $chosenColor): bool
@@ -311,32 +193,20 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "No eres objetivo de este ataque.", 403);
         }
 
-        $targetKey = "room:{$roomId}:player:{$playerName}";
-
         if ($reaction === 'dodge') {
             if (!$cardId) {
                 throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
             }
 
-            $cards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
-            $cardIndex = null;
-            foreach ($cards as $index => $card) {
-                if (($card['id'] ?? null) === $cardId && ($card['type'] ?? null) === 3) {
-                    $cardIndex = $index;
-                    break;
-                }
-            }
+            $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-            if ($cardIndex === null) {
-                throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes una carta de esquive válida.", 422);
+            if (($card['type'] ?? null) !== 3) {
+                throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
             }
-
-            array_splice($cards, $cardIndex, 1);
-            Redis::hset($targetKey, 'cards', json_encode($cards));
 
             $pending['dodgers'][] = $playerName;
         } elseif ($reaction === 'accept') {
-            $this->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
+            $this->combatService->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
         } else {
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
@@ -370,78 +240,5 @@ class GameActionService
             Redis::set($pendingKey, json_encode($pending));
             event(new RoomStateUpdated($roomId, null));
         }
-    }
-
-    public function discardCards(string $roomId, string $playerName, array $cardIdsToDiscard): void
-    {
-        $roomKey = "room:{$roomId}";
-
-        if (!Redis::exists($roomKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
-        }
-
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
-        if ($currentTurn !== $playerName) {
-            throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
-        }
-
-        $pendingSabotageTarget = Redis::get("room:{$roomId}:pending_sabotage");
-        if ($pendingSabotageTarget && $pendingSabotageTarget !== $playerName) {
-            throw new GameException(GameException::INVALID_ACTION, "Hay un sabotaje pendiente de resolver.", 422);
-        }
-
-        $playerKey  = "room:{$roomId}:player:{$playerName}";
-        $playerData = Redis::hgetall($playerKey);
-        $cards      = json_decode($playerData['cards'] ?? '[]', true);
-        if (!is_array($cards)) $cards = [];
-
-        $currentStress  = (int) ($playerData['stress'] ?? 0);
-        $isBossOrActing = ($playerData['role'] ?? '') === 'boss'
-            || CastHelper::toBool($playerData['acting_boss'] ?? 0);
-        $maxStress   = $isBossOrActing ? 5 : 4;
-        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
-
-        if (count($cardIdsToDiscard) === 0) {
-            throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos una carta para descartar.", 422);
-        }
-
-        $mustDiscard = CastHelper::toBool($playerData['must_discard'] ?? 0);
-
-        if (!$mustDiscard && count($cards) <= $maxHandSize) {
-            throw new GameException(GameException::INVALID_ACTION, "No necesitas descartar cartas, estás dentro del límite.", 422);
-        }
-
-        if ($mustDiscard && count($cardIdsToDiscard) !== 1) {
-            throw new GameException(GameException::INVALID_ACTION, "Debes descartar exactamente una carta.", 422);
-        }
-
-        $resultingCount = count($cards) - count($cardIdsToDiscard);
-        if ($resultingCount < 1) {
-            throw new GameException(GameException::INVALID_ACTION, "No puedes descartar todas tus cartas. Debes conservar al menos 1.", 422);
-        }
-
-        $initialCardCount = count($cards);
-
-        $updatedCards = array_values(array_filter($cards, function ($card) use ($cardIdsToDiscard) {
-            return !in_array($card['id'] ?? null, $cardIdsToDiscard);
-        }));
-
-        $discardedCount = $initialCardCount - count($updatedCards);
-
-        if ($discardedCount !== count($cardIdsToDiscard)) {
-            throw new GameException(GameException::CARD_NOT_IN_HAND, "Algunas cartas seleccionadas ya no están en tu mano.", 422);
-        }
-
-        Redis::hset($playerKey, 'cards', json_encode($updatedCards));
-
-        $logMessage = __('game.discarded', [
-            'player' => $playerName,
-            'count'  => $discardedCount,
-        ]);
-
-        Redis::hset($playerKey, 'must_discard', 0);
-        Redis::hdel($playerKey, 'must_discard_by');
-        Redis::del("room:{$roomId}:pending_sabotage");
-        event(new RoomStateUpdated($roomId, $logMessage));
     }
 }

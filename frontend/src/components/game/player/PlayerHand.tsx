@@ -1,44 +1,83 @@
 import { Card } from "../ui/Card.tsx";
-import type {
-	CardInstance,
-	MyData,
-	Opponent,
-} from "../../../types/live-game.ts";
+import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import type { CardInstance } from "../../../types/live-game.ts";
 
-interface PlayerHandProps {
-	me: MyData;
-	isMyTurn: boolean;
-	selectedCardId: string | null;
-	onCardClick: (card: CardInstance) => void;
-	incomingAttack: boolean;
-	opponents: Opponent[];
-	hasPendingAttack: boolean;
-	hasPendingMultiAttack: boolean;
-	isAttackerWaiting: boolean;
-	isDiscardMode?: boolean;
-	cardsToDiscard?: string[];
-	hasPendingSabotage?: boolean;
-}
+export function PlayerHand() {
+	const { myPlayerName } = usePlayerIdentity();
 
-export function PlayerHand({
-	me,
-	isMyTurn,
-	selectedCardId,
-	onCardClick,
-	incomingAttack,
-	opponents,
-	hasPendingAttack,
-	hasPendingMultiAttack,
-	isAttackerWaiting,
-	isDiscardMode = false,
-	cardsToDiscard = [],
-	hasPendingSabotage = false,
-}: PlayerHandProps) {
+	// --- ESTADO GLOBAL (Servidor) ---
+	const me = useGameStore((state) => state.gameData?.me);
+	const game = useGameStore((state) => state.gameData?.game);
+	const reactToAttack = useGameStore((state) => state.reactToAttack);
+	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+	const playTurn = useGameStore((state) => state.playTurn);
+
+	// --- ESTADO LOCAL (UI) ---
+	const {
+		isDiscardMode,
+		cardsToDiscard,
+		toggleDiscardCard,
+		selectedCardId,
+		setSelectedCardId,
+	} = useGameUIStore();
+
+	if (!me || !game || !myPlayerName) return null;
+
+	const opponents = game.opponents;
+	const isMyTurn = game.current_turn === myPlayerName;
+	const incomingAttack = me.combat_state.is_defending_single;
+	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
+	const hasPendingAttack = me.combat_state.is_attacking_single;
+	const isAttackerWaiting = me.combat_state.is_attacking_multi;
+	const hasPendingSabotage =
+		!!game.player_pending_sabotage &&
+		game.player_pending_sabotage !== myPlayerName;
+	const hasLuckChallenge = isMyTurn && !!me.luck_challenge;
+
+	// --- LÓGICA DE CONDICIONES GLOBALES ---
 	const anyOpponentHasCards = opponents.some(
 		(o) => o.cards_count > 0 && o.is_online,
 	);
 	const anyoneHasStress =
 		opponents.some((o) => !o.is_dead && o.stress > 0) || me.stress > 0;
+
+	// --- MANEJADOR DE CLIC CENTRALIZADO ---
+	const handleCardClick = (card: CardInstance) => {
+		if (isDiscardMode) {
+			// Si está obligado a descartar (sabotaje), el límite es 1. Si es descarte manual de fin de turno, no hay límite.
+			const maxCards = me.conditions.must_discard ? 1 : undefined;
+			toggleDiscardCard(card.id, maxCards);
+			return;
+		}
+
+		// Esquive: se puede esquivar tanto ataques simples como masivos (incluso fuera de tu turno)
+		if ((incomingAttack || hasPendingMultiAttack) && card.type === 3) {
+			if (hasPendingMultiAttack) {
+				reactToMultiAttack("dodge", card.id);
+			} else {
+				reactToAttack("dodge", card.id);
+			}
+			return;
+		}
+
+		// Fuera de tu turno, con prueba de suerte o si el atacante espera, no se puede jugar
+		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
+
+		// Validaciones previas para jugar cartas directas
+		if (card.type === 2 && me.stress > 0)
+			return playTurn(card.id, myPlayerName);
+		if (card.type === 1 && me.turn_limits.single_attack_used) return;
+		if (card.type === 5 && !me.conditions.has_shield)
+			return playTurn(card.id, myPlayerName);
+		if (card.type === 7 && !me.turn_limits.multi_attack_used)
+			return playTurn(card.id, myPlayerName);
+		if (card.type === 8) return playTurn(card.id, myPlayerName);
+
+		// Si es una carta que requiere objetivo, la seleccionamos en la UI
+		setSelectedCardId(selectedCardId === card.id ? null : card.id);
+	};
 
 	return (
 		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
@@ -48,6 +87,7 @@ export function PlayerHand({
 					const isSelected = selectedCardId === card.id;
 					const isMarkedForDiscard = cardsToDiscard.includes(card.id);
 
+					// --- VALIDACIONES DE DISPONIBILIDAD DE CARTA ---
 					const isHealDisabled = card.type === 2 && me.stress <= 0;
 					const isAttackDisabled =
 						card.type === 1 && me.turn_limits.single_attack_used;
@@ -57,6 +97,12 @@ export function PlayerHand({
 						card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
 					const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
 					const isShieldDisabled = card.type === 5 && me.conditions.has_shield;
+					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
+					const isSabotageDisabled =
+						card.type === 9 &&
+						!opponents.some(
+							(o) => !o.is_dead && o.is_online && o.cards_count > 0,
+						);
 					const isBlockDisabled =
 						card.type === 6 &&
 						!opponents.some((o) => {
@@ -64,12 +110,6 @@ export function PlayerHand({
 								o.conditions?.is_blocked ?? (o as any).is_blocked;
 							return !o.is_dead && o.is_online && !isBlocked;
 						});
-					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
-					const isSabotageDisabled =
-						card.type === 9 &&
-						!opponents.some(
-							(o) => !o.is_dead && o.is_online && o.cards_count > 0,
-						);
 
 					const isDisabled =
 						isHealDisabled ||
@@ -82,19 +122,18 @@ export function PlayerHand({
 						isAttackAllDisabled ||
 						isSabotageDisabled;
 
-					const isDodge = card.type === 3;
 					const canUseDodgeNow =
-						(incomingAttack || hasPendingMultiAttack) && isDodge;
+						(incomingAttack || hasPendingMultiAttack) && card.type === 3;
 
-					// En modo descarte todas las cartas son seleccionables
+					// En modo descarte, todas son seleccionables.
 					const isSelectable = isDiscardMode
-        ? true
-        : (isMyTurn &&
-            !isDisabled &&
-            !hasPendingAttack &&
-            !isAttackerWaiting &&
-            !hasPendingSabotage) || 
-          canUseDodgeNow;
+						? true
+						: (isMyTurn &&
+								!isDisabled &&
+								!hasPendingAttack &&
+								!isAttackerWaiting &&
+								!hasPendingSabotage) ||
+							canUseDodgeNow;
 
 					return (
 						<Card
@@ -106,7 +145,7 @@ export function PlayerHand({
 							isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
 							onClick={() => {
 								if (!isSelectable) return;
-								onCardClick(card);
+								handleCardClick(card);
 							}}
 						/>
 					);

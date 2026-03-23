@@ -7,6 +7,7 @@ use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use App\Services\Game\Status\GameFinalizationService;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class TurnService
@@ -115,7 +116,7 @@ class TurnService
         $playerData  = Redis::hgetall($playerKey);
         $currentStress  = (int) ($playerData['stress'] ?? 0);
         $isBossOrActing = ($playerData['role'] ?? '') === 'boss'
-            || filter_var($playerData['acting_boss'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            || CastHelper::toBool($playerData['acting_boss'] ?? 0);
         $maxStress   = $isBossOrActing ? 5 : 4;
         $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
         $currentCards = json_decode($playerData['cards'] ?? '[]', true);

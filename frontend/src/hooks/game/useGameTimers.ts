@@ -12,7 +12,7 @@ export function useGameTimers() {
 	const actingBossDisconnected = gameData?.game?.acting_boss_disconnected;
 	const endingSoon = gameData?.game?.ending_soon;
 	const hasActingBoss = gameData?.game?.has_acting_boss;
-	const hasPendingMultiAttack = gameData?.me?.has_pending_multi_attack ?? false;
+	const hasPendingMultiAttack = gameData?.me?.combat_state.is_defending_multi ?? false;
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);

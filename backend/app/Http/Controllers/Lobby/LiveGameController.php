@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Lobby;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\PlayActionRequest;
 use App\Services\Game\Actions\GameActionService;
+use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Services\Game\LiveGameService;
 use Illuminate\Http\Request;
@@ -16,12 +17,14 @@ class LiveGameController extends Controller
     protected $liveGameService;
     protected $gameActionService;
     protected $turnService;
+    protected $playerHandService;
 
-    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, TurnService $turnService)
+    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, TurnService $turnService, PlayerHandService $playerHandService)
     {
         $this->liveGameService = $liveGameService;
         $this->gameActionService = $gameActionService;
         $this->turnService = $turnService;
+        $this->playerHandService = $playerHandService;
     }
 
     public function start(Request $request, $id)
@@ -153,8 +156,26 @@ class LiveGameController extends Controller
             'card_ids.*' => 'string'
         ]);
 
-        $this->gameActionService->discardCards($id, $playerName, $request->input('card_ids'));
+        $this->playerHandService->discardCards($id, $playerName, $request->input('card_ids'));
 
         return response()->json(['message' => 'Cards discarded successfully'], 200);
+    }
+
+    public function reactDiscard(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $request->validate([
+            'card_id' => 'required|string'
+        ]);
+
+        $this->playerHandService->resolveSabotage($id, $playerName, $request->input('card_id'));
+
+        return response()->json(['message' => 'Discard reaction processed'], 200);
     }
 }

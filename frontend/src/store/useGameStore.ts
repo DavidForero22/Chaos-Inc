@@ -41,6 +41,7 @@ interface GameState {
 	) => Promise<boolean>;
 	endTurn: () => Promise<void>;
 	discardCards: (cardIds: string[]) => Promise<void>;
+	resolveSabotage: (cardId: string) => Promise<void>;
 	resetStore: () => void;
 }
 
@@ -201,6 +202,19 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 		} catch (error: any) {
 			alert(error.response?.data?.message || "Error al descartar cartas.");
+		}
+	},
+
+	resolveSabotage: async (cardId: string) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return;
+		try {
+			await api.post(`/rooms/${roomId}/react-discard`, {
+				card_id: cardId,
+			});
+			await syncGame();
+		} catch (error) {
+			console.error("Error al descartar por sabotaje:", error);
 		}
 	},
 }));
