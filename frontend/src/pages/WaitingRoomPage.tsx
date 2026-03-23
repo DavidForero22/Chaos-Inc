@@ -27,6 +27,9 @@ export default function WaitingRoomPage() {
 	const [passwordInput, setPasswordInput] = useState("");
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
+	const missingPlayers = 3 - (room?.players.length || 0);
+	const isOwner = room?.owner_name === myPlayerName;
+
 	useEffect(() => {
 		if (!isJoining && !myPlayerName && !showGuestModal) {
 			setShowGuestModal(true);
@@ -173,10 +176,27 @@ export default function WaitingRoomPage() {
 				</button>
 				<button
 					onClick={startGame}
-					disabled={room.players.length < 2 || room.owner_name !== myPlayerName}
-					className={`px-6 py-3 rounded font-bold ${room.players.length < 2 || room.owner_name !== myPlayerName ? "bg-gray-600 text-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-500 text-white"}`}
+					disabled={missingPlayers > 0 || !isOwner}
+					className={`px-6 py-3 rounded font-bold transition-all ${
+						missingPlayers > 0 || !isOwner
+							? "bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600"
+							: "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]"
+					}`}
+					title={
+						!isOwner
+							? "Solo el líder puede empezar la partida"
+							: missingPlayers > 0
+								? "Se necesitan al menos 3 jugadores"
+								: "Empezar partida"
+					}
 				>
-					Empezar Partida
+					{missingPlayers > 0
+						? missingPlayers === 1
+							? "Falta 1 jugador..."
+							: `Faltan ${missingPlayers} jugadores...`
+						: !isOwner
+							? "Esperando al líder..."
+							: "Empezar Partida"}
 				</button>
 			</div>
 		</div>
