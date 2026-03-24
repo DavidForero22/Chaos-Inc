@@ -26,6 +26,7 @@ export function PlayerHand() {
 	if (!me || !game || !myPlayerName) return null;
 
 	const opponents = game.opponents;
+	const myRange = me.perks.vision_range ?? 1;
 	const isMyTurn = game.current_turn === myPlayerName;
 	const incomingAttack = me.combat_state.is_defending_single;
 	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
@@ -40,8 +41,13 @@ export function PlayerHand() {
 	const anyOpponentHasCards = opponents.some(
 		(o) => o.cards_count > 0 && o.is_online,
 	);
+
 	const anyoneHasStress =
 		opponents.some((o) => !o.is_dead && o.stress > 0) || me.stress > 0;
+
+	const isAnyOpponentInRange = opponents.some(
+		(o) => !o.is_dead && o.is_online && o.distance <= myRange,
+	);
 
 	// --- MANEJADOR DE CLIC CENTRALIZADO ---
 	const handleCardClick = (card: CardInstance) => {
@@ -62,15 +68,25 @@ export function PlayerHand() {
 
 		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
 
+		// Auto-uso: Cartas que se juegan instantáneamente sobre ti mismo
 		if (card.type === 2 && me.stress > 0)
 			return playTurn(card.id, myPlayerName);
-		if (card.type === 1 && me.turn_limits.single_attack_used) return;
-		if (card.type === 5 && !me.conditions.has_shield)
+
+		if (card.type === 5 && !me.perks.has_shield)
 			return playTurn(card.id, myPlayerName);
+
 		if (card.type === 7 && !me.turn_limits.multi_attack_used)
 			return playTurn(card.id, myPlayerName);
+
+		if (card.type === 1 && me.turn_limits.single_attack_used) return;
+
 		if (card.type === 8) return playTurn(card.id, myPlayerName);
 
+		if (card.type === 10 && me.perks.vision_bonus < 2) {
+			return playTurn(card.id, myPlayerName);
+		}
+
+		// Si es una carta de targeteo a otro, seleccionarla
 		setSelectedCardId(selectedCardId === card.id ? null : card.id);
 	};
 
@@ -93,14 +109,14 @@ export function PlayerHand() {
 
 						const isHealDisabled = card.type === 2 && me.stress <= 0;
 						const isAttackDisabled =
-							card.type === 1 && me.turn_limits.single_attack_used;
+							card.type === 1 &&
+							(me.turn_limits.single_attack_used || !isAnyOpponentInRange);
 						const isAttackAllDisabled =
 							card.type === 7 && me.turn_limits.multi_attack_used;
 						const isDodgeDisabled =
 							card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
 						const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
-						const isShieldDisabled =
-							card.type === 5 && me.conditions.has_shield;
+						const isShieldDisabled = card.type === 5 && me.perks.has_shield;
 						const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
 						const isSabotageDisabled =
 							card.type === 9 &&
@@ -114,6 +130,8 @@ export function PlayerHand() {
 									o.conditions?.is_blocked ?? (o as any).is_blocked;
 								return !o.is_dead && o.is_online && !isBlocked;
 							});
+						const isVisionDisabled =
+							card.type === 10 && me.perks.vision_bonus >= 2;
 
 						const isDisabled =
 							isHealDisabled ||
@@ -124,7 +142,8 @@ export function PlayerHand() {
 							isBlockDisabled ||
 							isHealAllDisabled ||
 							isAttackAllDisabled ||
-							isSabotageDisabled;
+							isSabotageDisabled ||
+							isVisionDisabled;
 
 						const canUseDodgeNow =
 							(incomingAttack || hasPendingMultiAttack) && card.type === 3;

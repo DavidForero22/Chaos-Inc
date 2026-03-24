@@ -13,10 +13,10 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 	}[me.role] || { color: "text-gray-400", label: "❓ DESCONOCIDO" };
 
 	// Separamos la validación visual
-	const hasAnyPerk = me.perks.has_shield;
+	const hasAnyPerk = me.perks.has_shield || me.perks.vision_bonus > 0;
 	const hasAnyCondition = me.conditions.is_blocked || me.conditions.acting_boss;
 
-	const myRange = me.range ?? 1;
+	const myRange = me.perks.vision_range ?? 1;
 
 	return (
 		<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
@@ -56,12 +56,24 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 			<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">
 				<span className="text-xs text-gray-500 uppercase">Equipamiento</span>
 				<div className="flex gap-2 text-lg">
+					{/* Escudo */}
 					{me.perks.has_shield && (
 						<span
 							title="Escudo Activo: Te protege del próximo ataque."
 							className="cursor-help hover:scale-110 transition-transform"
 						>
 							🛡️
+						</span>
+					)}
+
+					{/* Visión Bonus */}
+					{me.perks.vision_bonus > 0 && (
+						<span
+							title={`Visión Aumentada: +${me.perks.vision_bonus} de alcance.`}
+							className="cursor-help hover:scale-110 transition-transform flex items-center"
+						>
+							👓{" "}
+							<span className="text-xs ml-0.5">x{me.perks.vision_bonus}</span>
 						</span>
 					)}
 

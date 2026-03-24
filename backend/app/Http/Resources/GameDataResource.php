@@ -69,10 +69,11 @@ class GameDataResource extends JsonResource
                     'is_blocked'  => CastHelper::toBool($pData['is_blocked'] ?? 0),
                 ],
 
-                 // --- Beneficios (Buffos) ---
+                // --- Beneficios (Buffos) ---
                 'perks'       => [
                     'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
                     'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
+                    'vision_bonus' => (int) ($pData['range_bonus'] ?? 0),
                 ],
             ];
         }

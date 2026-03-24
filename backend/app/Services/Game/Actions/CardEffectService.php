@@ -181,4 +181,9 @@ class CardEffectService
 
         ResolveSabotageJob::dispatch($roomId, $targetName)->delay(15);
     }
+
+    public function applyVision(string $roomId, string $playerName): void
+    {
+        Redis::hincrby("room:{$roomId}:player:{$playerName}", 'range_bonus', 1);
+    }
 }

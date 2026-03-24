@@ -74,6 +74,7 @@ class GameActionService
             7 => $this->cardValidationService->validateAttackAll($roomId, $playerName),
             8 => $this->cardValidationService->validateHealAll($roomId),
             9 => $this->cardValidationService->validateSabotage($roomId, $playerName, $targetName),
+            10 => $this->cardValidationService->validateVision($roomId, $playerName),
             default => null,
         };
 
@@ -87,6 +88,7 @@ class GameActionService
             7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
             8 => $this->cardEffectService->applyHealAll($roomId),
             9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
+            10 => $this->cardEffectService->applyVision($roomId, $playerName),
             default => null,
         };
 
@@ -104,6 +106,7 @@ class GameActionService
             7 => null, // el log se construye en reactToMultiAttack cuando todos responden
             8 => __('game.healed_all', ['player' => $playerName]),
             9 => __('game.sabotaged', ['player' => $playerName, 'target' => $targetName]),
+            10 => __('game.vision_equipped', ['player' => $playerName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));

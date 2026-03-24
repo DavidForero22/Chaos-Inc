@@ -147,12 +147,7 @@ class CombatService
     public function getPlayerRange(string $roomId, string $playerName): int
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
-
-        // TODO: Cuando tengamos la mecánica de equipar cartas, las leeremos de aquí.
-        // $assets = json_decode(Redis::hget($playerKey, 'active_assets') ?: '[]', true);
-        // $bonus = contar_cuantas_visiones_hay_en($assets);
-        $bonus = 0;
-
+        $bonus = (int) Redis::hget($playerKey, 'range_bonus') ?: 0;
         return 1 + $bonus;
     }
 }

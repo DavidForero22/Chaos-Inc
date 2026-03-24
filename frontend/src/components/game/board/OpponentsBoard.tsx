@@ -68,7 +68,6 @@ export function OpponentsBoard() {
 				</div>
 			)}
 
-			{/* AHORA ITERAMOS SOBRE EL ARRAY REORDENADO SIMÉTRICAMENTE */}
 			{symmetricallyOrderedOpponents.map((player: Opponent) => {
 				// --- REGLAS DE SELECCIÓN ---
 				const isCardActive = isMyTurn && selectedCardId !== null;
@@ -112,9 +111,11 @@ export function OpponentsBoard() {
 
 				const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
 
-				const hasShield = player.perks.has_shield ?? (player as any).has_shield;
+				const hasShield =
+					player.perks?.has_shield ?? (player as any).has_shield;
 				const isActingBoss =
-					player.conditions.acting_boss ?? (player as any).acting_boss;
+					player.conditions?.acting_boss ?? (player as any).acting_boss;
+				const visionBonus = player.perks?.vision_bonus ?? 0;
 
 				return (
 					<div
@@ -160,9 +161,17 @@ export function OpponentsBoard() {
 							</div>
 						)}
 
+						{/* Escudo */}
 						{hasShield && (
 							<div className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
 								🛡️
+							</div>
+						)}
+
+						{/* Vision */}
+						{visionBonus > 0 && (
+							<div className="absolute top-8 -left-3 bg-blue-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center">
+								👓 <span className="text-[10px] ml-1">+{visionBonus}</span>
 							</div>
 						)}
 

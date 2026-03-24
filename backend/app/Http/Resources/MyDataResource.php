@@ -71,6 +71,7 @@ class MyDataResource extends JsonResource
             'perks' => [
                 'has_shield' => CastHelper::toBool($myData['has_shield'] ?? 0),
                 'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $playerName),
+                'vision_bonus' => (int) ($myData['range_bonus'] ?? 0),
             ],
 
             // Límites del turno actual

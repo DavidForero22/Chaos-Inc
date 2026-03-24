@@ -71,5 +71,11 @@ return [
             'description'       => 'Obliga a un rival a descartar una carta de su mano.',
             'count'             => 6,
         ],
+                [
+            'id'                => 10,
+            'name'              => 'Visión',
+            'description'       => 'Te da +1 punto de rango de visión.',
+            'count'             => 6,
+        ],
     ],
 ];

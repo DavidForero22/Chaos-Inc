@@ -133,4 +133,12 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas que descartar.", 422);
         }
     }
+
+    public function validateVision(string $roomId, string $playerName): void
+    {
+        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'range_bonus');
+        if ($currentBonus >= 2) {
+            throw new GameException(GameException::INVALID_ACTION, "Ya tienes el alcance máximo permitido.", 422);
+        }
+    }
 }
