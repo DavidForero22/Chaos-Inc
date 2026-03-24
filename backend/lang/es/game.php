@@ -14,6 +14,10 @@ return [
     'blocked'               => ':player ha bloqueado el turno de :target.',
     'healed_all'            => ':player ha curado a todos los jugadores.',
     'sabotaged'             => ':player ha saboteado a :target, obligándole a descartar una carta.',
+    'vision_equipped'       => ':player se ha equipado visión.',
+    'distance_equipped'     => ':player se ha equipado lejania.',
+    'attack_auto_resolved'  => ':player no respondió a tiempo al ataque, ha sido dañado..',
+    
 
     // Ataque múltiple
     'multi_attack_started'  => ':attacker ha lanzado un ataque masivo.',

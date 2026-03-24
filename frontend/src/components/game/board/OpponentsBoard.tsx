@@ -113,8 +113,6 @@ export function OpponentsBoard() {
 
 				const hasShield =
 					player.perks?.has_shield ?? (player as any).has_shield;
-				const isActingBoss =
-					player.conditions?.acting_boss ?? (player as any).acting_boss;
 				const visionBonus = player.perks?.vision_bonus ?? 0;
 
 				return (
@@ -137,48 +135,53 @@ export function OpponentsBoard() {
 						{!player.is_dead && player.is_online && (
 							<div
 								className="absolute top-1 left-2 text-[10px] text-gray-500 font-mono"
-								title={`Distancia: ${player.distance}`}
+								title={`Distancia del jugador: ${player.distance}`}
 							>
 								📍 {player.distance}
 							</div>
 						)}
 						{/* Indicadores visuales */}
 						{!player.is_online && (
-							<div className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">
+							<div
+							title="Este jugador ha abandonado la partida"
+							className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">
 								🔌 OFFLINE
 							</div>
 						)}
 
 						{player.role === "boss" && (
-							<div className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-lg z-40">
-								👑
-							</div>
-						)}
-
-						{isActingBoss && player.role !== "boss" && (
-							<div className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-lg z-40">
+							<div
+								title="Este jugador es el jefe"
+								className="absolute -top-6 left-1/2 -translate-x-1/2 text-3xl drop-shadow-lg z-40"
+							>
 								👑
 							</div>
 						)}
 
 						{/* Escudo */}
 						{hasShield && (
-							<div className="absolute -top-3 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
+							<div
+								title="Este jugador tiene un escudo activo"
+								className="absolute top-24 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
+							>
 								🛡️
 							</div>
 						)}
 
 						{/* Vision */}
 						{visionBonus > 0 && (
-							<div className="absolute top-8 -left-3 bg-blue-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center">
-								👓 <span className="text-[10px] ml-1">+{visionBonus}</span>
+							<div
+								title={`Este jugador ve a +${visionBonus} de distancia`}
+								className="absolute top-8 -left-3 bg-blue-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center"
+							>
+								{visionBonus == 1 ? "👓" : "🔭"}
 							</div>
 						)}
 
 						{/* Lejania */}
 						{player.perks.distance_bonus > 0 && (
 							<div
-								title="Este jugador está a +1 de distancia."
+								title="Este jugador está a +1 de distancia"
 								className="absolute top-16 -left-3 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center"
 							>
 								<span>🏠</span>
@@ -186,13 +189,17 @@ export function OpponentsBoard() {
 						)}
 
 						{player.is_dead && (
-							<div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800">
+							<div
+							title="Este jugador ha sido derrotado"
+							className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800">
 								💀
 							</div>
 						)}
 
 						{isPlayerBlocked && (
-							<div className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
+							<div
+							title="Este jugador tiene un bloqueo"
+							className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
 								🔒
 							</div>
 						)}
