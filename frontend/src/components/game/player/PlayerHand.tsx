@@ -46,13 +46,11 @@ export function PlayerHand() {
 	// --- MANEJADOR DE CLIC CENTRALIZADO ---
 	const handleCardClick = (card: CardInstance) => {
 		if (isDiscardMode) {
-			// Si está obligado a descartar (sabotaje), el límite es 1. Si es descarte manual de fin de turno, no hay límite.
 			const maxCards = me.conditions.must_discard ? 1 : undefined;
 			toggleDiscardCard(card.id, maxCards);
 			return;
 		}
 
-		// Esquive: se puede esquivar tanto ataques simples como masivos (incluso fuera de tu turno)
 		if ((incomingAttack || hasPendingMultiAttack) && card.type === 3) {
 			if (hasPendingMultiAttack) {
 				reactToMultiAttack("dodge", card.id);
@@ -62,10 +60,8 @@ export function PlayerHand() {
 			return;
 		}
 
-		// Fuera de tu turno, con prueba de suerte o si el atacante espera, no se puede jugar
 		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
 
-		// Validaciones previas para jugar cartas directas
 		if (card.type === 2 && me.stress > 0)
 			return playTurn(card.id, myPlayerName);
 		if (card.type === 1 && me.turn_limits.single_attack_used) return;
@@ -75,81 +71,89 @@ export function PlayerHand() {
 			return playTurn(card.id, myPlayerName);
 		if (card.type === 8) return playTurn(card.id, myPlayerName);
 
-		// Si es una carta que requiere objetivo, la seleccionamos en la UI
 		setSelectedCardId(selectedCardId === card.id ? null : card.id);
 	};
 
 	return (
-		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6">
+		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6 flex flex-col">
 			<p className="text-xs text-gray-500 uppercase font-bold mb-3">Tu Mano</p>
-			<div className="w-full flex gap-3 overflow-x-auto no-scrollbar py-2 pt-6">
-				{me.cards.map((card) => {
-					const isSelected = selectedCardId === card.id;
-					const isMarkedForDiscard = cardsToDiscard.includes(card.id);
 
-					// --- VALIDACIONES DE DISPONIBILIDAD DE CARTA ---
-					const isHealDisabled = card.type === 2 && me.stress <= 0;
-					const isAttackDisabled =
-						card.type === 1 && me.turn_limits.single_attack_used;
-					const isAttackAllDisabled =
-						card.type === 7 && me.turn_limits.multi_attack_used;
-					const isDodgeDisabled =
-						card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
-					const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
-					const isShieldDisabled = card.type === 5 && me.conditions.has_shield;
-					const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
-					const isSabotageDisabled =
-						card.type === 9 &&
-						!opponents.some(
-							(o) => !o.is_dead && o.is_online && o.cards_count > 0,
+			{/* Contenedor de cartas con altura mínima fija */}
+			<div className="w-full flex gap-3 overflow-x-auto no-scrollbar py-2 pt-6 min-h-36">
+				{/* ESTADO VACÍO */}
+				{me.cards.length === 0 ? (
+					<div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl text-gray-500 opacity-50">
+						<p className="italic text-sm">Sin cartas en la mano</p>
+					</div>
+				) : (
+					/* RENDERIZADO NORMAL DE CARTAS */
+					me.cards.map((card) => {
+						const isSelected = selectedCardId === card.id;
+						const isMarkedForDiscard = cardsToDiscard.includes(card.id);
+
+						const isHealDisabled = card.type === 2 && me.stress <= 0;
+						const isAttackDisabled =
+							card.type === 1 && me.turn_limits.single_attack_used;
+						const isAttackAllDisabled =
+							card.type === 7 && me.turn_limits.multi_attack_used;
+						const isDodgeDisabled =
+							card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
+						const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
+						const isShieldDisabled =
+							card.type === 5 && me.conditions.has_shield;
+						const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
+						const isSabotageDisabled =
+							card.type === 9 &&
+							!opponents.some(
+								(o) => !o.is_dead && o.is_online && o.cards_count > 0,
+							);
+						const isBlockDisabled =
+							card.type === 6 &&
+							!opponents.some((o) => {
+								const isBlocked =
+									o.conditions?.is_blocked ?? (o as any).is_blocked;
+								return !o.is_dead && o.is_online && !isBlocked;
+							});
+
+						const isDisabled =
+							isHealDisabled ||
+							isAttackDisabled ||
+							isDodgeDisabled ||
+							isStealDisabled ||
+							isShieldDisabled ||
+							isBlockDisabled ||
+							isHealAllDisabled ||
+							isAttackAllDisabled ||
+							isSabotageDisabled;
+
+						const canUseDodgeNow =
+							(incomingAttack || hasPendingMultiAttack) && card.type === 3;
+
+						const isSelectable = isDiscardMode
+							? true
+							: (isMyTurn &&
+									!isDisabled &&
+									!hasPendingAttack &&
+									!isAttackerWaiting &&
+									!hasPendingSabotage) ||
+								canUseDodgeNow;
+
+						return (
+							<Card
+								key={card.id}
+								card={card}
+								isSelectable={isSelectable}
+								isSelected={!isDiscardMode && isSelected}
+								isHighlighted={!isDiscardMode && canUseDodgeNow}
+								isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
+								onClick={() => {
+									if (!isSelectable) return;
+									handleCardClick(card);
+								}}
+							/>
 						);
-					const isBlockDisabled =
-						card.type === 6 &&
-						!opponents.some((o) => {
-							const isBlocked =
-								o.conditions?.is_blocked ?? (o as any).is_blocked;
-							return !o.is_dead && o.is_online && !isBlocked;
-						});
-
-					const isDisabled =
-						isHealDisabled ||
-						isAttackDisabled ||
-						isDodgeDisabled ||
-						isStealDisabled ||
-						isShieldDisabled ||
-						isBlockDisabled ||
-						isHealAllDisabled ||
-						isAttackAllDisabled ||
-						isSabotageDisabled;
-
-					const canUseDodgeNow =
-						(incomingAttack || hasPendingMultiAttack) && card.type === 3;
-
-					// En modo descarte, todas son seleccionables.
-					const isSelectable = isDiscardMode
-						? true
-						: (isMyTurn &&
-								!isDisabled &&
-								!hasPendingAttack &&
-								!isAttackerWaiting &&
-								!hasPendingSabotage) ||
-							canUseDodgeNow;
-
-					return (
-						<Card
-							key={card.id}
-							card={card}
-							isSelectable={isSelectable}
-							isSelected={!isDiscardMode && isSelected}
-							isHighlighted={!isDiscardMode && canUseDodgeNow}
-							isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
-							onClick={() => {
-								if (!isSelectable) return;
-								handleCardClick(card);
-							}}
-						/>
-					);
-				})}
+					})
+				)}
 			</div>
 		</div>
 	);
