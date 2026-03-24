@@ -60,11 +60,6 @@ class PlayerHandService
         $cards      = json_decode($playerData['cards'] ?? '[]', true);
         if (!is_array($cards)) $cards = [];
 
-        $currentStress  = (int) ($playerData['stress'] ?? 0);
-        $isBossOrActing = ($playerData['role'] ?? '') === 'boss' || CastHelper::toBool($playerData['acting_boss'] ?? 0);
-        $maxStress   = $isBossOrActing ? 5 : 4;
-        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
-
         if (count($cardIdsToDiscard) === 0) {
             throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos una carta para descartar.", 422);
         }
@@ -81,14 +76,21 @@ class PlayerHandService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "Algunas cartas seleccionadas ya no están en tu mano.", 422);
         }
 
+        // Guardar la nueva mano
         Redis::hset($playerKey, 'cards', json_encode($updatedCards));
 
+        // Emitir el log normal de descarte
         $logMessage = __('game.discarded', [
             'player' => $playerName,
             'count'  => $discardedCount,
         ]);
-
         event(new RoomStateUpdated($roomId, $logMessage));
+
+        // Si se ha quedado a 0 cartas, forzar el fin de su turno
+        if (count($updatedCards) === 0) {
+            event(new RoomStateUpdated($roomId));
+            app(TurnService::class)->advanceTurn($roomId);
+        }
     }
 
     public function resolveSabotage(string $roomId, string $playerName, string $cardId): void
@@ -101,7 +103,6 @@ class PlayerHandService
 
         $playerKey = "room:{$roomId}:player:{$playerName}";
 
-        // Reutilizamos el método de buscar y borrar que creamos arriba
         $this->findAndRemoveCard($roomId, $playerName, $cardId);
 
         // Limpiar el estado de sabotaje
