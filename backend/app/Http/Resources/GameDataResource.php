@@ -60,11 +60,20 @@ class GameDataResource extends JsonResource
                 'role'        => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
                 'is_online'   => CastHelper::toBool($pData['is_online'] ?? 1),
                 'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
-                'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
-                'is_blocked'  => CastHelper::toBool($pData['is_blocked'] ?? 0),
-                'acting_boss' => CastHelper::toBool($pData['acting_boss'] ?? 0),
                 'distance'    => $distance,
                 'is_in_range' => $distance <= $myRange,
+
+                // --- Condiciones ---
+                'conditions'  => [
+                    'acting_boss' => CastHelper::toBool($pData['acting_boss'] ?? 0),
+                    'is_blocked'  => CastHelper::toBool($pData['is_blocked'] ?? 0),
+                ],
+
+                 // --- Beneficios (Buffos) ---
+                'perks'       => [
+                    'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
+                    'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
+                ],
             ];
         }
 

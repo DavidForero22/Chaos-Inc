@@ -38,22 +38,22 @@ export function OpponentsBoard() {
 	};
 
 	// --- ALGORITMO DE ORDENACIÓN SIMÉTRICA --
-    const symmetricallyOrderedOpponents = useMemo(() => {
-        // Ordenar todos los oponentes de mayor a menor distancia
-        const sorted = [...opponents].sort((a, b) => b.distance - a.distance);
-        const ordered: Opponent[] = [];
+	const symmetricallyOrderedOpponents = useMemo(() => {
+		// Ordenar todos los oponentes de mayor a menor distancia
+		const sorted = [...opponents].sort((a, b) => b.distance - a.distance);
+		const ordered: Opponent[] = [];
 
-        // Repartir desde el centro hacia los extremos
-        sorted.forEach((opponent, index) => {
-            if (index % 2 === 0) {
-                ordered.unshift(opponent); // Pares a la izquierda
-            } else {
-                ordered.push(opponent);    // Impares a la derecha
-            }
-        });
+		// Repartir desde el centro hacia los extremos
+		sorted.forEach((opponent, index) => {
+			if (index % 2 === 0) {
+				ordered.unshift(opponent); // Pares a la izquierda
+			} else {
+				ordered.push(opponent); // Impares a la derecha
+			}
+		});
 
-        return ordered;
-    }, [opponents]);
+		return ordered;
+	}, [opponents]);
 
 	return (
 		<div className="flex-1 bg-gray-900/50 rounded-xl border border-gray-800 p-6 flex flex-wrap justify-center items-center gap-6 overflow-y-auto relative">
@@ -112,10 +112,9 @@ export function OpponentsBoard() {
 
 				const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
 
-				const hasShield =
-					player.conditions?.has_shield ?? (player as any).has_shield;
+				const hasShield = player.perks.has_shield ?? (player as any).has_shield;
 				const isActingBoss =
-					player.conditions?.acting_boss ?? (player as any).acting_boss;
+					player.conditions.acting_boss ?? (player as any).acting_boss;
 
 				return (
 					<div

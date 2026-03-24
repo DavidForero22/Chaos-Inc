@@ -12,10 +12,9 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 		union: { color: "text-red-400", label: "✊ SINDICALISTA" },
 	}[me.role] || { color: "text-gray-400", label: "❓ DESCONOCIDO" };
 
-	const hasAnyStatus =
-		me.conditions.has_shield ||
-		me.conditions.is_blocked ||
-		me.conditions.acting_boss;
+	// Separamos la validación visual
+	const hasAnyPerk = me.perks.has_shield;
+	const hasAnyCondition = me.conditions.is_blocked || me.conditions.acting_boss;
 
 	const myRange = me.range ?? 1;
 
@@ -42,19 +41,22 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				<span className="text-sm font-bold text-red-500">{me.stress}</span>
 			</div>
 
-			{/* NUEVO: Visionççón */}
-            <div className="flex justify-between items-center mt-2">
-                <span className="text-xs text-gray-500 uppercase">Alcance</span>
-                <span className="text-sm font-bold text-blue-300 flex items-center gap-1" title="A cuántos compañeros de distancia puedes atacar">
-                    👁️ {myRange}
-                </span>
-            </div>
+			{/* Alcance */}
+			<div className="flex justify-between items-center mt-2">
+				<span className="text-xs text-gray-500 uppercase">Alcance</span>
+				<span
+					className="text-sm font-bold text-blue-300 flex items-center gap-1"
+					title="A cuántos compañeros de distancia puedes atacar"
+				>
+					👁️ {myRange}
+				</span>
+			</div>
 
-			{/* Estados fusionados en una línea con tooltips */}
+			{/* EQUIPAMIENTO (Perks) */}
 			<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">
-				<span className="text-xs text-gray-500 uppercase">Estado</span>
+				<span className="text-xs text-gray-500 uppercase">Equipamiento</span>
 				<div className="flex gap-2 text-lg">
-					{me.conditions.has_shield && (
+					{me.perks.has_shield && (
 						<span
 							title="Escudo Activo: Te protege del próximo ataque."
 							className="cursor-help hover:scale-110 transition-transform"
@@ -62,6 +64,17 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 							🛡️
 						</span>
 					)}
+
+					{!hasAnyPerk && (
+						<span className="text-gray-600 text-xs font-mono">-</span>
+					)}
+				</div>
+			</div>
+
+			{/* ESTADOS (Conditions) */}
+			<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">
+				<span className="text-xs text-gray-500 uppercase">Estado</span>
+				<div className="flex gap-2 text-lg">
 					{me.conditions.is_blocked && (
 						<span
 							title="Bloqueado: No puedes jugar en tu turno."
@@ -78,7 +91,7 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 							👑
 						</span>
 					)}
-					{!hasAnyStatus && (
+					{!hasAnyCondition && (
 						<span className="text-gray-600 text-xs font-mono">-</span>
 					)}
 				</div>

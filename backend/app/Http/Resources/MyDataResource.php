@@ -51,7 +51,6 @@ class MyDataResource extends JsonResource
             'name'                      => $playerName,
             'role'                      => $myData['role'],
             'stress'                    => $currentStress,
-            'range'                     => app(CombatService::class)->getPlayerRange($roomId, $playerName),
             'is_dead'                   => CastHelper::toBool($myData['is_dead'] ?? 0),
             'is_online'                 => CastHelper::toBool($myData['is_online'] ?? 1),
 
@@ -59,14 +58,19 @@ class MyDataResource extends JsonResource
             'cards'                     => json_decode($myData['cards'] ?? '[]'),
             'max_hand_size'             => $maxHandSize,
 
-            // Condiciones / Estados alterados (Buffs / Debuffs)
+            // Condiciones
             'conditions'     => [
-                'has_shield'            => CastHelper::toBool($myData['has_shield'] ?? 0),
                 'acting_boss'           => CastHelper::toBool($myData['acting_boss'] ?? 0),
                 'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),
                 'skip_next_turn'        => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
                 'must_discard'          => CastHelper::toBool($myData['must_discard'] ?? 0),
                 'must_discard_by'       => $myData['must_discard_by'] ?? null,
+            ],
+
+            // Cartas pasivas / Buffos
+            'perks' => [
+                'has_shield' => CastHelper::toBool($myData['has_shield'] ?? 0),
+                'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $playerName),
             ],
 
             // Límites del turno actual

@@ -6,13 +6,23 @@
 export type PlayerRole = "boss" | "secretary" | "intern" | "union";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
+/**
+ * Estados mecánicos / temporales
+ */
 export interface PlayerConditions {
-	has_shield: boolean;
 	acting_boss: boolean;
 	is_blocked: boolean;
 	skip_next_turn: boolean;
 	must_discard: boolean;
 	must_discard_by: string | null;
+}
+
+/**
+ * Beneficios corporativos / Equipamiento (Cartas pasivas)
+ */
+export interface PlayerPerks {
+	has_shield: boolean;
+	vision_range: number;
 }
 
 export interface TurnLimits {
@@ -37,10 +47,8 @@ export interface BasePlayer {
 	stress: number;
 	is_dead: boolean;
 	is_online: boolean;
-	conditions: Pick<
-		PlayerConditions,
-		"has_shield" | "acting_boss" | "is_blocked"
-	>;
+	conditions: Pick<PlayerConditions, "acting_boss" | "is_blocked">;
+	perks: PlayerPerks;
 }
 
 /**
