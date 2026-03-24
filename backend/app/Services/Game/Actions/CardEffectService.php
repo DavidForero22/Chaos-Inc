@@ -5,6 +5,7 @@ namespace App\Services\Game\Actions;
 
 use App\Events\RoomStateUpdated;
 use App\Jobs\ResolveMultiAttackJob;
+use App\Jobs\ResolveSabotageJob;
 use App\Services\Game\Engine\CombatService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
@@ -163,5 +164,7 @@ class CardEffectService
         Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard', 1);
         Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard_by', $playerName);
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);
+
+        ResolveSabotageJob::dispatch($roomId, $targetName)->delay(15);
     }
 }

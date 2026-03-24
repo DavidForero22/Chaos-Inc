@@ -12,7 +12,11 @@ export function useGameTimers() {
 	const actingBossDisconnected = gameData?.game?.acting_boss_disconnected;
 	const endingSoon = gameData?.game?.ending_soon;
 	const hasActingBoss = gameData?.game?.has_acting_boss;
-	const hasPendingMultiAttack = gameData?.me?.combat_state.is_defending_multi ?? false;
+
+	// Estados de ataque
+	const hasPendingMultiAttack =
+		gameData?.me?.combat_state.is_defending_multi ?? false;
+	const hasPendingSabotage = gameData?.me?.conditions.must_discard ?? false;
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -86,11 +90,57 @@ export function useGameTimers() {
 		};
 	}, [hasPendingMultiAttack, reactToMultiAttack]);
 
+	// --- Countdown Sabotaje (15s para descartar) ---
+	const [sabotageSecondsLeft, setSabotageSecondsLeft] = useState<number | null>(
+		null,
+	);
+	const prevHasPendingSabotageRef = useRef(false);
+	const sabotageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+	useEffect(() => {
+		const isTarget = hasPendingSabotage;
+		const wasTarget = prevHasPendingSabotageRef.current;
+		prevHasPendingSabotageRef.current = isTarget;
+
+		if (isTarget && !wasTarget) {
+			// Empieza el countdown de 15 segundos
+			setSabotageSecondsLeft(15);
+			if (sabotageTimerRef.current) clearInterval(sabotageTimerRef.current);
+
+			sabotageTimerRef.current = setInterval(() => {
+				setSabotageSecondsLeft((prev) => {
+					if (prev === null || prev <= 1) {
+						// El tiempo se acabó. El backend lo resolverá mediante el Job,
+						// así que solo limpiamos el timer en el frontend.
+						clearInterval(sabotageTimerRef.current!);
+						sabotageTimerRef.current = null;
+						return null;
+					}
+					return prev - 1;
+				});
+			}, 1000);
+		}
+
+		if (!isTarget && wasTarget) {
+			// Ya descartó manualmente o el Job lo hizo — limpiar timer
+			if (sabotageTimerRef.current) {
+				clearInterval(sabotageTimerRef.current);
+				sabotageTimerRef.current = null;
+			}
+			setSabotageSecondsLeft(null);
+		}
+
+		return () => {
+			if (sabotageTimerRef.current) clearInterval(sabotageTimerRef.current);
+		};
+	}, [hasPendingSabotage]);
+
 	return {
 		showBossWaiting: Boolean(bossDisconnected),
 		showActingBossWaiting: Boolean(actingBossDisconnected),
 		showEndingWaiting: Boolean(endingSoon),
 		showInheritanceBanner,
 		multiAttackSecondsLeft,
+		sabotageSecondsLeft,
 	};
 }

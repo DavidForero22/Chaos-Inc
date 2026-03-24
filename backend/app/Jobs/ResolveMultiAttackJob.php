@@ -3,9 +3,10 @@
 namespace App\Jobs;
 
 use App\Events\RoomStateUpdated;
-use App\Services\Game\Actions\GameActionService;
+use App\Services\Game\Engine\CombatService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class ResolveMultiAttackJob implements ShouldQueue
@@ -16,7 +17,7 @@ class ResolveMultiAttackJob implements ShouldQueue
         private readonly string $roomId,
     ) {}
 
-    public function handle(GameActionService $gameActionService): void
+    public function handle(CombatService $combatService): void
     {
         $pending = json_decode(Redis::get("room:{$this->roomId}:pending_multi_attack") ?? 'null', true);
 
@@ -28,7 +29,7 @@ class ResolveMultiAttackJob implements ShouldQueue
 
         // Aplicar daño a los que no respondieron
         foreach ($pending['targets'] as $target) {
-            $gameActionService->applyDamageAndCheck($this->roomId, $pending['attacker'], $target);
+            $combatService->applyDamageAndCheck($this->roomId, $pending['attacker'], $target);
         }
 
         Redis::del("room:{$this->roomId}:pending_multi_attack");
@@ -53,6 +54,7 @@ class ResolveMultiAttackJob implements ShouldQueue
             $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $shielders)]);
         }
 
+        Log::info("ResolveMultiAttackJob.php - Ataque multiple finalizado en {$this->roomId}");
         event(new RoomStateUpdated($this->roomId, $logMessage));
     }
 }

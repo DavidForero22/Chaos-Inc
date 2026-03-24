@@ -33,21 +33,23 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 					</div>
 				)}
 
+			{/* Sabotaje pendiente */}
+			{me.conditions.must_discard &&
+				me.conditions.must_discard_by &&
+				timers.sabotageSecondsLeft !== null && (
+					<div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-orange-900/90 border border-orange-500 text-orange-100 text-sm font-bold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.6)] animate-pulse z-20 whitespace-nowrap flex items-center gap-2">
+						⚠️ ¡{me.conditions.must_discard_by} te obliga a descartar! Tienes
+						<span className="font-mono text-white bg-orange-600 px-1.5 py-0.5 rounded text-xs">
+							{timers.sabotageSecondsLeft}s
+						</span>
+						o perderás una carta al azar.
+					</div>
+				)}
+
 			{/* Penalización por inactividad */}
 			{me.conditions.skip_next_turn && (
 				<div className="absolute -top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-orange-400 animate-pulse z-20">
 					⚠️ Penalización: Perderás tu próximo turno por inactividad.
-				</div>
-			)}
-
-			{/* Sabotaje pendiente */}
-			{me.conditions.must_discard && (
-				<div className="absolute -top-4 left-4 bg-red-700 text-white text-xs font-bold px-3 py-1 rounded shadow-lg border border-red-500 animate-pulse z-20">
-					⚠️{" "}
-					{me.conditions.must_discard_by
-						? `${me.conditions.must_discard_by} te ha saboteado.`
-						: "Has sido saboteado."}{" "}
-					Debes descartar una carta antes de continuar.
 				</div>
 			)}
 		</>
