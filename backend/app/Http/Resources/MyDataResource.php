@@ -3,6 +3,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Game\Engine\CombatService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Redis;
@@ -50,6 +51,7 @@ class MyDataResource extends JsonResource
             'name'                      => $playerName,
             'role'                      => $myData['role'],
             'stress'                    => $currentStress,
+            'range'                     => app(CombatService::class)->getPlayerRange($roomId, $playerName),
             'is_dead'                   => CastHelper::toBool($myData['is_dead'] ?? 0),
             'is_online'                 => CastHelper::toBool($myData['is_online'] ?? 1),
 

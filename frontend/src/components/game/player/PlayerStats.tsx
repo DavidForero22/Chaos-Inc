@@ -17,6 +17,8 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 		me.conditions.is_blocked ||
 		me.conditions.acting_boss;
 
+	const myRange = me.range ?? 1;
+
 	return (
 		<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
 			{/* Nombre */}
@@ -39,6 +41,14 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				<span className="text-xs text-gray-500 uppercase">Estrés</span>
 				<span className="text-sm font-bold text-red-500">{me.stress}</span>
 			</div>
+
+			{/* NUEVO: Visionççón */}
+            <div className="flex justify-between items-center mt-2">
+                <span className="text-xs text-gray-500 uppercase">Alcance</span>
+                <span className="text-sm font-bold text-blue-300 flex items-center gap-1" title="A cuántos compañeros de distancia puedes atacar">
+                    👁️ {myRange}
+                </span>
+            </div>
 
 			{/* Estados fusionados en una línea con tooltips */}
 			<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">

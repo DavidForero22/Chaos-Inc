@@ -3,6 +3,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Game\Engine\CombatService;
 use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -22,7 +23,12 @@ class GameDataResource extends JsonResource
         $playerInLuckChallenge = null;
 
         $finalizationService = app(GameFinalizationService::class);
+        $combatService       = app(CombatService::class);
+
         $isEffectivelyOver   = $finalizationService->isGameEffectivelyOver($roomId);
+        $activePlayersInOrder = $combatService->getActivePlayersInOrder($roomId);
+
+        $myRange = $combatService->getPlayerRange($roomId, $myPlayerName);
 
         foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
             $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
@@ -38,6 +44,15 @@ class GameDataResource extends JsonResource
 
             if ($pName === $myPlayerName) continue;
 
+            $distance = 999;
+            if (in_array($pName, $activePlayersInOrder) && in_array($myPlayerName, $activePlayersInOrder)) {
+                $indexMe = array_search($myPlayerName, $activePlayersInOrder);
+                $indexOp = array_search($pName, $activePlayersInOrder);
+                $n = count($activePlayersInOrder);
+                $diff = abs($indexMe - $indexOp);
+                $distance = min($diff, $n - $diff);
+            }
+
             $opponents[] = [
                 'name'        => $pName,
                 'stress'      => (int) ($pData['stress'] ?? 0),
@@ -48,6 +63,8 @@ class GameDataResource extends JsonResource
                 'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
                 'is_blocked'  => CastHelper::toBool($pData['is_blocked'] ?? 0),
                 'acting_boss' => CastHelper::toBool($pData['acting_boss'] ?? 0),
+                'distance'    => $distance,
+                'is_in_range' => $distance <= $myRange,
             ];
         }
 

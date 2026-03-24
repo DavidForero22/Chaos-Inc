@@ -4,6 +4,7 @@ namespace App\Services\Game\Engine;
 
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Status\GameFinalizationService;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class CombatService
@@ -87,5 +88,71 @@ class CombatService
             event(new RoomStateUpdated($roomId));
             $this->finalizationService->finalize($roomId);
         }
+    }
+
+    /**
+     * Obtiene la lista ordenada de jugadores que físicamente ocupan espacio en la mesa.
+     */
+    public function getActivePlayersInOrder(string $roomId): array
+    {
+        $roomKey = "room:{$roomId}";
+        $turnOrderRaw = Redis::get("room:{$roomId}:turn_order") ?: '[]';
+        $turnOrder = json_decode($turnOrderRaw, true);
+
+        if (!is_array($turnOrder) || empty($turnOrder)) {
+            // Fallback por si acaso
+            $turnOrder = Redis::smembers("{$roomKey}:players");
+        }
+
+        $activePlayers = [];
+
+        foreach ($turnOrder as $pName) {
+            $pData = Redis::hgetall("{$roomKey}:player:{$pName}");
+            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            $isDead = CastHelper::toBool($pData['is_dead'] ?? 0);
+
+            // Solo los vivos y conectados hacen de "muro"
+            if ($isOnline && !$isDead) {
+                $activePlayers[] = $pName;
+            }
+        }
+
+        return $activePlayers;
+    }
+
+    /**
+     * Calcula la distancia circular más corta entre dos jugadores.
+     */
+    public function getDistance(string $roomId, string $playerA, string $playerB): int
+    {
+        if ($playerA === $playerB) return 0;
+
+        $activePlayers = $this->getActivePlayersInOrder($roomId);
+
+        $indexA = array_search($playerA, $activePlayers);
+        $indexB = array_search($playerB, $activePlayers);
+
+        // Si alguno no está en la mesa activa, están fuera de alcance absoluto
+        if ($indexA === false || $indexB === false) {
+            return 999;
+        }
+
+        $n = count($activePlayers);
+        $diff = abs($indexA - $indexB);
+
+        // Fórmula de distancia circular mínima
+        return min($diff, $n - $diff);
+    }
+
+    public function getPlayerRange(string $roomId, string $playerName): int
+    {
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+
+        // TODO: Cuando tengamos la mecánica de equipar cartas, las leeremos de aquí.
+        // $assets = json_decode(Redis::hget($playerKey, 'active_assets') ?: '[]', true);
+        // $bonus = contar_cuantas_visiones_hay_en($assets);
+        $bonus = 0;
+
+        return 1 + $bonus;
     }
 }

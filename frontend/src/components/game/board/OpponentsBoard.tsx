@@ -1,3 +1,7 @@
+// frontend/src/components/game/board/OpponentsBoard.tsx
+
+import { useMemo } from "react";
+
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
@@ -19,7 +23,7 @@ export function OpponentsBoard() {
 	const { opponents, current_turn } = game;
 	const isMyTurn = current_turn === myPlayerName;
 
-	// Calculamos dinámicamente el tipo de la carta seleccionada
+	// Calcular dinámicamente el tipo de la carta seleccionada
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 
@@ -29,9 +33,27 @@ export function OpponentsBoard() {
 
 		const success = await playTurn(selectedCardId, targetName);
 		if (success) {
-			setSelectedCardId(null); // Limpiamos la selección si el ataque tuvo éxito
+			setSelectedCardId(null); // Limpiar la selección si el ataque tuvo éxito
 		}
 	};
+
+	// --- ALGORITMO DE ORDENACIÓN SIMÉTRICA --
+    const symmetricallyOrderedOpponents = useMemo(() => {
+        // Ordenar todos los oponentes de mayor a menor distancia
+        const sorted = [...opponents].sort((a, b) => b.distance - a.distance);
+        const ordered: Opponent[] = [];
+
+        // Repartir desde el centro hacia los extremos
+        sorted.forEach((opponent, index) => {
+            if (index % 2 === 0) {
+                ordered.unshift(opponent); // Pares a la izquierda
+            } else {
+                ordered.push(opponent);    // Impares a la derecha
+            }
+        });
+
+        return ordered;
+    }, [opponents]);
 
 	return (
 		<div className="flex-1 bg-gray-900/50 rounded-xl border border-gray-800 p-6 flex flex-wrap justify-center items-center gap-6 overflow-y-auto relative">
@@ -46,10 +68,12 @@ export function OpponentsBoard() {
 				</div>
 			)}
 
-			{opponents.map((player: Opponent) => {
+			{/* AHORA ITERAMOS SOBRE EL ARRAY REORDENADO SIMÉTRICAMENTE */}
+			{symmetricallyOrderedOpponents.map((player: Opponent) => {
 				// --- REGLAS DE SELECCIÓN ---
 				const isCardActive = isMyTurn && selectedCardId !== null;
 				const isTargetingCard = [1, 4, 6, 9].includes(selectedCardType || 0);
+				const isOutOfRange = selectedCardType === 1 && !player.is_in_range;
 
 				const isUnstealable =
 					selectedCardType === 4 && player.cards_count === 0;
@@ -68,14 +92,17 @@ export function OpponentsBoard() {
 					tooltipMessage = "Este jugador está muerto.";
 					isUnclickable = true;
 				} else if (!player.is_online) {
-					tooltipMessage = "Este jugador está en desconectado.";
+					tooltipMessage = "Este jugador está desconectado.";
 					isUnclickable = true;
 				} else if (isCardActive && isTargetingCard) {
-					if (isUnstealable) {
-						tooltipMessage = "Este jugador no tiene cartas..";
+					if (isOutOfRange) {
+						tooltipMessage = "Este jugador está fuera de tu alcance visual.";
+						isUnclickable = true;
+					} else if (isUnstealable) {
+						tooltipMessage = "Este jugador no tiene cartas.";
 						isUnclickable = true;
 					} else if (isAlreadyBlocked) {
-						tooltipMessage = "Este jugador ya bloqueado.";
+						tooltipMessage = "Este jugador ya está bloqueado.";
 						isUnclickable = true;
 					} else if (isSabotageUntargetable) {
 						tooltipMessage = "Este jugador no tiene cartas que descartar.";
@@ -106,6 +133,15 @@ export function OpponentsBoard() {
                         `}
 						title={tooltipMessage || undefined}
 					>
+						{/* --- Indicador de Distancia --- */}
+						{!player.is_dead && player.is_online && (
+							<div
+								className="absolute top-1 left-2 text-[10px] text-gray-500 font-mono"
+								title={`Distancia: ${player.distance}`}
+							>
+								📍 {player.distance}
+							</div>
+						)}
 						{/* Indicadores visuales */}
 						{!player.is_online && (
 							<div className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">

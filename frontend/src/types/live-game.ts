@@ -49,6 +49,8 @@ export interface BasePlayer {
 export interface Opponent extends BasePlayer {
 	role: "boss" | "hidden";
 	cards_count: number;
+	distance: number;
+	is_in_range: boolean;
 }
 
 /**
@@ -72,6 +74,7 @@ export interface MyData extends BasePlayer {
 	turn_limits: TurnLimits;
 	combat_state: CombatState;
 	luck_challenge: string[] | null;
+	range?: number;
 }
 
 /**

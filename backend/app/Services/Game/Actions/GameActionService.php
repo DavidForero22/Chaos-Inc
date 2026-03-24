@@ -134,6 +134,9 @@ class GameActionService
             }
 
             Redis::del($pendingKey);
+        } elseif ($reaction === 'accept') {
+            app(CombatService::class)->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
+            Redis::del($pendingKey);
         } else {
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
