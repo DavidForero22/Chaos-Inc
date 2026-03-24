@@ -29,21 +29,18 @@ class ResolveLuckChallengeJob implements ShouldQueue
     {
         $challengeKey = "room:{$this->roomId}:luck_challenge:{$this->playerName}";
 
-        // Si la clave ya no existe, es que el jugador respondió a tiempo
-        if (!Redis::exists($challengeKey)) {
+        $deleted = Redis::del($challengeKey);
+
+        if ($deleted === 0) {
+            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$this->playerName} ya respondió.");
             return;
         }
 
-        Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$this->playerName} en {$this->roomId}");
+        Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$this->playerName} en {$this->roomId}. Saltando turno.");
 
-        // Forzamos el fallo
-        Redis::del($challengeKey);
-
-        // Mensaje de que se quedó dormido en la reunión
         $msg = __('game.luckyFailTimeout', ['player' => $this->playerName]);
         event(new RoomStateUpdated($this->roomId, $msg));
 
-        // Pasamos el turno al siguiente
         $turnService->advanceTurn($this->roomId);
     }
 }

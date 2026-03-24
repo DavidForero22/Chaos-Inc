@@ -25,7 +25,9 @@ export function LuckChallengeModal({
 	const [loading, setLoading] = useState(false);
 
 	// Timers
-	const luckChallengeSecondsLeft = useTimerStore((state) => state.singleAttackSecondsLeft);
+	const luckChallengeSecondsLeft = useTimerStore(
+		(state) => state.luckChallengeSecondsLeft,
+	);
 
 	const handleChoose = async (color: string) => {
 		if (loading || chosen) return;
@@ -70,11 +72,13 @@ export function LuckChallengeModal({
 					<button
 						key={color}
 						onClick={() => handleChoose(color)}
-						disabled={!!chosen || loading}
+						disabled={!!chosen || loading || luckChallengeSecondsLeft === null}
 						className={`h-20 rounded-xl border-2 transition font-bold text-white text-sm ${COLOR_STYLES[color]} ${
 							chosen === color ? "ring-4 ring-white scale-95" : ""
 						} ${chosen && chosen !== color ? "opacity-40" : ""} ${
-							chosen ? "cursor-not-allowed" : "cursor-pointer"
+							chosen || loading || luckChallengeSecondsLeft === null
+								? "cursor-not-allowed"
+								: "cursor-pointer"
 						}`}
 					/>
 				))}

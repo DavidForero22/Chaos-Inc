@@ -109,10 +109,6 @@ class PlayerHandService
         Redis::hdel($playerKey, 'must_discard_by');
         Redis::del("room:{$roomId}:pending_sabotage");
 
-        $logMessage = __('game.sabotage_resolved', [
-            'player' => $playerName
-        ]);
-
-        event(new RoomStateUpdated($roomId, $logMessage));
+        event(new RoomStateUpdated($roomId));
     }
 }

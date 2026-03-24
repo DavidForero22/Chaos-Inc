@@ -25,6 +25,7 @@ return [
     // Suerte
     'luckySuccess'          => ':player superó la prueba de suerte y puede jugar su turno.',
     'luckyFail'             => ':player falló la prueba de suerte y pierde su turno.',
+    'luckyFailTimeout'      => ':player no respondió a tiempo la prueba de suerte y pierde su turno.',
 
     // Conexiones
     'disconnected'          => ':player se ha desconectado.',

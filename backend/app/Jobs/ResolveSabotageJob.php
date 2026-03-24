@@ -48,7 +48,7 @@ class ResolveSabotageJob implements ShouldQueue
             $handService->resolveSabotage($this->roomId, $this->targetName, $randomCard['id'] ?? null);
 
             Log::info("ResolveSabotageJob.php - Descarte automático realizado en {$this->roomId} para {$this->targetName}");
-            event(new RoomStateUpdated($this->roomId, __("game.sabotage_auto_resolved", ['player' => $this->targetName])));
+            event(new RoomStateUpdated($this->roomId,));
         } else {
             // Caso raro: Si el jugador se quedó con 0 cartas de alguna otra forma (ej. otro evento simultáneo)
             // Simplemente limpiamos el estado.
