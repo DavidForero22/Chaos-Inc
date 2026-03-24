@@ -6,6 +6,7 @@ namespace App\Services\Game\Actions;
 use App\Events\RoomStateUpdated;
 use App\Jobs\ResolveMultiAttackJob;
 use App\Jobs\ResolveSabotageJob;
+use App\Jobs\ResolveSingleAttackJob;
 use App\Services\Game\Engine\CombatService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
@@ -33,6 +34,8 @@ class CardEffectService
                 'attacker' => $playerName,
                 'target'   => $targetName,
             ]);
+
+            ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName)->delay(15);
             return null;
         } else {
             // Si no hay defensa, el daño entra directo

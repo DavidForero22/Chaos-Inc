@@ -11,14 +11,17 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 
 	return (
 		<>
-			{/* Ataque simple entrante */}
-			{me.combat_state.is_defending_single &&
-				me.combat_state.attacker_name_single && (
-					<div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-400 animate-pulse z-20 whitespace-nowrap">
-						⚠️ ¡{me.combat_state.attacker_name_single} te está intentando
-						atacar!
-					</div>
-				)}
+			{/* Ataque simple entrante (Actualizado con temporizador) */}
+            {me.combat_state.is_defending_single &&
+                me.combat_state.attacker_name_single &&
+                timers.singleAttackSecondsLeft !== null && (
+                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-400 animate-pulse z-20 whitespace-nowrap flex items-center gap-2">
+                        ⚠️ ¡{me.combat_state.attacker_name_single} te está atacando! Decide en
+                        <span className="font-mono text-white bg-red-800 px-1.5 py-0.5 rounded text-xs">
+                            {timers.singleAttackSecondsLeft}s
+                        </span>
+                    </div>
+                )}
 
 			{/* Ataque global entrante */}
 			{me.combat_state.is_defending_multi &&

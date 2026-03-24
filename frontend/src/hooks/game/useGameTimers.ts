@@ -17,6 +17,8 @@ export function useGameTimers() {
 	const hasPendingMultiAttack =
 		gameData?.me?.combat_state.is_defending_multi ?? false;
 	const hasPendingSabotage = gameData?.me?.conditions.must_discard ?? false;
+	const hasIncomingAttack =
+		gameData?.me?.combat_state.is_defending_single ?? false;
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -135,6 +137,51 @@ export function useGameTimers() {
 		};
 	}, [hasPendingSabotage]);
 
+	// --- Countdown Ataque Simple (15s) ---
+	const [singleAttackSecondsLeft, setSingleAttackSecondsLeft] = useState<
+		number | null
+	>(null);
+	const prevHasIncomingAttackRef = useRef(false);
+	const singleAttackTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+		null,
+	);
+
+	useEffect(() => {
+		const isTarget = hasIncomingAttack;
+		const wasTarget = prevHasIncomingAttackRef.current;
+		prevHasIncomingAttackRef.current = isTarget;
+
+		if (isTarget && !wasTarget) {
+			setSingleAttackSecondsLeft(15);
+			if (singleAttackTimerRef.current)
+				clearInterval(singleAttackTimerRef.current);
+
+			singleAttackTimerRef.current = setInterval(() => {
+				setSingleAttackSecondsLeft((prev) => {
+					if (prev === null || prev <= 1) {
+						clearInterval(singleAttackTimerRef.current!);
+						singleAttackTimerRef.current = null;
+						return null; // El backend procesará el daño
+					}
+					return prev - 1;
+				});
+			}, 1000);
+		}
+
+		if (!isTarget && wasTarget) {
+			if (singleAttackTimerRef.current) {
+				clearInterval(singleAttackTimerRef.current);
+				singleAttackTimerRef.current = null;
+			}
+			setSingleAttackSecondsLeft(null);
+		}
+
+		return () => {
+			if (singleAttackTimerRef.current)
+				clearInterval(singleAttackTimerRef.current);
+		};
+	}, [hasIncomingAttack]);
+
 	return {
 		showBossWaiting: Boolean(bossDisconnected),
 		showActingBossWaiting: Boolean(actingBossDisconnected),
@@ -142,5 +189,6 @@ export function useGameTimers() {
 		showInheritanceBanner,
 		multiAttackSecondsLeft,
 		sabotageSecondsLeft,
+		singleAttackSecondsLeft,
 	};
 }
