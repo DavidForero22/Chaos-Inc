@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../../../api/axios.ts";
 import { Modal } from "../../ui/Modal.tsx";
-import { useGameTimers } from "../../../hooks/game/useGameTimers.ts";
+import { useTimerStore } from "../../../store/useTimerStore.ts";
 
 const COLOR_STYLES: Record<string, string> = {
 	red: "bg-red-600 hover:bg-red-500 border-red-400",
@@ -25,7 +25,7 @@ export function LuckChallengeModal({
 	const [loading, setLoading] = useState(false);
 
 	// Timers
-	const { luckChallengeSecondsLeft } = useGameTimers();
+	const luckChallengeSecondsLeft = useTimerStore((state) => state.singleAttackSecondsLeft);
 
 	const handleChoose = async (color: string) => {
 		if (loading || chosen) return;
