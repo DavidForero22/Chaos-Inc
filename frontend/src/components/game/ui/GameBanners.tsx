@@ -9,7 +9,6 @@ interface GameBannersProps {
 	showActingBossWaiting: boolean;
 	showEndingWaiting: boolean;
 	showInheritanceBanner: boolean;
-	multiAttackSecondsLeft: number | null;
 	playerPendingSabotage?: string | null;
 }
 
@@ -18,7 +17,6 @@ export function GameBanners({
 	showActingBossWaiting,
 	showEndingWaiting,
 	showInheritanceBanner,
-	multiAttackSecondsLeft,
 	playerPendingSabotage,
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
@@ -91,16 +89,6 @@ export function GameBanners({
 			{showEndingWaiting && (
 				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
 					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
-				</div>
-			)}
-
-			{multiAttackSecondsLeft !== null && (
-				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in shadow-[0_0_20px_rgba(220,38,38,0.4)]">
-					⚔️ ¡Ataque masivo! Decide en{" "}
-					<span className="font-mono text-white bg-red-800 px-1 rounded">
-						{multiAttackSecondsLeft}s
-					</span>{" "}
-					o recibirás daño.
 				</div>
 			)}
 

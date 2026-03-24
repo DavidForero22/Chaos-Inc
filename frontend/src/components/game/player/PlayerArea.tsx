@@ -7,14 +7,14 @@ import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
 
 export function PlayerArea() {
-	// 1. Datos del servidor (Solo lo necesario para el montaje)
+	// Datos del servidor (Solo lo necesario para el montaje)
 	const me = useGameStore((state) => state.gameData?.me);
 
-	// 2. Control de UI
+	// Control de UI
 	const { isDiscardMode, setIsDiscardMode, clearDiscardSelection } =
 		useGameUIStore();
 
-	// 3. Efecto: Forzar modo descarte cuando el jugador es saboteado
+	// Forzar modo descarte cuando el jugador es saboteado
 	useEffect(() => {
 		if (!me) return;
 
@@ -36,7 +36,7 @@ export function PlayerArea() {
 
 	return (
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
-			<PlayerBanners me={me} />
+			<PlayerBanners me={me}/>
 
 			<PlayerStats me={me} />
 

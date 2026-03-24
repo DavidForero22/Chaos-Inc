@@ -1,3 +1,4 @@
+import { useGameTimers } from "../../../hooks/game/useGameTimers.ts";
 import type { MyData } from "../../../types/live-game.ts";
 
 interface PlayerBannersProps {
@@ -5,6 +6,9 @@ interface PlayerBannersProps {
 }
 
 export function PlayerBanners({ me }: PlayerBannersProps) {
+	// Timers
+	const timers = useGameTimers();
+
 	return (
 		<>
 			{/* Ataque simple entrante */}
@@ -18,10 +22,14 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 
 			{/* Ataque global entrante */}
 			{me.combat_state.is_defending_multi &&
-				me.combat_state.attacker_name_multi && (
-					<div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-400 animate-pulse z-20 whitespace-nowrap">
+				me.combat_state.attacker_name_multi &&
+				timers.multiAttackSecondsLeft !== null && (
+					<div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-red-900/90 border border-red-500 text-red-100 text-sm font-bold px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.6)] animate-pulse z-20 whitespace-nowrap flex items-center gap-2">
 						⚠️ ¡{me.combat_state.attacker_name_multi} ha lanzado un ataque
-						global!
+						masivo! Decide en
+						<span className="font-mono text-white bg-red-600 px-1.5 py-0.5 rounded text-xs">
+							{timers.multiAttackSecondsLeft}s
+						</span>
 					</div>
 				)}
 
