@@ -9,6 +9,7 @@ use App\Jobs\CheckVictoryJob;
 use App\Jobs\CleanupRoomJob;
 use App\Models\User;
 use App\Services\Admin\GameService;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -116,7 +117,7 @@ class GameFinalizationService
         // Programar la destrucción total para dentro de 10 segundos
         CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
 
-        Log::info("GameFinalizationService.php - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
+        Log::info("GameFinalizationService.php::cancelAndCleanup - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
     }
 
     public function destroyRoom(string $roomId): void
@@ -126,9 +127,10 @@ class GameFinalizationService
         $cleanKeys = array_map(fn($key) => str_replace($prefix, '', $key), $allRoomKeys);
 
         if (!empty($cleanKeys)) {
-            Redis::del($cleanKeys);
+            Redis::del(...$cleanKeys);
         }
 
+        Log::info("GameFinalizationService.php::destroyRoom - Partida {$roomId} sin jugadores. Borrando partida.\n");
         Redis::srem("active_rooms", $roomId);
         event(new RoomListUpdated($roomId));
     }
@@ -164,11 +166,16 @@ class GameFinalizationService
         foreach ($players as $pName) {
             $pData    = Redis::hgetall("room:{$roomId}:player:{$pName}");
             $isOnline = ($pData['is_online'] ?? '1') !== '0';
-            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $isDead   = CastHelper::toBool($pData['is_dead'] ?? 0);
             if ($isOnline && !$isDead) {
                 $role = ($pData['acting_boss'] ?? '0') === '1' ? 'boss' : ($pData['role'] ?? '');
                 $onlineRoles[] = $role;
             }
+        }
+
+        // Si no hay nadie jugando, no evaluar victoria
+        if (count($onlineRoles) === 0) {
+            return false;
         }
 
         $hasUnion     = in_array('union', $onlineRoles);

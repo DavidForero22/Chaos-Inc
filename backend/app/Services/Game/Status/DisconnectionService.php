@@ -6,6 +6,7 @@ namespace App\Services\Game\Status;
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
 use App\Services\Game\Engine\TurnService;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -98,6 +99,8 @@ class DisconnectionService
                 if ($role === 'secretary' && $secretary === null) $secretary = $name;
                 if ($role === 'intern'    && $intern    === null) $intern    = $name;
             }
+
+            Log::info("DEBUG: Jugador {$name} tiene status de online = [{$isOnline}]");
         }
 
         // --- LA BARRERA ANTI-MODALS ---
@@ -153,31 +156,43 @@ class DisconnectionService
 
     public function processInGameDisconnection(string $roomId, string $playerName, string $roomKey): void
     {
-        // Si la partida ya terminó o la sala está siendo finalizada, ignorar
-        if (
-            Redis::hget("room:{$roomId}", 'game_over') === '1' ||
-            !Redis::exists("room:{$roomId}")
-        ) {
+        // Si la sala ni existe en Redis, no hacer nada
+        if (!Redis::exists($roomKey)) {
             return;
         }
 
+        // Registrar la desconexión 
         Redis::hset("room:{$roomId}:player:{$playerName}", 'is_online', 0);
         Redis::hset("room:{$roomId}:player:{$playerName}", 'disconnected_at', time());
 
         $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}");
-        $isDead = filter_var($playerData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+        $isDead = CastHelper::toBool($playerData['is_dead'] ?? 0);
 
         Log::info("DisconnectionService.php::processInGameDisconnection - $playerName abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}");
 
-        $onlineCount = 0;
+        // Contar cuántos quedan vivos y online
+        $onlineAndAliveCount = 0;
         foreach (Redis::smembers("{$roomKey}:players") as $pName) {
-            if (Redis::hget("{$roomKey}:player:{$pName}", 'is_online') === '1') {
-                $onlineCount++;
+            $pData = Redis::hgetall("{$roomKey}:player:{$pName}");
+            $pIsOnline = ($pData['is_online'] ?? '0') === '1';
+            $pIsDead = CastHelper::toBool($pData['is_dead'] ?? 0);
+            
+            if ($pIsOnline && !$pIsDead) {
+                $onlineAndAliveCount++;
             }
+
+            Log::info("DEBUG: Jugador {$pName} tiene status de online = [{$pIsOnline}]");
         }
 
-        if ($onlineCount === 0) {
+        // Si no queda nadie vivo y conectado, destruir la sala al instante
+        if ($onlineAndAliveCount === 0) {
+            Log::info("DisconnectionService.php - No quedan jugadores vivos/online en la sala {$roomId}. Destrucción instantánea.");
             $this->finalizationService->destroyRoom($roomId);
+            return;
+        }
+
+        // Si la partida ya terminó y aún queda alguien viendo la pantalla final, no procesar turnos ni herencias.
+        if (Redis::hget("room:{$roomId}", 'game_over') === '1') {
             return;
         }
 
@@ -192,18 +207,15 @@ class DisconnectionService
         $isRealBoss   = ($playerData['role'] ?? '') === 'boss';
         $isActingBoss = ($playerData['acting_boss'] ?? '0') === '1';
 
-        // 1. Damos prioridad a manejar la herencia del cargo ANTES de la victoria
+        // Dar prioridad a manejar la herencia del cargo antes de la victoria
         if ($isRealBoss) {
             $this->handleBossDisconnection($roomId, $playerName);
         } elseif ($isActingBoss) {
             $this->handleActingBossDisconnection($roomId, $playerName);
         }
 
-        // 2. Comprobamos victoria (incluso si se fue un jugador normal, 
-        // o si se fue el jefe y queremos que arranque el contador de fin de partida)
         $this->finalizationService->checkDisconnectionVictory($roomId);
 
-        // 3. Avanzar el turno
         $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
         event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
     }
