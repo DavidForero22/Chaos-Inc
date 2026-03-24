@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../../../api/axios.ts";
 import { Modal } from "../../ui/Modal.tsx";
+import { useGameTimers } from "../../../hooks/game/useGameTimers.ts";
 
 const COLOR_STYLES: Record<string, string> = {
 	red: "bg-red-600 hover:bg-red-500 border-red-400",
@@ -23,6 +24,9 @@ export function LuckChallengeModal({
 	const [chosen, setChosen] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
+	// Timers
+	const { luckChallengeSecondsLeft } = useGameTimers();
+
 	const handleChoose = async (color: string) => {
 		if (loading || chosen) return;
 		setLoading(true);
@@ -44,9 +48,22 @@ export function LuckChallengeModal({
 				¡Tu turno está bloqueado!
 			</p>
 			<h2 className="text-2xl font-black text-white mb-2">Prueba de suerte</h2>
-			<p className="text-gray-400 text-sm mb-8">
+
+			<p className="text-gray-400 text-sm mb-6">
 				Elige un color. Si aciertas el correcto, podrás jugar tu turno.
 			</p>
+
+			{/* NUEVO: El temporizador visual */}
+			{luckChallengeSecondsLeft !== null && (
+				<div className="bg-red-900/40 border border-red-700/50 text-red-300 px-3 py-2 rounded-lg mb-6 text-center animate-pulse flex flex-col items-center justify-center">
+					<span className="text-xs uppercase font-bold tracking-wider mb-1">
+						Tiempo Restante
+					</span>
+					<span className="font-mono text-2xl font-black text-white">
+						{luckChallengeSecondsLeft}s
+					</span>
+				</div>
+			)}
 
 			<div className="grid grid-cols-2 gap-4">
 				{colors.map((color) => (

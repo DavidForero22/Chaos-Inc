@@ -6,6 +6,7 @@ namespace App\Services\Game\Engine;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Jobs\ResolveLuckChallengeJob;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
@@ -66,6 +67,7 @@ class TurnService
                     $colors = ['red', 'blue', 'green', 'yellow'];
                     $correct = $colors[array_rand($colors)];
                     Redis::setex("room:{$roomId}:luck_challenge:{$nextPlayer}", 60, $correct);
+                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer)->delay(15);
                 }
 
                 break;

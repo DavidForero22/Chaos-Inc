@@ -19,6 +19,7 @@ export function useGameTimers() {
 	const hasPendingSabotage = gameData?.me?.conditions.must_discard ?? false;
 	const hasIncomingAttack =
 		gameData?.me?.combat_state.is_defending_single ?? false;
+	const hasLuckChallenge = !!gameData?.me?.luck_challenge;
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -182,6 +183,51 @@ export function useGameTimers() {
 		};
 	}, [hasIncomingAttack]);
 
+	// --- Countdown Prueba de Suerte (15s) ---
+	const [luckChallengeSecondsLeft, setLuckChallengeSecondsLeft] = useState<
+		number | null
+	>(null);
+	const prevHasLuckChallengeRef = useRef(false);
+	const luckChallengeTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+		null,
+	);
+
+	useEffect(() => {
+		const isTarget = hasLuckChallenge;
+		const wasTarget = prevHasLuckChallengeRef.current;
+		prevHasLuckChallengeRef.current = isTarget;
+
+		if (isTarget && !wasTarget) {
+			setLuckChallengeSecondsLeft(15);
+			if (luckChallengeTimerRef.current)
+				clearInterval(luckChallengeTimerRef.current);
+
+			luckChallengeTimerRef.current = setInterval(() => {
+				setLuckChallengeSecondsLeft((prev) => {
+					if (prev === null || prev <= 1) {
+						clearInterval(luckChallengeTimerRef.current!);
+						luckChallengeTimerRef.current = null;
+						return null; // El backend saltará el turno
+					}
+					return prev - 1;
+				});
+			}, 1000);
+		}
+
+		if (!isTarget && wasTarget) {
+			if (luckChallengeTimerRef.current) {
+				clearInterval(luckChallengeTimerRef.current);
+				luckChallengeTimerRef.current = null;
+			}
+			setLuckChallengeSecondsLeft(null);
+		}
+
+		return () => {
+			if (luckChallengeTimerRef.current)
+				clearInterval(luckChallengeTimerRef.current);
+		};
+	}, [hasLuckChallenge]);
+
 	return {
 		showBossWaiting: Boolean(bossDisconnected),
 		showActingBossWaiting: Boolean(actingBossDisconnected),
@@ -190,5 +236,6 @@ export function useGameTimers() {
 		multiAttackSecondsLeft,
 		sabotageSecondsLeft,
 		singleAttackSecondsLeft,
+		luckChallengeSecondsLeft,
 	};
 }
