@@ -75,6 +75,7 @@ class GameActionService
             8 => $this->cardValidationService->validateHealAll($roomId),
             9 => $this->cardValidationService->validateSabotage($roomId, $playerName, $targetName),
             10 => $this->cardValidationService->validateVision($roomId, $playerName),
+            11 => $this->cardValidationService->validateDistance($roomId, $playerName, $targetName),
             default => null,
         };
 
@@ -89,6 +90,7 @@ class GameActionService
             8 => $this->cardEffectService->applyHealAll($roomId),
             9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
+            11 => $this->cardEffectService->applyDistance($roomId, $playerName),
             default => null,
         };
 
@@ -107,6 +109,7 @@ class GameActionService
             8 => __('game.healed_all', ['player' => $playerName]),
             9 => __('game.sabotaged', ['player' => $playerName, 'target' => $targetName]),
             10 => __('game.vision_equipped', ['player' => $playerName]),
+            11 => __('game.distance_equipped', ['player' => $playerName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));

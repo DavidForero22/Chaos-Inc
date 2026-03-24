@@ -141,4 +141,16 @@ class CardValidationService
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes el alcance máximo permitido.", 422);
         }
     }
+
+    public function validateDistance(string $roomId, string $playerName, string $targetName): void
+    {
+        if ($playerName !== $targetName) {
+            throw new GameException(GameException::INVALID_TARGET, "Solo puedes aplicarte este efecto a ti.", 422);
+        }
+
+        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'distance_bonus');
+        if ($currentBonus >= 1) {
+            throw new GameException(GameException::INVALID_ACTION, "Tu escritorio ya está lo más lejos posible.", 422);
+        }
+    }
 }

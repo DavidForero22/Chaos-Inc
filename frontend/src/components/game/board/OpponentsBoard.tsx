@@ -175,6 +175,16 @@ export function OpponentsBoard() {
 							</div>
 						)}
 
+						{/* Lejania */}
+						{player.perks.distance_bonus > 0 && (
+							<div
+								title="Este jugador está a +1 de distancia."
+								className="absolute top-16 -left-3 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center"
+							>
+								<span>🏠</span>
+							</div>
+						)}
+
 						{player.is_dead && (
 							<div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800">
 								💀

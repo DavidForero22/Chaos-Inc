@@ -71,10 +71,16 @@ return [
             'description'       => 'Obliga a un rival a descartar una carta de su mano.',
             'count'             => 6,
         ],
-                [
+        [
             'id'                => 10,
             'name'              => 'Visión',
             'description'       => 'Te da +1 punto de rango de visión.',
+            'count'             => 6,
+        ],
+        [
+            'id'                => 11,
+            'name'              => 'Lejania',
+            'description'       => 'Los jugadores te ven a +1 de distancia.',
             'count'             => 6,
         ],
     ],

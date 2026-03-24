@@ -44,14 +44,7 @@ class GameDataResource extends JsonResource
 
             if ($pName === $myPlayerName) continue;
 
-            $distance = 999;
-            if (in_array($pName, $activePlayersInOrder) && in_array($myPlayerName, $activePlayersInOrder)) {
-                $indexMe = array_search($myPlayerName, $activePlayersInOrder);
-                $indexOp = array_search($pName, $activePlayersInOrder);
-                $n = count($activePlayersInOrder);
-                $diff = abs($indexMe - $indexOp);
-                $distance = min($diff, $n - $diff);
-            }
+            $distance = $combatService->getDistance($roomId, $myPlayerName, $pName);
 
             $opponents[] = [
                 'name'        => $pName,
@@ -74,6 +67,7 @@ class GameDataResource extends JsonResource
                     'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
                     'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
                     'vision_bonus' => (int) ($pData['range_bonus'] ?? 0),
+                    'distance_bonus' => (int) ($pData['distance_bonus'] ?? 0),
                 ],
             ];
         }

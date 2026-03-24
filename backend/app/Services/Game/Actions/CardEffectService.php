@@ -186,4 +186,9 @@ class CardEffectService
     {
         Redis::hincrby("room:{$roomId}:player:{$playerName}", 'range_bonus', 1);
     }
+
+    public function applyDistance(string $roomId, string $playerName): void
+    {
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'distance_bonus', 1);
+    }
 }

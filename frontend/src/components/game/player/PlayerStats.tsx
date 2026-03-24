@@ -13,7 +13,7 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 	}[me.role] || { color: "text-gray-400", label: "❓ DESCONOCIDO" };
 
 	// Separamos la validación visual
-	const hasAnyPerk = me.perks.has_shield || me.perks.vision_bonus > 0;
+	const hasAnyPerk = me.perks.has_shield || me.perks.vision_bonus > 0 ||me.perks.distance_bonus > 0;
 	const hasAnyCondition = me.conditions.is_blocked || me.conditions.acting_boss;
 
 	const myRange = me.perks.vision_range ?? 1;
@@ -74,6 +74,16 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 						>
 							👓{" "}
 							<span className="text-xs ml-0.5">x{me.perks.vision_bonus}</span>
+						</span>
+					)}
+
+					{/* Lejania */}
+					{me.perks.distance_bonus > 0 && (
+						<span
+							title={`Los demás te ven a +1 de distancia.`}
+							className="cursor-help hover:scale-110 transition-transform flex items-center"
+						>
+							🏠
 						</span>
 					)}
 

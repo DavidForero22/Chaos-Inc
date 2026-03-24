@@ -132,7 +132,6 @@ class CombatService
         $indexA = array_search($playerA, $activePlayers);
         $indexB = array_search($playerB, $activePlayers);
 
-        // Si alguno no está en la mesa activa, están fuera de alcance absoluto
         if ($indexA === false || $indexB === false) {
             return 999;
         }
@@ -140,8 +139,13 @@ class CombatService
         $n = count($activePlayers);
         $diff = abs($indexA - $indexB);
 
-        // Fórmula de distancia circular mínima
-        return min($diff, $n - $diff);
+        // Calcular la distancia física base
+        $baseDistance = min($diff, $n - $diff);
+
+        // Sumar el bonus de "lejanía" que tenga el objetivo
+        $targetBonus = (int) Redis::hget("room:{$roomId}:player:{$playerB}", 'distance_bonus') ?: 0;
+
+        return $baseDistance + $targetBonus;
     }
 
     public function getPlayerRange(string $roomId, string $playerName): int
