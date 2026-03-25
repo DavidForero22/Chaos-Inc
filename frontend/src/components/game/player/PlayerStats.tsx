@@ -1,10 +1,13 @@
 import type { MyData } from "../../../types/live-game";
+import { useGameUIStore } from "../../../store/useGameUIStore";
 
 interface PlayerStatsProps {
 	me: MyData;
 }
 
 export function PlayerStats({ me }: PlayerStatsProps) {
+	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
+
 	const roleConfig = {
 		boss: { color: "text-yellow-400", label: "👑 JEFE" },
 		secretary: { color: "text-blue-400", label: "📋 SECRETARIO" },
@@ -12,14 +15,51 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 		union: { color: "text-red-400", label: "✊ SINDICALISTA" },
 	}[me.role] || { color: "text-gray-400", label: "❓ DESCONOCIDO" };
 
-	// Separamos la validación visual
 	const hasAnyPerk =
 		me.perks.has_shield ||
-		me.perks.vision_bonus > 0 ||
-		me.perks.distance_bonus > 0;
+		(me.perks.vision_bonus ?? 0) > 0 ||
+		(me.perks.distance_bonus ?? 0) > 0;
 	const hasAnyCondition = me.conditions.is_blocked || me.conditions.acting_boss;
 
 	const myRange = me.perks.vision_range ?? 1;
+
+	// Helper para renderizar los iconos clickeables
+	const renderDiscardablePerk = (
+		id: string,
+		icon: string,
+		title: string,
+		count?: number,
+	) => {
+		const isMarked = perksToDiscard.includes(id);
+
+		const baseClasses = "flex items-center relative transition-transform";
+		let modeClasses = "cursor-help hover:scale-110";
+
+		if (isDiscardMode) {
+			modeClasses = isMarked
+				? "cursor-pointer scale-110 opacity-50 grayscale ring-2 ring-red-500 rounded-lg bg-red-900/30 px-1" // Estilo "marcado"
+				: "cursor-pointer hover:scale-110 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.3)] bg-gray-800 rounded px-1 border border-red-500/50"; // Estilo "parpadeo" parecido al banner
+		}
+
+		return (
+			<span
+				key={id}
+				title={isDiscardMode ? "Clic para descartar" : title}
+				className={`${baseClasses} ${modeClasses}`}
+				onClick={() => isDiscardMode && toggleDiscardPerk(id)}
+			>
+				{icon}
+				{count && count > 1 && (
+					<span className="text-[10px] ml-1 font-bold">x{count}</span>
+				)}
+				{isMarked && (
+					<div className="absolute -top-2 -right-2 text-red-500 text-[10px] font-black drop-shadow-md bg-gray-900 rounded-full w-4 h-4 flex items-center justify-center border border-red-500">
+						✕
+					</div>
+				)}
+			</span>
+		);
+	};
 
 	return (
 		<div className="bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50">
@@ -56,38 +96,29 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 			</div>
 
 			{/* EQUIPAMIENTO (Perks) */}
-			<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">
-				<span className="text-xs text-gray-500 uppercase">Equipamiento</span>
-				<div className="flex gap-2 text-lg">
-					{/* Escudo */}
-					{me.perks.has_shield && (
-						<span
-							title="Escudo Activo: Te protege del próximo ataque."
-							className="cursor-help hover:scale-110 transition-transform"
-						>
-							🛡️
-						</span>
-					)}
+			<div
+				className={`flex justify-between items-center mt-2 pt-2 border-t h-10 border-gray-800`}
+			>
+				<span className={`text-xs uppercase text-gray-500`}>Equipamiento</span>
+				<div className="flex gap-2 text-lg items-center">
+					{me.perks.has_shield &&
+						renderDiscardablePerk("has_shield", "🛡️", "Escudo Activo")}
 
-					{/* Visión Bonus */}
-					{me.perks.vision_bonus > 0 && (
-						<span
-							title={`+${me.perks.vision_bonus} de alcance.`}
-							className="cursor-help hover:scale-110 transition-transform flex items-center"
-						>
-							{me.perks.vision_bonus == 1 ? "👓" : "🔭"}
-						</span>
-					)}
+					{(me.perks.vision_bonus ?? 0) > 0 &&
+						renderDiscardablePerk(
+							"vision_bonus",
+							me.perks.vision_bonus == 1 ? "👓" : "🔭",
+							`+${me.perks.vision_bonus} de alcance`,
+							me.perks.vision_bonus,
+						)}
 
-					{/* Lejania */}
-					{me.perks.distance_bonus > 0 && (
-						<span
-							title={`Los demás te ven a +1 de distancia.`}
-							className="cursor-help hover:scale-110 transition-transform flex items-center"
-						>
-							🏠
-						</span>
-					)}
+					{(me.perks.distance_bonus ?? 0) > 0 &&
+						renderDiscardablePerk(
+							"distance_bonus",
+							"🏠",
+							"Los demás te ven a +1",
+							me.perks.distance_bonus,
+						)}
 
 					{!hasAnyPerk && (
 						<span className="text-gray-600 text-xs font-mono">-</span>

@@ -4,11 +4,13 @@ interface GameUIState {
 	selectedCardId: string | null;
 	isDiscardMode: boolean;
 	cardsToDiscard: string[];
+	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
 	toggleDiscardCard: (id: string, maxCards?: number) => void;
+	toggleDiscardPerk: (id: string, maxCards?: number) => void;
 	clearDiscardSelection: () => void;
 	handleLuckResult: (success: boolean) => void;
 }
@@ -17,6 +19,7 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	selectedCardId: null,
 	isDiscardMode: false,
 	cardsToDiscard: [],
+	perksToDiscard: [],
 	luckResult: null,
 
 	setSelectedCardId: (id) => set({ selectedCardId: id }),
@@ -25,6 +28,7 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 		set({
 			isDiscardMode: active,
 			cardsToDiscard: [], // Limpiar al entrar/salir del modo
+			perksToDiscard: [],
 			selectedCardId: null, // Deseleccionar cualquier carta activa
 		}),
 
@@ -46,10 +50,20 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 			return { cardsToDiscard: [...prev, id] };
 		}),
 
+	toggleDiscardPerk: (id) =>
+		set((state) => {
+			const prev = state.perksToDiscard;
+			if (prev.includes(id)) {
+				return { perksToDiscard: prev.filter((perkId) => perkId !== id) };
+			}
+			return { perksToDiscard: [...prev, id] };
+		}),
+
 	clearDiscardSelection: () =>
 		set({
 			isDiscardMode: false,
 			cardsToDiscard: [],
+			perksToDiscard: [],
 			selectedCardId: null, // Limpiar todo de golpe
 		}),
 

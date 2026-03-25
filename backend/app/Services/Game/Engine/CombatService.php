@@ -151,7 +151,7 @@ class CombatService
     public function getPlayerRange(string $roomId, string $playerName): int
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
-        $bonus = (int) Redis::hget($playerKey, 'range_bonus') ?: 0;
+        $bonus = (int) Redis::hget($playerKey, 'vision_bonus') ?: 0;
         return 1 + $bonus;
     }
 }

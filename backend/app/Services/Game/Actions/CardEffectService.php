@@ -184,7 +184,7 @@ class CardEffectService
 
     public function applyVision(string $roomId, string $playerName): void
     {
-        Redis::hincrby("room:{$roomId}:player:{$playerName}", 'range_bonus', 1);
+        Redis::hincrby("room:{$roomId}:player:{$playerName}", 'vision_bonus', 1);
     }
 
     public function applyDistance(string $roomId, string $playerName): void

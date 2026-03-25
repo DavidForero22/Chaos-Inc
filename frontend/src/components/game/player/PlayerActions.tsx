@@ -12,12 +12,14 @@ export function PlayerActions() {
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
 	const endTurn = useGameStore((state) => state.endTurn);
 	const discardCards = useGameStore((state) => state.discardCards);
+	const discardPerks = useGameStore((state) => state.discardPerks);
 	const resolveSabotage = useGameStore((state) => state.resolveSabotage);
 
 	// --- ESTADO LOCAL (UI) ---
 	const {
 		isDiscardMode,
 		cardsToDiscard,
+		perksToDiscard,
 		setIsDiscardMode,
 		clearDiscardSelection,
 	} = useGameUIStore();
@@ -39,6 +41,12 @@ export function PlayerActions() {
 	const isOverLimit = currentCardsCount > me.max_hand_size;
 	const willBeOverLimit = projectedCardsCount > me.max_hand_size;
 
+	const noSelection =
+		cardsToDiscard.length === 0 && perksToDiscard.length === 0;
+	const isEvadingSabotage =
+		me.conditions.must_discard && cardsToDiscard.length === 0;
+	const isConfirmDisabled = willBeOverLimit || noSelection || isEvadingSabotage;
+
 	// --- CONDICIONES DE BOTONES ---
 	const canEndTurn =
 		isMyTurn &&
@@ -57,14 +65,26 @@ export function PlayerActions() {
 		!hasPendingAttack &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
-		currentCardsCount > 0
+		currentCardsCount > 0;
 
 	// --- ACCIONES ---
-	const handleConfirmDiscard = () => {
+	const handleConfirmDiscard = async () => {
+		// Gestionar el descarte de cartas
 		if (me.conditions.must_discard) {
-			resolveSabotage(cardsToDiscard[0]);
+			// Si es un sabotaje, debes haber elegido al menos 1 carta
+			if (cardsToDiscard.length > 0) {
+				await resolveSabotage(cardsToDiscard[0]);
+			}
 		} else {
-			discardCards(cardsToDiscard);
+			// Si es descarte normal de final de turno
+			if (cardsToDiscard.length > 0) {
+				await discardCards(cardsToDiscard);
+			}
+		}
+
+		// Gestionar el descarte de perks
+		if (perksToDiscard.length > 0) {
+			await discardPerks(perksToDiscard);
 		}
 		clearDiscardSelection();
 	};
@@ -130,9 +150,9 @@ export function PlayerActions() {
 					{isDiscardMode ? (
 						<button
 							onClick={handleConfirmDiscard}
-							disabled={cardsToDiscard.length === 0 || willBeOverLimit}
+							disabled={isConfirmDisabled}
 							className={`px-4 py-2 rounded font-bold text-sm transition ${
-								cardsToDiscard.length > 0 && !willBeOverLimit
+								!isConfirmDisabled
 									? "bg-red-600 hover:bg-red-500 text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]"
 									: "bg-gray-700 text-gray-500 cursor-not-allowed"
 							}`}

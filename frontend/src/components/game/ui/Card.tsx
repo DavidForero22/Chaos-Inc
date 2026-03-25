@@ -1,4 +1,6 @@
+// src/components/game/ui/Card.tsx
 import type { CardInstance } from "../../../types/live-game";
+import { useGameUIStore } from "../../../store/useGameUIStore";
 
 interface CardProps {
 	card: CardInstance;
@@ -17,6 +19,8 @@ export function Card({
 	isMarkedForDiscard = false,
 	onClick,
 }: CardProps) {
+	const isDiscardMode = useGameUIStore((state) => state.isDiscardMode);
+
 	const baseClasses =
 		"shrink-0 w-24 h-36 rounded-lg border flex flex-col items-center justify-center shadow-lg transition-all text-center px-2 relative";
 
@@ -35,6 +39,9 @@ export function Card({
 	} else if (isHighlighted) {
 		stateClasses =
 			"bg-yellow-900/40 border-yellow-400 ring-2 ring-yellow-400 animate-pulse";
+	} else if (isDiscardMode && isSelectable) {
+		stateClasses =
+			"bg-gray-700 border-red-400/50 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]";
 	}
 
 	return (

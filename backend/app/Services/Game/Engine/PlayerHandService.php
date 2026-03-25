@@ -112,4 +112,50 @@ class PlayerHandService
 
         event(new RoomStateUpdated($roomId));
     }
+
+    public function discardPerks(string $roomId, string $playerName, array $perksToDiscard): void
+    {
+        $roomKey = "room:{$roomId}";
+
+        if (!Redis::exists($roomKey)) {
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        }
+
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        if ($currentTurn !== $playerName) {
+            throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
+        }
+
+        if (count($perksToDiscard) === 0) {
+            throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos un equipamiento para descartar.", 422);
+        }
+
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $discardedNames = [];
+
+        // Definir los nombres para el log
+        $allowedPerks = [
+            'has_shield'     => 'Escudo',
+            'vision_bonus'    => 'Visión',
+            'distance_bonus' => 'Lejania'
+        ];
+
+        // Iterar directamente sobre las llaves enviadas
+        foreach ($perksToDiscard as $perkKey) {
+            if (array_key_exists($perkKey, $allowedPerks)) {
+                Redis::hset($playerKey, $perkKey, 0);
+                $discardedNames[] = $allowedPerks[$perkKey];
+            }
+        }
+
+        if (!empty($discardedNames)) {
+            $perksString = implode(', ', $discardedNames);
+
+            $logMessage = __('game.perks_discarded', [
+                'player' => $playerName,
+                'perks'  => $perksString,
+            ]);
+            event(new RoomStateUpdated($roomId, $logMessage));
+        }
+    }
 }

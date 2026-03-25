@@ -178,4 +178,23 @@ class LiveGameController extends Controller
 
         return response()->json(['message' => 'Discard reaction processed'], 200);
     }
+
+    public function discardPerks(Request $request, $id)
+    {
+        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+
+        if (!$playerName) {
+            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
+        }
+
+        $request->validate([
+            'perk_ids'   => 'required|array',
+            'perk_ids.*' => 'string'
+        ]);
+
+        $this->playerHandService->discardPerks($id, $playerName, $request->input('perk_ids'));
+
+        return response()->json(['message' => 'Perks discarded successfully'], 200);
+    }
 }

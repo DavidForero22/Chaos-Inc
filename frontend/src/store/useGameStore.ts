@@ -41,6 +41,7 @@ interface GameState {
 	) => Promise<boolean>;
 	endTurn: () => Promise<void>;
 	discardCards: (cardIds: string[]) => Promise<void>;
+	discardPerks: (perkIds: string[]) => Promise<void>;
 	resolveSabotage: (cardId: string) => Promise<void>;
 	resetStore: () => void;
 }
@@ -205,6 +206,20 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 	},
 
+	discardPerks: async (perkIds: string[]) => {
+		const { roomId, syncGame } = get();
+		if (!roomId) return;
+
+		try {
+			await api.post(`/rooms/${roomId}/discard-perks`, { perk_ids: perkIds });
+			await syncGame();
+		} catch (error: any) {
+			alert(
+				error.response?.data?.message || "Error al descartar el equipamiento.",
+			);
+		}
+	},
+	
 	resolveSabotage: async (cardId: string) => {
 		const { roomId, syncGame } = get();
 		if (!roomId) return;

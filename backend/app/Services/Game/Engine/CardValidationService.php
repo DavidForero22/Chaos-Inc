@@ -136,7 +136,7 @@ class CardValidationService
 
     public function validateVision(string $roomId, string $playerName): void
     {
-        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'range_bonus');
+        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'vision_bonus');
         if ($currentBonus >= 2) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes el alcance máximo permitido.", 422);
         }

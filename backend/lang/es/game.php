@@ -36,5 +36,6 @@ return [
     'reconnected'           => ':player se ha reconectado.',
 
     // Acciones de partida
-    'discarded' => ':player ha descartado :count cartas.',
+    'discarded'             => ':player ha descartado :count cartas.',
+    'perks_discarded'       => ':player ha descartado su equipamiento: :perks.',
 ];
