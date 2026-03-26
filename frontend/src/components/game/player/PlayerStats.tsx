@@ -31,13 +31,13 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 	) => {
 		const isMarked = perksToDiscard.includes(id);
 
-		const baseClasses = "flex items-center relative transition-transform";
+		const baseClasses = "flex items-center relative transition-transform bg-gray-800 rounded px-1 border border-gray-500/50";
 		let modeClasses = "cursor-help hover:scale-110";
 
 		if (isDiscardMode) {
 			modeClasses = isMarked
-				? "cursor-pointer scale-110 opacity-50 grayscale ring-2 ring-red-500 rounded-lg bg-red-900/30 px-1" // Estilo "marcado"
-				: "cursor-pointer hover:scale-110 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.3)] bg-gray-800 rounded px-1 border border-red-500/50"; // Estilo "parpadeo" parecido al banner
+				? "cursor-pointer scale-110 ring-2 ring-red-500 rounded-lg bg-red-900/30 px-1" // Estilo "marcado"
+				: "cursor-pointer hover:scale-110 animate-pulse bg-gray-800 rounded px-1 border border-red-500/50"; // Estilo "parpadeo" parecido al banner
 		}
 
 		return (
@@ -48,11 +48,6 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				onClick={() => isDiscardMode && toggleDiscardPerk(id)}
 			>
 				{icon}
-				{isMarked && (
-					<div className="absolute -top-2 -right-2 text-red-500 text-[10px] font-black drop-shadow-md bg-gray-900 rounded-full w-4 h-4 flex items-center justify-center border border-red-500">
-						✕
-					</div>
-				)}
 			</span>
 		);
 	};
