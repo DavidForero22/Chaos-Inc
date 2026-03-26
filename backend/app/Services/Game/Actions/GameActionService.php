@@ -24,7 +24,7 @@ class GameActionService
         protected CardValidationService $cardValidationService,
     ) {}
 
-    public function playAction(string $roomId, string $playerName, string $cardId, string $targetName): void
+    public function playAction(string $roomId, string $playerName, string $cardId, string $targetName, ?string $perkKey = null): void
     {
         $roomKey = "room:{$roomId}";
 
@@ -76,6 +76,7 @@ class GameActionService
             9 => $this->cardValidationService->validateSabotage($roomId, $playerName, $targetName),
             10 => $this->cardValidationService->validateVision($roomId, $playerName),
             11 => $this->cardValidationService->validateDistance($roomId, $playerName, $targetName),
+            12 => $this->cardValidationService->validateClean($roomId, $playerName, $targetName, $perkKey),
             default => null,
         };
 
@@ -91,6 +92,7 @@ class GameActionService
             9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
+            12 => $this->cardEffectService->applyClean($roomId, $playerName, $targetName, $perkKey),
             default => null,
         };
 
@@ -110,6 +112,7 @@ class GameActionService
             9 => __('game.sabotaged', ['player' => $playerName, 'target' => $targetName]),
             10 => __('game.vision_equipped', ['player' => $playerName]),
             11 => __('game.distance_equipped', ['player' => $playerName]),
+            12 => __('game.cleaned', ['player' => $playerName, 'targer' => $targetName, 'perkKey' => $perkKey]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));

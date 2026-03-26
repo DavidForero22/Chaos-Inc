@@ -30,7 +30,11 @@ interface GameState {
 	clearLogs: () => void;
 
 	syncGame: () => Promise<void>;
-	playTurn: (cardId: string, targetName: string) => Promise<boolean>;
+	playTurn: (
+		cardId: string,
+		targetName: string,
+		perkKey?: string,
+	) => Promise<boolean>;
 	reactToAttack: (
 		reaction: "dodge" | "accept",
 		cardId?: string,
@@ -129,7 +133,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 	},
 
-	playTurn: async (cardId, targetName) => {
+	playTurn: async (cardId, targetName, perkKey) => {
 		const { roomId, syncGame } = get();
 		if (!roomId) return false;
 
@@ -137,6 +141,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await api.post(`/rooms/${roomId}/action`, {
 				card_id: cardId,
 				target_name: targetName,
+				...(perkKey && { perk_key: perkKey }),
 			});
 			await syncGame();
 			return true;
@@ -219,7 +224,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			);
 		}
 	},
-	
+
 	resolveSabotage: async (cardId: string) => {
 		const { roomId, syncGame } = get();
 		if (!roomId) return;

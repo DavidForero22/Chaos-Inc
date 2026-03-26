@@ -153,4 +153,24 @@ class CardValidationService
             throw new GameException(GameException::INVALID_ACTION, "Tu escritorio ya está lo más lejos posible.", 422);
         }
     }
+
+    public function validateClean(string $roomId, string $playerName, string $targetName, ?string $perkKey): void
+    {
+        if ($playerName === $targetName) {
+            throw new GameException(GameException::INVALID_ACTION, "No puedes limpiarte a ti mismo.", 422);
+        }
+
+        if (!$perkKey) {
+            throw new GameException(GameException::INVALID_ACTION, "Debes especificar qué equipamiento quieres quitar.", 422);
+        }
+
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+        
+        // Comprobar si el rival tiene ese equipamiento activo (> 0)
+        $perkValue = (int) Redis::hget($targetKey, $perkKey);
+
+        if ($perkValue <= 0) {
+            throw new GameException(GameException::INVALID_ACTION, "El jugador objetivo no tiene ese equipamiento activo.", 422);
+        }
+    }
 }

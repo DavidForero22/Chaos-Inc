@@ -191,4 +191,21 @@ class CardEffectService
     {
         Redis::hset("room:{$roomId}:player:{$playerName}", 'distance_bonus', 1);
     }
+
+    public function applyClean(string $roomId, string $playerName, string $targetName, string $perkKey): void
+    {
+        $targetKey = "room:{$roomId}:player:{$targetName}";
+
+        Redis::hset($targetKey, $perkKey, 0);
+
+        $perkNames = [
+            'has_shield'     => 'Escudo',
+            'vision_bonus'   => 'Visión',
+            'distance_bonus' => 'Lejanía'
+        ];
+        $perkName = $perkNames[$perkKey] ?? 'Equipamiento';
+
+        $logMessage = "{$playerName} ha quitado una Auditoría a {$targetName}, destruyendo su {$perkName}.";
+        event(new RoomStateUpdated($roomId, $logMessage));
+    }
 }

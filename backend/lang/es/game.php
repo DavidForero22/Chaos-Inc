@@ -16,7 +16,8 @@ return [
     'sabotaged'             => ':player ha saboteado a :target, obligándole a descartar una carta.',
     'vision_equipped'       => ':player se ha equipado visión.',
     'distance_equipped'     => ':player se ha equipado lejania.',
-    'attack_auto_resolved'  => ':player no respondió a tiempo al ataque, ha sido dañado..',
+    'attack_auto_resolved'  => ':player no respondió a tiempo al ataque, ha sido dañado.',
+    'cleaned'               => ':player le ha quitado :perkKey a :target.',
     
 
     // Ataque múltiple

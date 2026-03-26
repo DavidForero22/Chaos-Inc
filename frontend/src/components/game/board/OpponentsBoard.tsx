@@ -28,10 +28,14 @@ export function OpponentsBoard() {
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
 
 	// --- LÓGICA DE CLIC INTERNA ---
-	const handleAction = async (targetName: string, isOnline: boolean) => {
+	const handleAction = async (
+		targetName: string,
+		isOnline: boolean,
+		perkKey?: string,
+	) => {
 		if (!isMyTurn || !selectedCardId || !isOnline) return;
 
-		const success = await playTurn(selectedCardId, targetName);
+		const success = await playTurn(selectedCardId, targetName, perkKey);
 		if (success) {
 			setSelectedCardId(null); // Limpiar la selección si el ataque tuvo éxito
 		}
@@ -115,6 +119,41 @@ export function OpponentsBoard() {
 					player.perks?.has_shield ?? (player as any).has_shield;
 				const visionBonus = player.perks?.vision_bonus ?? 0;
 
+				const renderOpponentPerk = (
+					perkKey: string,
+					icon: React.ReactNode,
+					title: string,
+					baseColor: string,
+					positionClasses: string,
+				) => {
+					const isAuditMode = selectedCardType === 12 && isMyTurn;
+					const canBeAudited =
+						isAuditMode && !player.is_dead && player.is_online;
+
+					return (
+						<div
+							title={
+								canBeAudited
+									? "Clic para auditar (destruir) este equipamiento"
+									: title
+							}
+							onClick={(e) => {
+								if (canBeAudited) {
+									e.stopPropagation(); // Evita que se haga clic en el jugador sin querer
+									handleAction(player.name, player.is_online, perkKey);
+								}
+							}}
+							className={`absolute ${positionClasses} text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center transition-all ${
+								canBeAudited
+									? "cursor-crosshair animate-pulse ring-2 ring-red-500 hover:scale-125 bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"
+									: baseColor
+							}`}
+						>
+							{icon}
+						</div>
+					);
+				};
+
 				return (
 					<div
 						key={player.name}
@@ -143,8 +182,9 @@ export function OpponentsBoard() {
 						{/* Indicadores visuales */}
 						{!player.is_online && (
 							<div
-							title="Este jugador ha abandonado la partida"
-							className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50">
+								title="Este jugador ha abandonado la partida"
+								className="absolute -top-3 -right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg animate-pulse z-50"
+							>
 								🔌 OFFLINE
 							</div>
 						)}
@@ -158,48 +198,47 @@ export function OpponentsBoard() {
 							</div>
 						)}
 
-						{/* Escudo */}
-						{hasShield && (
-							<div
-								title="Este jugador tiene un escudo activo"
-								className="absolute top-24 -left-3 bg-cyan-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
-							>
-								🛡️
-							</div>
-						)}
+						{hasShield &&
+							renderOpponentPerk(
+								"has_shield",
+								"🛡️",
+								"Este jugador tiene un escudo activo",
+								"bg-cyan-700",
+								"top-24 -left-3",
+							)}
 
-						{/* Vision */}
-						{visionBonus > 0 && (
-							<div
-								title={`Este jugador ve a +${visionBonus} de distancia`}
-								className="absolute top-8 -left-3 bg-blue-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center"
-							>
-								{visionBonus == 1 ? "👓" : "🔭"}
-							</div>
-						)}
+						{visionBonus > 0 &&
+							renderOpponentPerk(
+								"vision_bonus",
+								visionBonus == 1 ? "👓" : "🔭",
+								`Este jugador ve a +${visionBonus} de distancia`,
+								"bg-blue-700",
+								"top-8 -left-3",
+							)}
 
-						{/* Lejania */}
-						{player.perks.distance_bonus > 0 && (
-							<div
-								title="Este jugador está a +1 de distancia"
-								className="absolute top-16 -left-3 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center"
-							>
-								<span>🏠</span>
-							</div>
-						)}
+						{player.perks.distance_bonus > 0 &&
+							renderOpponentPerk(
+								"distance_bonus",
+								<span>🏠</span>,
+								"Este jugador está a +1 de distancia",
+								"bg-blue-500",
+								"top-16 -left-3",
+							)}
 
 						{player.is_dead && (
 							<div
-							title="Este jugador ha sido derrotado"
-							className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800">
+								title="Este jugador ha sido derrotado"
+								className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gray-900 text-red-500 text-xs font-bold px-2 py-1 rounded shadow-lg z-50 border border-red-800"
+							>
 								💀
 							</div>
 						)}
 
 						{isPlayerBlocked && (
 							<div
-							title="Este jugador tiene un bloqueo"
-							className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50">
+								title="Este jugador tiene un bloqueo"
+								className="absolute -top-3 right-6 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50"
+							>
 								🔒
 							</div>
 						)}

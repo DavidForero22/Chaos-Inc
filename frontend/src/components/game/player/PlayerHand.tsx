@@ -49,6 +49,15 @@ export function PlayerHand() {
 		(o) => !o.is_dead && o.is_online && o.distance <= myRange,
 	);
 
+	const anyOpponentHasPerks = opponents.some(
+		(o) =>
+			!o.is_dead &&
+			o.is_online &&
+			(o.perks.has_shield ||
+				o.perks.vision_bonus > 0 ||
+				o.perks.distance_bonus > 0),
+	);
+
 	// --- MANEJADOR DE CLIC CENTRALIZADO ---
 	const handleCardClick = (card: CardInstance) => {
 		if (isDiscardMode) {
@@ -139,6 +148,7 @@ export function PlayerHand() {
 							card.type === 10 && me.perks.vision_bonus >= 2;
 						const isDistanceDisabled =
 							card.type === 11 && (me.perks.distance_bonus ?? 0) >= 1;
+						const isAuditDisabled = card.type === 12 && !anyOpponentHasPerks;
 
 						const isDisabled =
 							isHealDisabled ||
@@ -151,7 +161,8 @@ export function PlayerHand() {
 							isAttackAllDisabled ||
 							isSabotageDisabled ||
 							isVisionDisabled ||
-							isDistanceDisabled;
+							isDistanceDisabled ||
+							isAuditDisabled;
 
 						const canUseDodgeNow =
 							(incomingAttack || hasPendingMultiAttack) && card.type === 3;

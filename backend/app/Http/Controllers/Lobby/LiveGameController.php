@@ -68,7 +68,8 @@ class LiveGameController extends Controller
             $id,
             $playerName,
             $request->input('card_id'),
-            $request->input('target_name')
+            $request->input('target_name'),
+            $request->input('perk_key')
         );
 
         return response()->json(['message' => 'Action executed successfully'], 200);

@@ -83,5 +83,11 @@ return [
             'description'       => 'Los jugadores te ven a +1 de distancia.',
             'count'             => 6,
         ],
+        [
+            'id'                => 12,
+            'name'              => 'Limpieza',
+            'description'       => 'Destruye un equipamiento activo de cualquier compañero.',
+            'count'             => 6, 
+        ],
     ],
 ];

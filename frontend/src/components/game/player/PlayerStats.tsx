@@ -28,7 +28,6 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 		id: string,
 		icon: string,
 		title: string,
-		count?: number,
 	) => {
 		const isMarked = perksToDiscard.includes(id);
 
@@ -49,9 +48,6 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				onClick={() => isDiscardMode && toggleDiscardPerk(id)}
 			>
 				{icon}
-				{count && count > 1 && (
-					<span className="text-[10px] ml-1 font-bold">x{count}</span>
-				)}
 				{isMarked && (
 					<div className="absolute -top-2 -right-2 text-red-500 text-[10px] font-black drop-shadow-md bg-gray-900 rounded-full w-4 h-4 flex items-center justify-center border border-red-500">
 						✕
@@ -108,16 +104,14 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 						renderDiscardablePerk(
 							"vision_bonus",
 							me.perks.vision_bonus == 1 ? "👓" : "🔭",
-							`+${me.perks.vision_bonus} de alcance`,
-							me.perks.vision_bonus,
+							`Ves a +${me.perks.vision_bonus} de alcance`,
 						)}
 
 					{(me.perks.distance_bonus ?? 0) > 0 &&
 						renderDiscardablePerk(
 							"distance_bonus",
 							"🏠",
-							"Los demás te ven a +1",
-							me.perks.distance_bonus,
+							"Los demás te ven a +1 de alcance",
 						)}
 
 					{!hasAnyPerk && (
