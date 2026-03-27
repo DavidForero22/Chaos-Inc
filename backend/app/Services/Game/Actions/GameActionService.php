@@ -78,6 +78,7 @@ class GameActionService
             11 => $this->cardValidationService->validateDistance($roomId, $playerName, $targetName),
             12 => $this->cardValidationService->validateClean($roomId, $playerName, $targetName, $perkKey),
             13 => $this->cardValidationService->validateStorage($roomId, $playerName),
+            14 => $this->cardValidationService->validateLuck($roomId, $playerName),
             default => null,
         };
 
@@ -95,6 +96,7 @@ class GameActionService
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
             12 => $this->cardEffectService->applyClean($roomId, $playerName, $targetName, $perkKey),
             13 => $this->cardEffectService->applyStorage($roomId, $playerName),
+            14 => $this->cardEffectService->applyLuck($roomId, $playerName),
             default => null,
         };
 
@@ -116,6 +118,7 @@ class GameActionService
             11 => __('game.distance_equipped', ['player' => $playerName]),
             12 => __('game.cleaned', ['player' => $playerName, 'targer' => $targetName, 'perkKey' => $perkKey]),
             13 => __('game.storaged', ['player' => $playerName]),
+            14 => __('game.lucked', ['player' => $playerName]),
             default => null,
         };
         event(new RoomStateUpdated($roomId, $logMessage));

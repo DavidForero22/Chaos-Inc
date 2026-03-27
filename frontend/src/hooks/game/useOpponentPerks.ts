@@ -43,6 +43,13 @@ export function useOpponentPerks(player: Opponent) {
 				title: "Límite de cartas en mano +1",
 			});
 		}
+		if (player.perks?.has_storage) {
+			list.push({
+				id: "has_luck",
+				icon: "🍀",
+				title: "50% de que robe una carta más al iniciar el turno",
+			});
+		}
 
 		// 2. Rellenamos con huecos vacíos hasta tener exactamente 3
 		const slots: OpponentPerkSlot[] = [...list];

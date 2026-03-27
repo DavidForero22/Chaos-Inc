@@ -77,6 +77,7 @@ class MyDataResource extends JsonResource
                 'vision_bonus' => (int) ($myData['vision_bonus'] ?? 0),
                 'distance_bonus' => (int) ($myData['distance_bonus'] ?? 0),
                 'has_storage' => CastHelper::toBool($myData['has_storage'] ?? 0),
+                'has_luck'    => CastHelper::toBool($myData['has_luck'] ?? 0),
             ],
 
             // Límites del turno actual

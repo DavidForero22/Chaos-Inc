@@ -193,6 +193,17 @@ class CardValidationService
         $this->checkPerkLimit($roomId, $playerName);
     }
 
+    public function validateLuck(string $roomId, string $playerName): void
+    {
+        $hasInertia = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'has_luck');
+
+        if ($hasInertia >= 1) {
+            throw new GameException(GameException::INVALID_ACTION, "Ya tienes una carta de suerte.", 422);
+        }
+
+        $this->checkPerkLimit($roomId, $playerName);
+    }
+
     private function checkPerkLimit(string $roomId, string $playerName): void
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
@@ -201,15 +212,17 @@ class CardValidationService
         $visionBonus = (int) Redis::hget($playerKey, 'vision_bonus');
         $distanceBonus = (int) Redis::hget($playerKey, 'distance_bonus');
         $hasStorage = (int) Redis::hget($playerKey, 'has_storage');
+        $hasLuck    = (int) Redis::hget($playerKey, 'has_luck');
 
         $slotsUsed = 0;
         if ($hasShield > 0) $slotsUsed++;
         if ($visionBonus > 0) $slotsUsed++;
         if ($distanceBonus > 0) $slotsUsed++;
         if ($hasStorage > 0) $slotsUsed++;
+        if ($hasLuck > 0) $slotsUsed++;
 
         if ($slotsUsed >= 3) {
-            throw new GameException(GameException::INVALID_ACTION, "Tu escritorio está lleno. Has alcanzado el límite de 3 equipamientos.", 422);
+            throw new GameException(GameException::INVALID_ACTION, "Has alcanzado el límite de 3 pasivas.", 422);
         }
     }
 }

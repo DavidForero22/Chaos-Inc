@@ -102,7 +102,7 @@ export function useCardPlayability(
 		const isCleanDisabled = card.type === 12 && !anyOpponentHasPerks;
 
 		let isPerkLimitReached = false;
-		if ([5, 11, 13].includes(card.type)) {
+		if ([5, 11, 13, 14].includes(card.type)) {
 			// Escudo, Lejanía o Deposito: bloqueados si tiene 3 slots llenos
 			isPerkLimitReached = myActivePerksCount >= 3;
 		} else if (card.type === 10) {
@@ -121,6 +121,8 @@ export function useCardPlayability(
 			isPerkLimitReached;
 		const isStorageDisabled =
 			(card.type === 13 && me.perks.has_storage) || isPerkLimitReached;
+		const isLuckDisabled =
+			(card.type === 14 && me.perks.has_luck) || isPerkLimitReached;
 
 		const isDisabled =
 			isHealDisabled ||
@@ -135,7 +137,8 @@ export function useCardPlayability(
 			isVisionDisabled ||
 			isDistanceDisabled ||
 			isCleanDisabled ||
-			isStorageDisabled;
+			isStorageDisabled ||
+			isLuckDisabled;
 
 		// Evaluar condiciones especiales
 		const canUseDodgeNow =

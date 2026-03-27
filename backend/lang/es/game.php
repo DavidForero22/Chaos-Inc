@@ -19,6 +19,8 @@ return [
     'attack_auto_resolved'  => ':player no respondió a tiempo al ataque, ha sido dañado.',
     'cleaned'               => ':player le ha quitado :perkKey a :target.',
     'storaged'              => ':player se ha equipado almacen.',
+    'lucked'                => ':player se ha equipado suerte.',
+    'lucked_sucess'         => ':player tuvo suerte y tomó una carta extra.',
     
 
     // Ataque múltiple

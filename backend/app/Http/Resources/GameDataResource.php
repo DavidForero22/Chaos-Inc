@@ -69,6 +69,7 @@ class GameDataResource extends JsonResource
                     'vision_bonus' => (int) ($pData['vision_bonus'] ?? 0),
                     'distance_bonus' => (int) ($pData['distance_bonus'] ?? 0),
                     'has_storage' => CastHelper::toBool($myData['has_storage'] ?? 0),
+                    'has_luck'    => CastHelper::toBool($myData['has_luck'] ?? 0),
                 ],
             ];
         }

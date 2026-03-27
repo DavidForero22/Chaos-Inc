@@ -75,6 +75,8 @@ export function PlayerHand() {
 			return playTurn(card.id, myPlayerName);
 		if (card.type === 13 && !me.perks.has_storage)
 			return playTurn(card.id, myPlayerName);
+		if (card.type === 14 && !me.perks.has_luck)
+			return playTurn(card.id, myPlayerName);
 
 		// Si es una carta de targeteo a otro, seleccionarla
 		setSelectedCardId(selectedCardId === card.id ? null : card.id);

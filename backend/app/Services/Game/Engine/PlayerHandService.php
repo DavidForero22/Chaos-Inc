@@ -138,7 +138,8 @@ class PlayerHandService
             'has_shield'     => 'Escudo',
             'vision_bonus'    => 'Visión',
             'distance_bonus' => 'Lejania',
-            'has_storage' => 'Almacen'
+            'has_storage' => 'Almacen',
+            'has_luck' => 'Suerte'
         ];
 
         // Iterar directamente sobre las llaves enviadas

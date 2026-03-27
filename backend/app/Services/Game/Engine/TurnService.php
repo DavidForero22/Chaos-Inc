@@ -54,7 +54,22 @@ class TurnService
 
             if ($isOnline && !$isDead) {
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
-                $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, 2);
+
+                $cardsToDraw = 2; 
+                $hasInertia = CastHelper::toBool(Redis::hget($playerKey, 'has_luck') ?? 0);
+
+                if ($hasInertia) {
+                    // Tirar los dados: 50% de probabilidad (del 1 al 100, si es <= 50 gana)
+                    if (rand(1, 100) <= 50) {
+                        $cardsToDraw = 3;
+
+                        $logMessage = __('game.lucked_sucess', ['player' => $nextPlayer]);
+                        event(new RoomStateUpdated($roomId, $logMessage));
+                    }
+                }
+
+                $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, $cardsToDraw);
+                // ------------------------------------------
 
                 if ($hasWrapped) {
                     Redis::hincrby($roomKey, 'round_number', 1);

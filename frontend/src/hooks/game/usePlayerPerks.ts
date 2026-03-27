@@ -50,6 +50,14 @@ export function usePlayerStats(me: MyData) {
 			});
 		}
 
+		if (me.perks.has_luck) {
+			list.push({
+				id: "has_luck",
+				icon: "🍀",
+				title: "50% de tomar una carta extra al inicio del turno.",
+			});
+		}
+
 		// Rellenar con huecos vacios
 		const slots: PerkSlot[] = [...list];
 		while (slots.length < 3) {
