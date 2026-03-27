@@ -1,6 +1,10 @@
+// src/api/axios.ts
+
 import axios from "axios";
+
 import { useAuthStore } from "../store/useAuthStore.ts";
 import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { logWithTime } from "../utils/logger.ts";
 
 const api = axios.create({
 	baseURL: "http://localhost:8000/api/v1",
@@ -22,8 +26,7 @@ api.interceptors.request.use((config) => {
 	}
 
 	// Token de Partida (Game Token)
-	// Buscamos si tenemos un token temporal para jugar en una sala
-	const gameToken = sessionStorage.getItem("game_token");
+	const gameToken = localStorage.getItem("game_token");
 	if (gameToken) {
 		config.headers["X-Game-Token"] = gameToken;
 	}
@@ -39,14 +42,50 @@ api.interceptors.response.use(
 	},
 	(error) => {
 		useLoadingStore.getState().stopLoading();
-		console.error("Error en la API:", error.response);
-		// Si el token expira o nos echan, limpiar token
-		if (error.response?.status === 401) {
-			const url = error.config?.url ?? "";
-			if (url.includes("/sync") || url.includes("/leave")) {
-				sessionStorage.removeItem("game_token");
+
+		const status = error.response?.status;
+		const url = error.config?.url ?? "";
+		const isAuthRoute =
+			url.includes("/login") ||
+			url.includes("/register") ||
+			url.includes("/guest");
+
+		if (status === 401 && !isAuthRoute) {
+			// Si es un 401 de una ruta exclusiva de sala, solo borar el game_token
+			if (
+				url.includes("/sync") ||
+				url.includes("/leave") ||
+				url.includes("/report-disconnect")
+			) {
+				localStorage.removeItem("game_token");
+				logWithTime(
+					"[Sala] Sesión de juego caducada. Limpiando game_token...",
+					null,
+					"warn",
+				);
+				return Promise.resolve({ data: null });
 			}
+
+			// Usuario no existe.
+			logWithTime(
+				"[Auth] Usuario invitado purgado o token inválido. Limpiando sesión...",
+				null,
+				"warn",
+			);
+
+			localStorage.removeItem("game_token");
+			useAuthStore.getState().logout();
+
+			if (window.location.pathname !== "/") {
+				window.location.href = "/";
+			}
+
+			return Promise.resolve({ data: null });
 		}
+
+		// Error general
+		logWithTime("Error en la API", error, "error");
+
 		return Promise.reject(error);
 	},
 );

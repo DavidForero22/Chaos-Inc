@@ -1,12 +1,13 @@
 <?php
+// app/Http/Controllers/AuthController.php
 
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
 use Illuminate\Http\Request;
-use App\Services\AuthService;
 use App\Http\Resources\UserResource;
+use App\Services\Auth\AuthService;
 
 class AuthController extends Controller
 {
@@ -15,6 +16,13 @@ class AuthController extends Controller
     public function __construct(AuthService $authService)
     {
         $this->authService = $authService;
+    }
+
+    public function me(Request $request)
+    {
+        return response()->json([
+            'user' => new UserResource($request->user())
+        ], 200);
     }
 
     public function register(RegisterUserRequest $request)

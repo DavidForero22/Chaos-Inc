@@ -1,4 +1,5 @@
 <?php
+// app/Policies/UserPolicy.php
 
 namespace App\Policies;
 

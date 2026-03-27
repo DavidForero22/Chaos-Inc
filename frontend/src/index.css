@@ -1,7 +1,1 @@
 @import "tailwindcss";
-
-/* Así se añaden ahora tus colores personalizados en la v4 directamente en el CSS */
-@theme {
-  --color-bang-brown: #5d4037;
-  --color-bang-red: #d32f2f;
-}

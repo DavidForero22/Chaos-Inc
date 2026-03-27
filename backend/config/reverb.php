@@ -87,6 +87,13 @@ return [
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections' => env('REVERB_APP_MAX_CONNECTIONS'),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),
+
+                'webhooks' => [
+                    [
+                        'url' => env('REVERB_WEBHOOK_URL', 'http://backend:8000/api/v1/webhooks/reverb'),
+                        'event_types' => ['member_removed', 'member_added'],
+                    ],
+                ],
             ],
         ],
 

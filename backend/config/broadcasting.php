@@ -42,7 +42,6 @@ return [
                 'useTLS' => false,
             ],
             'client_options' => [
-                // FORZAMOS A GUZZLE A NO VERIFICAR SSL EN LOCAL
                 'verify' => false,
             ],
         ],

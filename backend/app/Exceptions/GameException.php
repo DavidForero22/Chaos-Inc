@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 class GameException extends Exception
 {
@@ -13,6 +16,9 @@ class GameException extends Exception
     const INVALID_TARGET = 'INVALID_TARGET';
     const CARD_NOT_IN_HAND = 'CARD_NOT_IN_HAND';
     const INVALID_ACTION = 'INVALID_ACTION';
+    const CANNOT_SKIP_DURING_ENDING = 'CANNOT_SKIP_DURING_ENDING';
+    const GAME_OVER = 'GAME_OVER';
+
     protected string $errorType;
 
     public function __construct(string $errorType, string $message, int $code = 400)
@@ -24,5 +30,21 @@ class GameException extends Exception
     public function getErrorType(): string
     {
         return $this->errorType;
+    }
+
+    /**
+     * Renderiza la excepción en una respuesta HTTP y escribe el log limpio.
+     */
+    public function render(Request $request): JsonResponse
+    {
+        $roomId = $request->route('id') ?? $request->route('room') ?? 'Desconocida';
+        $username = $request->user() ? $request->user()->username : 'Desconocido';
+
+        Log::warning("GameException [{$this->errorType}]: {$this->message} | Sala: {$roomId} | Usuario: {$username}");
+
+        return response()->json([
+            'error' => $this->getMessage(),
+            'type' => $this->getErrorType()
+        ], $this->getCode());
     }
 }

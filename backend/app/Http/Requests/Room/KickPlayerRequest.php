@@ -14,7 +14,6 @@ class KickPlayerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'admin_name'     => 'sometimes|string|max:255',
             'player_to_kick' => 'required|string|max:255',
         ];
     }
