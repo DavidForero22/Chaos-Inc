@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
-import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 
 // -- PÁGINAS --
 import MainMenuPage from "./pages/MainMenuPage.tsx";
@@ -31,7 +30,6 @@ function App() {
 	return (
 		<Router>
 			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-				<GlobalLoader />
 				<Navbar />
 
 				<div className="p-6 grow">

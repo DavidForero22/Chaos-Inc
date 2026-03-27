@@ -14,13 +14,17 @@ export function useLobby() {
 
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
+	const [isLoading, setIsLoading] = useState(true);
 
 	const fetchRooms = useCallback(async () => {
+		setIsLoading(true);
 		try {
 			const response = await api.get("/rooms");
 			setRooms(response.data);
 		} catch (error) {
 			console.error("Error al cargar las salas:", error);
+		} finally {
+			setIsLoading(false);
 		}
 	}, []);
 
@@ -70,5 +74,6 @@ export function useLobby() {
 		setFilterStatus,
 		handleJoinRoom,
 		user,
+		isLoading,
 	};
 }
