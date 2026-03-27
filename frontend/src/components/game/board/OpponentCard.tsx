@@ -4,6 +4,9 @@ import {
 	useOpponentPerks,
 	type OpponentPerkSlot,
 } from "../../../hooks/game/useOpponentPerks.ts";
+import { useState } from "react";
+import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
+import type { CardInstance } from "../../../types/live-game.ts";
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -21,6 +24,7 @@ export function OpponentCard({
 	onAction,
 }: OpponentCardProps) {
 	const opponentPerks = useOpponentPerks(player);
+	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
 
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCardId !== null;
@@ -61,8 +65,7 @@ export function OpponentCard({
 
 	const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
 	const isCleanMode = selectedCardType === 12 && isMyTurn;
-	const canCleanGlobally =
-		isCleanMode && !player.is_dead && player.is_online;
+	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
 
 	// --- HELPER PARA DIBUJAR PERKS EN LA BANDEJA ---
 	const renderPerkSlot = (slot: OpponentPerkSlot) => {
@@ -87,15 +90,22 @@ export function OpponentCard({
 						: slot.title
 				}
 				onClick={(e) => {
+					e.stopPropagation();
 					if (canCleanGlobally) {
-						e.stopPropagation();
 						onAction(player.name, player.is_online, slot.id);
+					} else if (slot.cardType !== undefined) {
+						setInfoCard({
+							id: slot.id,
+							type: slot.cardType,
+							name: slot.name ?? slot.title,
+							description: slot.title,
+						});
 					}
 				}}
 				className={`flex items-center justify-center w-8 h-8 text-white text-[14px] font-bold rounded shadow-sm transition-all hover:scale-110 ${
 					canCleanGlobally
 						? "cursor-pointer animate-pulse ring-1 ring-red-500 bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.8)] z-50 relative"
-						: `cursor-help border border-gray-600`
+						: "cursor-help border border-gray-600"
 				}`}
 			>
 				{slot.icon}
@@ -195,6 +205,10 @@ export function OpponentCard({
 					{opponentPerks.map(renderPerkSlot)}
 				</div>
 			</div>
+
+			{infoCard && (
+				<CardInfoModal card={infoCard} onClose={() => setInfoCard(null)} />
+			)}
 		</div>
 	);
 }

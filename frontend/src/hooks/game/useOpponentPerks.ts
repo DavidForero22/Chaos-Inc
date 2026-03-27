@@ -7,18 +7,22 @@ export interface OpponentPerkSlot {
 	icon: string;
 	title: string;
 	isEmpty?: boolean;
+	cardType?: number;
+	name?: string;
 }
 
 export function useOpponentPerks(player: Opponent) {
 	return useMemo(() => {
 		const list: OpponentPerkSlot[] = [];
 
-		// 1. Recopilamos todos los perks activos del oponente
+		// Recopilar todos los perks activos del oponente
 		if (player.perks?.has_shield) {
 			list.push({
 				id: "has_shield",
 				icon: "🛡️",
 				title: "Escudo Activo",
+				cardType: 5,
+				name: "Escudo",
 			});
 		}
 		if ((player.perks?.vision_bonus ?? 0) > 0) {
@@ -27,6 +31,8 @@ export function useOpponentPerks(player: Opponent) {
 				id: "vision_bonus",
 				icon: vb === 1 ? "👓" : "🔭",
 				title: `Ve a +${vb} de alcance`,
+				cardType: 10,
+				name: "Visión",
 			});
 		}
 		if ((player.perks?.distance_bonus ?? 0) > 0) {
@@ -34,6 +40,8 @@ export function useOpponentPerks(player: Opponent) {
 				id: "distance_bonus",
 				icon: "🏠",
 				title: "Está a +1 de distancia",
+				cardType: 11,
+				name: "Lejanía",
 			});
 		}
 		if (player.perks?.has_storage) {
@@ -41,17 +49,21 @@ export function useOpponentPerks(player: Opponent) {
 				id: "has_storage",
 				icon: "💼",
 				title: "Límite de cartas en mano +1",
+				cardType: 13,
+				name: "Almacén",
 			});
 		}
-		if (player.perks?.has_storage) {
+		if (player.perks?.has_luck) {
 			list.push({
 				id: "has_luck",
 				icon: "🍀",
 				title: "50% de que robe una carta más al iniciar el turno",
+				cardType: 14,
+				name: "Suerte",
 			});
 		}
 
-		// 2. Rellenamos con huecos vacíos hasta tener exactamente 3
+		// Rellenar con huecos vacíos hasta tener exactamente 3
 		const slots: OpponentPerkSlot[] = [...list];
 		while (slots.length < 3) {
 			slots.push({

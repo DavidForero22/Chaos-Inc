@@ -1,4 +1,5 @@
 import type { CardInstance } from "../../../types/live-game.ts";
+import { createPortal } from "react-dom";
 
 const CARD_LORE: Record<number, string> = {
 	1: "En toda oficina hay tensión acumulada. A veces, un empujón bien dado puede ser la gota que colme el vaso de tu rival.",
@@ -22,7 +23,7 @@ interface CardInfoModalProps {
 }
 
 export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
-	return (
+	return createPortal (
 		<div
 			className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
 			onClick={onClose}
@@ -58,6 +59,7 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 					</p>
 				</div>
 			</div>
-		</div>
+		</div>,
+		document.body
 	);
 }
