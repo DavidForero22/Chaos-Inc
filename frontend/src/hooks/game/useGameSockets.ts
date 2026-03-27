@@ -1,26 +1,72 @@
+// src/hooks/game/useGameSockets.ts
+
 import { useEffect } from "react";
 import echo from "../../echo";
+import { logWithTime } from "../../utils/logger";
+import api from "../../api/axios";
+import { useGameStore } from "../../store/useGameStore.ts";
 
 interface UseGameSocketsProps {
-    roomId: string | undefined;
-    refreshGameData: () => void;
+	roomId: string | undefined;
 }
 
-export function useGameSockets({ roomId, refreshGameData }: UseGameSocketsProps) {
-    useEffect(() => {
-        if (!roomId) return;
+export function useGameSockets({ roomId }: UseGameSocketsProps) {
+	useEffect(() => {
+		if (!roomId) return;
 
-        const channel = echo.channel(`room.${roomId}`);
+		const roomChannel = echo.join(`room.${roomId}`);
+		const connectedAt = Date.now();
 
-        // Escucha cualquier cambio de estado
-        channel.listen(".RoomStateUpdated", () => {
-            console.log("El estado del tablero ha cambiado, recargando...");
-            refreshGameData();
-        });
+		roomChannel
+			.here((users: any[]) => {
+				logWithTime(
+					`useGameSockets.ts - Hay ${users.length} usuarios en la sala.`,
+				);
+			})
+			.joining((user: any) => {
+				logWithTime(
+					`useGameSockets.ts - ${user.username} se ha conectado al socket.`,
+				);
+			})
+			.leaving((user: any) => {
+				const secondsSinceConnect = (Date.now() - connectedAt) / 1000;
+				if (secondsSinceConnect < 2) return;
 
-        return () => {
-            channel.stopListening(".RoomStateUpdated");
-            echo.leaveChannel(`room.${roomId}`);
-        };
-    }, [roomId, refreshGameData]);
+				logWithTime(
+					`useGameSockets.ts - ${user.username} cerró la ventana o perdió conexión.`,
+				);
+
+				api
+					.post(`/rooms/${roomId}/report-disconnect`, {
+						disconnected_player: user.username,
+					})
+					.then(() => {
+						logWithTime(`report-disconnect enviado para ${user.username}`);
+
+						const state = useGameStore.getState();
+						if (!state.isConnecting && !state.gameOver) {
+							state.syncGame();
+						}
+					})
+					.catch(() => {});
+			})
+			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
+				logWithTime("useGameSockets.ts - Estado actualizado.");
+
+				const state = useGameStore.getState();
+
+				if (data.log_message) {
+					state.addLog(data.log_message);
+				}
+
+				if (!state.isConnecting && !state.gameOver) {
+					state.syncGame();
+				}
+			});
+
+		return () => {
+			roomChannel.stopListening(".RoomStateUpdated");
+			echo.leave(`room.${roomId}`);
+		};
+	}, [roomId]);
 }

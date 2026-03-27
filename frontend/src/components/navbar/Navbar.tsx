@@ -1,3 +1,5 @@
+// src/components/navbar/Navbar.tsx
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.ts";
@@ -5,7 +7,7 @@ import LoginModal from "./LoginModal.tsx";
 import RegisterModal from "./RegisterModal.tsx";
 
 export default function Navbar() {
-	const { user, logout } = useAuthStore();
+	const { user, isGuest, role } = useAuthStore();
 
 	const [showLogin, setShowLogin] = useState(false);
 	const [showRegister, setShowRegister] = useState(false);
@@ -23,28 +25,45 @@ export default function Navbar() {
 					>
 						Salas
 					</Link>
-					<Link
-						to="/logs"
-						className="text-gray-400 hover:text-white transition text-sm font-medium"
-					>
-						Logs
-					</Link>
 				</div>
 
 				<div className="flex gap-4 items-center">
 					{user ? (
-						<>
-							<span className="text-sm text-gray-400">
-								Jugador: <strong className="text-blue-400">{user}</strong>
-							</span>
-							<button
-								onClick={logout}
-								className="text-sm px-4 py-1.5 bg-gray-700 hover:bg-gray-600 rounded text-white transition"
-							>
-								Salir
-							</button>
-						</>
+						// Está con usuario invitado
+						isGuest ? (
+							<div className="flex gap-3 items-center">
+								<span className="text-sm text-gray-500">
+									👤 <span className="text-gray-400">{user}</span>
+									<span className="text-xs text-gray-600 ml-1">(invitado)</span>
+								</span>
+								<button
+									onClick={() => setShowRegister(true)}
+									className="text-sm px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition"
+								>
+									Registrarse
+								</button>
+							</div>
+						) : (
+							// Está con usuario normal
+							<div className="flex gap-3 items-center">
+								{role === "admin" && (
+									<Link
+										to="/admin"
+										className="text-sm text-red-400 hover:text-red-300 transition font-medium"
+									>
+										⚙️ Admin
+									</Link>
+								)}
+								<Link
+									to="/profile"
+									className="text-sm text-gray-400 hover:text-white transition font-medium"
+								>
+									👤 <strong className="text-blue-400">{user}</strong>
+								</Link>
+							</div>
+						)
 					) : (
+						// No está con usuario
 						<>
 							<button
 								onClick={() => setShowLogin(true)}

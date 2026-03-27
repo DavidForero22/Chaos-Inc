@@ -1,43 +1,37 @@
+// src/hooks/room/useRoomSockets.ts
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
+import api from "../../api/axios";
+import { useRoomStore } from "../../store/useRoomStore";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;
-	isJoining: boolean;
-	needsPassword: boolean;
-	myPlayerName: string;
-	fetchRoomData: () => void;
 }
 
-export function useRoomSockets({
-	roomId,
-	isJoining,
-	needsPassword,
-	myPlayerName,
-	fetchRoomData,
-}: UseRoomSocketsProps) {
+export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 	const navigate = useNavigate();
+	const { isJoining, needsPassword, fetchRoomData } = useRoomStore();
 
 	useEffect(() => {
 		if (isJoining || needsPassword || !roomId) return;
 
-		console.log("Estado de sala actualizado.")
-		const channel = echo.channel(`room.${roomId}`);
+		const channel = echo.join(`room.${roomId}`);
 
-		channel.listen(".RoomStateUpdated", () => {
-            console.log("Alguien entró/salió en RoomStateUpdated, recargando datos...");
-            fetchRoomData();
-        });
-
-		channel.listen(".GameStarted", () => {
-			navigate(`/game/${roomId}`, { state: { playerName: myPlayerName } });
-		});
+		channel
+			.leaving((user: any) => {
+				api.post(`/rooms/${roomId}/report-lobby-disconnect`, {
+					disconnected_player: user.username,
+				});
+				fetchRoomData();
+			})
+			.listen(".RoomStateUpdated", () => fetchRoomData())
+			.listen(".GameStarted", () => {
+				navigate(`/game/${roomId}`);
+			});
 
 		return () => {
-			channel.stopListening(".RoomStateUpdated");
-			channel.stopListening(".GameStarted");
-			echo.leaveChannel(`room.${roomId}`);
+			echo.leave(`room.${roomId}`);
 		};
-	}, [roomId, isJoining, needsPassword, fetchRoomData, navigate, myPlayerName]);
+	}, [roomId, isJoining, needsPassword, fetchRoomData, navigate]);
 }

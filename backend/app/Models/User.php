@@ -1,4 +1,5 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
@@ -19,7 +20,7 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
-    protected $fillable = ['username', 'email', 'password', 'role'];
+    protected $fillable = ['username', 'email', 'password', 'role', 'is_guest'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -29,7 +30,7 @@ class User extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     // Relación: Un usuario participa en muchas partidas (Muchos a Muchos)
-    public function matches()
+    public function games()
     {
         return $this->belongsToMany(Game::class)
             ->withPivot('has_won', 'role', 'damage_dealt', 'damage_received', 'cards_played', 'eliminations')

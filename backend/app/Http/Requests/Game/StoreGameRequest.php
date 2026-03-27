@@ -20,14 +20,16 @@ class StoreGameRequest extends FormRequest
             'total_eliminations' => 'required|integer|min:0',
 
             // Validación del array de jugadores para la tabla pivote 'game_user'
-            'players' => 'required|array|min:2', // Al menos 2 jugadores
-            'players.*.user_id' => 'required|exists:users,id',
-            'players.*.has_won' => 'required|boolean',
-            'players.*.role' => 'required|in:boss,secretary,intern,union',
-            'players.*.damage_dealt' => 'required|integer|min:0',
-            'players.*.damage_received' => 'required|integer|min:0',
-            'players.*.cards_played' => 'required|integer|min:0',
-            'players.*.eliminations' => 'required|integer|min:0',
+            'players'                        => 'required|array|min:3|max:3',
+            'players.*.user_id'              => 'nullable|exists:users,id',
+            'players.*.is_guest'             => 'required|boolean',
+            'players.*.display_name'         => 'required|string|max:20',
+            'players.*.has_won'              => 'required|boolean',
+            'players.*.role'                 => 'required|in:boss,secretary,intern,union',
+            'players.*.damage_dealt'         => 'required|integer|min:0',
+            'players.*.damage_received'      => 'required|integer|min:0',
+            'players.*.cards_played'         => 'required|integer|min:0',
+            'players.*.eliminations'         => 'required|integer|min:0',
         ];
     }
 

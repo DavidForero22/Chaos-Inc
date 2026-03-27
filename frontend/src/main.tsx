@@ -3,6 +3,5 @@ import "./index.css";
 import App from "./App.tsx";
 
 import "./bootstrap";
-import "./app";
 
 createRoot(document.getElementById("root")!).render(<App />);

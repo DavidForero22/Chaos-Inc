@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import echo from "../echo";
-import type { RoomData } from "../types/types.ts";
+import type { RoomData } from "../types/api.ts";
 import { useAuthStore } from "../store/useAuthStore.ts";
 
 export function useLobby() {

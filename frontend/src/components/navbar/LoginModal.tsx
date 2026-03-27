@@ -1,3 +1,5 @@
+// src/components/navbar/LoginModal.tsx
+
 import { useState } from "react";
 import api from "../../api/axios";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -9,7 +11,6 @@ interface LoginModalProps {
 export default function LoginModal({ onClose }: LoginModalProps) {
 	const { setAuth } = useAuthStore();
 
-	// Cambiamos el estado para usar un identificador único (login)
 	const [credentials, setCredentials] = useState({
 		login: "",
 		password: "",
@@ -18,10 +19,9 @@ export default function LoginModal({ onClose }: LoginModalProps) {
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			// Enviamos "login" en lugar de "email" para que el backend busque por ambos
 			const res = await api.post("/login", credentials);
-			setAuth(res.data.user.username, res.data.token);
-			onClose(); // Cerramos el modal tras el éxito
+			setAuth(res.data.user.username, res.data.token, false, res.data.user.role);
+			onClose();
 		} catch (error) {
 			alert("Error al iniciar sesión. Revisa tus credenciales.");
 		}

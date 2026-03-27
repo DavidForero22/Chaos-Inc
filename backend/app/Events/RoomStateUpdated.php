@@ -1,33 +1,40 @@
 <?php
+// app/Events/RoomStateUpdated.php
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class RoomStateUpdated implements ShouldBroadcast
+class RoomStateUpdated implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $roomId;
+    public string $roomId;
+    public ?string $logMessage;
 
-    public function __construct(string $roomId)
+    public function __construct(string $roomId, ?string $logMessage = null)
     {
         $this->roomId = $roomId;
+        $this->logMessage = $logMessage;
+    }
+
+    public function broadcastWith(): array
+    {
+        return [
+            'roomId'      => $this->roomId,
+            'log_message' => $this->logMessage,
+        ];
     }
 
     public function broadcastOn(): array
     {
-        // SOLO enviamos el evento a los que están dentro de esta sala
-        return [
-            new Channel('room.' . $this->roomId),
-        ];
+        return [new PresenceChannel('room.' . $this->roomId)];
     }
 
-    // Le decimos a Laravel Echo cómo se llama exactamente el evento (para no tener que usar App\Events\...)
     public function broadcastAs(): string
     {
         return 'RoomStateUpdated';

@@ -1,8 +1,9 @@
 <?php
+// app/Events/GameStarted.php
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PresenceChannel; 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -21,9 +22,8 @@ class GameStarted implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        // Se emite al mismo canal de la sala donde están esperando los jugadores
         return [
-            new Channel('room.' . $this->roomId),
+            new PresenceChannel('room.' . $this->roomId),
         ];
     }
 
