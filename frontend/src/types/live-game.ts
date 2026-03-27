@@ -25,6 +25,7 @@ export interface PlayerPerks {
 	vision_range: number;
 	vision_bonus: number;
 	distance_bonus: number;
+	has_storage: boolean;
 }
 
 export interface TurnLimits {

@@ -208,4 +208,9 @@ class CardEffectService
         $logMessage = "{$playerName} ha quitado una Auditoría a {$targetName}, destruyendo su {$perkName}.";
         event(new RoomStateUpdated($roomId, $logMessage));
     }
+
+    public function applyStorage(string $roomId, string $playerName): void
+    {
+        Redis::hset("room:{$roomId}:player:{$playerName}", 'has_storage', 1);
+    }
 }

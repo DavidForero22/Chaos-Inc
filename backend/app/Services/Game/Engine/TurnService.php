@@ -115,13 +115,15 @@ class TurnService
         }
 
         // Validar límite de cartas en mano
-        $playerData  = Redis::hgetall($playerKey);
+        $playerData     = Redis::hgetall($playerKey);
         $currentStress  = (int) ($playerData['stress'] ?? 0);
         $isBossOrActing = ($playerData['role'] ?? '') === 'boss'
             || CastHelper::toBool($playerData['acting_boss'] ?? 0);
-        $maxStress   = $isBossOrActing ? 5 : 4;
-        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
-        $currentCards = json_decode($playerData['cards'] ?? '[]', true);
+        $maxStress      = $isBossOrActing ? 5 : 4;
+
+        $storageBonus   = CastHelper::toBool($playerData['has_storage'] ?? 0) ? 1 : 0;
+        $maxHandSize    = max(1, ($maxStress + 1) - $currentStress) + $storageBonus;
+        $currentCards   = json_decode($playerData['cards'] ?? '[]', true);
 
         if (count($currentCards) > $maxHandSize) {
             throw new GameException(

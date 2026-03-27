@@ -1,6 +1,9 @@
 // frontend/src/components/game/board/OpponentCard.tsx
-
 import type { Opponent } from "../../../types/live-game.ts";
+import {
+	useOpponentPerks,
+	type OpponentPerkSlot,
+} from "../../../hooks/game/useOpponentPerks.ts";
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -17,6 +20,8 @@ export function OpponentCard({
 	selectedCardType,
 	onAction,
 }: OpponentCardProps) {
+	const opponentPerks = useOpponentPerks(player);
+
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCardId !== null;
 	const isTargetingCard = [1, 4, 6, 9].includes(selectedCardType || 0);
@@ -55,40 +60,45 @@ export function OpponentCard({
 	}
 
 	const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
-	const hasShield = player.perks?.has_shield ?? (player as any).has_shield;
-	const visionBonus = player.perks?.vision_bonus ?? 0;
+	const isCleanMode = selectedCardType === 12 && isMyTurn;
+	const canCleanGlobally =
+		isCleanMode && !player.is_dead && player.is_online;
 
-	// --- HELPER PARA DIBUJAR PERKS INTERACTIVOS ---
-	const renderOpponentPerk = (
-		perkKey: string,
-		icon: React.ReactNode,
-		title: string,
-		baseColor: string,
-		positionClasses: string,
-	) => {
-		const isAuditMode = selectedCardType === 12 && isMyTurn;
-		const canBeAudited = isAuditMode && !player.is_dead && player.is_online;
+	// --- HELPER PARA DIBUJAR PERKS EN LA BANDEJA ---
+	const renderPerkSlot = (slot: OpponentPerkSlot) => {
+		if (slot.isEmpty) {
+			return (
+				<div
+					key={slot.id}
+					title={slot.title}
+					className="flex items-center justify-center w-7 h-7 text-xs text-gray-600 font-mono bg-gray-900 rounded border border-gray-700/50"
+				>
+					{slot.icon}
+				</div>
+			);
+		}
 
 		return (
 			<div
+				key={slot.id}
 				title={
-					canBeAudited
-						? "Clic para auditar (destruir) este equipamiento"
-						: title
+					canCleanGlobally
+						? "Clic para descartar este equipamiento"
+						: slot.title
 				}
 				onClick={(e) => {
-					if (canBeAudited) {
+					if (canCleanGlobally) {
 						e.stopPropagation();
-						onAction(player.name, player.is_online, perkKey);
+						onAction(player.name, player.is_online, slot.id);
 					}
 				}}
-				className={`absolute ${positionClasses} text-white text-xs font-bold px-2 py-1 rounded shadow-lg z-50 flex items-center transition-all ${
-					canBeAudited
-						? "cursor-crosshair animate-pulse ring-2 ring-red-500 hover:scale-125 bg-red-600 shadow-[0_0_15px_rgba(220,38,38,0.8)]"
-						: baseColor
+				className={`flex items-center justify-center w-8 h-8 text-white text-[14px] font-bold rounded shadow-sm transition-all hover:scale-110 ${
+					canCleanGlobally
+						? "cursor-pointer animate-pulse ring-1 ring-red-500 bg-red-600 shadow-[0_0_10px_rgba(220,38,38,0.8)] z-50 relative"
+						: `cursor-help border border-gray-600`
 				}`}
 			>
-				{icon}
+				{slot.icon}
 			</div>
 		);
 	};
@@ -100,7 +110,7 @@ export function OpponentCard({
 				if (selectedCardType === 12) return;
 				onAction(player.name, player.is_online);
 			}}
-			className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 text-center shadow-xl z-10 transition-all
+			className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 flex flex-col items-center text-center shadow-xl z-10 transition-all
                 ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}
                 ${!player.is_online ? "opacity-40 grayscale scale-95" : ""}
                 ${player.is_dead ? "opacity-50 grayscale scale-95 border-red-900" : ""}
@@ -138,33 +148,6 @@ export function OpponentCard({
 				</div>
 			)}
 
-			{hasShield &&
-				renderOpponentPerk(
-					"has_shield",
-					"🛡️",
-					"Este jugador tiene un escudo activo",
-					"bg-cyan-700",
-					"top-24 -left-3",
-				)}
-
-			{visionBonus > 0 &&
-				renderOpponentPerk(
-					"vision_bonus",
-					visionBonus == 1 ? "👓" : "🔭",
-					`Este jugador ve a +${visionBonus} de distancia`,
-					"bg-blue-700",
-					"top-8 -left-3",
-				)}
-
-			{player.perks.distance_bonus > 0 &&
-				renderOpponentPerk(
-					"distance_bonus",
-					<span>🏠</span>,
-					"Este jugador está a +1 de distancia",
-					"bg-blue-500",
-					"top-16 -left-3",
-				)}
-
 			{player.is_dead && (
 				<div
 					title="Este jugador ha sido derrotado"
@@ -183,13 +166,14 @@ export function OpponentCard({
 				</div>
 			)}
 
+			{/* Información del Jugador */}
 			<h3
-				className={`font-bold truncate ${!player.is_online ? "text-gray-500" : "text-white"}`}
+				className={`font-bold truncate w-full ${!player.is_online ? "text-gray-500" : "text-white"}`}
 			>
 				{player.name}
 			</h3>
 
-			<div className="mt-3 bg-gray-900 rounded p-2 border border-gray-700">
+			<div className="mt-3 bg-gray-900 rounded p-2 border border-gray-700 w-full">
 				<p className="text-xs text-gray-500 uppercase">Estrés</p>
 				<p
 					className={`text-lg font-black ${!player.is_online ? "text-gray-600" : "text-red-500"}`}
@@ -198,9 +182,18 @@ export function OpponentCard({
 				</p>
 			</div>
 
-			<div className="mt-2 text-xs text-blue-300">
-				Cartas:{" "}
-				<span className="font-mono text-blue-200">{player.cards_count}</span>
+			<div className="mt-2 text-xs text-blue-300 w-full flex justify-center items-center px-1">
+				<span>
+					Cartas:{" "}
+					<span className="font-mono text-blue-200">{player.cards_count}</span>
+				</span>
+			</div>
+
+			{/* --- BANDEJA DE EQUIPAMIENTO (3 SLOTS) --- */}
+			<div className="mt-3 w-full">
+				<div className="flex justify-center items-center gap-1.5">
+					{opponentPerks.map(renderPerkSlot)}
+				</div>
 			</div>
 		</div>
 	);

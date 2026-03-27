@@ -59,6 +59,8 @@ class CardValidationService
         if ($alreadyHasShield) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes un escudo activo.", 422);
         }
+
+        $this->checkPerkLimit($roomId, $playerName);
     }
 
     public function validateBlock(string $roomId, string $playerName, string $targetName): void
@@ -140,6 +142,10 @@ class CardValidationService
         if ($currentBonus >= 2) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes el alcance máximo permitido.", 422);
         }
+
+        if ($currentBonus === 0) {
+            $this->checkPerkLimit($roomId, $playerName);
+        }
     }
 
     public function validateDistance(string $roomId, string $playerName, string $targetName): void
@@ -152,6 +158,8 @@ class CardValidationService
         if ($currentBonus >= 1) {
             throw new GameException(GameException::INVALID_ACTION, "Tu escritorio ya está lo más lejos posible.", 422);
         }
+
+        $this->checkPerkLimit($roomId, $playerName);
     }
 
     public function validateClean(string $roomId, string $playerName, string $targetName, ?string $perkKey): void
@@ -165,12 +173,43 @@ class CardValidationService
         }
 
         $targetKey = "room:{$roomId}:player:{$targetName}";
-        
+
         // Comprobar si el rival tiene ese equipamiento activo (> 0)
         $perkValue = (int) Redis::hget($targetKey, $perkKey);
 
         if ($perkValue <= 0) {
             throw new GameException(GameException::INVALID_ACTION, "El jugador objetivo no tiene ese equipamiento activo.", 422);
+        }
+    }
+
+    public function validateStorage(string $roomId, string $playerName): void
+    {
+        $hasStorage = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'has_storage');
+
+        if ($hasStorage >= 1) {
+            throw new GameException(GameException::INVALID_ACTION, "Ya tienes una carta de almacen.", 422);
+        }
+
+        $this->checkPerkLimit($roomId, $playerName);
+    }
+
+    private function checkPerkLimit(string $roomId, string $playerName): void
+    {
+        $playerKey = "room:{$roomId}:player:{$playerName}";
+
+        $hasShield = (int) Redis::hget($playerKey, 'has_shield');
+        $visionBonus = (int) Redis::hget($playerKey, 'vision_bonus');
+        $distanceBonus = (int) Redis::hget($playerKey, 'distance_bonus');
+        $hasStorage = (int) Redis::hget($playerKey, 'has_storage');
+
+        $slotsUsed = 0;
+        if ($hasShield > 0) $slotsUsed++;
+        if ($visionBonus > 0) $slotsUsed++;
+        if ($distanceBonus > 0) $slotsUsed++;
+        if ($hasStorage > 0) $slotsUsed++;
+
+        if ($slotsUsed >= 3) {
+            throw new GameException(GameException::INVALID_ACTION, "Tu escritorio está lleno. Has alcanzado el límite de 3 equipamientos.", 422);
         }
     }
 }

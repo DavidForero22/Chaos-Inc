@@ -137,7 +137,8 @@ class PlayerHandService
         $allowedPerks = [
             'has_shield'     => 'Escudo',
             'vision_bonus'    => 'Visión',
-            'distance_bonus' => 'Lejania'
+            'distance_bonus' => 'Lejania',
+            'has_storage' => 'Almacen'
         ];
 
         // Iterar directamente sobre las llaves enviadas

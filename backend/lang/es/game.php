@@ -18,6 +18,7 @@ return [
     'distance_equipped'     => ':player se ha equipado lejania.',
     'attack_auto_resolved'  => ':player no respondió a tiempo al ataque, ha sido dañado.',
     'cleaned'               => ':player le ha quitado :perkKey a :target.',
+    'storaged'              => ':player se ha equipado almacen.',
     
 
     // Ataque múltiple

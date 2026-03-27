@@ -3,7 +3,7 @@ import { Card } from "../ui/Card.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
-import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts"; // <-- Nuevo Hook
+import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts"; 
 import type { CardInstance } from "../../../types/live-game.ts";
 
 export function PlayerHand() {
@@ -72,6 +72,8 @@ export function PlayerHand() {
 		if (card.type === 10 && (me.perks.vision_bonus ?? 0) < 2)
 			return playTurn(card.id, myPlayerName);
 		if (card.type === 11 && (me.perks.distance_bonus ?? 0) < 1)
+			return playTurn(card.id, myPlayerName);
+		if (card.type === 13 && !me.perks.has_storage)
 			return playTurn(card.id, myPlayerName);
 
 		// Si es una carta de targeteo a otro, seleccionarla

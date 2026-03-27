@@ -44,7 +44,10 @@ class MyDataResource extends JsonResource
         $isBossOrActing = $myData['role'] === 'boss' || CastHelper::toBool($myData['acting_boss'] ?? 0);
         $maxStress = $isBossOrActing ? 5 : 4;
 
-        $maxHandSize = max(1, ($maxStress + 1) - $currentStress);
+        // Obtener bonus de almacen
+        $storageBonus = CastHelper::toBool($myData['has_storage'] ?? 0) ? 1 : 0;
+
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress) + $storageBonus;
 
         return [
             // Identidad y Vitalidad (Base)
@@ -73,6 +76,7 @@ class MyDataResource extends JsonResource
                 'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $playerName),
                 'vision_bonus' => (int) ($myData['vision_bonus'] ?? 0),
                 'distance_bonus' => (int) ($myData['distance_bonus'] ?? 0),
+                'has_storage' => CastHelper::toBool($myData['has_storage'] ?? 0),
             ],
 
             // Límites del turno actual

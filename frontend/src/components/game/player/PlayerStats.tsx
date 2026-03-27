@@ -1,5 +1,7 @@
+// frontend/src/components/game/player/PlayerStats.tsx
 import type { MyData } from "../../../types/live-game";
 import { useGameUIStore } from "../../../store/useGameUIStore";
+import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 
 interface PlayerStatsProps {
 	me: MyData;
@@ -7,37 +9,21 @@ interface PlayerStatsProps {
 
 export function PlayerStats({ me }: PlayerStatsProps) {
 	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
+	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
+		usePlayerStats(me);
 
-	const roleConfig = {
-		boss: { color: "text-yellow-400", label: "👑 JEFE" },
-		secretary: { color: "text-blue-400", label: "📋 SECRETARIO" },
-		intern: { color: "text-green-400", label: "🎓 BECARIO" },
-		union: { color: "text-red-400", label: "✊ SINDICALISTA" },
-	}[me.role] || { color: "text-gray-400", label: "❓ DESCONOCIDO" };
-
-	const hasAnyPerk =
-		me.perks.has_shield ||
-		(me.perks.vision_bonus ?? 0) > 0 ||
-		(me.perks.distance_bonus ?? 0) > 0;
-	const hasAnyCondition = me.conditions.is_blocked || me.conditions.acting_boss;
-
-	const myRange = me.perks.vision_range ?? 1;
-
-	// Helper para renderizar los iconos clickeables
-	const renderDiscardablePerk = (
-		id: string,
-		icon: string,
-		title: string,
-	) => {
+	// Helper simplificado para renderizar los perks
+	const renderDiscardablePerk = (id: string, icon: string, title: string) => {
 		const isMarked = perksToDiscard.includes(id);
 
-		const baseClasses = "flex items-center relative transition-transform bg-gray-800 rounded px-1 border border-gray-500/50";
+		const baseClasses =
+			"flex items-center justify-center w-8 h-8 relative transition-transform bg-gray-800 rounded border border-gray-500/50";
 		let modeClasses = "cursor-help hover:scale-110";
 
 		if (isDiscardMode) {
 			modeClasses = isMarked
-				? "cursor-pointer scale-110 ring-2 ring-red-500 rounded-lg bg-red-900/30 px-1" // Estilo "marcado"
-				: "cursor-pointer hover:scale-110 animate-pulse bg-gray-800 rounded px-1 border border-red-500/50"; // Estilo "parpadeo" parecido al banner
+				? "cursor-pointer scale-110 ring-2 ring-red-500 rounded bg-red-900/30" // Marcado
+				: "cursor-pointer hover:scale-110 animate-pulse bg-gray-800 rounded border border-red-500/50"; // Parpadeo
 		}
 
 		return (
@@ -86,31 +72,26 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				</span>
 			</div>
 
-			{/* EQUIPAMIENTO (Perks) */}
-			<div
-				className={`flex justify-between items-center mt-2 pt-2 border-t h-10 border-gray-800`}
-			>
-				<span className={`text-xs uppercase text-gray-500`}>Equipamiento</span>
-				<div className="flex gap-2 text-lg items-center">
-					{me.perks.has_shield &&
-						renderDiscardablePerk("has_shield", "🛡️", "Escudo Activo")}
-
-					{(me.perks.vision_bonus ?? 0) > 0 &&
-						renderDiscardablePerk(
-							"vision_bonus",
-							me.perks.vision_bonus == 1 ? "👓" : "🔭",
-							`Ves a +${me.perks.vision_bonus} de alcance`,
-						)}
-
-					{(me.perks.distance_bonus ?? 0) > 0 &&
-						renderDiscardablePerk(
-							"distance_bonus",
-							"🏠",
-							"Los demás te ven a +1 de alcance",
-						)}
-
-					{!hasAnyPerk && (
-						<span className="text-gray-600 text-xs font-mono">-</span>
+			{/* PASIVAS (Perks en 3 Slots) */}
+			<div className="flex justify-between items-center mt-2 pt-2 border-t h-10 border-gray-800">
+				<span className="text-xs uppercase text-gray-500">Pasivas</span>
+ 
+				{/* Contenedor alineado a la derecha */}
+				<div className="flex gap-1 text-lg items-center">
+					{displayPerks.map((perk) =>
+						perk.isEmpty ? (
+							// Renderizar el slot vacío
+							<span
+								key={perk.id}
+								title={perk.title}
+								className="flex items-center justify-center w-8 h-8 text-gray-600 font-mono bg-gray-900 rounded border border-gray-700/50"
+							>
+								{perk.icon}
+							</span>
+						) : (
+							// Renderizar el Perk interactivo
+							renderDiscardablePerk(perk.id, perk.icon, perk.title)
+						),
 					)}
 				</div>
 			</div>
