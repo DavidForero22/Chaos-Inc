@@ -1,13 +1,14 @@
-// frontend/src/hooks/game/usePlayerActions.ts
-import { useState } from "react";
 import { useGameStore } from "../../store/useGameStore";
 import { useGameUIStore } from "../../store/useGameUIStore";
 import { usePlayerIdentity } from "../usePlayerIdentity";
+import { useState } from "react";
+
+// Cartas que se juegan sobre uno mismo (sin seleccionar oponente)
+const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
 
 export function usePlayerActions() {
 	const { myPlayerName } = usePlayerIdentity();
 
-	// --- ESTADO GLOBAL ---
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
@@ -16,24 +17,24 @@ export function usePlayerActions() {
 	const discardCards = useGameStore((state) => state.discardCards);
 	const discardPerks = useGameStore((state) => state.discardPerks);
 	const resolveSabotage = useGameStore((state) => state.resolveSabotage);
+	const playTurn = useGameStore((state) => state.playTurn);
 
-	// --- ESTADO UI ---
 	const {
 		isDiscardMode,
 		cardsToDiscard,
 		perksToDiscard,
+		selectedCardId,
+		setSelectedCardId, 
 		setIsDiscardMode,
 		clearDiscardSelection,
 	} = useGameUIStore();
 
-	// --- ESTADO LOCAL (Seguro de concurrencia) ---
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	if (!me || !game || !myPlayerName) {
 		return { isReady: false as const };
 	}
 
-	// --- VARIABLES DERIVADAS ---
 	const isMyTurn = game.current_turn === myPlayerName;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasPendingAttack = me.combat_state.is_attacking_single;
@@ -52,10 +53,20 @@ export function usePlayerActions() {
 		cardsToDiscard.length === 0 && perksToDiscard.length === 0;
 	const isEvadingSabotage =
 		me.conditions.must_discard && cardsToDiscard.length === 0;
-
-	// --- CONDICIONES DE BOTONES ---
 	const isConfirmDisabled =
 		willBeOverLimit || noSelection || isEvadingSabotage || isSubmitting;
+
+	// Detectar si la carta seleccionada es de auto-uso
+	const selectedCard = me.cards.find((c) => c.id === selectedCardId);
+	const isSelfTargetCard = selectedCard
+		? SELF_TARGET_CARDS.includes(selectedCard.type)
+		: false;
+	const canUseCard =
+		isMyTurn &&
+		selectedCardId !== null &&
+		isSelfTargetCard &&
+		!isTurnFrozen &&
+		!isAttackerWaiting;
 
 	const canEndTurn =
 		isMyTurn &&
@@ -65,7 +76,8 @@ export function usePlayerActions() {
 		!isOverLimit &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
-		!isDiscardMode;
+		!isDiscardMode &&
+		selectedCardId === null; // no puede terminar turno con carta seleccionada
 
 	const canDiscard =
 		isMyTurn &&
@@ -76,25 +88,27 @@ export function usePlayerActions() {
 		!hasPendingSabotage &&
 		currentCardsCount > 0;
 
-	// --- ACCIONES SECUENCIALES ---
 	const handleConfirmDiscard = async () => {
 		if (isSubmitting) return;
 		setIsSubmitting(true);
-
 		try {
 			if (me.conditions.must_discard) {
 				if (cardsToDiscard.length > 0) await resolveSabotage(cardsToDiscard[0]);
 			} else {
 				if (cardsToDiscard.length > 0) await discardCards(cardsToDiscard);
 			}
-
-			if (perksToDiscard.length > 0) {
-				await discardPerks(perksToDiscard);
-			}
+			if (perksToDiscard.length > 0) await discardPerks(perksToDiscard);
 		} finally {
 			clearDiscardSelection();
 			setIsSubmitting(false);
 		}
+	};
+
+	// Usar la carta seleccionada de auto-uso
+	const handleUseCard = async () => {
+		if (!canUseCard || !selectedCardId) return;
+		await playTurn(selectedCardId, myPlayerName);
+		setSelectedCardId(null);
 	};
 
 	return {
@@ -107,9 +121,11 @@ export function usePlayerActions() {
 		isOverLimit,
 		canEndTurn,
 		canDiscard,
+		canUseCard,
 		isConfirmDisabled,
 		hasPendingMultiAttack,
 		handleConfirmDiscard,
+		handleUseCard, 
 		reactToAttack,
 		reactToMultiAttack,
 		endTurn,

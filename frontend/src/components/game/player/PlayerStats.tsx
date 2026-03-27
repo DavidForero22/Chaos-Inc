@@ -2,6 +2,9 @@
 import type { MyData } from "../../../types/live-game";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
+import { useState } from "react";
+import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
+import type { CardInstance } from "../../../types/live-game";
 
 interface PlayerStatsProps {
 	me: MyData;
@@ -11,9 +14,16 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
 	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
 		usePlayerStats(me);
+	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
 
 	// Helper simplificado para renderizar los perks
-	const renderDiscardablePerk = (id: string, icon: string, title: string) => {
+	const renderDiscardablePerk = (
+		id: string,
+		icon: string,
+		title: string,
+		cardType: number,
+		name: string,
+	) => {
 		const isMarked = perksToDiscard.includes(id);
 
 		const baseClasses =
@@ -31,7 +41,18 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 				key={id}
 				title={isDiscardMode ? "Clic para descartar" : title}
 				className={`${baseClasses} ${modeClasses}`}
-				onClick={() => isDiscardMode && toggleDiscardPerk(id)}
+				onClick={() => {
+					if (isDiscardMode) {
+						toggleDiscardPerk(id);
+					} else if (cardType !== undefined) {
+						setInfoCard({
+							id,
+							type: cardType,
+							name,
+							description: title,
+						});
+					}
+				}}
 			>
 				{icon}
 			</span>
@@ -75,7 +96,7 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 			{/* PASIVAS (Perks en 3 Slots) */}
 			<div className="flex justify-between items-center mt-2 pt-2 border-t h-10 border-gray-800">
 				<span className="text-xs uppercase text-gray-500">Pasivas</span>
- 
+
 				{/* Contenedor alineado a la derecha */}
 				<div className="flex gap-1 text-lg items-center">
 					{displayPerks.map((perk) =>
@@ -90,7 +111,13 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 							</span>
 						) : (
 							// Renderizar el Perk interactivo
-							renderDiscardablePerk(perk.id, perk.icon, perk.title)
+							renderDiscardablePerk(
+								perk.id,
+								perk.icon,
+								perk.title,
+								perk.cardType!,
+								perk.name!,
+							)
 						),
 					)}
 				</div>
@@ -121,6 +148,9 @@ export function PlayerStats({ me }: PlayerStatsProps) {
 					)}
 				</div>
 			</div>
+			{infoCard && (
+				<CardInfoModal card={infoCard} onClose={() => setInfoCard(null)} />
+			)}
 		</div>
 	);
 }

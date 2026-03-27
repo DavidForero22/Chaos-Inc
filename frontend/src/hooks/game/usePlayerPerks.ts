@@ -10,6 +10,8 @@ export interface PerkSlot {
 	icon: string;
 	title: string;
 	isEmpty?: boolean;
+	cardType?: number;
+	name?: string;
 }
 
 export function usePlayerStats(me: MyData) {
@@ -22,9 +24,14 @@ export function usePlayerStats(me: MyData) {
 
 	const displayPerks = useMemo(() => {
 		const list: PerkSlot[] = [];
-
 		if (me.perks.has_shield) {
-			list.push({ id: "has_shield", icon: "🛡️", title: "Escudo Activo" });
+			list.push({
+				id: "has_shield",
+				icon: "🛡️",
+				title: "Escudo Activo",
+				cardType: 5,
+				name: "Escudo"
+			});
 		}
 		if ((me.perks.vision_bonus ?? 0) > 0) {
 			const vb = me.perks.vision_bonus;
@@ -32,6 +39,8 @@ export function usePlayerStats(me: MyData) {
 				id: "vision_bonus",
 				icon: vb === 1 ? "👓" : "🔭",
 				title: `Ves a +${vb} de alcance`,
+				cardType: 10,
+				name:"Vision"
 			});
 		}
 		if ((me.perks.distance_bonus ?? 0) > 0) {
@@ -39,22 +48,26 @@ export function usePlayerStats(me: MyData) {
 				id: "distance_bonus",
 				icon: "🏠",
 				title: "Los demás te ven a +1 de alcance",
+				cardType: 11,
+				name:"Lejania"
 			});
 		}
-
 		if (me.perks.has_storage) {
 			list.push({
 				id: "has_storage",
 				icon: "📦",
 				title: "Límite de cartas en mano +1",
+				cardType: 13,
+				name:"Almacen"
 			});
 		}
-
 		if (me.perks.has_luck) {
 			list.push({
 				id: "has_luck",
 				icon: "🍀",
 				title: "50% de tomar una carta extra al inicio del turno.",
+				cardType: 14,
+				name: "Almacen"
 			});
 		}
 

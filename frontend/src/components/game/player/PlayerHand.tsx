@@ -3,7 +3,7 @@ import { Card } from "../ui/Card.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
-import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts"; 
+import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts";
 import type { CardInstance } from "../../../types/live-game.ts";
 
 export function PlayerHand() {
@@ -13,7 +13,6 @@ export function PlayerHand() {
 	const gameData = useGameStore((state) => state.gameData);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-	const playTurn = useGameStore((state) => state.playTurn);
 
 	const {
 		isDiscardMode,
@@ -47,7 +46,7 @@ export function PlayerHand() {
 			hasLuckChallenge,
 			isAttackerWaiting,
 		} = globalConditions;
-		const canUseDodgeNow = evaluateCard(card).canUseDodgeNow;
+		const { canUseDodgeNow } = evaluateCard(card);
 
 		if (canUseDodgeNow) {
 			if (hasPendingMultiAttack) {
@@ -60,25 +59,7 @@ export function PlayerHand() {
 
 		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
 
-		// Auto-uso: Cartas que se juegan instantáneamente sobre ti mismo
-		if (card.type === 2 && me.stress > 0)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 5 && !me.perks.has_shield)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 7 && !me.turn_limits.multi_attack_used)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 1 && me.turn_limits.single_attack_used) return;
-		if (card.type === 8) return playTurn(card.id, myPlayerName);
-		if (card.type === 10 && (me.perks.vision_bonus ?? 0) < 2)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 11 && (me.perks.distance_bonus ?? 0) < 1)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 13 && !me.perks.has_storage)
-			return playTurn(card.id, myPlayerName);
-		if (card.type === 14 && !me.perks.has_luck)
-			return playTurn(card.id, myPlayerName);
-
-		// Si es una carta de targeteo a otro, seleccionarla
+		// Todas las cartas — seleccionar y confirmar con botón
 		setSelectedCardId(selectedCardId === card.id ? null : card.id);
 	};
 

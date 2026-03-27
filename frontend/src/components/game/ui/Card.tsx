@@ -1,6 +1,8 @@
 // src/components/game/ui/Card.tsx
+import { useState } from "react";
 import type { CardInstance } from "../../../types/live-game";
 import { useGameUIStore } from "../../../store/useGameUIStore";
+import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 
 interface CardProps {
 	card: CardInstance;
@@ -20,6 +22,8 @@ export function Card({
 	onClick,
 }: CardProps) {
 	const isDiscardMode = useGameUIStore((state) => state.isDiscardMode);
+	const [showInfo, setShowInfo] = useState(false);
+	const [isHovered, setIsHovered] = useState(false);
 
 	const baseClasses =
 		"shrink-0 w-24 h-36 rounded-lg border flex flex-col items-center justify-center shadow-lg transition-all text-center px-2 relative";
@@ -45,19 +49,42 @@ export function Card({
 	}
 
 	return (
-		<div
-			onClick={isSelectable ? onClick : undefined}
-			className={`${baseClasses} ${interactableClasses} ${stateClasses}`}
-			title={card.description}
-		>
-			{isMarkedForDiscard && (
-				<div className="absolute top-1 right-1 text-red-400 text-xs font-black">
-					✕
-				</div>
+		<>
+			<div
+				onClick={isSelectable ? onClick : undefined}
+				onMouseEnter={() => setIsHovered(true)}
+				onMouseLeave={() => setIsHovered(false)}
+				className={`${baseClasses} ${interactableClasses} ${stateClasses}`}
+				title={card.description}
+			>
+				{isMarkedForDiscard && (
+					<div className="absolute top-1 right-1 text-red-400 text-xs font-black">
+						✕
+					</div>
+				)}
+
+				{/* Botón "?" visible en hover o seleccionada */}
+				{(isHovered || isSelected) && (
+					<button
+						onClick={(e) => {
+							e.stopPropagation(); // no propagar al onClick de la carta
+							setShowInfo(true);
+						}}
+						className="absolute top-1 left-1 w-6 h-6 bg-gray-800 hover:bg-gray-600 text-white text-s font-black rounded-full flex items-center justify-center z-10 transition cursor-help hover:scale-110"
+						title="Ver más detalles de la carta"
+					>
+						?
+					</button>
+				)}
+
+				<span className="text-sm text-gray-200 font-semibold leading-snug">
+					{card.name}
+				</span>
+			</div>
+
+			{showInfo && (
+				<CardInfoModal card={card} onClose={() => setShowInfo(false)} />
 			)}
-			<span className="text-sm text-gray-200 font-semibold leading-snug">
-				{card.name}
-			</span>
-		</div>
+		</>
 	);
 }
