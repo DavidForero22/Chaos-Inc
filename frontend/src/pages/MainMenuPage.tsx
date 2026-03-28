@@ -18,8 +18,8 @@ export default function MainMenuPage() {
 		setFilterStatus,
 		handleJoinRoom,
 		user,
-		isLoading,
-	} = useLobby();
+		isLoadingRooms,
+	} = useLobby(); // <-- Eliminado isLoading
 
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showGuestModal, setShowGuestModal] = useState(false);
@@ -107,7 +107,7 @@ export default function MainMenuPage() {
 				rooms={filteredRooms}
 				selectedRoom={selectedRoom}
 				onSelectRoom={setSelectedRoom}
-				isLoading={isLoading}
+				isLoading={isLoadingRooms}
 			/>
 
 			<div className="mt-6 flex justify-end">
@@ -116,11 +116,11 @@ export default function MainMenuPage() {
 					onClick={onJoinClick}
 					className={`px-8 py-3 rounded font-bold text-lg transition shadow-lg flex items-center gap-2
                         ${
-							!isJoinDisabled
-								? "bg-blue-600 hover:bg-blue-500 text-white hover:-translate-y-1"
-								: "bg-gray-800 text-gray-600 cursor-not-allowed"
-						}`}
-						>	
+													!isJoinDisabled
+														? "bg-blue-600 hover:bg-blue-500 text-white hover:-translate-y-1"
+														: "bg-gray-800 text-gray-600 cursor-not-allowed"
+												}`}
+				>
 					{!user && !isJoinDisabled
 						? "Jugar como Invitado"
 						: "Unirse a la partida"}

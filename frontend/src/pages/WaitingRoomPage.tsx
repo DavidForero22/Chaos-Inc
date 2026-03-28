@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../hooks/room/useRoom.ts";
+import { useLoadingStore } from "../store/useLoadingStore.ts"; // <-- Importamos tu loader global
 
 // -- COMPONENTES --
 import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
@@ -11,6 +12,7 @@ import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
 export default function WaitingRoomPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
+	const { startLoading, stopLoading } = useLoadingStore(); // <-- Extraemos las acciones
 
 	const {
 		room,
@@ -35,6 +37,27 @@ export default function WaitingRoomPage() {
 			setShowGuestModal(true);
 		}
 	}, [isJoining, myPlayerName, showGuestModal]);
+
+	// --- WRAPPERS PARA EL GLOBAL LOADER ---
+	const onLeaveClick = async () => {
+		startLoading("Saliendo de la sala...");
+		try {
+			await handleLeaveRoom();
+		} finally {
+			stopLoading();
+		}
+	};
+
+	const onKickClick = async (playerToKick: string) => {
+		startLoading(`Expulsando a ${playerToKick}...`);
+		try {
+			await kickPlayer(playerToKick);
+		} finally {
+			stopLoading();
+		}
+	};
+
+	// (El startGame no le ponemos loader global porque ya redirige al tablero y tiene su propio sistema de carga ahí)
 
 	if (isJoining) {
 		return (
@@ -145,10 +168,10 @@ export default function WaitingRoomPage() {
 								)}
 							</div>
 
-							{/* BOTÓN DE EXPULSAR */}
+							{/* BOTÓN DE EXPULSAR (Usa el wrapper onKickClick) */}
 							{room.owner_name === myPlayerName && player !== myPlayerName && (
 								<button
-									onClick={() => kickPlayer(player)}
+									onClick={() => onKickClick(player)}
 									className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-2 py-1 rounded border border-red-700/50 transition"
 									title="Expulsar jugador"
 								>
@@ -168,8 +191,9 @@ export default function WaitingRoomPage() {
 			</div>
 
 			<div className="flex justify-center gap-4">
+				{/* BOTÓN DE ABANDONAR (Usa el wrapper onLeaveClick) */}
 				<button
-					onClick={handleLeaveRoom}
+					onClick={onLeaveClick}
 					className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded font-bold transition"
 				>
 					Abandonar Sala

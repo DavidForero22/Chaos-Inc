@@ -1,9 +1,12 @@
+// src/hooks/useLobby.ts
+
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
 import { useAuthStore } from "../store/useAuthStore.ts";
+import { useLoadingStore } from "../store/useLoadingStore";
 
 export function useLobby() {
 	const [rooms, setRooms] = useState<RoomData[]>([]);
@@ -12,26 +15,33 @@ export function useLobby() {
 		"all" | "waiting" | "in_game"
 	>("all");
 
+	// ESTADO LOCAL para RoomList
+	const [isLoadingRooms, setIsLoadingRooms] = useState(true);
+
 	const navigate = useNavigate();
 	const { user } = useAuthStore();
-	const [isLoading, setIsLoading] = useState(true);
 
-	const fetchRooms = useCallback(async () => {
-		setIsLoading(true);
+	// ESTADO GLOBAL
+	const { startLoading, stopLoading } = useLoadingStore();
+
+	const fetchRooms = useCallback(async (showLocalLoader = false) => {
+		// Solo activar el de RoomList
+		if (showLocalLoader) setIsLoadingRooms(true);
 		try {
-			const response = await api.get("/rooms");
+			const response = await api.get("/rooms", { hideLoader: true } as any);
 			setRooms(response.data);
 		} catch (error) {
 			console.error("Error al cargar las salas:", error);
 		} finally {
-			setIsLoading(false);
+			if (showLocalLoader) setIsLoadingRooms(false);
 		}
 	}, []);
 
 	useEffect(() => {
-		fetchRooms();
+		fetchRooms(true);
+
 		const channel = echo.channel("lobby");
-		channel.listen(".RoomListUpdated", fetchRooms);
+		channel.listen(".RoomListUpdated", () => fetchRooms(false));
 
 		return () => {
 			channel.stopListening(".RoomListUpdated");
@@ -48,6 +58,8 @@ export function useLobby() {
 			password = prompt("Esta sala es privada. Introduce la contraseña:") || "";
 		}
 
+		// Loader global bloqueante con mensaje
+		startLoading("Entrando a la sala...");
 		try {
 			const response = await api.post(`/rooms/${selectedRoom}/join`, {
 				password,
@@ -57,6 +69,8 @@ export function useLobby() {
 			});
 		} catch (error: any) {
 			alert(error.response?.data?.error || "Error al unirse a la sala.");
+		} finally {
+			stopLoading(); // Apagamos el que encendimos arriba
 		}
 	};
 
@@ -74,6 +88,6 @@ export function useLobby() {
 		setFilterStatus,
 		handleJoinRoom,
 		user,
-		isLoading,
+		isLoadingRooms,
 	};
 }

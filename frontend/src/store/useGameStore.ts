@@ -102,7 +102,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 
 		try {
-			const res = await api.post(`/rooms/${roomId}/sync`);
+			const res = await api.post(`/rooms/${roomId}/sync`, {}, {
+				hideLoader: true,
+			} as any);
 
 			if (!res || res.data === null) {
 				return;

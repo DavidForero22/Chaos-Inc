@@ -13,6 +13,8 @@ import { useAuthStore } from "./store/useAuthStore.ts";
 import { useEffect } from "react";
 import api from "./api/axios.ts";
 
+import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
+
 function App() {
 	const { token } = useAuthStore();
 
@@ -21,7 +23,7 @@ function App() {
 		const verifySession = async () => {
 			if (!token) return;
 
-			await api.get("/me");
+			await api.get("/me", { hideLoader: true } as any);
 		};
 
 		verifySession();
@@ -42,6 +44,8 @@ function App() {
 						<Route path="/room-not-found" element={<RoomNotFoundPage />} />
 					</Routes>
 				</div>
+
+				<GlobalLoader />
 			</div>
 		</Router>
 	);

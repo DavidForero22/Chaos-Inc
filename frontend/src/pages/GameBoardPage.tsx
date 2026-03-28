@@ -28,7 +28,7 @@ export default function GameBoardPage() {
 			<div className="flex flex-col items-center justify-center h-[70vh]">
 				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
 				<h2 className="text-xl text-gray-400 animate-pulse">
-					Conectando con la oficina...
+					Conectando con la partida...
 				</h2>
 			</div>
 		);

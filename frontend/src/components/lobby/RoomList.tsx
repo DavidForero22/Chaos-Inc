@@ -18,13 +18,11 @@ export default function RoomList({
 	return (
 		<div className="bg-gray-800/80 rounded-xl border border-gray-700 shadow-xl overflow-hidden min-h-48 relative">
 			{isLoading && (
-				<div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
-					<div className="flex flex-col items-center gap-3">
-						<div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-						<p className="text-gray-400 text-xs uppercase tracking-widest">
-							Actualizando...
-						</p>
-					</div>
+				<div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 rounded-xl">
+					<div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-blue-500 mb-3 shadow-lg"></div>
+					<p className="text-white font-bold text-sm uppercase tracking-widest animate-pulse">
+						Cargando Salas...
+					</p>
 				</div>
 			)}
 

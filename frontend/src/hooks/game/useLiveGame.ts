@@ -78,7 +78,10 @@ export function useLiveGame(roomId: string | undefined) {
 
 			try {
 				setIsConnecting(true);
-				const res = await api.post(`/rooms/${roomId}/join`);
+
+				const res = await api.post(`/rooms/${roomId}/join`, {}, {
+					hideLoader: true,
+				} as any);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);

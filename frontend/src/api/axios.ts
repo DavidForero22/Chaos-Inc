@@ -16,8 +16,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-	// Encender el loader
-	useLoadingStore.getState().startLoading();
+	// Solo encender el loader si no se pide explícitamente ocultarlo
+	if (!(config as any).hideLoader) {
+		useLoadingStore.getState().startLoading();
+	}
 
 	// Token de Usuario (Sanctum)
 	const token = useAuthStore.getState().token;
@@ -36,12 +38,17 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
 	(response) => {
-		// Apagar el loader si la petición fue exitosa
-		useLoadingStore.getState().stopLoading();
+		// Apagar el loader solo si NO estaba oculto
+		if (!(response.config as any).hideLoader) {
+			useLoadingStore.getState().stopLoading();
+		}
 		return response;
 	},
 	(error) => {
-		useLoadingStore.getState().stopLoading();
+		// Apagar el loader si falla, igual respetando el hideLoader
+		if (error.config && !(error.config as any).hideLoader) {
+			useLoadingStore.getState().stopLoading();
+		}
 
 		const status = error.response?.status;
 		const url = error.config?.url ?? "";
