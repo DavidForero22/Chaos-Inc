@@ -51,12 +51,21 @@ export function useGameTimers() {
 		(gameData?.game?.pending_multi_attack_targets &&
 			gameData.game.pending_multi_attack_targets.length > 0) ||
 		gameData?.game?.player_pending_sabotage !== null;
+	const gameOver = useGameStore((state) => state.gameOver);
 
 	const isTurnPaused = isMyTurn && amIWaitingForReaction;
 
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 
 	useEffect(() => {
+		if (gameOver) {
+			setTurnTimeLeft(null);
+			logWithTime(
+				"useGameTimers.ts - Partida finalizada. Matando reloj local.",
+			);
+			return;
+		}
+
 		if (!isMyTurn || (turnRemaining === undefined && !isTurnPaused)) {
 			setTurnTimeLeft(null);
 			return;
@@ -67,7 +76,7 @@ export function useGameTimers() {
 			return;
 		}
 
-		// --- NUEVO: Control estricto del loader ---
+		// Control estricto del loader
 		let didTriggerLoader = false;
 		const loadingStore = useLoadingStore.getState();
 
@@ -105,7 +114,7 @@ export function useGameTimers() {
 				loadingStore.stopLoading();
 			}
 		};
-	}, [isMyTurn, turnExpiresAt, isTurnPaused, turnRemaining]);
+	}, [isMyTurn, turnExpiresAt, isTurnPaused, turnRemaining, gameOver]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);

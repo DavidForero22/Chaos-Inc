@@ -13,6 +13,7 @@ import { logWithTime } from "../../utils/logger.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
+import { useLoadingStore } from "../../store/useLoadingStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
@@ -82,6 +83,10 @@ export function useLiveGame(roomId: string | undefined) {
 			// --- REDIRECCIÓN AL 404 ---
 			if (status === 404 || errorType === "ROOM_NOT_FOUND") {
 				isKickedRef.current = true;
+
+				// Si echan por 404, borrar el loader si existía
+				useLoadingStore.getState().stopLoading();
+
 				navigate("/room-not-found");
 				return;
 			}
@@ -96,6 +101,7 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 
 			isKickedRef.current = true;
+			useLoadingStore.getState().stopLoading();
 			navigate("/");
 		}
 	}, [roomId, syncGameStore, navigate]);
