@@ -89,7 +89,7 @@ class GameActionService
             9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
-            12 => $this->cardEffectService->applyClean($roomId, $playerName, $targetName, $perkKey),
+            12 => $this->cardEffectService->applyClean($roomId, $targetName, $perkKey),
             13 => $this->cardEffectService->applyStorage($roomId, $playerName),
             14 => $this->cardEffectService->applyLuck($roomId, $playerName),
             default => null,

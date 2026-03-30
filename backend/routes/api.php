@@ -44,16 +44,18 @@ Route::prefix('v1')->group(function () {
         Route::post('/rooms/{id}/sync', [LiveGameController::class, 'sync']);
         Route::post('/rooms/{id}/action', [LiveGameController::class, 'action']);
         Route::post('/rooms/{id}/end-turn', [LiveGameController::class, 'endTurn']);
+
         Route::post('/rooms/{id}/react', [LiveGameController::class, 'react']);
         Route::post('/rooms/{id}/react-discard', [LiveGameController::class, 'reactDiscard']);
-
+        Route::post('/rooms/{id}/discard', [LiveGameController::class, 'discard']);
+        
         Route::post('/rooms/{id}/mark-offline', [PresenceController::class, 'markOffline']);
         Route::post('/rooms/{id}/report-disconnect', [PresenceController::class, 'reportDisconnect']);
         Route::post('/rooms/{id}/report-lobby-disconnect', [PresenceController::class, 'reportLobbyDisconnect']);
 
         Route::post('/rooms/{id}/luck-challenge', [LiveGameController::class, 'resolveLuckChallenge']);
         Route::post('/rooms/{id}/react-multi', [LiveGameController::class, 'reactMulti']);
-        Route::post('/rooms/{id}/discard', [LiveGameController::class, 'discard']);
+
         Route::post('/rooms/{room}/discard-perks', [LiveGameController::class, 'discardPerks']);
 
         Route::post('/rooms', [RoomController::class, 'store']);
