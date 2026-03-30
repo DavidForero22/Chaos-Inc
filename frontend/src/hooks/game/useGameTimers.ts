@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { logWithTime } from "../../utils/logger.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useTimerStore } from "../../store/useTimerStore.ts";
+import { useLoadingStore } from "../../store/useLoadingStore";
 
 export function useGameTimers() {
 	const gameData = useGameStore((state) => state.gameData);
@@ -56,7 +57,6 @@ export function useGameTimers() {
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 
 	useEffect(() => {
-		// Si no es su turno o no hay datos (y no está pausado), apagar el reloj
 		if (!isMyTurn || (turnRemaining === undefined && !isTurnPaused)) {
 			setTurnTimeLeft(null);
 			return;
@@ -66,6 +66,10 @@ export function useGameTimers() {
 			logWithTime("useGameTimers.ts - Turno en pausa, congelando reloj.");
 			return;
 		}
+
+		// --- NUEVO: Control estricto del loader ---
+		let didTriggerLoader = false;
+		const loadingStore = useLoadingStore.getState();
 
 		// Iniciar el cronómetro local
 		if (turnRemaining !== undefined && turnRemaining > 0) {
@@ -83,13 +87,24 @@ export function useGameTimers() {
 
 				if (prev === null || prev <= 1) {
 					clearInterval(interval);
+
+					if (!didTriggerLoader) {
+						loadingStore.startLoading("Procesando fin de turno...");
+						didTriggerLoader = true;
+					}
+
 					return 0;
 				}
 				return prev - 1;
 			});
 		}, 1000);
 
-		return () => clearInterval(interval);
+		return () => {
+			clearInterval(interval);
+			if (didTriggerLoader) {
+				loadingStore.stopLoading();
+			}
+		};
 	}, [isMyTurn, turnExpiresAt, isTurnPaused, turnRemaining]);
 
 	// --- Banner de herencia ---
