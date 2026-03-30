@@ -33,12 +33,14 @@ export function PlayerStats({
 		name: string,
 	) => {
 		const isMarked = perksToDiscard.includes(id);
+		const isUnderSabotage = me.conditions.must_discard;
 
 		const baseClasses =
 			"flex items-center justify-center w-8 h-8 relative transition-transform bg-gray-800 rounded border border-gray-500/50";
 		let modeClasses = "cursor-help hover:scale-110";
 
-		if (isDiscardMode) {
+		// Si esta en modo descarte pero no bajo sabotaje, permitir interactuar
+		if (isDiscardMode && !isUnderSabotage) {
 			modeClasses = isMarked
 				? "cursor-pointer scale-110 ring-2 ring-red-500 rounded bg-red-900/30"
 				: "cursor-pointer hover:scale-110 animate-pulse bg-gray-800 rounded border border-red-500/50";
@@ -47,12 +49,17 @@ export function PlayerStats({
 		return (
 			<span
 				key={id}
-				title={isDiscardMode ? "Clic para descartar" : title}
+				title={
+					isDiscardMode && !isUnderSabotage ? "Clic para descartar" : title
+				}
 				className={`${baseClasses} ${modeClasses}`}
 				onClick={() => {
-					if (isDiscardMode) {
+					// Si esta en modo descarte normal (exceso de cartas al final del turno), marcar
+					if (isDiscardMode && !isUnderSabotage) {
 						toggleDiscardPerk(id);
-					} else if (cardType !== undefined) {
+					}
+					// Si no es modo descarte (o es sabotaje), mostrar la info modal
+					else if (cardType !== undefined) {
 						setInfoCard({
 							id,
 							type: cardType,
