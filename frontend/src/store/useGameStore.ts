@@ -19,6 +19,7 @@ interface GameState {
 	gameOver: boolean;
 	showActingBossModal: boolean;
 	logs: LogEntry[];
+	isActionLocked: boolean;
 
 	setRoomId: (id: string | null) => void;
 	setGameData: (data: GameData | null) => void;
@@ -28,6 +29,7 @@ interface GameState {
 	setShowActingBossModal: (show: boolean) => void;
 	addLog: (message: string) => void;
 	clearLogs: () => void;
+	setIsActionLocked: (locked: boolean) => void;
 
 	syncGame: () => Promise<void>;
 	playTurn: (
@@ -58,6 +60,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 	gameOver: false,
 	showActingBossModal: false,
 	logs: [],
+	isActionLocked: false,
 
 	setRoomId: (id) => set({ roomId: id }),
 	setGameData: (data) => set({ gameData: data }),
@@ -65,6 +68,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 	setIsFirstLoad: (isFirstLoad) => set({ isFirstLoad }),
 	setGameOver: (gameOver) => set({ gameOver }),
 	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
+	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
 
 	addLog: (message) =>
 		set((state) => {
@@ -88,6 +92,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			gameOver: false,
 			showActingBossModal: false,
 			logs: [],
+			isActionLocked: false,
 		}),
 
 	syncGame: async () => {
@@ -132,13 +137,16 @@ export const useGameStore = create<GameState>((set, get) => ({
 		} catch (error: any) {
 			console.error("ERROR en /sync:", error);
 			throw error;
+		} finally {
+			set({ isActionLocked: false });
 		}
 	},
 
 	playTurn: async (cardId, targetName, perkKey) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return false;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return false;
 
+		set({ isActionLocked: true }); 
 		try {
 			await api.post(`/rooms/${roomId}/action`, {
 				card_id: cardId,
@@ -148,6 +156,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 			return true;
 		} catch (error: any) {
+			set({ isActionLocked: false });
 			logWithTime("useGameStore.ts - Error playing turn. ", error);
 			alert(error.response?.data?.message || "Error al jugar la carta.");
 			return false;
@@ -155,9 +164,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	reactToAttack: async (reaction, cardId) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return false;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return false;
 
+		set({ isActionLocked: true });
 		try {
 			await api.post(`/rooms/${roomId}/react`, {
 				reaction,
@@ -166,6 +176,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 			return true;
 		} catch (error: any) {
+			set({ isActionLocked: false });
 			logWithTime("useGameStore.ts - Error reacting to attack. ", error);
 			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
 			return false;
@@ -173,9 +184,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	reactToMultiAttack: async (reaction, cardId) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return false;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return false;
 
+		set({ isActionLocked: true });
 		try {
 			await api.post(`/rooms/${roomId}/react-multi`, {
 				reaction,
@@ -184,6 +196,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			await syncGame();
 			return true;
 		} catch (error: any) {
+			set({ isActionLocked: false });
 			if (error.response?.status === 422) return false;
 			logWithTime("useGameStore.ts - Error reacting to multi attack. ", error);
 			alert(
@@ -195,32 +208,42 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	endTurn: async () => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return;
-		await api.post(`/rooms/${roomId}/end-turn`, {});
-		await syncGame();
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return;
+
+		set({ isActionLocked: true });
+		try {
+			await api.post(`/rooms/${roomId}/end-turn`, {});
+			await syncGame();
+		} catch (error) {
+			set({ isActionLocked: false });
+		}
 	},
 
 	discardCards: async (cardIds: string[]) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return;
 
+		set({ isActionLocked: true });
 		try {
 			await api.post(`/rooms/${roomId}/discard`, { card_ids: cardIds });
 			await syncGame();
 		} catch (error: any) {
+			set({ isActionLocked: false });
 			alert(error.response?.data?.message || "Error al descartar cartas.");
 		}
 	},
 
 	discardPerks: async (perkIds: string[]) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return;
 
+		set({ isActionLocked: true });
 		try {
 			await api.post(`/rooms/${roomId}/discard-perks`, { perk_ids: perkIds });
 			await syncGame();
 		} catch (error: any) {
+			set({ isActionLocked: false });
 			alert(
 				error.response?.data?.message || "Error al descartar el equipamiento.",
 			);
@@ -228,14 +251,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	resolveSabotage: async (cardId: string) => {
-		const { roomId, syncGame } = get();
-		if (!roomId) return;
+		const { roomId, syncGame, isActionLocked } = get();
+		if (!roomId || isActionLocked) return;
+
+		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/react-discard`, {
-				card_id: cardId,
-			});
+			await api.post(`/rooms/${roomId}/react-discard`, { card_id: cardId });
 			await syncGame();
 		} catch (error) {
+			set({ isActionLocked: false });
 			console.error("Error al descartar por sabotaje:", error);
 		}
 	},
