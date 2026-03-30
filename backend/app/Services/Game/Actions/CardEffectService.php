@@ -132,7 +132,7 @@ class CardEffectService
                 ])
             );
 
-            ResolveMultiAttackJob::dispatch($roomId)->delay(15);
+            ResolveMultiAttackJob::dispatch($roomId)->delay(18);
 
             // Emitir evento para que el frontend actualice escudos rotos y muestre temporizadores
             event(new RoomStateUpdated($roomId, __('game.multi_attack_started', ['attacker' => $playerName])));
