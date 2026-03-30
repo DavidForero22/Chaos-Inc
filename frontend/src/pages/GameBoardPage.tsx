@@ -72,13 +72,15 @@ export default function GameBoardPage() {
 
 			{/* --- TABLERO SUPERIOR (Oponentes) --- */}
 			<OpponentsBoard
+				turnTimeLeft={timers.turnTimeLeft}
+				isTurnPaused={timers.isTurnPaused}
 			/>
 
 			{/* --- ZONA INFERIOR (Tú) --- */}
-			<PlayerArea 
-            turnTimeLeft={timers.turnTimeLeft} 
-            isTurnPaused={timers.isTurnPaused} 
-        />
+			<PlayerArea
+				turnTimeLeft={timers.turnTimeLeft}
+				isTurnPaused={timers.isTurnPaused}
+			/>
 
 			<GameLog />
 		</div>

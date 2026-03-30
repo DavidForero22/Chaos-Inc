@@ -8,7 +8,12 @@ import { OpponentCard } from "./OpponentCard.tsx";
 import { SELF_TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 
-export function OpponentsBoard() {
+interface OpponentsBoard {
+	turnTimeLeft: number | null;
+	isTurnPaused?: boolean;
+}
+
+export function OpponentsBoard({ turnTimeLeft, isTurnPaused }: OpponentsBoard) {
 	const { myPlayerName } = usePlayerIdentity();
 
 	const gameData = useGameStore((state) => state.gameData);
@@ -79,6 +84,8 @@ export function OpponentsBoard() {
 					selectedCardId={selectedCardId}
 					selectedCardType={selectedCardType}
 					onAction={handleAction}
+					turnTimeLeft={turnTimeLeft}
+					isTurnPaused={isTurnPaused}
 				/>
 			))}
 		</div>

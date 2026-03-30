@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import type { CardInstance } from "../../../types/live-game.ts";
+import { useGameStore } from "../../../store/useGameStore.ts";
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -14,6 +15,8 @@ interface OpponentCardProps {
 	selectedCardId: string | null;
 	selectedCardType: number | null;
 	onAction: (targetName: string, isOnline: boolean, perkKey?: string) => void;
+	turnTimeLeft?: number | null;
+    isTurnPaused?: boolean;
 }
 
 export function OpponentCard({
@@ -22,9 +25,14 @@ export function OpponentCard({
 	selectedCardId,
 	selectedCardType,
 	onAction,
+	turnTimeLeft,
+    isTurnPaused,
 }: OpponentCardProps) {
 	const opponentPerks = useOpponentPerks(player);
 	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
+
+	const currentTurn = useGameStore((state) => state.gameData?.game?.current_turn);
+    const isThisOpponentTurn = currentTurn === player.name && !player.is_dead;
 
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCardId !== null;
@@ -120,12 +128,14 @@ export function OpponentCard({
 				if (selectedCardType === 12) return;
 				onAction(player.name, player.is_online);
 			}}
-			className={`relative bg-gray-800 p-4 rounded-lg border-2 w-48 flex flex-col items-center text-center shadow-xl z-10 transition-all
-                ${player.role === "boss" ? "border-yellow-600" : "border-gray-700"}
+						className={`relative p-4 rounded-lg border-2 w-48 flex flex-col items-center text-center shadow-xl z-10 transition-all duration-300
+                ${isThisOpponentTurn ? "bg-gray-700 border-gray-500 shadow-[0_0_15px_rgba(59,130,246,0.3)]" : "bg-gray-800"}
+                ${!isThisOpponentTurn && player.role === "boss" ? "border-yellow-600" : ""}
+                ${!isThisOpponentTurn && player.role !== "boss" ? "border-gray-700" : ""}
                 ${!player.is_online ? "opacity-40 grayscale scale-95" : ""}
-                ${player.is_dead ? "opacity-50 grayscale scale-95 border-red-900" : ""}
+                ${player.is_dead ? "opacity-50 grayscale scale-95 border-red-900 shadow-none" : ""}
                 ${isUnclickable && !player.is_dead && player.is_online ? "opacity-30 grayscale scale-95" : ""}
-                ${canBeTargeted ? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50" : isUnclickable || selectedCardType === 12 ? "cursor-default" : "cursor-default"}
+                ${canBeTargeted ? "cursor-crosshair hover:scale-105 hover:border-blue-400 hover:shadow-blue-500/50" : isUnclickable}
             `}
 			title={tooltipMessage || undefined}
 		>
@@ -182,6 +192,17 @@ export function OpponentCard({
 			>
 				{player.name}
 			</h3>
+
+			{/* Temporizador del turno si le toca a él */}
+            {isThisOpponentTurn && turnTimeLeft !== null && turnTimeLeft !== undefined && (
+                <div className="absolute -bottom-3 bg-blue-900 border border-blue-500 text-blue-200 text-xs font-mono font-bold px-3 py-0.5 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)] z-20">
+                    {isTurnPaused ? (
+                        <span className="text-yellow-400">Pausa</span>
+                    ) : (
+                        `⏳ 0:${turnTimeLeft.toString().padStart(2, "0")}`
+                    )}
+                </div>
+            )}
 
 			<div className="mt-3 bg-gray-900 rounded p-2 border border-gray-700 w-full">
 				<p className="text-xs text-gray-500 uppercase">Estrés</p>

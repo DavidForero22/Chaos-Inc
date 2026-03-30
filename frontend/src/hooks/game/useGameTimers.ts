@@ -46,7 +46,7 @@ export function useGameTimers() {
 	// Verificar si es el turno del jugador
 	const isMyTurn = currentTurn === myName;
 	// Identificar si el jugador es el que está esperando (Pausa de turno)
-	const amIWaitingForReaction =
+	const isSomeoneWaitingForReaction =
 		gameData?.game?.pending_single_attack_target !== null ||
 		(gameData?.game?.pending_multi_attack_targets &&
 			gameData.game.pending_multi_attack_targets.length > 0) ||
@@ -55,7 +55,7 @@ export function useGameTimers() {
 
 	const isGlobalPause =
 		bossDisconnected || actingBossDisconnected || endingSoon;
-	const isTurnPaused = (isMyTurn && amIWaitingForReaction) || isGlobalPause;
+	const isTurnPaused = isSomeoneWaitingForReaction || isGlobalPause;
 
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 
@@ -68,38 +68,37 @@ export function useGameTimers() {
 			return;
 		}
 
-		if (!isMyTurn || (turnRemaining === undefined && !isTurnPaused)) {
+		if (turnRemaining === undefined && !isTurnPaused) {
 			setTurnTimeLeft(null);
 			return;
 		}
 
 		if (isTurnPaused) {
-			logWithTime("useGameTimers.ts - Turno en pausa, congelando reloj.");
+			logWithTime(
+				"useGameTimers.ts - Turno en pausa, congelando reloj global.",
+			);
 			return;
 		}
 
-		// Control estricto del loader
 		let didTriggerLoader = false;
 		const loadingStore = useLoadingStore.getState();
 
-		// Iniciar el cronómetro local
+		// Iniciar el cronómetro local con el valor del backend
 		if (turnRemaining !== undefined && turnRemaining > 0) {
 			setTurnTimeLeft(turnRemaining);
 			logWithTime(
-				`useGameTimers.ts - Iniciando reloj. Segundos restantes desde backend: ${turnRemaining}`,
+				`useGameTimers.ts - Iniciando reloj para el turno de ${currentTurn}. Segundos restantes: ${turnRemaining}`,
 			);
 		}
 
-		// Restar 1 cada segundo
 		const interval = setInterval(() => {
 			setTurnTimeLeft((prev) => {
-				// Si está pausado, no restar
 				if (isTurnPaused) return prev;
 
 				if (prev === null || prev <= 1) {
 					clearInterval(interval);
 
-					if (!didTriggerLoader) {
+					if (isMyTurn && !didTriggerLoader) {
 						loadingStore.startLoading("Procesando fin de turno...");
 						didTriggerLoader = true;
 					}
@@ -116,7 +115,14 @@ export function useGameTimers() {
 				loadingStore.stopLoading();
 			}
 		};
-	}, [isMyTurn, turnExpiresAt, isTurnPaused, turnRemaining, gameOver]);
+	}, [
+		isMyTurn,
+		turnExpiresAt,
+		isTurnPaused,
+		turnRemaining,
+		gameOver,
+		currentTurn,
+	]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
