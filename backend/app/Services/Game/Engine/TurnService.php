@@ -6,6 +6,7 @@ namespace App\Services\Game\Engine;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Jobs\AutoEndTurnJob;
 use App\Jobs\ResolveLuckChallengeJob;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
@@ -55,8 +56,16 @@ class TurnService
             if ($isOnline && !$isDead) {
                 Redis::hset($roomKey, 'current_turn_player_id', $nextPlayer);
 
-                $cardsToDraw = 2; 
+                $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
+                $turnId = uniqid('turn_', true);
+
+                Redis::hset($roomKey, 'current_turn_id', $turnId);
+                Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+
+                $cardsToDraw = 2;
                 $hasInertia = CastHelper::toBool(Redis::hget($playerKey, 'has_luck') ?? 0);
+
+                AutoEndTurnJob::dispatch($roomId, $nextPlayer, $turnId)->delay(now()->addSeconds($timeout));
 
                 if ($hasInertia) {
                     // Tirar los dados: 50% de probabilidad (del 1 al 100, si es <= 50 gana)

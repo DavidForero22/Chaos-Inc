@@ -57,6 +57,7 @@ class RoomService
             'is_private' => $data['is_private'] ? '1' : '0',
             'password' => $data['is_private'] ? Hash::make($data['password']) : '',
             'max_players' => $data['max_players'],
+            'turn_timeout' => $data['turn_timeout'],
             'status' => 'waiting',
             'owner_name' => $ownerName,
         ];
@@ -72,7 +73,7 @@ class RoomService
         Redis::expire("room:{$roomId}:players", 86400);
 
         // Avisar al Menú Principal para que aparezca la nueva sala.
-        event(new RoomListUpdated($roomId)); 
+        event(new RoomListUpdated($roomId));
         // Pasar el $roomId requerido al evento de estado.
         event(new RoomStateUpdated($roomId));
 

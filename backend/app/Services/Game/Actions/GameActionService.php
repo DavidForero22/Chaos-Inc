@@ -6,6 +6,7 @@ namespace App\Services\Game\Actions;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Jobs\AutoEndTurnJob;
 use App\Services\Game\Engine\CardValidationService;
 use App\Services\Game\Engine\CombatService;
 use App\Services\Game\Engine\PlayerHandService;
@@ -121,6 +122,15 @@ class GameActionService
             14 => __('game.lucked', ['player' => $playerName]),
             default => null,
         };
+
+        $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
+        $newTurnId = uniqid('turn_', true);
+
+        Redis::hset($roomKey, 'current_turn_id', $newTurnId);
+        Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+
+        AutoEndTurnJob::dispatch($roomId, $playerName, $newTurnId)->delay(now()->addSeconds($timeout));
+
         event(new RoomStateUpdated($roomId, $logMessage));
     }
 

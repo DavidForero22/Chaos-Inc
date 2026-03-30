@@ -26,7 +26,6 @@ class GameDataResource extends JsonResource
         $combatService       = app(CombatService::class);
 
         $isEffectivelyOver   = $finalizationService->isGameEffectivelyOver($roomId);
-        $activePlayersInOrder = $combatService->getActivePlayersInOrder($roomId);
 
         $myRange = $combatService->getPlayerRange($roomId, $myPlayerName);
 
@@ -68,8 +67,8 @@ class GameDataResource extends JsonResource
                     'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
                     'vision_bonus' => (int) ($pData['vision_bonus'] ?? 0),
                     'distance_bonus' => (int) ($pData['distance_bonus'] ?? 0),
-                    'has_storage' => CastHelper::toBool($myData['has_storage'] ?? 0),
-                    'has_luck'    => CastHelper::toBool($myData['has_luck'] ?? 0),
+                    'has_storage' => CastHelper::toBool($pData['has_storage'] ?? 0),
+                    'has_luck'    => CastHelper::toBool($pData['has_luck'] ?? 0),
                 ],
             ];
         }
@@ -85,6 +84,10 @@ class GameDataResource extends JsonResource
             $pendingMultiData = json_decode(Redis::get("room:{$roomId}:pending_multi_attack"), true);
             $pendingMultiAttackTargets = $pendingMultiData['targets'] ?? [];
         }
+
+        $turnTimeout = (int) (Redis::hget("room:{$roomId}", 'turn_timeout') ?: 30);
+        $turnExpiresAt = (int) (Redis::hget("room:{$roomId}", 'turn_expires_at') ?: 0);
+        $turnRemaining = max(0, $turnExpiresAt - now()->timestamp);
 
         return [
             'current_turn'             => $room['current_turn_player_id'] ?? null,
@@ -103,6 +106,10 @@ class GameDataResource extends JsonResource
             'pending_multi_attack_targets' => $pendingMultiAttackTargets,
             'player_in_luck_challenge'     => $playerInLuckChallenge,
             'player_pending_sabotage'      => $this->getPlayerPendingSabotage($roomId),
+            
+            'turn_timeout'                 => $turnTimeout,
+            'turn_expires_at'              => $turnExpiresAt,
+            'turn_remaining'               => $turnRemaining,
         ];
     }
 

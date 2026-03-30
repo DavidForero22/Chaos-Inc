@@ -17,7 +17,8 @@ class StoreRoomRequest extends FormRequest
             'name' => 'required|string|max:20',
             'max_players' => 'required|integer|min:3|max:6',
             'is_private' => 'required|boolean',
-            'password' => 'required_if:is_private,true'
+            'password' => 'required_if:is_private,true',
+            'turn_timeout' => 'required|integer|min:15|max:45',
         ];
     }
 }

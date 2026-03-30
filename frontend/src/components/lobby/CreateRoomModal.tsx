@@ -17,13 +17,14 @@ export default function CreateRoomModal({
 		is_private: false,
 		password: "",
 		max_players: 4,
+		turn_timeout: 30,
 	});
 
 	const handleCreateRoom = async () => {
 		try {
 			const response = await api.post("/rooms", formData);
 			sessionStorage.setItem("game_token", response.data.game_token);
-			
+
 			onClose();
 			navigate(`/room/${response.data.room_id}`, {
 				state: { playerName: user },
@@ -37,12 +38,14 @@ export default function CreateRoomModal({
 		<div className="fixed inset-0 bg-gray-900/90 flex items-center justify-center p-4 z-50">
 			<div className="bg-gray-800 p-8 rounded-xl max-w-sm w-full border border-gray-700">
 				<h2 className="text-xl font-bold mb-4 text-white">Configurar Sala</h2>
+				{/* Nombre */}
 				<input
 					type="text"
 					placeholder="Nombre"
 					className="w-full p-2 mb-3 bg-gray-900 rounded text-white"
 					onChange={(e) => setFormData({ ...formData, name: e.target.value })}
 				/>
+				{/* Privada */}
 				<label className="flex items-center gap-2 mb-3 text-white">
 					<input
 						type="checkbox"
@@ -62,6 +65,7 @@ export default function CreateRoomModal({
 						}
 					/>
 				)}
+				{/* Cantidad de Jugadores */}
 				<label className="block text-white mb-4">
 					Jugadores: {formData.max_players}
 					<input
@@ -78,6 +82,31 @@ export default function CreateRoomModal({
 						}
 					/>
 				</label>
+
+				{/* Slider de Tiempo de Turno */}
+				<label className="block text-white mb-6">
+					Tiempo por turno:{" "}
+					<span className="text-orange-400 font-bold">
+						{formData.turn_timeout}s
+					</span>
+					<input
+						type="range"
+						min="15"
+						max="45"
+						step="5"
+						className="w-full mt-2 accent-orange-500"
+						value={formData.turn_timeout}
+						onChange={(e) =>
+							setFormData({
+								...formData,
+								turn_timeout: parseInt(e.target.value),
+							})
+						}
+					/>
+				</label>
+
+				{/* ------------------------------------------- */}
+
 				<div className="flex justify-end gap-2">
 					<button onClick={onClose} className="px-4 py-2 text-gray-400">
 						Cancelar

@@ -160,4 +160,40 @@ class PlayerHandService
             event(new RoomStateUpdated($roomId, $logMessage));
         }
     }
+
+    /**
+     * Fuerza el descarte de las últimas cartas obtenidas si el jugador excede el límite.
+     * Útil para auto-descarte por inactividad.
+     */
+    public function enforceHandLimit(string $roomId, string $playerName): void
+    {
+        $playerKey  = "room:{$roomId}:player:{$playerName}";
+        $playerData = Redis::hgetall($playerKey);
+
+        // Si el jugador no existe o está muerto, no hacer nada
+        if (empty($playerData) || CastHelper::toBool($playerData['is_dead'] ?? 0)) {
+            return;
+        }
+
+        $cards = json_decode($playerData['cards'] ?? '[]', true);
+        if (!is_array($cards)) $cards = [];
+
+        // Calcular el límite actual 
+        $currentStress  = (int) ($playerData['stress'] ?? 0);
+        $isBossOrActing = ($playerData['role'] ?? '') === 'boss' || CastHelper::toBool($playerData['acting_boss'] ?? 0);
+        $maxStress      = $isBossOrActing ? 5 : 4;
+        $storageBonus   = CastHelper::toBool($playerData['has_storage'] ?? 0) ? 1 : 0;
+
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress) + $storageBonus;
+
+        $currentCount = count($cards);
+
+        // Si tiene más cartas de las permitidas, cortar el final del array
+        if ($currentCount > $maxHandSize) {
+            $updatedCards = array_slice($cards, 0, $maxHandSize);
+            Redis::hset($playerKey, 'cards', json_encode($updatedCards));
+
+            event(new RoomStateUpdated($roomId));
+        }
+    }
 }

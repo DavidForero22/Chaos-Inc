@@ -9,7 +9,7 @@ export function useGameTimers() {
 	const gameData = useGameStore((state) => state.gameData);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
 
-	// 1. Traemos SOLO los setters de Zustand
+	// Traer solo los setters de Zustand
 	const setMultiAttackSecondsLeft = useTimerStore(
 		(state) => state.setMultiAttackSecondsLeft,
 	);
@@ -35,6 +35,44 @@ export function useGameTimers() {
 	const hasIncomingAttack =
 		gameData?.me?.combat_state.is_defending_single ?? false;
 	const hasLuckChallenge = !!gameData?.me?.luck_challenge;
+
+	// --- Countdown del Turno Principal ---
+	const turnExpiresAt = gameData?.game?.turn_expires_at;
+	const turnRemaining = gameData?.game?.turn_remaining;
+	const currentTurn = gameData?.game?.current_turn;
+	const myName = gameData?.me?.name;
+
+	// Verificar si es el turno del jugador
+	const isMyTurn = currentTurn === myName;
+
+	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
+
+	useEffect(() => {
+		// Si no su turno o no hay datos, parar el reloj
+		if (!isMyTurn || !turnExpiresAt || turnRemaining === undefined) {
+			setTurnTimeLeft(null);
+			return;
+		}
+
+		// Iniciar el cronómetro local 
+		setTurnTimeLeft(turnRemaining);
+
+		logWithTime(`useGameTimers.ts - Iniciando reloj. Segundos restantes desde backend: ${turnRemaining}`);
+
+		// Restar 1 cada segundo
+		const interval = setInterval(() => {
+			setTurnTimeLeft((prev) => {
+				if (prev === null || prev <= 1) {
+					clearInterval(interval);
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => clearInterval(interval);
+
+	}, [isMyTurn, turnExpiresAt]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -226,11 +264,11 @@ export function useGameTimers() {
 		};
 	}, [hasLuckChallenge, setLuckChallengeSecondsLeft]);
 
-	// 2. Exportamos SOLO lo que no cambia cada segundo
 	return {
 		showBossWaiting: Boolean(bossDisconnected),
 		showActingBossWaiting: Boolean(actingBossDisconnected),
 		showEndingWaiting: Boolean(endingSoon),
 		showInheritanceBanner,
+		turnTimeLeft,
 	};
 }

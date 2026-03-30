@@ -10,6 +10,7 @@ use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use App\Http\Resources\GameDataResource;
 use App\Http\Resources\MyDataResource;
+use App\Jobs\AutoEndTurnJob;
 use App\Services\Game\Actions\GameActionService;
 use App\Services\Game\Engine\DeckService;
 use App\Services\Game\Engine\TurnService;
@@ -148,9 +149,18 @@ class LiveGameService
 
     private function finalizeGameSetup(string $roomId, string $bossPlayerName, array $deck, array $players): void
     {
+        $timeout = (int) (Redis::hget("room:{$roomId}", 'turn_timeout') ?: 30);
+        $turnId  = uniqid('turn_', true);
+
+
         Redis::hset("room:{$roomId}", 'current_turn_player_id', $bossPlayerName);
+        Redis::hset("room:{$roomId}", 'current_turn_id', $turnId);
+        Redis::hset("room:{$roomId}", 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
         Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
         Redis::setex("room:{$roomId}:deck", 86400, json_encode($deck));
+
+        AutoEndTurnJob::dispatch($roomId, $bossPlayerName, $turnId)->delay($timeout);
+
 
         if ($bossPlayerName !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerName, 2);
