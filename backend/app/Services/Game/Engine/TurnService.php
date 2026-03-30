@@ -91,7 +91,20 @@ class TurnService
                     $colors = ['red', 'blue', 'green', 'yellow'];
                     $correct = $colors[array_rand($colors)];
                     Redis::setex("room:{$roomId}:luck_challenge:{$nextPlayer}", 60, $correct);
+
+                    // Pausa: El turno no debe tener un cronometro
+                    Redis::hset($roomKey, 'turn_expires_at', 0);
+
                     ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer)->delay(15);
+                } else {
+                    // Turno normal: Poner el temporizador de turno
+                    $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
+                    $turnId = uniqid('turn_', true);
+
+                    Redis::hset($roomKey, 'current_turn_id', $turnId);
+                    Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+
+                    AutoEndTurnJob::dispatch($roomId, $nextPlayer, $turnId)->delay(now()->addSeconds($timeout));
                 }
 
                 break;

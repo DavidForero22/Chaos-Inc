@@ -9,7 +9,6 @@ use App\Jobs\ResolveSabotageJob;
 use App\Jobs\ResolveSingleAttackJob;
 use App\Services\Game\Engine\CombatService;
 use App\Support\CastHelper;
-use Exception;
 use Illuminate\Support\Facades\Redis;
 
 class CardEffectService
@@ -18,16 +17,6 @@ class CardEffectService
     {
         $playerKey = "room:{$roomId}:player:{$playerName}";
         $targetKey = "room:{$roomId}:player:{$targetName}";
-
-        // Validar el rango
-        $combatService = app(CombatService::class);
-        $distance = $combatService->getDistance($roomId, $playerName, $targetName);
-
-        $playerRange = $combatService->getPlayerRange($roomId, $playerName);
-
-        if ($distance > $playerRange) {
-            throw new Exception("El objetivo está demasiado lejos. Tu rango actual es {$playerRange}.");
-        }
 
         Redis::hset($playerKey, 'single_attack_used_this_turn', 1);
 

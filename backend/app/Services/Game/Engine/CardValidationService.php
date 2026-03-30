@@ -21,6 +21,17 @@ class CardValidationService
         if ($alreadyAttacked === 1) {
             throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque individual en este turno.", 422);
         }
+
+        $distance = app(CombatService::class)->getDistance($roomId, $playerName, $targetName);
+        $playerRange = app(CombatService::class)->getPlayerRange($roomId, $playerName);
+
+        if ($distance > $playerRange) {
+            throw new GameException(
+                GameException::INVALID_TARGET,
+                "El objetivo está demasiado lejos. Tu alcance actual es {$playerRange}.",
+                422
+            );
+        }
     }
 
     public function validateHeal(string $roomId, string $playerName): void

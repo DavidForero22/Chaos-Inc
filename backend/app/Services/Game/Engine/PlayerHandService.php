@@ -93,26 +93,6 @@ class PlayerHandService
         }
     }
 
-    public function resolveSabotage(string $roomId, string $playerName, string $cardId): void
-    {
-        $pendingSabotageTarget = Redis::get("room:{$roomId}:pending_sabotage");
-
-        if (!$pendingSabotageTarget || $pendingSabotageTarget !== $playerName) {
-            throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de ningún sabotaje.", 403);
-        }
-
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-
-        $this->findAndRemoveCard($roomId, $playerName, $cardId);
-
-        // Limpiar el estado de sabotaje
-        Redis::hset($playerKey, 'must_discard', 0);
-        Redis::hdel($playerKey, 'must_discard_by');
-        Redis::del("room:{$roomId}:pending_sabotage");
-
-        event(new RoomStateUpdated($roomId));
-    }
-
     public function discardPerks(string $roomId, string $playerName, array $perksToDiscard): void
     {
         $roomKey = "room:{$roomId}";
