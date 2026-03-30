@@ -44,24 +44,43 @@ export function useGameTimers() {
 
 	// Verificar si es el turno del jugador
 	const isMyTurn = currentTurn === myName;
+	// Identificar si el jugador es el que está esperando (Pausa de turno)
+	const amIWaitingForReaction =
+		gameData?.game?.pending_single_attack_target !== null ||
+		(gameData?.game?.pending_multi_attack_targets &&
+			gameData.game.pending_multi_attack_targets.length > 0) ||
+		gameData?.game?.player_pending_sabotage !== null;
+
+	const isTurnPaused = isMyTurn && amIWaitingForReaction;
 
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 
 	useEffect(() => {
-		// Si no su turno o no hay datos, parar el reloj
-		if (!isMyTurn || !turnExpiresAt || turnRemaining === undefined) {
+		// Si no es su turno o no hay datos (y no está pausado), apagar el reloj
+		if (!isMyTurn || (turnRemaining === undefined && !isTurnPaused)) {
 			setTurnTimeLeft(null);
 			return;
 		}
 
-		// Iniciar el cronómetro local 
-		setTurnTimeLeft(turnRemaining);
+		if (isTurnPaused) {
+			logWithTime("useGameTimers.ts - Turno en pausa, congelando reloj.");
+			return;
+		}
 
-		logWithTime(`useGameTimers.ts - Iniciando reloj. Segundos restantes desde backend: ${turnRemaining}`);
+		// Iniciar el cronómetro local
+		if (turnRemaining !== undefined && turnRemaining > 0) {
+			setTurnTimeLeft(turnRemaining);
+			logWithTime(
+				`useGameTimers.ts - Iniciando reloj. Segundos restantes desde backend: ${turnRemaining}`,
+			);
+		}
 
 		// Restar 1 cada segundo
 		const interval = setInterval(() => {
 			setTurnTimeLeft((prev) => {
+				// Si está pausado, no restar
+				if (isTurnPaused) return prev;
+
 				if (prev === null || prev <= 1) {
 					clearInterval(interval);
 					return 0;
@@ -71,8 +90,7 @@ export function useGameTimers() {
 		}, 1000);
 
 		return () => clearInterval(interval);
-
-	}, [isMyTurn, turnExpiresAt]);
+	}, [isMyTurn, turnExpiresAt, isTurnPaused, turnRemaining]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -270,5 +288,6 @@ export function useGameTimers() {
 		showEndingWaiting: Boolean(endingSoon),
 		showInheritanceBanner,
 		turnTimeLeft,
+		isTurnPaused,
 	};
 }

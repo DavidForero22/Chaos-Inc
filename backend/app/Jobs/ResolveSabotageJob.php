@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Events\RoomStateUpdated;
-use App\Services\Game\Engine\PlayerHandService;
+use App\Services\Game\Actions\GameReactionService;
 use Illuminate\Support\Facades\Log;
 
 class ResolveSabotageJob implements ShouldQueue
@@ -25,7 +25,7 @@ class ResolveSabotageJob implements ShouldQueue
         $this->targetName = $targetName;
     }
 
-    public function handle(PlayerHandService $handService): void
+    public function handle(GameReactionService $reactionService): void
     {
         $pendingSabotageTarget = Redis::get("room:{$this->roomId}:pending_sabotage");
 
@@ -45,7 +45,7 @@ class ResolveSabotageJob implements ShouldQueue
 
             // Usar el servicio para resolver el sabotaje automáticamente
             // (Asumimos que el atacante ya no importa mucho aquí, o puedes pasar "Sistema" como atacante)
-            $handService->resolveSabotage($this->roomId, $this->targetName, $randomCard['id'] ?? null);
+            $reactionService->resolveSabotage($this->roomId, $this->targetName, $randomCard['id'] ?? null);
 
             Log::info("ResolveSabotageJob.php - Descarte automático realizado en {$this->roomId} para {$this->targetName}");
             event(new RoomStateUpdated($this->roomId,));

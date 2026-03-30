@@ -6,14 +6,12 @@ import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
 import { logWithTime } from "../../../utils/logger.ts";
+import { useGameTimers } from "../../../hooks/game/useGameTimers.ts";
 
-interface PlayerAreaProps {
-	turnTimeLeft?: number | null;
-}
-
-export function PlayerArea({ turnTimeLeft }: PlayerAreaProps) {
+export function PlayerArea() {
 	// Datos del servidor (Solo lo necesario para el montaje)
 	const me = useGameStore((state) => state.gameData?.me);
+	const { turnTimeLeft, isTurnPaused } = useGameTimers();
 
 	logWithTime(`PlayerArea.tsx - turnTimeLeft: ${turnTimeLeft}`)
 
@@ -45,7 +43,7 @@ export function PlayerArea({ turnTimeLeft }: PlayerAreaProps) {
 		<div className="mt-4 bg-gray-800 p-6 rounded-xl border border-gray-700 shrink-0 flex gap-6 items-end relative">
 			<PlayerBanners me={me} />
 
-			<PlayerStats me={me} turnTimeLeft={turnTimeLeft} />
+			<PlayerStats me={me} turnTimeLeft={turnTimeLeft} isTurnPaused={isTurnPaused}/>
 
 			<PlayerHand />
 

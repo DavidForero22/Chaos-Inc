@@ -4,7 +4,7 @@ import { usePlayerIdentity } from "../usePlayerIdentity";
 import { useState } from "react";
 
 // Cartas que se juegan sobre uno mismo (sin seleccionar oponente)
-const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
+export const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
 
 export function usePlayerActions() {
 	const { myPlayerName } = usePlayerIdentity();

@@ -4,7 +4,8 @@ import { useMemo } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
-import { OpponentCard } from "./OpponentCard.tsx"; // <-- Importamos el nuevo componente
+import { OpponentCard } from "./OpponentCard.tsx";
+import { SELF_TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 
 export function OpponentsBoard() {
@@ -22,6 +23,9 @@ export function OpponentsBoard() {
 
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
+
+	const isTargetingCard =
+		selectedCardType !== null && !SELF_TARGET_CARDS.includes(selectedCardType);
 
 	const handleAction = async (
 		targetName: string,
@@ -58,7 +62,7 @@ export function OpponentsBoard() {
 			</div>
 
 			{/* Banner de aviso */}
-			{isMyTurn && selectedCardId !== null && (
+			{isMyTurn && isTargetingCard && (
 				<div className="absolute top-4 left-1/2 -translate-x-1/2 bg-yellow-500/20 text-yellow-400 px-6 py-2 rounded-full border border-yellow-500 font-bold animate-bounce shadow-lg z-20">
 					{selectedCardType === 12
 						? "¡Elige una pasiva de un rival!"

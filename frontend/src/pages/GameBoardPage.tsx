@@ -75,7 +75,7 @@ export default function GameBoardPage() {
 			/>
 
 			{/* --- ZONA INFERIOR (Tú) --- */}
-			<PlayerArea turnTimeLeft={timers.turnTimeLeft} />
+			<PlayerArea  />
 
 			<GameLog />
 		</div>

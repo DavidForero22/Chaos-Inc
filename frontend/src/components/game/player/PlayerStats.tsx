@@ -10,9 +10,14 @@ import type { CardInstance } from "../../../types/live-game";
 interface PlayerStatsProps {
 	me: MyData;
 	turnTimeLeft?: number | null;
+	isTurnPaused?: boolean;
 }
 
-export function PlayerStats({ me, turnTimeLeft }: PlayerStatsProps) {
+export function PlayerStats({
+	me,
+	turnTimeLeft,
+	isTurnPaused = false,
+}: PlayerStatsProps) {
 	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
 	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
 		usePlayerStats(me);
@@ -78,6 +83,7 @@ export function PlayerStats({ me, turnTimeLeft }: PlayerStatsProps) {
 		!hasActiveReaction &&
 		turnTimeLeft !== undefined &&
 		turnTimeLeft !== null;
+
 	const isLowTime =
 		turnTimeLeft !== undefined && turnTimeLeft !== null && turnTimeLeft <= 10;
 
@@ -86,13 +92,15 @@ export function PlayerStats({ me, turnTimeLeft }: PlayerStatsProps) {
 			{/* Banner temporizador*/}
 			{shouldShowTimer && (
 				<div
-					className={`absolute w-21 top-3 z-0 left-7 px-4 py-1 rounded-t-lg border-t border-x font-bold text-sm shadow-lg flex items-center gap-2 transition-colors ${
-						isLowTime
-							? "bg-red-900 border-red-500 text-red-200 animate-pulse"
-							: "bg-gray-800 border-blue-500 text-blue-300"
+					className={`absolute top-3 z-0 left-7 px-4 py-1 rounded-t-lg border-t border-x font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-colors ${
+						isTurnPaused
+							? "bg-gray-600 border-gray-400 text-gray-300" // ESTADO DE PAUSA
+							: isLowTime
+								? "bg-red-900 border-red-500 text-red-200 animate-pulse" // ESTADO CRÍTICO
+								: "bg-gray-800 border-blue-500 text-blue-300" // ESTADO NORMAL
 					}`}
 				>
-					⏳ {turnTimeLeft}s
+					{isTurnPaused ? "Esperando..." : `${turnTimeLeft}s`}
 				</div>
 			)}
 			<div className="relative bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50 mt-4">
