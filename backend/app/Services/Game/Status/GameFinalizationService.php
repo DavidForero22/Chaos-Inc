@@ -145,8 +145,7 @@ class GameFinalizationService
             return false;
         }
 
-        // --- NUEVO: Proteger la partida durante la herencia ---
-        // Si el jefe se acaba de ir, no evaluamos la victoria hasta que se resuelva su cargo
+        // Si el jefe se acaba de ir, no evaluar la victoria hasta que se resuelva su cargo
         if (
             Redis::exists("room:{$roomId}:boss_grace_period") ||
             Redis::exists("room:{$roomId}:acting_boss_grace_period")
@@ -195,8 +194,8 @@ class GameFinalizationService
 
         $jobToken = uniqid();
         Redis::set("room:{$roomId}:ending_grace_period", $jobToken);
+        Redis::hset("room:{$roomId}", 'turn_expires_at', 0);
 
-        // --- CAMBIO: Aumentamos a 12s para dar margen a la herencia (que dura 10s) ---
         CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(12));
 
         event(new RoomStateUpdated($roomId));

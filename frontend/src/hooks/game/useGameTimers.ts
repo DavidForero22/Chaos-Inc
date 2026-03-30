@@ -53,7 +53,9 @@ export function useGameTimers() {
 		gameData?.game?.player_pending_sabotage !== null;
 	const gameOver = useGameStore((state) => state.gameOver);
 
-	const isTurnPaused = isMyTurn && amIWaitingForReaction;
+	const isGlobalPause =
+		bossDisconnected || actingBossDisconnected || endingSoon;
+	const isTurnPaused = (isMyTurn && amIWaitingForReaction) || isGlobalPause;
 
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 

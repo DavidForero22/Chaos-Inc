@@ -23,6 +23,8 @@ class DisconnectionService
     public function handleBossDisconnection(string $roomId, string $bossName): void
     {
         Redis::set("room:{$roomId}:boss_grace_period", $bossName);
+        Redis::hset("room:{$roomId}", 'turn_expires_at', 0);
+
         InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
     }
 
@@ -130,6 +132,8 @@ class DisconnectionService
     {
         Redis::hset("room:{$roomId}:player:{$actingBossName}", 'acting_boss', 0);
         Redis::set("room:{$roomId}:acting_boss_grace_period", $actingBossName);
+        Redis::hset("room:{$roomId}", 'turn_expires_at', 0);
+        
         InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
     }
 

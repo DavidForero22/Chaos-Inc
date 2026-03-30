@@ -62,7 +62,7 @@ class GameReactionService
                 'attacker' => $attackerName
             ]);
 
-        $this->resumeTurnTimer($roomId);
+        app(TurnService::class)->resumeTurnTimer($roomId);
 
         event(new RoomStateUpdated($roomId, $logMessage));
     }
@@ -81,7 +81,7 @@ class GameReactionService
         if ($chosenColor === $correct) {
             // Acertó
 
-            $this->resumeTurnTimer($roomId);
+            app(TurnService::class)->resumeTurnTimer($roomId);
             $msg = __('game.luckySuccess', ['player' => $playerName]);
             event(new RoomStateUpdated($roomId, $msg));
             return true;
@@ -150,7 +150,7 @@ class GameReactionService
                 $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $pending['shielders'])]);
             }
 
-            $this->resumeTurnTimer($roomId);
+            app(TurnService::class)->resumeTurnTimer($roomId);
             event(new RoomStateUpdated($roomId, $logMessage));
         } else {
             // Aún quedan jugadores por responder
@@ -176,26 +176,7 @@ class GameReactionService
         Redis::hdel($playerKey, 'must_discard_by');
         Redis::del("room:{$roomId}:pending_sabotage");
 
-        $this->resumeTurnTimer($roomId);
+        app(TurnService::class)->resumeTurnTimer($roomId);
         event(new RoomStateUpdated($roomId));
-    }
-
-    /**
-     * Reanuda el temporizador del jugador activo tras una reacción.
-     */
-    private function resumeTurnTimer(string $roomId): void
-    {
-        $roomKey = "room:{$roomId}";
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
-
-        if (!$currentTurn) return;
-
-        $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
-        $newTurnId = uniqid('turn_', true);
-
-        Redis::hset($roomKey, 'current_turn_id', $newTurnId);
-        Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
-
-        AutoEndTurnJob::dispatch($roomId, $currentTurn, $newTurnId)->delay(now()->addSeconds($timeout));
     }
 }

@@ -3,6 +3,7 @@
 
 namespace App\Jobs;
 
+use App\Services\Game\Engine\TurnService;
 use App\Services\Game\Status\DisconnectionService;
 use App\Services\Game\Status\GameFinalizationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +21,8 @@ class InheritBossRoleJob implements ShouldQueue
 
     public function handle(
         DisconnectionService $disconnectionService,
-        GameFinalizationService $finalizationService
+        GameFinalizationService $finalizationService,
+        TurnService $turnService
     ): void {
 
         // Si la partida ya está terminando por abandono, no heredar nada.
@@ -58,5 +60,12 @@ class InheritBossRoleJob implements ShouldQueue
 
         // Tras heredar, comprobar si la partida tiene condición de victoria
         $finalizationService->checkDisconnectionVictory($this->roomId);
+
+        // Si el check de victoria no ha destruido la sala ni marcado game_over
+        if (Redis::exists("room:{$this->roomId}") && Redis::hget("room:{$this->roomId}", 'game_over') !== '1') {
+            Log::info("InheritBossRoleJob.php: Reactivando el temporizador de turno en sala $this->roomId tras herencia.");
+            $turnService->resumeTurnTimer($this->roomId); 
+            event(new \App\Events\RoomStateUpdated($this->roomId)); 
+        }
     }
 }

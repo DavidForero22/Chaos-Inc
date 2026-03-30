@@ -176,4 +176,24 @@ class TurnService
         $this->advanceTurn($roomId);
         event(new RoomStateUpdated($roomId));
     }
+
+
+    /**
+     * Reanuda el temporizador del jugador activo
+     */
+    public function resumeTurnTimer(string $roomId): void
+    {
+        $roomKey = "room:{$roomId}";
+        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+
+        if (!$currentTurn) return;
+
+        $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
+        $newTurnId = uniqid('turn_', true);
+
+        Redis::hset($roomKey, 'current_turn_id', $newTurnId);
+        Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+
+        AutoEndTurnJob::dispatch($roomId, $currentTurn, $newTurnId)->delay(now()->addSeconds($timeout));
+    }
 }

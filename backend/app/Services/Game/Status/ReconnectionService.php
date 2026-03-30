@@ -4,6 +4,7 @@
 namespace App\Services\Game\Status;
 
 use App\Events\RoomStateUpdated;
+use App\Services\Game\Engine\TurnService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -11,6 +12,7 @@ class ReconnectionService
 {
     public function __construct(
         protected DisconnectionService $disconnectionService,
+        protected TurnService $turnService,
     ) {}
 
     public function handleReconnection(string $roomId, string $playerName, array $playerData): void
@@ -43,11 +45,13 @@ class ReconnectionService
         Redis::hset($playerKey, 'skip_next_turn', 1);
 
         $role = $playerData['role'] ?? '';
+        $needToResumeTimer = false;
 
         // 1. Si el Jefe Original vuelve
         if ($role === 'boss') {
             Log::info("ReconnectionService.php::handleReconnection: El jefe {$playerName} se reconectó, ejecutando DisconnectionService::handleBossReconnection\n");
             $this->handleBossReconnection($roomId);
+            $needToResumeTimer = true;
         }
 
         // 2. Si el Becario (Jefe Heredado) vuelve antes de que expire su gracia
@@ -55,6 +59,7 @@ class ReconnectionService
         if ($actingGraceValue === $playerName) {
             Log::info("ReconnectionService.php::handleReconnection - El jugador (como jefe heredado) {$playerName} se reconectó, ejecutando restoreInternGrace\n");
             $this->restoreInternGrace($roomId, $playerName, $playerKey);
+            $needToResumeTimer = true;
         }
 
         // 3. Si el Secretario vuelve, prioriza sobre el Becario
@@ -67,6 +72,17 @@ class ReconnectionService
         if (Redis::exists("room:{$roomId}:ending_grace_period")) {
             Redis::del("room:{$roomId}:ending_grace_period");
             Log::info("ReconnectionService.php::handleReconnection - ending grace period cancelada por reconexión de {$playerName}");
+            $needToResumeTimer = true;
+        }
+
+        if ($needToResumeTimer) {
+            // Comprobamos si el turno estaba congelado
+            $expiresAt = (int) Redis::hget("room:{$roomId}", 'turn_expires_at');
+            if ($expiresAt === 0) {
+                Log::info("ReconnectionService.php: Reactivando el temporizador de turno en sala $roomId tras reconexión.");
+                $this->turnService->resumeTurnTimer($roomId);
+                event(new RoomStateUpdated($roomId));
+            }
         }
     }
 
