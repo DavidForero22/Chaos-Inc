@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../hooks/room/useRoom.ts";
-import { useLoadingStore } from "../store/useLoadingStore.ts"; // <-- Importamos tu loader global
+import { useLoadingStore } from "../store/useLoadingStore.ts"; 
 
 // -- COMPONENTES --
 import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
@@ -12,7 +12,7 @@ import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
 export default function WaitingRoomPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const { startLoading, stopLoading } = useLoadingStore(); // <-- Extraemos las acciones
+	const { startLoading, stopLoading } = useLoadingStore();
 
 	const {
 		room,

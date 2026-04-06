@@ -17,6 +17,7 @@ export function useRoomSession(
 		needsPassword,
 		passwordError,
 		setRoomId,
+		setIsJoining,
 		attemptJoin,
 		leaveRoom,
 		fetchRoomData,
@@ -29,9 +30,11 @@ export function useRoomSession(
 		return () => resetRoomStore();
 	}, [roomId, setRoomId, resetRoomStore]);
 
-	// Intentar entrar automáticamente si tenemos nombre
+	// Intentar entrar automáticamente si tiene sesion iniciada
 	useEffect(() => {
-		if (myPlayerName && roomId) {
+		if (!roomId) return;
+
+		if (myPlayerName) {
 			attemptJoin("", myPlayerName).catch((err) => {
 				const type = err.response?.data?.type;
 				if (type === "ROOM_NOT_FOUND" || err.response?.status === 404)
@@ -41,8 +44,10 @@ export function useRoomSession(
 					navigate("/");
 				}
 			});
+		} else {
+			setIsJoining(false);
 		}
-	}, [myPlayerName, roomId, attemptJoin, navigate]);
+	}, [myPlayerName, roomId, attemptJoin, navigate, setIsJoining]);
 
 	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
 	useEffect(() => {
