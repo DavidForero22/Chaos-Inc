@@ -29,26 +29,26 @@ class LiveGameService
 
     public function startGame(string $roomId, string $requestingPlayer): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomInfoKey = "room:{$roomId}:info";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomInfoKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $room = Redis::hgetall($roomKey);
+        $ownerName = Redis::hget($roomInfoKey, 'owner_name');
 
-        if ($room['owner_name'] !== $requestingPlayer) {
+        if ($ownerName !== $requestingPlayer) {
             throw new RoomException(RoomException::NOT_LEADER, "Only the leader can start the game.", 403);
         }
 
-        $players = Redis::smembers("{$roomKey}:players");
+        $players = Redis::smembers("room:{$roomId}:players");
         $playersCount = count($players);
 
         if ($playersCount < 3) {
             throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
         }
 
-        $this->initializeRoomState($roomKey, $players);
+        $this->initializeRoomState($roomId, $players);
 
         $roles = LiveGameHelper::generateRolesDistribution($playersCount);
         $deck = $this->deckService->buildDeck();
@@ -63,41 +63,48 @@ class LiveGameService
 
     public function getPlayerData(string $roomId, string $playerName): array
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $room = Redis::hgetall($roomKey);
+        $status = Redis::hget($roomStateKey, 'status');
 
-        if (($room['status'] ?? 'waiting') === 'waiting') {
+        if (($status ?? 'waiting') === 'waiting') {
             throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
 
-        if (!Redis::exists($playerKey)) {
+        if (!Redis::exists($playerInfoKey)) {
             throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
 
         $this->disconnectionService->checkBossGracePeriod($roomId);
 
-        $myData = Redis::hgetall($playerKey);
+        $myDataInfo  = Redis::hgetall($playerInfoKey);
+        $myDataStats = Redis::hgetall("room:{$roomId}:player:{$playerName}:stats");
+        $myDataTurn  = Redis::hgetall("room:{$roomId}:player:{$playerName}:turn_state");
+        $myDataPerks = Redis::hgetall("room:{$roomId}:player:{$playerName}:perks");
+        $myDataHand  = Redis::get("room:{$roomId}:player:{$playerName}:hand") ?: '[]';
+
+        $myData = array_merge($myDataInfo, $myDataStats, $myDataTurn, $myDataPerks);
+        $myData['cards'] = $myDataHand;
+
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
         $pendingMultiAttack = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
 
         return [
             'me'   => new MyDataResource([
-                'playerName'    => $playerName,
-                'myData'        => $myData,
-                'pendingAttack' => $pendingAttack,
+                'playerName'         => $playerName,
+                'myData'             => $myData,
+                'pendingAttack'      => $pendingAttack,
                 'pendingMultiAttack' => $pendingMultiAttack,
-                'roomId'        => $roomId,
+                'roomId'             => $roomId,
             ]),
             'game' => new GameDataResource([
                 'roomId'       => $roomId,
-                'room'         => $room,
                 'myPlayerName' => $playerName,
             ])
         ];
@@ -107,12 +114,15 @@ class LiveGameService
     // MÉTODOS PRIVADOS
     // =========================================================================
 
-    private function initializeRoomState(string $roomKey, array &$players): void
+    private function initializeRoomState(string $roomId, array &$players): void
     {
-        Redis::hset($roomKey, 'status', 'in_game');
-        Redis::hset($roomKey, 'game_over', 0);
-        Redis::hset($roomKey, 'winner_role', '');
-        Redis::hset($roomKey, 'round_number', 1);
+        $roomStateKey = "room:{$roomId}:state";
+
+        Redis::hset($roomStateKey, 'status', 'in_game');
+        Redis::hset($roomStateKey, 'game_over', 0);
+        Redis::hset($roomStateKey, 'winner_role', '');
+        Redis::hset($roomStateKey, 'round_number', 1);
+
         shuffle($players);
     }
 
@@ -126,22 +136,46 @@ class LiveGameService
 
             $playerCards = array_splice($deck, 0, 3);
 
-            Redis::hmset("room:{$roomId}:player:{$playerName}", [
-                'role'                  => $playerRole,
-                'stress'                => 0,
-                'is_dead'               => 0,
-                'cards'                 => json_encode($playerCards),
-                'is_online'             => 1,
-                'skip_next_turn'        => 0,
-                'attack_used_this_turn' => 0,
-                'has_shield'            => 0,
-                'damage_dealt'          => 0,
-                'damage_received'       => 0,
-                'cards_played'          => 0,
-                'eliminations'          => 0,
-                'acting_boss'           => 0,
+            $baseKey = "room:{$roomId}:player:{$playerName}";
+
+            Redis::hmset("{$baseKey}:info", [
+                'role'            => $playerRole,
+                'stress'          => 0,
+                'acting_boss'     => 0,
+                'is_online'       => 1,
+                'is_dead'         => 0,
             ]);
-            Redis::expire("room:{$roomId}:player:{$playerName}", 86400);
+
+            Redis::hmset("{$baseKey}:stats", [
+                'damage_dealt'    => 0,
+                'damage_received' => 0,
+                'cards_played'    => 0,
+                'eliminations'    => 0,
+            ]);
+
+            Redis::hmset("{$baseKey}:turn_state", [
+                'skip_next_turn'               => 0,
+                'single_attack_used_this_turn' => 0,
+                'multi_attack_used_this_turn'  => 0,
+                'must_discard'                 => 0,
+            ]);
+
+            Redis::hmset("{$baseKey}:perks", [
+                'has_shield'   => 0,
+                'has_storage'  => 0,
+                'has_luck'     => 0,
+                'has_distance' => 0,
+                'is_blocked'   => 0,
+                'vision_bonus' => 0,
+            ]);
+
+            Redis::set("{$baseKey}:hand", json_encode($playerCards));
+
+            Redis::expire("{$baseKey}:info", 86400);
+            Redis::expire("{$baseKey}:stats", 86400);
+            Redis::expire("{$baseKey}:turn_state", 86400);
+            Redis::expire("{$baseKey}:perks", 86400);
+            Redis::expire("{$baseKey}:hand", 86400);
         }
 
         return $bossPlayerName;
@@ -149,18 +183,20 @@ class LiveGameService
 
     private function finalizeGameSetup(string $roomId, string $bossPlayerName, array $deck, array $players): void
     {
-        $timeout = (int) (Redis::hget("room:{$roomId}", 'turn_timeout') ?: 30);
+        $roomInfoKey  = "room:{$roomId}:info";
+        $roomStateKey = "room:{$roomId}:state";
+
+        $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
         $turnId  = uniqid('turn_', true);
 
+        Redis::hset($roomStateKey, 'current_turn_player_id', $bossPlayerName);
+        Redis::hset($roomStateKey, 'current_turn_id', $turnId);
+        Redis::hset($roomStateKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
 
-        Redis::hset("room:{$roomId}", 'current_turn_player_id', $bossPlayerName);
-        Redis::hset("room:{$roomId}", 'current_turn_id', $turnId);
-        Redis::hset("room:{$roomId}", 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
         Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
         Redis::setex("room:{$roomId}:deck", 86400, json_encode($deck));
 
         AutoEndTurnJob::dispatch($roomId, $bossPlayerName, $turnId)->delay($timeout);
-
 
         if ($bossPlayerName !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerName, 2);

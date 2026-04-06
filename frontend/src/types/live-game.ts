@@ -24,7 +24,7 @@ export interface PlayerPerks {
 	has_shield: boolean;
 	vision_range: number;
 	vision_bonus: number;
-	distance_bonus: number;
+	has_distance: boolean;
 	has_storage: boolean;
 	has_luck: boolean
 }

@@ -19,27 +19,29 @@ class GameFinalizationService
 
     public function finalize(string $roomId): void
     {
-        $roomKey     = "room:{$roomId}";
-        $room        = Redis::hgetall($roomKey);
-        $playerNames = Redis::smembers("{$roomKey}:players");
+        $roomStateKey = "room:{$roomId}:state";
+        $roomState    = Redis::hgetall($roomStateKey);
+        $playerNames  = Redis::smembers("room:{$roomId}:players");
 
-        $winnerRole        = $room['winner_role'] ?? null;
-        $totalRounds       = (int) ($room['round_number'] ?? 0);
+        $winnerRole        = $roomState['winner_role'] ?? null;
+        $totalRounds       = (int) ($roomState['round_number'] ?? 0);
         $totalEliminations = 0;
 
         $winningRoles = match ($winnerRole) {
-            'boss'  => ['boss', 'secretary'],
-            'union' => ['union'],
+            'boss'   => ['boss', 'secretary'],
+            'union'  => ['union'],
             'intern' => ['intern'],
-            default => [],
+            default  => [],
         };
 
         $playersData   = [];
 
         foreach ($playerNames as $name) {
-            $pData = Redis::hgetall("{$roomKey}:player:{$name}");
-            $role  = $pData['role'] ?? 'intern';
-            $elims = (int) ($pData['eliminations'] ?? 0);
+            $pInfo  = Redis::hgetall("room:{$roomId}:player:{$name}:info");
+            $pStats = Redis::hgetall("room:{$roomId}:player:{$name}:stats");
+
+            $role  = $pInfo['role'] ?? 'intern';
+            $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
 
             $user = User::where('username', $name)->first();
@@ -51,9 +53,9 @@ class GameFinalizationService
                 'display_name'    => $name,
                 'has_won'         => in_array($role, $winningRoles),
                 'role'            => $role,
-                'damage_dealt'    => (int) ($pData['damage_dealt']    ?? 0),
-                'damage_received' => (int) ($pData['damage_received'] ?? 0),
-                'cards_played'    => (int) ($pData['cards_played']    ?? 0),
+                'damage_dealt'    => (int) ($pStats['damage_dealt']    ?? 0),
+                'damage_received' => (int) ($pStats['damage_received'] ?? 0),
+                'cards_played'    => (int) ($pStats['cards_played']    ?? 0),
                 'eliminations'    => $elims,
             ];
         }
@@ -74,9 +76,13 @@ class GameFinalizationService
         $roomKey = "room:{$roomId}";
         $expireTime = 7;
 
-        // Poner fecha de caducidad a todas las llaves de la sala
+        // Poner fecha de caducidad
         foreach ($playerNames as $name) {
-            Redis::expire("{$roomKey}:player:{$name}", $expireTime);
+            Redis::expire("{$roomKey}:player:{$name}:info", $expireTime);
+            Redis::expire("{$roomKey}:player:{$name}:stats", $expireTime);
+            Redis::expire("{$roomKey}:player:{$name}:turn_state", $expireTime);
+            Redis::expire("{$roomKey}:player:{$name}:perks", $expireTime);
+            Redis::expire("{$roomKey}:player:{$name}:hand", $expireTime);
         }
 
         // Borrar tokens de la sala
@@ -91,10 +97,11 @@ class GameFinalizationService
         Redis::expire("{$roomKey}:deck", $expireTime);
         Redis::expire("{$roomKey}:turn_order", $expireTime);
         Redis::expire("{$roomKey}:pending_attack", $expireTime);
+        Redis::expire("{$roomKey}:pending_multi_attack", $expireTime);
+        Redis::expire("{$roomKey}:pending_sabotage", $expireTime);
         Redis::expire("{$roomKey}:players", $expireTime);
-
-        // Expirar la llave principal de la sala
-        Redis::expire($roomKey, $expireTime);
+        Redis::expire("{$roomKey}:info", $expireTime);
+        Redis::expire("{$roomKey}:state", $expireTime);
 
         // La unica llave que se borra al instante es la de "active_rooms"
         Redis::srem("active_rooms", $roomId);
@@ -102,14 +109,16 @@ class GameFinalizationService
 
     public function cancelAndCleanup(string $roomId): void
     {
+        $roomStateKey = "room:{$roomId}:state";
+
         // Evita que se programe la limpieza 500 veces por segundo
-        if (Redis::hget("room:{$roomId}", 'game_over') == 1) {
+        if (Redis::hget($roomStateKey, 'game_over') == 1) {
             return;
         }
 
         // Marcar estado para que el /sync no falle
-        Redis::hset("room:{$roomId}", 'game_over', 1);
-        Redis::hset("room:{$roomId}", 'winner_role', 'canceled');
+        Redis::hset($roomStateKey, 'game_over', 1);
+        Redis::hset($roomStateKey, 'winner_role', 'canceled');
 
         // Notificar al frontend
         event(new RoomStateUpdated($roomId));
@@ -137,10 +146,11 @@ class GameFinalizationService
 
     public function checkDisconnectionVictory(string $roomId): bool
     {
+        $roomStateKey = "room:{$roomId}:state";
 
         if (
-            !Redis::exists("room:{$roomId}") ||
-            Redis::hget("room:{$roomId}", 'game_over') === '1'
+            !Redis::exists($roomStateKey) ||
+            Redis::hget($roomStateKey, 'game_over') === '1'
         ) {
             return false;
         }
@@ -163,11 +173,13 @@ class GameFinalizationService
         $onlineRoles = [];
 
         foreach ($players as $pName) {
-            $pData    = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $isOnline = ($pData['is_online'] ?? '1') !== '0';
-            $isDead   = CastHelper::toBool($pData['is_dead'] ?? 0);
+            $pInfo    = Redis::hgetall("room:{$roomId}:player:{$pName}:info");
+
+            $isOnline = ($pInfo['is_online'] ?? '1') !== '0';
+            $isDead   = CastHelper::toBool($pInfo['is_dead'] ?? 0);
+
             if ($isOnline && !$isDead) {
-                $role = ($pData['acting_boss'] ?? '0') === '1' ? 'boss' : ($pData['role'] ?? '');
+                $role = ($pInfo['acting_boss'] ?? '0') === '1' ? 'boss' : ($pInfo['role'] ?? '');
                 $onlineRoles[] = $role;
             }
         }
@@ -194,7 +206,7 @@ class GameFinalizationService
 
         $jobToken = uniqid();
         Redis::set("room:{$roomId}:ending_grace_period", $jobToken);
-        Redis::hset("room:{$roomId}", 'turn_expires_at', 0);
+        Redis::hset($roomStateKey, 'turn_expires_at', 0);
 
         CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(12));
 
@@ -205,19 +217,22 @@ class GameFinalizationService
 
     public function finalizeVictory(string $roomId): void
     {
-        $players     = Redis::smembers("room:{$roomId}:players");
-        $onlineRoles = [];
+        $roomStateKey = "room:{$roomId}:state";
+        $players      = Redis::smembers("room:{$roomId}:players");
+        $onlineRoles  = [];
 
         foreach ($players as $pName) {
-            $pData    = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $isOnline = ($pData['is_online'] ?? '1') !== '0';
-            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $pInfo    = Redis::hgetall("room:{$roomId}:player:{$pName}:info");
+
+            $isOnline = ($pInfo['is_online'] ?? '1') !== '0';
+            $isDead   = filter_var($pInfo['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+
             if ($isOnline && !$isDead) {
-                $onlineRoles[] = $pData['role'] ?? '';
+                $onlineRoles[] = $pInfo['role'] ?? '';
             }
         }
 
-        $roundNumber  = (int) Redis::hget("room:{$roomId}", 'round_number');
+        $roundNumber  = (int) Redis::hget($roomStateKey, 'round_number');
         $hasUnion     = in_array('union', $onlineRoles);
         $hasBoss      = in_array('boss', $onlineRoles);
         $hasSecretary = in_array('secretary', $onlineRoles);
@@ -242,8 +257,8 @@ class GameFinalizationService
         }
 
         if ($roundNumber >= 3) {
-            Redis::hset("room:{$roomId}", 'game_over', 1);
-            Redis::hset("room:{$roomId}", 'winner_role', $winnerRole);
+            Redis::hset($roomStateKey, 'game_over', 1);
+            Redis::hset($roomStateKey, 'winner_role', $winnerRole);
             event(new RoomStateUpdated($roomId));
             $this->finalize($roomId);
 
@@ -260,13 +275,14 @@ class GameFinalizationService
         $onlineRoles = [];
 
         foreach ($players as $pName) {
-            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $isOnline = ($pData['is_online'] ?? '1') !== '0';
-            $isDead = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $pInfo = Redis::hgetall("room:{$roomId}:player:{$pName}:info");
+
+            $isOnline = ($pInfo['is_online'] ?? '1') !== '0';
+            $isDead = filter_var($pInfo['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             if ($isOnline && !$isDead) {
                 // Consideramos al acting_boss como boss para la lógica de bandos
-                $role = ($pData['acting_boss'] ?? '0') === '1' ? 'boss' : ($pData['role'] ?? '');
+                $role = ($pInfo['acting_boss'] ?? '0') === '1' ? 'boss' : ($pInfo['role'] ?? '');
                 $onlineRoles[] = $role;
             }
         }

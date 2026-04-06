@@ -53,10 +53,11 @@ class DeckService
 
         if (empty($drawn)) return;
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $currentCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+
+        $currentCards = json_decode(Redis::get($handKey) ?: '[]', true);
         if (!is_array($currentCards)) $currentCards = [];
 
-        Redis::hset($playerKey, 'cards', json_encode(array_merge($currentCards, $drawn)));
+        Redis::set($handKey, json_encode(array_merge($currentCards, $drawn)));
     }
 }

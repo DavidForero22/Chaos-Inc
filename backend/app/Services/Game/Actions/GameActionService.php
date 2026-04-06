@@ -1,5 +1,5 @@
 <?php
-// app/Services/Game/Actions/RoomStateUpdated.php
+// app/Services/Game/Actions/GameActionService.php
 
 namespace App\Services\Game\Actions;
 
@@ -21,13 +21,14 @@ class GameActionService
 
     public function playAction(string $roomId, string $playerName, string $cardId, string $targetName, ?string $perkKey = null): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
+        $roomInfoKey  = "room:{$roomId}:info";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
         if ($currentTurn !== $playerName) {
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
@@ -45,12 +46,12 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque masivo pendiente de resolver.", 422);
         }
 
-        if (!Redis::sismember("{$roomKey}:players", $targetName)) {
+        if (!Redis::sismember("room:{$roomId}:players", $targetName)) {
             throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $cards = collect(json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true));
+        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+        $cards = collect(json_decode(Redis::get($handKey) ?: '[]', true));
 
         $card = $cards->firstWhere('id', $cardId);
         if (!$card) {
@@ -117,9 +118,9 @@ class GameActionService
             default => null,
         };
 
-        $timeout = (int) (Redis::hget($roomKey, 'turn_timeout') ?: 30);
+        $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
         $newTurnId = uniqid('turn_', true);
-        Redis::hset($roomKey, 'current_turn_id', $newTurnId);
+        Redis::hset($roomStateKey, 'current_turn_id', $newTurnId);
 
         // Comprobar si la acción dejó un estado pendiente que requiera reacción
         $needsReaction = Redis::exists("room:{$roomId}:pending_attack") ||
@@ -128,9 +129,9 @@ class GameActionService
 
         if ($needsReaction) {
             // PAUSA: Borrar el tiempo de expiración para que el frontend detenga el reloj
-            Redis::hset($roomKey, 'turn_expires_at', 0);
+            Redis::hset($roomStateKey, 'turn_expires_at', 0);
         } else {
-            Redis::hset($roomKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+            Redis::hset($roomStateKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
             AutoEndTurnJob::dispatch($roomId, $playerName, $newTurnId)->delay(now()->addSeconds($timeout));
         }
 

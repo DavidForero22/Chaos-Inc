@@ -16,12 +16,12 @@ class PresenceService
 
     public function markOffline(string $roomId, string $playerName): string
     {
-        $roomStatus = Redis::hget("room:{$roomId}", 'status');
+        $roomStatus = Redis::hget("room:{$roomId}:state", 'status');
         if ($roomStatus !== 'in_game') {
             return 'ignored';
         }
 
-        $isOnline = Redis::hget("room:{$roomId}:player:{$playerName}", 'is_online');
+        $isOnline = Redis::hget("room:{$roomId}:player:{$playerName}:info", 'is_online');
 
         // Si el jugador estaba online, procedemos con la desconexión oficial
         if ($isOnline === '1') {
@@ -41,9 +41,9 @@ class PresenceService
 
     public function processDisconnectReport(string $roomId, string $disconnectedPlayer): string
     {
-        $isOnline = Redis::hget("room:{$roomId}:player:{$disconnectedPlayer}", 'is_online');
+        $isOnline = Redis::hget("room:{$roomId}:player:{$disconnectedPlayer}:info", 'is_online');
 
-        // CAMBIO: Si está online ('1'), procesamos la caída porque el testigo sabe más que nosotros
+        // Si está online ('1'), procesar la caída porque el testigo sabe más que nosotros
         if ($isOnline === '1') {
             Log::info("PresenceService.php::processDisconnectReport - Jugador reportó la caída de {$disconnectedPlayer}. Procesando desconexión...");
             $this->disconnectionService->processInGameDisconnection(
@@ -61,7 +61,7 @@ class PresenceService
 
     public function processLobbyDisconnectReport(string $roomId, string $disconnectedPlayer): string
     {
-        $roomStatus = Redis::hget("room:{$roomId}", 'status');
+        $roomStatus = Redis::hget("room:{$roomId}:state", 'status');
         if ($roomStatus !== 'waiting') {
             return 'ignored';
         }
@@ -87,7 +87,8 @@ class PresenceService
             $username = $data['user_info']['username'] ?? null;
 
             if ($roomId && $username) {
-                $isOnline = Redis::hget("room:{$roomId}:player:{$username}", 'is_online');
+                $isOnline = Redis::hget("room:{$roomId}:player:{$username}:info", 'is_online');
+
                 if ($isOnline !== '1') {
                     Log::info("Webhook Reverb: procesando caída de {$username} en sala {$roomId}");
                     $this->disconnectionService->processInGameDisconnection(

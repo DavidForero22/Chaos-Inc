@@ -15,8 +15,10 @@ class GameDataResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roomId       = $this['roomId'];
-        $room         = $this['room'];
         $myPlayerName = $this['myPlayerName'];
+
+        $roomInfo  = Redis::hgetall("room:{$roomId}:info");
+        $roomState = Redis::hgetall("room:{$roomId}:state");
 
         $opponents = [];
         $hasActingBoss = false;
@@ -26,13 +28,18 @@ class GameDataResource extends JsonResource
         $combatService       = app(CombatService::class);
 
         $isEffectivelyOver   = $finalizationService->isGameEffectivelyOver($roomId);
-
         $myRange = $combatService->getPlayerRange($roomId, $myPlayerName);
 
         foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
-            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
 
-            if (CastHelper::toBool($pData['acting_boss'] ?? 0)) {
+            // Datos del jugador
+            $pInfo  = Redis::hgetall("room:{$roomId}:player:{$pName}:info");
+            $pPerks = Redis::hgetall("room:{$roomId}:player:{$pName}:perks");
+
+            $pHandJson = Redis::get("room:{$roomId}:player:{$pName}:hand");
+            $pHand = $pHandJson ? json_decode($pHandJson, true) : [];
+
+            if (CastHelper::toBool($pInfo['acting_boss'] ?? 0)) {
                 $hasActingBoss = true;
             }
 
@@ -47,28 +54,31 @@ class GameDataResource extends JsonResource
 
             $opponents[] = [
                 'name'        => $pName,
-                'stress'      => (int) ($pData['stress'] ?? 0),
-                'is_dead'     => CastHelper::toBool($pData['is_dead'] ?? 0),
-                'role'        => ($pData['role'] === 'boss') ? 'boss' : 'hidden',
-                'is_online'   => CastHelper::toBool($pData['is_online'] ?? 1),
-                'cards_count' => count(json_decode($pData['cards'] ?? '[]', true) ?: []),
+                // :info
+                'stress'      => (int) ($pInfo['stress'] ?? 0),
+                'is_dead'     => CastHelper::toBool($pInfo['is_dead'] ?? 0),
+                'role'        => (($pInfo['role'] ?? '') === 'boss') ? 'boss' : 'hidden',
+                'is_online'   => CastHelper::toBool($pInfo['is_online'] ?? 1),
+
+                // :hand
+                'cards_count' => count($pHand),
                 'distance'    => $distance,
                 'is_in_range' => $distance <= $myRange,
 
-                // --- Condiciones ---
+                // Condiciones
                 'conditions'  => [
-                    'acting_boss' => CastHelper::toBool($pData['acting_boss'] ?? 0),
-                    'is_blocked'  => CastHelper::toBool($pData['is_blocked'] ?? 0),
+                    'acting_boss' => CastHelper::toBool($pInfo['acting_boss'] ?? 0),
+                    'is_blocked'  => CastHelper::toBool($pPerks['is_blocked'] ?? 0),
                 ],
 
-                // --- Beneficios (Buffos) ---
+                // :perks
                 'perks'       => [
-                    'has_shield'  => CastHelper::toBool($pData['has_shield'] ?? 0),
+                    'has_shield'   => CastHelper::toBool($pPerks['has_shield'] ?? 0),
                     'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
-                    'vision_bonus' => (int) ($pData['vision_bonus'] ?? 0),
-                    'distance_bonus' => (int) ($pData['distance_bonus'] ?? 0),
-                    'has_storage' => CastHelper::toBool($pData['has_storage'] ?? 0),
-                    'has_luck'    => CastHelper::toBool($pData['has_luck'] ?? 0),
+                    'vision_bonus' => (int) ($pPerks['vision_bonus'] ?? 0),
+                    'has_distance' => CastHelper::toBool($pPerks['has_distance'] ?? 0) ? 1 : 0,
+                    'has_storage'  => CastHelper::toBool($pPerks['has_storage'] ?? 0),
+                    'has_luck'     => CastHelper::toBool($pPerks['has_luck'] ?? 0),
                 ],
             ];
         }
@@ -85,17 +95,19 @@ class GameDataResource extends JsonResource
             $pendingMultiAttackTargets = $pendingMultiData['targets'] ?? [];
         }
 
-        $turnTimeout = (int) (Redis::hget("room:{$roomId}", 'turn_timeout') ?: 30);
-        $turnExpiresAt = (int) (Redis::hget("room:{$roomId}", 'turn_expires_at') ?: 0);
+        $turnTimeout = (int) ($roomInfo['turn_timeout'] ?? 30);
+        $turnExpiresAt = (int) ($roomState['turn_expires_at'] ?? 0);
         $turnRemaining = max(0, $turnExpiresAt - now()->timestamp);
 
         return [
-            'current_turn'             => $room['current_turn_player_id'] ?? null,
+            'current_turn'             => $roomState['current_turn_player_id'] ?? null,
             'opponents'                => $opponents,
-            'game_over'                => CastHelper::toBool($room['game_over'] ?? 0),
-            'winner_role'              => $room['winner_role'] ?? null,
-            'round_number'             => (int) ($room['round_number'] ?? 0),
+            'game_over'                => CastHelper::toBool($roomState['game_over'] ?? 0),
+            'winner_role'              => $roomState['winner_role'] ?? null,
+            'round_number'             => (int) ($roomState['round_number'] ?? 0),
+
             'deck_count'               => count(json_decode(Redis::get("room:{$roomId}:deck") ?? '[]', true)),
+
             'boss_disconnected'        => Redis::exists("room:{$roomId}:boss_grace_period"),
             'acting_boss_disconnected' => Redis::exists("room:{$roomId}:acting_boss_grace_period"),
             'ending_soon'              => Redis::exists("room:{$roomId}:ending_grace_period"),
@@ -106,7 +118,7 @@ class GameDataResource extends JsonResource
             'pending_multi_attack_targets' => $pendingMultiAttackTargets,
             'player_in_luck_challenge'     => $playerInLuckChallenge,
             'player_pending_sabotage'      => $this->getPlayerPendingSabotage($roomId),
-            
+
             'turn_timeout'                 => $turnTimeout,
             'turn_expires_at'              => $turnExpiresAt,
             'turn_remaining'               => $turnRemaining,

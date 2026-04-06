@@ -1,11 +1,10 @@
 <?php
-// app/Services/Game/Actions/RoomStateUpdated.php
+// app/Services/Game/Actions/GameReactionService.php
 
 namespace App\Services\Game\Actions;
 
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
-use App\Jobs\AutoEndTurnJob;
 use App\Services\Game\Engine\CombatService;
 use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
@@ -80,7 +79,6 @@ class GameReactionService
 
         if ($chosenColor === $correct) {
             // Acertó
-
             app(TurnService::class)->resumeTurnTimer($roomId);
             $msg = __('game.luckySuccess', ['player' => $playerName]);
             event(new RoomStateUpdated($roomId, $msg));
@@ -167,13 +165,13 @@ class GameReactionService
             throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de ningún sabotaje.", 403);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-
         $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-        // Limpiar el estado de sabotaje
-        Redis::hset($playerKey, 'must_discard', 0);
-        Redis::hdel($playerKey, 'must_discard_by');
+        $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
+
+        Redis::hset($playerTurnStateKey, 'must_discard', 0);
+        Redis::hdel($playerTurnStateKey, 'must_discard_by');
+
         Redis::del("room:{$roomId}:pending_sabotage");
 
         app(TurnService::class)->resumeTurnTimer($roomId);

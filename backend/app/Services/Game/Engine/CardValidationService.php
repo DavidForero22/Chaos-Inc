@@ -1,5 +1,5 @@
 <?php
-// app/Services/Game/Engine/RoomStateUpdated.php
+// app/Services/Game/Engine/CardValidationService.php
 
 namespace App\Services\Game\Engine;
 
@@ -15,8 +15,8 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "No puedes atacarte a ti mismo.", 422);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $alreadyAttacked = (int) (Redis::hget($playerKey, 'single_attack_used_this_turn') ?? 0);
+        $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
+        $alreadyAttacked = (int) (Redis::hget($playerTurnStateKey, 'single_attack_used_this_turn') ?? 0);
 
         if ($alreadyAttacked === 1) {
             throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque individual en este turno.", 422);
@@ -36,8 +36,8 @@ class CardValidationService
 
     public function validateHeal(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
+        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
+        $currentStress = (int) (Redis::hget($playerInfoKey, 'stress') ?? 0);
 
         if ($currentStress <= 0) {
             throw new GameException(GameException::INVALID_ACTION, "No tienes estrés que curar.", 422);
@@ -50,8 +50,8 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "No puedes robarte a ti mismo.", 422);
         }
 
-        $targetKey = "room:{$roomId}:player:{$targetName}";
-        $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+        $targetHandKey = "room:{$roomId}:player:{$targetName}:hand";
+        $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
 
         if (!is_array($targetCards) || empty($targetCards)) {
             throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas.", 422);
@@ -64,8 +64,8 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "El escudo solo puede aplicarse a ti mismo.", 422);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $alreadyHasShield = Redis::hget($playerKey, 'has_shield') === '1';
+        $playerPerksKey = "room:{$roomId}:player:{$playerName}:perks";
+        $alreadyHasShield = Redis::hget($playerPerksKey, 'has_shield') === '1';
 
         if ($alreadyHasShield) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes un escudo activo.", 422);
@@ -80,13 +80,15 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "No puedes bloquearte a ti mismo.", 422);
         }
 
-        $targetKey = "room:{$roomId}:player:{$targetName}";
-        $isDead = filter_var(Redis::hget($targetKey, 'is_dead') ?? false, FILTER_VALIDATE_BOOLEAN);
+        $targetInfoKey = "room:{$roomId}:player:{$targetName}:info";
+        $targetPerksKey = "room:{$roomId}:player:{$targetName}:perks";
+
+        $isDead = filter_var(Redis::hget($targetInfoKey, 'is_dead') ?? false, FILTER_VALIDATE_BOOLEAN);
         if ($isDead) {
             throw new GameException(GameException::INVALID_TARGET, "No puedes bloquear a un jugador eliminado.", 422);
         }
 
-        $isAlreadyBlocked = CastHelper::toBool(Redis::hget($targetKey, 'is_blocked') ?? 0);
+        $isAlreadyBlocked = CastHelper::toBool(Redis::hget($targetPerksKey, 'is_blocked') ?? 0);
         if ($isAlreadyBlocked) {
             throw new GameException(GameException::INVALID_TARGET, "Este jugador ya está bloqueado.", 422);
         }
@@ -94,8 +96,8 @@ class CardValidationService
 
     public function validateAttackAll(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $alreadyAttacked = (int) (Redis::hget($playerKey, 'multi_attack_used_this_turn') ?? 0);
+        $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
+        $alreadyAttacked = (int) (Redis::hget($playerTurnStateKey, 'multi_attack_used_this_turn') ?? 0);
 
         if ($alreadyAttacked === 1) {
             throw new GameException(GameException::INVALID_ACTION, "Ya has usado una carta de ataque masivo en este turno.", 422);
@@ -108,9 +110,10 @@ class CardValidationService
         $anyHasStress = false;
 
         foreach ($players as $pName) {
-            $pData = Redis::hgetall("room:{$roomId}:player:{$pName}");
-            $isDead = CastHelper::toBool($pData['is_dead'] ?? 0);
-            $stress = (int) ($pData['stress'] ?? 0);
+            $pInfoKey = "room:{$roomId}:player:{$pName}:info";
+
+            $isDead = CastHelper::toBool(Redis::hget($pInfoKey, 'is_dead') ?? 0);
+            $stress = (int) (Redis::hget($pInfoKey, 'stress') ?? 0);
 
             if (!$isDead && $stress > 0) {
                 $anyHasStress = true;
@@ -129,19 +132,20 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "No puedes sabotearte a ti mismo.", 422);
         }
 
-        $targetKey = "room:{$roomId}:player:{$targetName}";
+        $targetInfoKey = "room:{$roomId}:player:{$targetName}:info";
+        $targetHandKey = "room:{$roomId}:player:{$targetName}:hand";
 
-        $isDead = CastHelper::toBool(Redis::hget($targetKey, 'is_dead') ?? 0);
+        $isDead = CastHelper::toBool(Redis::hget($targetInfoKey, 'is_dead') ?? 0);
         if ($isDead) {
             throw new GameException(GameException::INVALID_TARGET, "No puedes sabotear a un jugador eliminado.", 422);
         }
 
-        $isOnline = CastHelper::toBool(Redis::hget($targetKey, 'is_online') ?? 1);
+        $isOnline = CastHelper::toBool(Redis::hget($targetInfoKey, 'is_online') ?? 1);
         if (!$isOnline) {
             throw new GameException(GameException::INVALID_TARGET, "No puedes sabotear a un jugador desconectado.", 422);
         }
 
-        $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+        $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
         if (!is_array($targetCards) || empty($targetCards)) {
             throw new GameException(GameException::INVALID_TARGET, "El objetivo no tiene cartas que descartar.", 422);
         }
@@ -149,7 +153,7 @@ class CardValidationService
 
     public function validateVision(string $roomId, string $playerName): void
     {
-        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'vision_bonus');
+        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}:perks", 'vision_bonus');
         if ($currentBonus >= 2) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes el alcance máximo permitido.", 422);
         }
@@ -165,8 +169,8 @@ class CardValidationService
             throw new GameException(GameException::INVALID_TARGET, "Solo puedes aplicarte este efecto a ti.", 422);
         }
 
-        $currentBonus = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'distance_bonus');
-        if ($currentBonus >= 1) {
+        $hasDistance = (int) Redis::hget("room:{$roomId}:player:{$playerName}:perks", 'has_distance');
+        if ($hasDistance >= 1) {
             throw new GameException(GameException::INVALID_ACTION, "Tu escritorio ya está lo más lejos posible.", 422);
         }
 
@@ -183,10 +187,10 @@ class CardValidationService
             throw new GameException(GameException::INVALID_ACTION, "Debes especificar qué equipamiento quieres quitar.", 422);
         }
 
-        $targetKey = "room:{$roomId}:player:{$targetName}";
+        $targetPerksKey = "room:{$roomId}:player:{$targetName}:perks";
 
         // Comprobar si el rival tiene ese equipamiento activo (> 0)
-        $perkValue = (int) Redis::hget($targetKey, $perkKey);
+        $perkValue = (int) Redis::hget($targetPerksKey, $perkKey);
 
         if ($perkValue <= 0) {
             throw new GameException(GameException::INVALID_ACTION, "El jugador objetivo no tiene ese equipamiento activo.", 422);
@@ -195,7 +199,7 @@ class CardValidationService
 
     public function validateStorage(string $roomId, string $playerName): void
     {
-        $hasStorage = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'has_storage');
+        $hasStorage = (int) Redis::hget("room:{$roomId}:player:{$playerName}:perks", 'has_storage');
 
         if ($hasStorage >= 1) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes una carta de almacen.", 422);
@@ -206,9 +210,9 @@ class CardValidationService
 
     public function validateLuck(string $roomId, string $playerName): void
     {
-        $hasInertia = (int) Redis::hget("room:{$roomId}:player:{$playerName}", 'has_luck');
+        $hasLuck = (int) Redis::hget("room:{$roomId}:player:{$playerName}:perks", 'has_luck');
 
-        if ($hasInertia >= 1) {
+        if ($hasLuck >= 1) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes una carta de suerte.", 422);
         }
 
@@ -217,18 +221,18 @@ class CardValidationService
 
     private function checkPerkLimit(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $playerPerksKey = "room:{$roomId}:player:{$playerName}:perks";
 
-        $hasShield = (int) Redis::hget($playerKey, 'has_shield');
-        $visionBonus = (int) Redis::hget($playerKey, 'vision_bonus');
-        $distanceBonus = (int) Redis::hget($playerKey, 'distance_bonus');
-        $hasStorage = (int) Redis::hget($playerKey, 'has_storage');
-        $hasLuck    = (int) Redis::hget($playerKey, 'has_luck');
+        $hasShield = (int) Redis::hget($playerPerksKey, 'has_shield');
+        $visionBonus = (int) Redis::hget($playerPerksKey, 'vision_bonus');
+        $hasDistance = (int) Redis::hget($playerPerksKey, 'has_distance');
+        $hasStorage = (int) Redis::hget($playerPerksKey, 'has_storage');
+        $hasLuck    = (int) Redis::hget($playerPerksKey, 'has_luck');
 
         $slotsUsed = 0;
         if ($hasShield > 0) $slotsUsed++;
         if ($visionBonus > 0) $slotsUsed++;
-        if ($distanceBonus > 0) $slotsUsed++;
+        if ($hasDistance > 0) $slotsUsed++;
         if ($hasStorage > 0) $slotsUsed++;
         if ($hasLuck > 0) $slotsUsed++;
 

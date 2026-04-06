@@ -29,24 +29,28 @@ class AutoEndTurnJob implements ShouldQueue
      */
     public function handle(TurnService $turnService, \App\Services\Game\Engine\PlayerHandService $handService): void
     {
-        $roomKey = "room:{$this->roomId}";
+        $roomStateKey = "room:{$this->roomId}:state";
 
-        // Si la sala ya no existe, el Job muere
-        if (!Redis::exists($roomKey)) return;
+        // Si el estado de la sala ya no existe, terminar
+        if (!Redis::exists($roomStateKey)) return;
 
-        $currentTurnPlayer = Redis::hget($roomKey, 'current_turn_player_id');
-        $currentTurnId = Redis::hget($roomKey, 'current_turn_id');
+        $currentTurnPlayer = Redis::hget($roomStateKey, 'current_turn_player_id');
+        $currentTurnId = Redis::hget($roomStateKey, 'current_turn_id');
 
         // ¿Sigue siendo su turno y no ha reiniciado el contador (mismo turnId)?
         if ($currentTurnPlayer === $this->playerName && $currentTurnId === $this->turnId) {
-            Redis::del("{$roomKey}:pending_attack");
+
+            Redis::del("room:{$this->roomId}:pending_attack");
 
             // Si estaba sufriendo un sabotaje (must_discard), quitarlo para no bloquearle el siguiente turno
-            if (Redis::exists("{$roomKey}:pending_sabotage")) {
-                $playerKey = "{$roomKey}:player:{$this->playerName}";
-                Redis::hset($playerKey, 'must_discard', 0);
-                Redis::hdel($playerKey, 'must_discard_by');
-                Redis::del("{$roomKey}:pending_sabotage");
+            if (Redis::exists("room:{$this->roomId}:pending_sabotage")) {
+
+                $playerTurnStateKey = "room:{$this->roomId}:player:{$this->playerName}:turn_state";
+
+                Redis::hset($playerTurnStateKey, 'must_discard', 0);
+                Redis::hdel($playerTurnStateKey, 'must_discard_by');
+
+                Redis::del("room:{$this->roomId}:pending_sabotage");
             }
 
             $handService->enforceHandLimit($this->roomId, $this->playerName);

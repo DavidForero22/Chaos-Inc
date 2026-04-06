@@ -15,18 +15,20 @@ class CardEffectService
 {
     public function applyAttack(string $roomId, string $playerName, string $targetName): ?string
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $targetKey = "room:{$roomId}:player:{$targetName}";
+        $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
+        $targetHandKey      = "room:{$roomId}:player:{$targetName}:hand";
+        $targetPerksKey     = "room:{$roomId}:player:{$targetName}:perks";
 
-        Redis::hset($playerKey, 'single_attack_used_this_turn', 1);
+        Redis::hset($playerTurnStateKey, 'single_attack_used_this_turn', 1);
 
-        $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+        $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
+
         $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
-        $hasShield   = Redis::hget($targetKey, 'has_shield') === '1';
+        $hasShield   = Redis::hget($targetPerksKey, 'has_shield') === '1';
 
         if ($hasShield) {
             // El escudo bloquea el ataque y se rompe
-            Redis::hset($targetKey, 'has_shield', 0);
+            Redis::hset($targetPerksKey, 'has_shield', 0);
             return 'shield_broken';
         } elseif ($hasDodge) {
             // El objetivo puede esquivar, el ataque queda en pausa
@@ -46,49 +48,54 @@ class CardEffectService
 
     public function applyHeal(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $currentStress = (int) (Redis::hget($playerKey, 'stress') ?? 0);
+        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
+        $currentStress = (int) (Redis::hget($playerInfoKey, 'stress') ?? 0);
 
         if ($currentStress > 0) {
-            Redis::hincrby($playerKey, 'stress', -1);
+            Redis::hincrby($playerInfoKey, 'stress', -1);
         }
     }
 
     public function applySteal(string $roomId, string $playerName, string $targetName): void
     {
-        $playerKey   = "room:{$roomId}:player:{$playerName}";
-        $targetKey   = "room:{$roomId}:player:{$targetName}";
+        $playerHandKey = "room:{$roomId}:player:{$playerName}:hand";
+        $targetHandKey = "room:{$roomId}:player:{$targetName}:hand";
 
-        $targetCards = json_decode(Redis::hget($targetKey, 'cards') ?: '[]', true);
+        $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
+
+        if (empty($targetCards)) {
+            return; // Prevenir errores si intentan robarle a alguien sin cartas
+        }
 
         // Ejecución pura: Seleccionar carta aleatoria y la movemos
         $randomIndex = array_rand($targetCards);
         $stolenCard  = $targetCards[$randomIndex];
         array_splice($targetCards, $randomIndex, 1);
-        Redis::hset($targetKey, 'cards', json_encode($targetCards));
 
-        $myCards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+        Redis::set($targetHandKey, json_encode($targetCards));
+
+        $myCards = json_decode(Redis::get($playerHandKey) ?: '[]', true);
         if (!is_array($myCards)) $myCards = [];
+
         $myCards[] = $stolenCard;
-        Redis::hset($playerKey, 'cards', json_encode($myCards));
+        Redis::set($playerHandKey, json_encode($myCards));
     }
 
     public function applyShield(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        Redis::hset($playerKey, 'has_shield', 1);
+        Redis::hset("room:{$roomId}:player:{$playerName}:perks", 'has_shield', 1);
     }
 
     public function applyBlock(string $roomId, string $targetName): void
     {
-        Redis::hset("room:{$roomId}:player:{$targetName}", 'is_blocked', 1);
+        Redis::hset("room:{$roomId}:player:{$targetName}:perks", 'is_blocked', 1);
     }
 
     public function applyAttackAll(string $roomId, string $playerName): void
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
 
-        Redis::hset($playerKey, 'multi_attack_used_this_turn', 1);
+        Redis::hset($playerTurnStateKey, 'multi_attack_used_this_turn', 1);
 
         $players = Redis::smembers("room:{$roomId}:players");
         $pendingTargets = [];
@@ -97,21 +104,24 @@ class CardEffectService
         foreach ($players as $target) {
             if ($target === $playerName) continue;
 
-            $targetKey = "room:{$roomId}:player:{$target}";
-            $pData     = Redis::hgetall($targetKey);
-            $isDead    = CastHelper::toBool($pData['is_dead'] ?? false);
-            $isOnline  = ($pData['is_online'] ?? '1') !== '0';
+            $targetInfoKey  = "room:{$roomId}:player:{$target}:info";
+            $targetPerksKey = "room:{$roomId}:player:{$target}:perks";
+            $targetHandKey  = "room:{$roomId}:player:{$target}:hand";
+
+            $pInfo    = Redis::hgetall($targetInfoKey);
+            $isDead   = CastHelper::toBool($pInfo['is_dead'] ?? false);
+            $isOnline = ($pInfo['is_online'] ?? '1') !== '0';
 
             if ($isDead || !$isOnline) continue;
 
-            $hasShield = ($pData['has_shield'] ?? '0') === '1';
-            $targetCards = json_decode($pData['cards'] ?? '[]', true);
-            $hasDodge  = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+            $hasShield   = Redis::hget($targetPerksKey, 'has_shield') === '1';
+            $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
+            $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
 
             if ($hasShield) {
                 // Escudo absorbe y se rompe
-                Redis::hset($targetKey, 'has_shield', 0);
-                $shieldUsers[] = $target; // Guardamos quién gastó escudo
+                Redis::hset($targetPerksKey, 'has_shield', 0);
+                $shieldUsers[] = $target; // Guardar quién gastó escudo
             } elseif ($hasDodge) {
                 // Puede esquivar — añadir a pendientes
                 $pendingTargets[] = $target;
@@ -151,21 +161,25 @@ class CardEffectService
         $players = Redis::smembers("room:{$roomId}:players");
 
         foreach ($players as $target) {
-            $targetKey   = "room:{$roomId}:player:{$target}";
-            $pData       = Redis::hgetall($targetKey);
-            $isDead    = CastHelper::toBool($pData['is_dead'] ?? 0);
-            $currentStress = (int) ($pData['stress'] ?? 0);
+            $targetInfoKey = "room:{$roomId}:player:{$target}:info";
+
+            $pInfo         = Redis::hgetall($targetInfoKey);
+            $isDead        = CastHelper::toBool($pInfo['is_dead'] ?? 0);
+            $currentStress = (int) ($pInfo['stress'] ?? 0);
 
             if (!$isDead && $currentStress > 0) {
-                Redis::hincrby($targetKey, 'stress', -1);
+                Redis::hincrby($targetInfoKey, 'stress', -1);
             }
         }
     }
 
     public function applySabotage(string $roomId, string $playerName, string $targetName): void
     {
-        Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard', 1);
-        Redis::hset("room:{$roomId}:player:{$targetName}", 'must_discard_by', $playerName);
+        $turnStateKey = "room:{$roomId}:player:{$targetName}:turn_state";
+
+        Redis::hset($turnStateKey, 'must_discard', 1);
+        Redis::hset($turnStateKey, 'must_discard_by', $playerName);
+
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);
 
         ResolveSabotageJob::dispatch($roomId, $targetName)->delay(15);
@@ -173,28 +187,26 @@ class CardEffectService
 
     public function applyVision(string $roomId, string $playerName): void
     {
-        Redis::hincrby("room:{$roomId}:player:{$playerName}", 'vision_bonus', 1);
+        Redis::hincrby("room:{$roomId}:player:{$playerName}:perks", 'vision_bonus', 1);
     }
 
     public function applyDistance(string $roomId, string $playerName): void
     {
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'distance_bonus', 1);
+        Redis::hset("room:{$roomId}:player:{$playerName}:perks", 'has_distance', 1);
     }
 
     public function applyClean(string $roomId, string $targetName, string $perkKey): void
     {
-        $targetKey = "room:{$roomId}:player:{$targetName}";
-
-        Redis::hset($targetKey, $perkKey, 0);
+        Redis::hset("room:{$roomId}:player:{$targetName}:perks", $perkKey, 0);
     }
 
     public function applyStorage(string $roomId, string $playerName): void
     {
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'has_storage', 1);
+        Redis::hset("room:{$roomId}:player:{$playerName}:perks", 'has_storage', 1);
     }
 
     public function applyLuck(string $roomId, string $playerName): void
     {
-        Redis::hset("room:{$roomId}:player:{$playerName}", 'has_luck', 1);
+        Redis::hset("room:{$roomId}:player:{$playerName}:perks", 'has_luck', 1);
     }
 }
