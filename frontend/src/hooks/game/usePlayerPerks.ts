@@ -43,9 +43,9 @@ export function usePlayerStats(me: MyData) {
 				name:"Vision"
 			});
 		}
-		if ((me.perks.distance_bonus ?? 0) > 0) {
+		if (me.perks.has_distance) {
 			list.push({
-				id: "distance_bonus",
+				id: "has_distance",
 				icon: "🏠",
 				title: "Los demás te ven a +1 de alcance",
 				cardType: 11,

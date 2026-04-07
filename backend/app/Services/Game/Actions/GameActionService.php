@@ -1,38 +1,34 @@
 <?php
-// app/Services/Game/Actions/RoomStateUpdated.php
+// app/Services/Game/Actions/GameActionService.php
 
 namespace App\Services\Game\Actions;
 
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Jobs\AutoEndTurnJob;
 use App\Services\Game\Engine\CardValidationService;
-use App\Services\Game\Engine\CombatService;
 use App\Services\Game\Engine\PlayerHandService;
-use App\Services\Game\Engine\TurnService;
-use App\Services\Game\Status\GameFinalizationService;
-use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
 class GameActionService
 {
     public function __construct(
-        protected CombatService $combatService,
         protected PlayerHandService $handService,
-        protected GameFinalizationService $finalizationService,
         protected CardEffectService $cardEffectService,
         protected CardValidationService $cardValidationService,
     ) {}
 
     public function playAction(string $roomId, string $playerName, string $cardId, string $targetName, ?string $perkKey = null): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
+        $roomInfoKey  = "room:{$roomId}:info";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
         if ($currentTurn !== $playerName) {
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
@@ -50,12 +46,12 @@ class GameActionService
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque masivo pendiente de resolver.", 422);
         }
 
-        if (!Redis::sismember("{$roomKey}:players", $targetName)) {
+        if (!Redis::sismember("room:{$roomId}:players", $targetName)) {
             throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $cards = collect(json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true));
+        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+        $cards = collect(json_decode(Redis::get($handKey) ?: '[]', true));
 
         $card = $cards->firstWhere('id', $cardId);
         if (!$card) {
@@ -94,7 +90,7 @@ class GameActionService
             9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
-            12 => $this->cardEffectService->applyClean($roomId, $playerName, $targetName, $perkKey),
+            12 => $this->cardEffectService->applyClean($roomId, $targetName, $perkKey),
             13 => $this->cardEffectService->applyStorage($roomId, $playerName),
             14 => $this->cardEffectService->applyLuck($roomId, $playerName),
             default => null,
@@ -121,142 +117,24 @@ class GameActionService
             14 => __('game.lucked', ['player' => $playerName]),
             default => null,
         };
-        event(new RoomStateUpdated($roomId, $logMessage));
-    }
 
-    public function reactToAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
-    {
-        $pendingKey = "room:{$roomId}:pending_attack";
+        $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
+        $newTurnId = uniqid('turn_', true);
+        Redis::hset($roomStateKey, 'current_turn_id', $newTurnId);
 
-        if (!Redis::exists($pendingKey)) {
-            throw new GameException(GameException::INVALID_ACTION, "No hay ningún ataque pendiente.", 422);
-        }
+        // Comprobar si la acción dejó un estado pendiente que requiera reacción
+        $needsReaction = Redis::exists("room:{$roomId}:pending_attack") ||
+            Redis::exists("room:{$roomId}:pending_sabotage") ||
+            Redis::exists("room:{$roomId}:pending_multi_attack");
 
-        $pending = Redis::hgetall($pendingKey);
-        if (($pending['target'] ?? null) !== $playerName) {
-            throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de este ataque.", 403);
-        }
-
-        if ($reaction === 'dodge') {
-            if (!$cardId) {
-                throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
-            }
-
-            $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
-
-            if (($card['type'] ?? null) !== 3) {
-                throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
-            }
-
-            Redis::del($pendingKey);
-        } elseif ($reaction === 'accept') {
-            app(CombatService::class)->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
-            Redis::del($pendingKey);
+        if ($needsReaction) {
+            // PAUSA: Borrar el tiempo de expiración para que el frontend detenga el reloj
+            Redis::hset($roomStateKey, 'turn_expires_at', 0);
         } else {
-            throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
+            Redis::hset($roomStateKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+            AutoEndTurnJob::dispatch($roomId, $playerName, $newTurnId)->delay(now()->addSeconds($timeout));
         }
-
-        $attackerName = $pending['attacker'];
-
-        $logMessage = $reaction === 'dodge'
-            ? __('game.dodged', [
-                'player'   => $playerName,
-                'attacker' => $attackerName
-            ])
-            : __('game.tookDamage', [
-                'player'   => $playerName,
-                'attacker' => $attackerName
-            ]);
 
         event(new RoomStateUpdated($roomId, $logMessage));
-    }
-
-    public function resolveLuckChallenge(string $roomId, string $playerName, string $chosenColor): bool
-    {
-        $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
-
-        if (!Redis::exists($challengeKey)) {
-            throw new \Exception('No hay ningún desafío activo.');
-        }
-
-        $correct = Redis::get($challengeKey);
-        Redis::del($challengeKey);
-
-        if ($chosenColor === $correct) {
-            // Acertó
-            $msg = __('game.luckySuccess', ['player' => $playerName]);
-            event(new RoomStateUpdated($roomId, $msg));
-            return true;
-        }
-
-        // Falló
-        app(TurnService::class)->advanceTurn($roomId);
-        $msg = __('game.luckyFail', ['player' => $playerName]);
-        event(new RoomStateUpdated($roomId, $msg));
-
-        return false;
-    }
-
-    public function reactToMultiAttack(string $roomId, string $playerName, string $reaction, ?string $cardId = null): void
-    {
-        $pendingKey = "room:{$roomId}:pending_multi_attack";
-
-        if (!Redis::exists($pendingKey)) {
-            throw new GameException(GameException::INVALID_ACTION, "No hay ningún ataque múltiple pendiente.", 422);
-        }
-
-        $pending = json_decode(Redis::get($pendingKey), true);
-
-        if (!in_array($playerName, $pending['targets'] ?? [])) {
-            throw new GameException(GameException::INVALID_ACTION, "No eres objetivo de este ataque.", 403);
-        }
-
-        if ($reaction === 'dodge') {
-            if (!$cardId) {
-                throw new GameException(GameException::CARD_NOT_IN_HAND, "No se ha indicado la carta de esquive.", 422);
-            }
-
-            $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
-
-            if (($card['type'] ?? null) !== 3) {
-                throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
-            }
-
-            $pending['dodgers'][] = $playerName;
-        } elseif ($reaction === 'accept') {
-            $this->combatService->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
-        } else {
-            throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
-        }
-
-        // Eliminar al jugador de los pendientes
-        $pending['targets'] = array_values(array_filter(
-            $pending['targets'],
-            fn($t) => $t !== $playerName
-        ));
-
-        if (empty($pending['targets'])) {
-            // Respuesta confirmada — limpiar y emitir log final
-            Redis::del($pendingKey);
-
-            $allTargets = Redis::smembers("room:{$roomId}:players");
-            $attacked = array_filter($allTargets, fn($p) => $p !== $pending['attacker']);
-            $targetsStr = implode(', ', $attacked);
-            $logMessage = __('game.attacked_all', ['attacker' => $pending['attacker'], 'targets' => $targetsStr]);
-
-            if (!empty($pending['dodgers'])) {
-                $logMessage .= ' ' . __('game.multi_dodged', ['dodgers' => implode(', ', $pending['dodgers'])]);
-            }
-
-            if (!empty($pending['shielders'])) {
-                $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $pending['shielders'])]);
-            }
-
-            event(new RoomStateUpdated($roomId, $logMessage));
-        } else {
-            // Aún quedan jugadores por responder
-            Redis::set($pendingKey, json_encode($pending));
-            event(new RoomStateUpdated($roomId, null));
-        }
     }
 }

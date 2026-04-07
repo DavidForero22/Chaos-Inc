@@ -18,7 +18,9 @@ export default function MainMenuPage() {
 		setFilterStatus,
 		handleJoinRoom,
 		user,
-	} = useLobby();
+		isLoadingRooms,
+	} = useLobby(); // <-- Eliminado isLoading
+
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
@@ -55,31 +57,34 @@ export default function MainMenuPage() {
 						Únete a una partida pública o crea la tuya propia.
 					</p>
 					<div className="flex gap-2 mt-4">
-						<button
-							onClick={() => setFilterStatus("all")}
-							className={`px-3 py-1 text-sm rounded ${filterStatus === "all" ? "bg-blue-600 text-white" : "bg-gray-700 text-gray-400"}`}
-						>
-							Todas
-						</button>
-						<button
-							onClick={() => setFilterStatus("waiting")}
-							className={`px-3 py-1 text-sm rounded ${filterStatus === "waiting" ? "bg-green-600 text-white" : "bg-gray-700 text-gray-400"}`}
-						>
-							Esperando
-						</button>
-						<button
-							onClick={() => setFilterStatus("in_game")}
-							className={`px-3 py-1 text-sm rounded ${filterStatus === "in_game" ? "bg-red-600 text-white" : "bg-gray-700 text-gray-400"}`}
-						>
-							En Partida
-						</button>
+						{(["all", "waiting", "in_game"] as const).map((f) => (
+							<button
+								key={f}
+								onClick={() => setFilterStatus(f)}
+								className={`px-3 py-1 text-xs font-semibold rounded-full border transition ${
+									filterStatus === f
+										? f === "all"
+											? "bg-blue-600 border-blue-500 text-white"
+											: f === "waiting"
+												? "bg-green-700 border-green-600 text-white"
+												: "bg-red-700 border-red-600 text-white"
+										: "bg-transparent border-gray-600 text-gray-400 hover:border-gray-400 hover:text-gray-200"
+								}`}
+							>
+								{f === "all"
+									? "Todas"
+									: f === "waiting"
+										? "Esperando"
+										: "En Partida"}
+							</button>
+						))}
 					</div>
 				</div>
 
 				{user ? (
 					<button
 						onClick={() => setShowCreateModal(true)}
-						className="bg-green-600 hover:bg-green-500 text-white px-5 py-2.5 rounded font-bold transition shadow-lg shadow-green-900/20"
+						className="bg-green-700 hover:bg-green-600 text-white px-5 py-2.5 rounded-lg font-bold transition shadow-lg shadow-green-900/30 border border-green-600/50"
 					>
 						+ Crear Sala
 					</button>
@@ -87,12 +92,12 @@ export default function MainMenuPage() {
 					<div className="text-right">
 						<button
 							disabled
-							className="bg-gray-700 text-gray-500 px-5 py-2.5 rounded font-bold cursor-not-allowed"
+							className="bg-gray-800 text-gray-600 px-5 py-2.5 rounded-lg font-bold cursor-not-allowed border border-gray-700"
 						>
 							+ Crear Sala
 						</button>
-						<p className="text-xs text-gray-500 mt-2">
-							Solo usuarios registrados pueden crear
+						<p className="text-xs text-gray-600 mt-1">
+							Solo usuarios registrados
 						</p>
 					</div>
 				)}
@@ -102,6 +107,7 @@ export default function MainMenuPage() {
 				rooms={filteredRooms}
 				selectedRoom={selectedRoom}
 				onSelectRoom={setSelectedRoom}
+				isLoading={isLoadingRooms}
 			/>
 
 			<div className="mt-6 flex justify-end">
@@ -122,18 +128,18 @@ export default function MainMenuPage() {
 			</div>
 
 			{showCreateModal && user && (
-                <CreateRoomModal
-                    onClose={() => setShowCreateModal(false)}
-                    user={user}
-                />
-            )}
-            
-            {showGuestModal && (
-                <GuestNameModal 
-                    onClose={() => setShowGuestModal(false)}
-                    onSuccess={handleGuestSuccess}
-                />
-            )}
+				<CreateRoomModal
+					onClose={() => setShowCreateModal(false)}
+					user={user}
+				/>
+			)}
+
+			{showGuestModal && (
+				<GuestNameModal
+					onClose={() => setShowGuestModal(false)}
+					onSuccess={handleGuestSuccess}
+				/>
+			)}
 		</div>
 	);
 }

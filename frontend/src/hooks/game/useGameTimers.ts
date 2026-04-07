@@ -4,12 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { logWithTime } from "../../utils/logger.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useTimerStore } from "../../store/useTimerStore.ts";
+import { useLoadingStore } from "../../store/useLoadingStore";
 
 export function useGameTimers() {
 	const gameData = useGameStore((state) => state.gameData);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
 
-	// 1. Traemos SOLO los setters de Zustand
+	// Traer solo los setters de Zustand
 	const setMultiAttackSecondsLeft = useTimerStore(
 		(state) => state.setMultiAttackSecondsLeft,
 	);
@@ -35,6 +36,93 @@ export function useGameTimers() {
 	const hasIncomingAttack =
 		gameData?.me?.combat_state.is_defending_single ?? false;
 	const hasLuckChallenge = !!gameData?.me?.luck_challenge;
+
+	// --- Countdown del Turno Principal ---
+	const turnExpiresAt = gameData?.game?.turn_expires_at;
+	const turnRemaining = gameData?.game?.turn_remaining;
+	const currentTurn = gameData?.game?.current_turn;
+	const myName = gameData?.me?.name;
+
+	// Verificar si es el turno del jugador
+	const isMyTurn = currentTurn === myName;
+	// Identificar si el jugador es el que está esperando (Pausa de turno)
+	const isSomeoneWaitingForReaction =
+		gameData?.game?.pending_single_attack_target !== null ||
+		(gameData?.game?.pending_multi_attack_targets &&
+			gameData.game.pending_multi_attack_targets.length > 0) ||
+		gameData?.game?.player_pending_sabotage !== null;
+	const gameOver = useGameStore((state) => state.gameOver);
+
+	const isGlobalPause =
+		bossDisconnected || actingBossDisconnected || endingSoon;
+	const isTurnPaused = isSomeoneWaitingForReaction || isGlobalPause;
+
+	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
+
+	useEffect(() => {
+		if (gameOver) {
+			setTurnTimeLeft(null);
+			logWithTime(
+				"useGameTimers.ts - Partida finalizada. Matando reloj local.",
+			);
+			return;
+		}
+
+		if (turnRemaining === undefined && !isTurnPaused) {
+			setTurnTimeLeft(null);
+			return;
+		}
+
+		if (isTurnPaused) {
+			logWithTime(
+				"useGameTimers.ts - Turno en pausa, congelando reloj global.",
+			);
+			return;
+		}
+
+		let didTriggerLoader = false;
+		const loadingStore = useLoadingStore.getState();
+
+		// Iniciar el cronómetro local con el valor del backend
+		if (turnRemaining !== undefined && turnRemaining > 0) {
+			setTurnTimeLeft(turnRemaining);
+			logWithTime(
+				`useGameTimers.ts - Iniciando reloj para el turno de ${currentTurn}. Segundos restantes: ${turnRemaining}`,
+			);
+		}
+
+		const interval = setInterval(() => {
+			setTurnTimeLeft((prev) => {
+				if (isTurnPaused) return prev;
+
+				if (prev === null || prev <= 1) {
+					clearInterval(interval);
+
+					if (isMyTurn && !didTriggerLoader) {
+						loadingStore.startLoading("Procesando fin de turno...");
+						didTriggerLoader = true;
+					}
+
+					return 0;
+				}
+				return prev - 1;
+			});
+		}, 1000);
+
+		return () => {
+			clearInterval(interval);
+			if (didTriggerLoader) {
+				loadingStore.stopLoading();
+			}
+		};
+	}, [
+		isMyTurn,
+		turnExpiresAt,
+		isTurnPaused,
+		turnRemaining,
+		gameOver,
+		currentTurn,
+	]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);
@@ -226,11 +314,12 @@ export function useGameTimers() {
 		};
 	}, [hasLuckChallenge, setLuckChallengeSecondsLeft]);
 
-	// 2. Exportamos SOLO lo que no cambia cada segundo
 	return {
 		showBossWaiting: Boolean(bossDisconnected),
 		showActingBossWaiting: Boolean(actingBossDisconnected),
 		showEndingWaiting: Boolean(endingSoon),
 		showInheritanceBanner,
+		turnTimeLeft,
+		isTurnPaused,
 	};
 }

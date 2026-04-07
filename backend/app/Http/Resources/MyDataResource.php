@@ -75,7 +75,7 @@ class MyDataResource extends JsonResource
                 'has_shield' => CastHelper::toBool($myData['has_shield'] ?? 0),
                 'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $playerName),
                 'vision_bonus' => (int) ($myData['vision_bonus'] ?? 0),
-                'distance_bonus' => (int) ($myData['distance_bonus'] ?? 0),
+                'has_distance' => (int) ($myData['has_distance'] ?? 0),
                 'has_storage' => CastHelper::toBool($myData['has_storage'] ?? 0),
                 'has_luck'    => CastHelper::toBool($myData['has_luck'] ?? 0),
             ],

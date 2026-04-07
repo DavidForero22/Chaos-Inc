@@ -35,9 +35,9 @@ export function useOpponentPerks(player: Opponent) {
 				name: "Visión",
 			});
 		}
-		if ((player.perks?.distance_bonus ?? 0) > 0) {
+		if (player.perks?.has_distance) {
 			list.push({
-				id: "distance_bonus",
+				id: "has_distance",
 				icon: "🏠",
 				title: "Está a +1 de distancia",
 				cardType: 11,

@@ -24,7 +24,7 @@ export interface PlayerPerks {
 	has_shield: boolean;
 	vision_range: number;
 	vision_bonus: number;
-	distance_bonus: number;
+	has_distance: boolean;
 	has_storage: boolean;
 	has_luck: boolean
 }
@@ -111,5 +111,9 @@ export interface GameData {
 		pending_multi_attack_targets: string[];
 		player_in_luck_challenge: string | null;
 		player_pending_sabotage: string | null;
+
+		turn_timeout: number;
+        turn_expires_at: number;
+		turn_remaining: number;
 	};
 }

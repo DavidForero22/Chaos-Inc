@@ -44,7 +44,7 @@ class LiveRoomController extends Controller
         $this->liveRoomService->leaveRoom($id, $user->username);
 
         // Limpieza de token de Redis
-        $roomStatus = Redis::hget("room:{$id}", "status");
+        $roomStatus = Redis::hget("room:{$id}:state", "status");
         if ($roomStatus !== 'in_game') {
             Redis::del("room:{$id}:token:{$gameToken}");
         }

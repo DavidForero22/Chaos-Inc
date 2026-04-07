@@ -54,10 +54,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		const { roomId } = get();
 		if (!roomId) return;
 		try {
-			const res = await api.get("/rooms");
+			const res = await api.get("/rooms", { hideLoader: true } as any);
 			const currentRoom = res.data.find((r: RoomData) => r.room_id === roomId);
 			if (currentRoom) {
-				// logWithTime(`[fetchRoomData] room encontrado: ${currentRoom?.players}`);
 				set({ room: currentRoom });
 			} else {
 				throw new Error("ROOM_NOT_FOUND");
@@ -69,17 +68,15 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	},
 
 	attemptJoin: async (password = "", myPlayerName) => {
-		// logWithTime(
-		// 	`[attemptJoin] Intentando unirse con: ${myPlayerName}. isJoining antes: ${get().isJoining}`,
-		// );
-
-		const { roomId, fetchRoomData } = get();
+	const { roomId, fetchRoomData } = get();
 		if (!roomId || !myPlayerName) return "ERROR";
 
 		set({ passwordError: "" });
 
 		try {
-			const res = await api.post(`/rooms/${roomId}/join`, { password });
+			const res = await api.post(`/rooms/${roomId}/join`, { password }, {
+				hideLoader: true,
+			} as any);
 
 			if (res.data.game_token) {
 				localStorage.setItem("game_token", res.data.game_token);
@@ -87,7 +84,6 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
 			await fetchRoomData();
 			set({ needsPassword: false, isJoining: false });
-			// logWithTime("[attemptJoin] Join exitoso. isJoining ahora: false");
 			return "JOINED";
 		} catch (error: any) {
 			const type = error.response?.data?.type;

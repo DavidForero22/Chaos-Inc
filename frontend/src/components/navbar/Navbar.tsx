@@ -32,10 +32,13 @@ export default function Navbar() {
 						// Está con usuario invitado
 						isGuest ? (
 							<div className="flex gap-3 items-center">
-								<span className="text-sm text-gray-500">
-									👤 <span className="text-gray-400">{user}</span>
-									<span className="text-xs text-gray-600 ml-1">(invitado)</span>
-								</span>
+								<Link
+									to="/profile"
+									className="text-sm text-gray-400 hover:text-white transition font-medium flex items-center"
+								>
+									👤 <span className="ml-1 text-blue-400">{user}</span>
+									<span className="text-xs text-gray-500 ml-1">(invitado)</span>
+								</Link>
 								<button
 									onClick={() => setShowRegister(true)}
 									className="text-sm px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition"

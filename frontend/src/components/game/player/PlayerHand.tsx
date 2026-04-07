@@ -13,6 +13,7 @@ export function PlayerHand() {
 	const gameData = useGameStore((state) => state.gameData);
 	const reactToAttack = useGameStore((state) => state.reactToAttack);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+	const isActionLocked = useGameStore((state) => state.isActionLocked);
 
 	const {
 		isDiscardMode,
@@ -22,9 +23,9 @@ export function PlayerHand() {
 		setSelectedCardId,
 	} = useGameUIStore();
 
-	// Hook inteligente que nos dice si las cartas se pueden jugar o no
+	// Hook inteligente que dice si las cartas se pueden jugar o no
 	const { evaluateCard, globalConditions } = useCardPlayability(
-		gameData!, // Asumimos que existe porque validamos abajo
+		gameData!,
 		myPlayerName!,
 		isDiscardMode,
 	);
@@ -34,6 +35,8 @@ export function PlayerHand() {
 
 	// --- MANEJADOR DE CLIC CENTRALIZADO ---
 	const handleCardClick = (card: CardInstance) => {
+		if (isActionLocked) return;
+
 		if (isDiscardMode) {
 			const maxCards = me.conditions.must_discard ? 1 : undefined;
 			toggleDiscardCard(card.id, maxCards);

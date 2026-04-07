@@ -37,13 +37,13 @@ export function useCardPlayability(
 				o.is_online &&
 				(o.perks.has_shield ||
 					o.perks.vision_bonus > 0 ||
-					o.perks.distance_bonus > 0),
+					o.perks.has_distance),
 		);
 
 		const myActivePerksCount =
 			(me.perks.has_shield ? 1 : 0) +
 			((me.perks.vision_bonus ?? 0) > 0 ? 1 : 0) +
-			((me.perks.distance_bonus ?? 0) > 0 ? 1 : 0) +
+			(me.perks.has_distance ? 1 : 0) +
 			(me.perks.has_storage ? 1 : 0);
 
 		return {
@@ -98,7 +98,6 @@ export function useCardPlayability(
 				const isBlocked = o.conditions?.is_blocked ?? (o as any).is_blocked;
 				return !o.is_dead && o.is_online && !isBlocked;
 			});
-		card.type === 11 && (me.perks.distance_bonus ?? 0) >= 1;
 		const isCleanDisabled = card.type === 12 && !anyOpponentHasPerks;
 
 		let isPerkLimitReached = false;
@@ -117,8 +116,7 @@ export function useCardPlayability(
 			(card.type === 10 && (me.perks.vision_bonus ?? 0) >= 2) ||
 			isPerkLimitReached;
 		const isDistanceDisabled =
-			(card.type === 11 && (me.perks.distance_bonus ?? 0) >= 1) ||
-			isPerkLimitReached;
+			(card.type === 11 && me.perks.has_distance) || isPerkLimitReached;
 		const isStorageDisabled =
 			(card.type === 13 && me.perks.has_storage) || isPerkLimitReached;
 		const isLuckDisabled =

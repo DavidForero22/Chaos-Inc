@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Lobby;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\PlayActionRequest;
 use App\Services\Game\Actions\GameActionService;
+use App\Services\Game\Actions\GameReactionService;
 use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Services\Game\LiveGameService;
@@ -16,13 +17,15 @@ class LiveGameController extends Controller
 {
     protected $liveGameService;
     protected $gameActionService;
+    protected $gameReactionService;
     protected $turnService;
     protected $playerHandService;
 
-    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, TurnService $turnService, PlayerHandService $playerHandService)
+    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, GameReactionService $gameReactionService,TurnService $turnService, PlayerHandService $playerHandService)
     {
         $this->liveGameService = $liveGameService;
         $this->gameActionService = $gameActionService;
+        $this->gameReactionService = $gameReactionService;
         $this->turnService = $turnService;
         $this->playerHandService = $playerHandService;
     }
@@ -101,7 +104,7 @@ class LiveGameController extends Controller
         $reaction = $request->input('reaction');
         $cardId = $request->input('card_id');
 
-        $this->gameActionService->reactToAttack($id, $playerName, $reaction, $cardId);
+        $this->gameReactionService->reactToAttack($id, $playerName, $reaction, $cardId);
 
         return response()->json(['message' => 'Reaction processed'], 200);
     }
@@ -118,7 +121,7 @@ class LiveGameController extends Controller
         $chosen = $request->input('color');
 
         try {
-            $success = $this->gameActionService->resolveLuckChallenge($id, $playerName, $chosen);
+            $success = $this->gameReactionService->resolveLuckChallenge($id, $playerName, $chosen);
 
             return response()->json(['result' => $success ? 'success' : 'fail']);
         } catch (\Exception $e) {
@@ -138,7 +141,7 @@ class LiveGameController extends Controller
         $reaction = $request->input('reaction');
         $cardId   = $request->input('card_id');
 
-        $this->gameActionService->reactToMultiAttack($id, $playerName, $reaction, $cardId);
+        $this->gameReactionService->reactToMultiAttack($id, $playerName, $reaction, $cardId);
 
         return response()->json(['message' => 'Reaction processed.'], 200);
     }
@@ -175,7 +178,7 @@ class LiveGameController extends Controller
             'card_id' => 'required|string'
         ]);
 
-        $this->playerHandService->resolveSabotage($id, $playerName, $request->input('card_id'));
+        $this->gameReactionService->resolveSabotage($id, $playerName, $request->input('card_id'));
 
         return response()->json(['message' => 'Discard reaction processed'], 200);
     }

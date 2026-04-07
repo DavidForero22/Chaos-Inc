@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\CombatService;
+use App\Services\Game\Engine\TurnService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -17,7 +18,7 @@ class ResolveMultiAttackJob implements ShouldQueue
         private readonly string $roomId,
     ) {}
 
-    public function handle(CombatService $combatService): void
+    public function handle(CombatService $combatService, TurnService $turnService): void
     {
         $pending = json_decode(Redis::get("room:{$this->roomId}:pending_multi_attack") ?? 'null', true);
 
@@ -54,6 +55,7 @@ class ResolveMultiAttackJob implements ShouldQueue
             $logMessage .= ' ' . __('game.shields_broken', ['shielders' => implode(', ', $shielders)]);
         }
 
+        $turnService->resumeTurnTimer($this->roomId);
         Log::info("ResolveMultiAttackJob.php - Ataque multiple finalizado en {$this->roomId}");
         event(new RoomStateUpdated($this->roomId, $logMessage));
     }

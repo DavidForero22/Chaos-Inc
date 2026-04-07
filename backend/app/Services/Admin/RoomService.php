@@ -18,8 +18,13 @@ class RoomService
         $rooms = [];
 
         foreach ($roomIds as $id) {
-            $roomData = Redis::hgetall("room:{$id}");
-            if (!empty($roomData)) {
+            $infoData = Redis::hgetall("room:{$id}:info");
+            $stateData = Redis::hgetall("room:{$id}:state");
+
+            if (!empty($infoData)) {
+                $roomData = array_merge($infoData, $stateData);
+                $roomData['room_id'] = $id;
+
                 unset($roomData['password']);
 
                 $players = Redis::smembers("room:{$id}:players");
@@ -34,14 +39,19 @@ class RoomService
 
     public function getRoom(string $roomId): ?array
     {
-        $roomKey = "room:{$roomId}";
+        $infoKey = "room:{$roomId}:info";
+        $stateKey = "room:{$roomId}:state";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($infoKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $room = Redis::hgetall($roomKey);
-        $room['players'] = Redis::smembers("{$roomKey}:players");
+        $infoData = Redis::hgetall($infoKey);
+        $stateData = Redis::hgetall($stateKey);
+
+        $room = array_merge($infoData, $stateData);
+        $room['room_id'] = $roomId;
+        $room['players'] = Redis::smembers("room:{$roomId}:players");
 
         return $room;
     }
@@ -51,35 +61,43 @@ class RoomService
         $roomId = Str::upper(Str::random(6));
         $gameToken = (string) Str::uuid();
 
-        $roomData = [
-            'room_id' => $roomId,
+        $infoData = [
             'name' => $data['name'],
+            'owner_name' => $ownerName,
             'is_private' => $data['is_private'] ? '1' : '0',
             'password' => $data['is_private'] ? Hash::make($data['password']) : '',
             'max_players' => $data['max_players'],
-            'status' => 'waiting',
-            'owner_name' => $ownerName,
+            'turn_timeout' => $data['turn_timeout'],
         ];
 
-        // Guardar en Redis
-        Redis::hmset("room:{$roomId}", $roomData);
-        Redis::sadd("active_rooms", $roomId);
-        Redis::expire("room:{$roomId}", 86400); // 24h
+        $stateData = [
+            'status' => 'waiting',
+        ];
 
-        // Añadir datos
+        Redis::hmset("room:{$roomId}:info", $infoData);
+        Redis::hmset("room:{$roomId}:state", $stateData);
+
+        Redis::sadd("active_rooms", $roomId);
+
+        // Expiraciones
+        Redis::expire("room:{$roomId}:info", 86400); // 24h
+        Redis::expire("room:{$roomId}:state", 86400);
+
+        // Añadir jugadores y tokens
         Redis::sadd("room:{$roomId}:players", $ownerName);
         Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $ownerName);
         Redis::expire("room:{$roomId}:players", 86400);
 
-        // Avisar al Menú Principal para que aparezca la nueva sala.
-        event(new RoomListUpdated($roomId)); 
-        // Pasar el $roomId requerido al evento de estado.
+        event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
 
-        $roomData['players'] = [$ownerName];
-        $roomData['game_token'] = $gameToken;
-        unset($roomData['password']);
+        // Preparar la respuesta fusionando los datos y limpiando info sensible
+        $roomDataResponse = array_merge($infoData, $stateData);
+        $roomDataResponse['room_id'] = $roomId;
+        $roomDataResponse['players'] = [$ownerName];
+        $roomDataResponse['game_token'] = $gameToken;
+        unset($roomDataResponse['password']);
 
-        return $roomData;
+        return $roomDataResponse;
     }
 }

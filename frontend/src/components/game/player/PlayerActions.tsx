@@ -18,6 +18,7 @@ export function PlayerActions() {
 		canDiscard,
 		isConfirmDisabled,
 		hasPendingMultiAttack,
+		isGlobalLoading,
 		handleConfirmDiscard,
 		reactToAttack,
 		reactToMultiAttack,
@@ -50,6 +51,7 @@ export function PlayerActions() {
 			{me!.combat_state.is_defending_single ? (
 				<button
 					onClick={() => reactToAttack("accept")}
+					disabled={isGlobalLoading}
 					className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
 				>
 					Asumir daño
@@ -57,6 +59,7 @@ export function PlayerActions() {
 			) : hasPendingMultiAttack ? (
 				<button
 					onClick={() => reactToMultiAttack("accept")}
+					disabled={isGlobalLoading}
 					className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
 				>
 					Asumir daño
@@ -67,6 +70,7 @@ export function PlayerActions() {
 					{isDiscardMode && !me!.conditions.must_discard ? (
 						<button
 							onClick={clearDiscardSelection}
+							disabled={isGlobalLoading}
 							className="px-4 py-2 rounded font-bold text-sm transition bg-orange-600 hover:bg-orange-500 text-white"
 						>
 							Cancelar
@@ -101,6 +105,7 @@ export function PlayerActions() {
 					) : canUseCard ? (
 						<button
 							onClick={handleUseCard}
+							disabled={!canUseCard}
 							className="px-4 py-2 rounded font-bold text-sm transition bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]"
 						>
 							Usar carta

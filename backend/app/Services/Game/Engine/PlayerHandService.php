@@ -1,4 +1,5 @@
 <?php
+// app/Services/Game/Engine/PlayerHandService.php
 
 namespace App\Services\Game\Engine;
 
@@ -15,8 +16,10 @@ class PlayerHandService
      */
     public function findAndRemoveCard(string $roomId, string $playerName, string $cardId): array
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $cards = json_decode(Redis::hget($playerKey, 'cards') ?: '[]', true);
+        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+        $statsKey = "room:{$roomId}:player:{$playerName}:stats";
+
+        $cards = json_decode(Redis::get($handKey) ?: '[]', true);
         if (!is_array($cards)) $cards = [];
 
         $cardIndex = null;
@@ -36,28 +39,28 @@ class PlayerHandService
         }
 
         array_splice($cards, $cardIndex, 1);
-        Redis::hset($playerKey, 'cards', json_encode($cards));
-        Redis::hincrby($playerKey, 'cards_played', 1);
+        Redis::set($handKey, json_encode($cards));
+        Redis::hincrby($statsKey, 'cards_played', 1);
 
         return $foundCard;
     }
 
     public function discardCards(string $roomId, string $playerName, array $cardIdsToDiscard): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
         if ($currentTurn !== $playerName) {
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
-        $playerKey  = "room:{$roomId}:player:{$playerName}";
-        $playerData = Redis::hgetall($playerKey);
-        $cards      = json_decode($playerData['cards'] ?? '[]', true);
+        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+
+        $cards = json_decode(Redis::get($handKey) ?: '[]', true);
         if (!is_array($cards)) $cards = [];
 
         if (count($cardIdsToDiscard) === 0) {
@@ -76,8 +79,7 @@ class PlayerHandService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "Algunas cartas seleccionadas ya no están en tu mano.", 422);
         }
 
-        // Guardar la nueva mano
-        Redis::hset($playerKey, 'cards', json_encode($updatedCards));
+        Redis::set($handKey, json_encode($updatedCards));
 
         // Emitir el log normal de descarte
         $logMessage = __('game.discarded', [
@@ -93,35 +95,15 @@ class PlayerHandService
         }
     }
 
-    public function resolveSabotage(string $roomId, string $playerName, string $cardId): void
-    {
-        $pendingSabotageTarget = Redis::get("room:{$roomId}:pending_sabotage");
-
-        if (!$pendingSabotageTarget || $pendingSabotageTarget !== $playerName) {
-            throw new GameException(GameException::INVALID_ACTION, "No eres el objetivo de ningún sabotaje.", 403);
-        }
-
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-
-        $this->findAndRemoveCard($roomId, $playerName, $cardId);
-
-        // Limpiar el estado de sabotaje
-        Redis::hset($playerKey, 'must_discard', 0);
-        Redis::hdel($playerKey, 'must_discard_by');
-        Redis::del("room:{$roomId}:pending_sabotage");
-
-        event(new RoomStateUpdated($roomId));
-    }
-
     public function discardPerks(string $roomId, string $playerName, array $perksToDiscard): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
 
-        if (!Redis::exists($roomKey)) {
+        if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $currentTurn = Redis::hget($roomKey, 'current_turn_player_id');
+        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
         if ($currentTurn !== $playerName) {
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
@@ -130,22 +112,21 @@ class PlayerHandService
             throw new GameException(GameException::INVALID_ACTION, "Debes seleccionar al menos un equipamiento para descartar.", 422);
         }
 
-        $playerKey = "room:{$roomId}:player:{$playerName}";
+        $playerPerksKey = "room:{$roomId}:player:{$playerName}:perks";
         $discardedNames = [];
 
         // Definir los nombres para el log
         $allowedPerks = [
-            'has_shield'     => 'Escudo',
-            'vision_bonus'    => 'Visión',
-            'distance_bonus' => 'Lejania',
-            'has_storage' => 'Almacen',
-            'has_luck' => 'Suerte'
+            'has_shield'   => 'Escudo',
+            'vision_bonus' => 'Visión',
+            'has_distance' => 'Lejania',
+            'has_storage'  => 'Almacen',
+            'has_luck'     => 'Suerte'
         ];
 
-        // Iterar directamente sobre las llaves enviadas
         foreach ($perksToDiscard as $perkKey) {
             if (array_key_exists($perkKey, $allowedPerks)) {
-                Redis::hset($playerKey, $perkKey, 0);
+                Redis::hset($playerPerksKey, $perkKey, 0);
                 $discardedNames[] = $allowedPerks[$perkKey];
             }
         }
@@ -158,6 +139,47 @@ class PlayerHandService
                 'perks'  => $perksString,
             ]);
             event(new RoomStateUpdated($roomId, $logMessage));
+        }
+    }
+
+    /**
+     * Fuerza el descarte de las últimas cartas obtenidas si el jugador excede el límite.
+     * Útil para auto-descarte por inactividad.
+     */
+    public function enforceHandLimit(string $roomId, string $playerName): void
+    {
+        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
+        $playerPerksKey = "room:{$roomId}:player:{$playerName}:perks";
+        $playerHandKey = "room:{$roomId}:player:{$playerName}:hand";
+
+        $playerInfo = Redis::hgetall($playerInfoKey);
+
+        // Si el jugador no existe (info vacía) o está muerto, no hacer nada
+        if (empty($playerInfo) || CastHelper::toBool($playerInfo['is_dead'] ?? 0)) {
+            return;
+        }
+
+        $cards = json_decode(Redis::get($playerHandKey) ?: '[]', true);
+        if (!is_array($cards)) $cards = [];
+
+        // Calcular el límite actual
+        $currentStress  = (int) ($playerInfo['stress'] ?? 0);
+        $isBossOrActing = ($playerInfo['role'] ?? '') === 'boss' || CastHelper::toBool($playerInfo['acting_boss'] ?? 0);
+        $maxStress      = $isBossOrActing ? 5 : 4;
+
+        // El storage se consulta
+        $storageBonus   = CastHelper::toBool(Redis::hget($playerPerksKey, 'has_storage') ?? 0) ? 1 : 0;
+
+        $maxHandSize = max(1, ($maxStress + 1) - $currentStress) + $storageBonus;
+
+        $currentCount = count($cards);
+
+        // Si tiene más cartas de las permitidas, cortar el final del array y guardar como string
+        if ($currentCount > $maxHandSize) {
+            $updatedCards = array_slice($cards, 0, $maxHandSize);
+            Redis::set($playerHandKey, json_encode($updatedCards));
+
+            event(new RoomStateUpdated($roomId));
         }
     }
 }

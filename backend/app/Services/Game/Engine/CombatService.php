@@ -1,4 +1,5 @@
 <?php
+// app/Services/Game/Engine/CombatService.php
 
 namespace App\Services\Game\Engine;
 
@@ -15,28 +16,29 @@ class CombatService
 
     public function applyDamageAndCheck(string $roomId, string $attackerName, string $targetName): void
     {
-        $targetKey   = "room:{$roomId}:player:{$targetName}";
-        $attackerKey = "room:{$roomId}:player:{$attackerName}";
+        $targetInfoKey    = "room:{$roomId}:player:{$targetName}:info";
+        $targetStatsKey   = "room:{$roomId}:player:{$targetName}:stats";
+        $attackerStatsKey = "room:{$roomId}:player:{$attackerName}:stats";
 
-        $role        = Redis::hget($targetKey, 'role');
-        $maxStress   = ($role === 'boss') ? 5 : 4;
+        $role      = Redis::hget($targetInfoKey, 'role');
+        $maxStress = ($role === 'boss') ? 5 : 4;
 
-        Redis::hincrby($targetKey, 'stress', 1);
-        Redis::hincrby($targetKey, 'damage_received', 1);
-        Redis::hincrby($attackerKey, 'damage_dealt', 1);
+        Redis::hincrby($targetInfoKey, 'stress', 1);
+        Redis::hincrby($targetStatsKey, 'damage_received', 1);
+        Redis::hincrby($attackerStatsKey, 'damage_dealt', 1);
 
-        $newStress = (int) Redis::hget($targetKey, 'stress');
+        $newStress = (int) Redis::hget($targetInfoKey, 'stress');
 
         if ($newStress >= $maxStress) {
-            Redis::hset($targetKey, 'is_dead', 1);
-            Redis::hincrby($attackerKey, 'eliminations', 1);
+            Redis::hset($targetInfoKey, 'is_dead', 1);
+            Redis::hincrby($attackerStatsKey, 'eliminations', 1);
             $this->checkVictory($roomId, $targetName);
         }
     }
 
     public function checkVictory(string $roomId, ?string $targetName = null): void
     {
-        $roomKey = "room:{$roomId}";
+        $roomStateKey = "room:{$roomId}:state";
         $players = Redis::smembers("room:{$roomId}:players");
 
         $bossAlive       = false;
@@ -46,10 +48,12 @@ class CombatService
 
         // Recolectar el estado exacto de la mesa
         foreach ($players as $name) {
-            $data   = Redis::hgetall("room:{$roomId}:player:{$name}");
-            $isDead = filter_var($data['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $infoKey = "room:{$roomId}:player:{$name}:info";
+            $data    = Redis::hgetall($infoKey);
+
+            $isDead = CastHelper::toBool($data['is_dead'] ?? 0);
             $role   = $data['role'] ?? '';
-            $isActingBoss = ($data['acting_boss'] ?? '0') === '1';
+            $isActingBoss = CastHelper::toBool($data['acting_boss'] ?? 0);
 
             if (!$isDead) {
                 $totalAlive++;
@@ -82,8 +86,8 @@ class CombatService
 
         // Si hay un ganador, procesar el final de la partida
         if ($winnerRole !== null) {
-            Redis::hset($roomKey, 'game_over', 1);
-            Redis::hset($roomKey, 'winner_role', $winnerRole);
+            Redis::hset($roomStateKey, 'game_over', 1);
+            Redis::hset($roomStateKey, 'winner_role', $winnerRole);
 
             event(new RoomStateUpdated($roomId));
             $this->finalizationService->finalize($roomId);
@@ -95,20 +99,22 @@ class CombatService
      */
     public function getActivePlayersInOrder(string $roomId): array
     {
-        $roomKey = "room:{$roomId}";
         $turnOrderRaw = Redis::get("room:{$roomId}:turn_order") ?: '[]';
         $turnOrder = json_decode($turnOrderRaw, true);
 
         if (!is_array($turnOrder) || empty($turnOrder)) {
             // Fallback por si acaso
-            $turnOrder = Redis::smembers("{$roomKey}:players");
+            $turnOrder = Redis::smembers("room:{$roomId}:players");
         }
 
         $activePlayers = [];
 
         foreach ($turnOrder as $pName) {
-            $pData = Redis::hgetall("{$roomKey}:player:{$pName}");
-            $isOnline = ($pData['is_online'] ?? '1') !== '0';
+            // Consultar la conectividad y vitalidad 
+            $pInfoKey = "room:{$roomId}:player:{$pName}:info";
+            $pData = Redis::hgetall($pInfoKey);
+
+            $isOnline = CastHelper::toBool($pData['is_online'] ?? 1);
             $isDead = CastHelper::toBool($pData['is_dead'] ?? 0);
 
             // Solo los vivos y conectados hacen de "muro"
@@ -143,15 +149,18 @@ class CombatService
         $baseDistance = min($diff, $n - $diff);
 
         // Sumar el bonus de "lejanía" que tenga el objetivo
-        $targetBonus = (int) Redis::hget("room:{$roomId}:player:{$playerB}", 'distance_bonus') ?: 0;
+        $targetPerksKey = "room:{$roomId}:player:{$playerB}:perks";
+        $hasDistance = CastHelper::toBool(Redis::hget($targetPerksKey, 'has_distance') ?? 0);
+        $targetBonus = $hasDistance ? 1 : 0;
 
         return $baseDistance + $targetBonus;
     }
 
     public function getPlayerRange(string $roomId, string $playerName): int
     {
-        $playerKey = "room:{$roomId}:player:{$playerName}";
-        $bonus = (int) Redis::hget($playerKey, 'vision_bonus') ?: 0;
+        $playerPerksKey = "room:{$roomId}:player:{$playerName}:perks";
+        $bonus = (int) (Redis::hget($playerPerksKey, 'vision_bonus') ?? 0);
+
         return 1 + $bonus;
     }
 }

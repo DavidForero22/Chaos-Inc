@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
-import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 
 // -- PÁGINAS --
 import MainMenuPage from "./pages/MainMenuPage.tsx";
@@ -14,6 +13,8 @@ import { useAuthStore } from "./store/useAuthStore.ts";
 import { useEffect } from "react";
 import api from "./api/axios.ts";
 
+import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
+
 function App() {
 	const { token } = useAuthStore();
 
@@ -22,7 +23,7 @@ function App() {
 		const verifySession = async () => {
 			if (!token) return;
 
-			await api.get("/me");
+			await api.get("/me", { hideLoader: true } as any);
 		};
 
 		verifySession();
@@ -31,7 +32,6 @@ function App() {
 	return (
 		<Router>
 			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-				<GlobalLoader />
 				<Navbar />
 
 				<div className="p-6 grow">
@@ -44,6 +44,8 @@ function App() {
 						<Route path="/room-not-found" element={<RoomNotFoundPage />} />
 					</Routes>
 				</div>
+
+				<GlobalLoader />
 			</div>
 		</Router>
 	);

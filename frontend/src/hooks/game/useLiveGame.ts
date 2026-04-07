@@ -12,6 +12,8 @@ import { usePlayerIdentity } from "../usePlayerIdentity.ts";
 import { logWithTime } from "../../utils/logger.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
+import { useGameUIStore } from "../../store/useGameUIStore.ts";
+import { useLoadingStore } from "../../store/useLoadingStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
@@ -27,11 +29,39 @@ export function useLiveGame(roomId: string | undefined) {
 	const isConnecting = useGameStore((state) => state.isConnecting);
 	const resetStore = useGameStore((state) => state.resetStore);
 
+	// Extraemos el current_turn para vigilarlo
+	const currentTurn = useGameStore(
+		(state) => state.gameData?.game?.current_turn,
+	);
+	const clearDiscardSelection = useGameUIStore(
+		(state) => state.clearDiscardSelection,
+	);
+
 	// -- 1. INICIALIZAR EL ROOM ID Y LIMPIAR AL SALIR --
 	useEffect(() => {
 		setRoomId(roomId || null);
 		return () => resetStore();
 	}, [roomId, setRoomId, resetStore]);
+
+	// --- 1.5 LIMPIEZA DE UI AL CAMBIAR DE TURNO ---
+	const previousTurnRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		// Si el turno ha cambiado, o si se ha reiniciado por completo
+		if (currentTurn !== previousTurnRef.current) {
+			if (
+				previousTurnRef.current === myPlayerName &&
+				currentTurn !== myPlayerName
+			) {
+				logWithTime(
+					"useLiveGame.ts - El turno ha pasado a otro jugador. Limpiando UI.",
+				);
+				clearDiscardSelection();
+			}
+
+			previousTurnRef.current = currentTurn || null;
+		}
+	}, [currentTurn, myPlayerName, clearDiscardSelection]);
 
 	// -- 2. WRAPPER DE SINCRONIZACIÓN (Maneja las redirecciones) --
 	const handleSync = useCallback(async () => {
@@ -53,6 +83,10 @@ export function useLiveGame(roomId: string | undefined) {
 			// --- REDIRECCIÓN AL 404 ---
 			if (status === 404 || errorType === "ROOM_NOT_FOUND") {
 				isKickedRef.current = true;
+
+				// Si echan por 404, borrar el loader si existía
+				useLoadingStore.getState().stopLoading();
+
 				navigate("/room-not-found");
 				return;
 			}
@@ -67,6 +101,7 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 
 			isKickedRef.current = true;
+			useLoadingStore.getState().stopLoading();
 			navigate("/");
 		}
 	}, [roomId, syncGameStore, navigate]);
@@ -78,7 +113,10 @@ export function useLiveGame(roomId: string | undefined) {
 
 			try {
 				setIsConnecting(true);
-				const res = await api.post(`/rooms/${roomId}/join`);
+
+				const res = await api.post(`/rooms/${roomId}/join`, {}, {
+					hideLoader: true,
+				} as any);
 
 				if (res.data.game_token) {
 					localStorage.setItem("game_token", res.data.game_token);
