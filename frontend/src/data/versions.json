@@ -1,0 +1,14 @@
+[
+	{
+		"id": 1,
+		"version": "0.1.0",
+		"date": "2026-04-7",
+		"description": "Base del juego completada y funcional.",
+		"changes": [
+			"Motor de juego base con 15 cartas.",
+			"Sistema de reconexión y gestión de sesiones para invitados.",
+			"Gestión de datos para administradores.",
+			"Historial y estadísticas básicas de jugadores."
+		]
+	}
+]
