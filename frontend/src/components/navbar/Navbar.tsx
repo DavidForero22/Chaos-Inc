@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 import LoginModal from "./LoginModal.tsx";
 import RegisterModal from "./RegisterModal.tsx";
+import styles from "../../pages/MainMenuPage.module.css";
 
 export default function Navbar() {
 	const { user, isGuest, role } = useAuthStore();
@@ -14,73 +15,100 @@ export default function Navbar() {
 
 	return (
 		<>
-			<nav className="px-6 py-4 bg-gray-800 flex justify-between items-center border-b border-gray-700 shadow-sm">
-				<div className="flex gap-6 items-center">
-					<span className="text-xl font-bold text-white tracking-wider mr-4">
-						CHAOS INC.
-					</span>
+			{/* CABECERA (Tailwind Layout + Module colors) */}
+			<nav
+				className={`${styles.panel} px-6 py-4 flex justify-between items-center border-b shadow-sm`}
+			>
+				<div className="flex gap-10 items-center">
+					{/* Logo (Texto Chaos Inc) */}
 					<Link
 						to="/"
-						className="text-gray-400 hover:text-white transition text-sm font-medium"
+						className="text-2xl font-black tracking-tight"
+						style={{ color: "var(--off-secondary)" }}
 					>
-						Salas
+						CHAOS INC.
 					</Link>
+
+					{/* Links de navegación */}
+					<div className="flex gap-6">
+						<Link
+							to="/rooms"
+							className="text-sm font-medium hover:opacity-80 transition"
+							style={{ color: "var(--off-text)" }}
+						>
+							Salas
+						</Link>
+						<Link
+							to="#"
+							className="text-sm font-medium hover:opacity-80 transition"
+							style={{ color: "var(--off-text)" }}
+						>
+							Cómo Jugar
+						</Link>
+						<Link
+							to="#"
+							className="text-sm font-medium hover:opacity-80 transition"
+							style={{ color: "var(--off-text)" }}
+						>
+							Saber Más
+						</Link>
+					</div>
 				</div>
 
 				<div className="flex gap-4 items-center">
 					{user ? (
-						// Está con usuario invitado
-						isGuest ? (
-							<div className="flex gap-3 items-center">
+						<div className="flex gap-4 items-center">
+							{/* Link de Admin (Si aplica) */}
+							{role === "admin" && !isGuest && (
 								<Link
-									to="/profile"
-									className="text-sm text-gray-400 hover:text-white transition font-medium flex items-center"
+									to="/admin"
+									className="text-sm font-bold transition hover:opacity-80"
+									style={{ color: "var(--off-secondary)" }}
+									title="Panel de Administración"
 								>
-									👤 <span className="ml-1 text-blue-400">{user}</span>
-									<span className="text-xs text-gray-500 ml-1">(invitado)</span>
+									⚙️ Admin
 								</Link>
-								<button
-									onClick={() => setShowRegister(true)}
-									className="text-sm px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition"
+							)}
+
+							{/* Perfil Circle (Usuario logueado o invitado) */}
+							<Link
+								to="/profile"
+								title={isGuest ? "Expediente (Invitado)" : "Ir al expediente"}
+								className="group"
+							>
+								<div
+									className="w-10 h-10 rounded-full border-2 flex items-center justify-center text-xs font-bold transition group-hover:opacity-80"
+									style={{
+										backgroundColor: "var(--off-primary)",
+										borderColor: "var(--off-secondary)",
+										color: "var(--off-panel)",
+									}}
 								>
-									Registrarse
-								</button>
-							</div>
-						) : (
-							// Está con usuario normal
-							<div className="flex gap-3 items-center">
-								{role === "admin" && (
-									<Link
-										to="/admin"
-										className="text-sm text-red-400 hover:text-red-300 transition font-medium"
-									>
-										⚙️ Admin
-									</Link>
-								)}
-								<Link
-									to="/profile"
-									className="text-sm text-gray-400 hover:text-white transition font-medium"
-								>
-									👤 <strong className="text-blue-400">{user}</strong>
-								</Link>
-							</div>
-						)
+									{user.substring(0, 2).toUpperCase()}
+								</div>
+							</Link>
+						</div>
 					) : (
-						// No está con usuario
-						<>
+						// No está con usuario (Mostramos botones estilo Severance)
+						<div className="flex gap-3">
 							<button
 								onClick={() => setShowLogin(true)}
-								className="text-sm px-4 py-1.5 text-gray-400 hover:text-white transition"
+								className="text-sm px-4 py-1.5 font-medium transition hover:opacity-80"
+								style={{ color: "var(--off-secondary)" }}
 							>
 								Iniciar Sesión
 							</button>
 							<button
 								onClick={() => setShowRegister(true)}
-								className="text-sm px-4 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded font-medium transition shadow-lg"
+								className="text-sm px-4 py-1.5 rounded font-medium transition shadow-sm hover:opacity-90"
+								style={{
+									backgroundColor: "var(--off-primary)",
+									color: "var(--off-panel)",
+								}}
 							>
 								Registrarse
 							</button>
-						</>
+						</div>
 					)}
 				</div>
 			</nav>

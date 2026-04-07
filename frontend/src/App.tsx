@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar.tsx";
 
 // -- PÁGINAS --
-import MainMenuPage from "./pages/MainMenuPage.tsx";
+import RoomsPage from "./pages/RoomsPage.tsx";
 import WaitingRoomPage from "./pages/WaitingRoomPage.tsx";
 import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import api from "./api/axios.ts";
 
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
+import MainMenuPage from "./pages/MainMenuPage.tsx";
 
 function App() {
 	const { token } = useAuthStore();
@@ -31,12 +32,13 @@ function App() {
 
 	return (
 		<Router>
-			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
+			<div>
 				<Navbar />
 
 				<div className="p-6 grow">
 					<Routes>
 						<Route path="/" element={<MainMenuPage />} />
+						<Route path="/rooms" element={<RoomsPage />} />
 						<Route path="/room/:id" element={<WaitingRoomPage />} />
 						<Route path="/game/:id" element={<GameBoardPage />} />
 						<Route path="/profile" element={<ProfilePage />} />
