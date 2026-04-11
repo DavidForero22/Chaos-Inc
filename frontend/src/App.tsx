@@ -7,6 +7,8 @@ import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
 import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
+import HowToPlayPage from "./pages/HowToPlayPage.tsx";
+import KnowMorePage from "./pages/KnowMorePage.tsx";
 
 import { useAuthStore } from "./store/useAuthStore.ts";
 import { useEffect } from "react";
@@ -38,7 +40,8 @@ function App() {
 					<Route path="/" element={<MainMenuPage />} />
 					<Route path="/rooms" element={<RoomsPage />} />
 					<Route path="/profile" element={<ProfilePage />} />
-					{/* Añadir aquí: /saber-mas, /como-jugar, etc. */}
+					<Route path="/how-to-play" element={<HowToPlayPage />} />
+					<Route path="/know-more" element={<KnowMorePage />} />
 				</Route>
 
 				{/* ── Rutas con diseño propio ── */}

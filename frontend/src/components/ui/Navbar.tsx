@@ -7,6 +7,9 @@ import LoginModal from "./AuthModal/LoginModal";
 import RegisterModal from "./AuthModal/RegisterModal";
 import styles from "./Navbar.module.css";
 
+import { FaRegUser, FaQuestion, FaBook } from "react-icons/fa";
+import { IoHome, IoGameController } from "react-icons/io5";
+
 export default function Navbar() {
 	const { user, isGuest, role } = useAuthStore();
 
@@ -23,18 +26,22 @@ export default function Navbar() {
 			<div className={styles.bookmarksContainer}>
 				{/* ── Pestañas de navegación principales ── */}
 				<NavLink to="/" end className={tabClass(styles.tabHome)}>
+					<IoHome />
 					Inicio
 				</NavLink>
 
 				<NavLink to="/rooms" className={tabClass(styles.tabRooms)}>
+					<IoGameController />
 					Salas
 				</NavLink>
 
 				<NavLink to="/how-to-play" className={tabClass(styles.tabHowTo)}>
+					<FaBook />
 					Cómo Jugar
 				</NavLink>
 
 				<NavLink to="/know-more" className={tabClass(styles.tabKnow)}>
+					<FaQuestion />
 					Saber Más
 				</NavLink>
 
@@ -58,12 +65,9 @@ export default function Navbar() {
 							className={tabClass(styles.tabProfile)}
 							title={isGuest ? "Expediente (Invitado)" : "Mi Expediente"}
 						>
-							<span className={styles.profileTabContent}>
-								<span className={styles.profileAvatar}>
-									{user.substring(0, 2).toUpperCase()}
-								</span>
-								{isGuest ? "Invitado" : "Perfil"}
-							</span>
+							<FaRegUser />
+
+							{isGuest ? "Invitado" : "Perfil"}
 						</NavLink>
 					</>
 				) : (

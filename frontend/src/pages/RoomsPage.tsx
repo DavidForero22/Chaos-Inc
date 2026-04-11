@@ -47,7 +47,7 @@ export default function RoomsPage() {
 			{/* ── CABECERA ── */}
 			<div className={styles.pageHeader}>
 				<div className={styles.titleBlock}>
-					<h1 className={styles.pageTitle}>Listado de Salas</h1>
+					<h1 className={styles.pageTitle}>LISTADO DE SALAS</h1>
 					<p className={styles.pageSubtitle}>
 						Seleccione una sala activa.
 					</p>
