@@ -1,8 +1,8 @@
 import { useState } from "react";
 import api from "../../../api/axios";
 import { useAuthStore } from "../../../store/useAuthStore.ts";
-import AuthModalLayout from "./AuthModalLayout";
-import styles from "./AuthModal.module.css";
+import ModalLayout from "../ModalLayout.tsx";
+import styles from "../ModalLayout.module.css";
 
 interface LoginModalProps {
 	onClose: () => void;
@@ -39,7 +39,7 @@ export default function LoginModal({
 	};
 
 	return (
-		<AuthModalLayout
+		<ModalLayout
 			title="Chaos Inc."
 			subtitle="Formulario de Identificación de Empleado"
 			onClose={onClose}
@@ -87,6 +87,6 @@ export default function LoginModal({
 			/>
 
 			{error && <p className={styles.error}>⚠ {error}</p>}
-		</AuthModalLayout>
+		</ModalLayout>
 	);
 }

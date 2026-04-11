@@ -1,7 +1,7 @@
 // src/components/game/RoleRevealModal.tsx
 
 import type { MyData } from "../../../types/live-game.ts";
-import { Modal } from "../../ui/Modal.tsx";
+import { Modal } from "../../ui/GameModal.tsx";
 
 type DisplayRole = MyData["role"] | "acting_boss";
 

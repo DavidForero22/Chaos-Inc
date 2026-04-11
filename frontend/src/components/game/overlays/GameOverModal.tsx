@@ -1,6 +1,6 @@
 // src/components/game/GameOverModal.tsx
 
-import { Modal } from "../../ui/Modal.tsx";
+import { Modal } from "../../ui/GameModal.tsx";
 
 type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
 type PlayerRole = "boss" | "secretary" | "intern" | "union";

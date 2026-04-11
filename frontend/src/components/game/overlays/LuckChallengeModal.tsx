@@ -1,6 +1,6 @@
 import { useState } from "react";
 import api from "../../../api/axios.ts";
-import { Modal } from "../../ui/Modal.tsx";
+import { Modal } from "../../ui/GameModal.tsx";
 import { useTimerStore } from "../../../store/useTimerStore.ts";
 
 const COLOR_STYLES: Record<string, string> = {

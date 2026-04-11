@@ -1,29 +1,31 @@
-import type { ReactNode } from "react";
-import styles from "./AuthModal.module.css";
+// src/components/ui/ModalLayout.tsx
 
-interface AuthModalLayoutProps {
+import type { ReactNode } from "react";
+import styles from "./ModalLayout.module.css";
+
+interface ModalLayoutProps {
 	title: string;
 	subtitle: string;
 	onClose: () => void;
 	onSubmit: (e: React.FormEvent) => void;
-	isLoading: boolean;
+	isLoading?: boolean;
 	submitText: string;
-	loadingText: string;
-	switchButton?: ReactNode; // El botón de "Ya tengo cuenta" o "¿Sin cuenta?"
-	children: ReactNode; // Aquí irán los inputs específicos
+	loadingText?: string;
+	switchButton?: ReactNode; // El botón opcional de la izquierda en el footer
+	children: ReactNode; // Los inputs y contenido del modal
 }
 
-export default function AuthModalLayout({
+export default function ModalLayout({
 	title,
 	subtitle,
 	onClose,
 	onSubmit,
-	isLoading,
+	isLoading = false,
 	submitText,
-	loadingText,
+	loadingText = "Procesando...",
 	switchButton,
 	children,
-}: AuthModalLayoutProps) {
+}: ModalLayoutProps) {
 	return (
 		<div className={styles.overlay} onClick={onClose}>
 			<div className={styles.card} onClick={(e) => e.stopPropagation()}>
@@ -48,7 +50,7 @@ export default function AuthModalLayout({
 
 					{/* Pie dinámico */}
 					<div className={styles.footer}>
-						{switchButton && <div>{switchButton}</div>}
+						{switchButton ? <div>{switchButton}</div> : <div />}
 
 						<div className={styles.actions}>
 							<button

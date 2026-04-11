@@ -19,12 +19,6 @@ export default function NotebookLayout() {
 					<Outlet />
 				</div>
 			</div>
-
-			{/* ── Footer en la pared ── */}
-			<footer className={styles.wallFooter}>
-				Chaos Inc. © 2026 &mdash; Documento clasificado &mdash;{" "}
-				<a href="#">Política de Destrucción de Datos</a>
-			</footer>
 		</div>
 	);
 }
