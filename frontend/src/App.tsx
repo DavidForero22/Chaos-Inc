@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/navbar/Navbar.tsx";
 
 // -- PÁGINAS --
 import RoomsPage from "./pages/RoomsPage.tsx";
@@ -15,6 +14,7 @@ import api from "./api/axios.ts";
 
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 import MainMenuPage from "./pages/MainMenuPage.tsx";
+import NotebookLayout from "./layouts/NotebookLayout.tsx";
 
 function App() {
 	const { token } = useAuthStore();
@@ -32,23 +32,23 @@ function App() {
 
 	return (
 		<Router>
-			<div>
-				<Navbar />
+			<Routes>
+				{/* ── Rutas con el diseño de libreta ── */}
+				<Route element={<NotebookLayout />}>
+					<Route path="/" element={<MainMenuPage />} />
+					<Route path="/rooms" element={<RoomsPage />} />
+					<Route path="/profile" element={<ProfilePage />} />
+					{/* Añadir aquí: /saber-mas, /como-jugar, etc. */}
+				</Route>
 
-				<div className="p-6 grow">
-					<Routes>
-						<Route path="/" element={<MainMenuPage />} />
-						<Route path="/rooms" element={<RoomsPage />} />
-						<Route path="/room/:id" element={<WaitingRoomPage />} />
-						<Route path="/game/:id" element={<GameBoardPage />} />
-						<Route path="/profile" element={<ProfilePage />} />
-						<Route path="/admin" element={<AdminPage />} />
-						<Route path="/room-not-found" element={<RoomNotFoundPage />} />
-					</Routes>
-				</div>
+				{/* ── Rutas con diseño propio ── */}
+				<Route path="/room/:id" element={<WaitingRoomPage />} />
+				<Route path="/game/:id" element={<GameBoardPage />} />
+				<Route path="/admin" element={<AdminPage />} />
+				<Route path="/room-not-found" element={<RoomNotFoundPage />} />
+			</Routes>
 
-				<GlobalLoader />
-			</div>
+			<GlobalLoader />
 		</Router>
 	);
 }
