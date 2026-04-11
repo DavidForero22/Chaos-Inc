@@ -1,0 +1,192 @@
+/* =====================================================
+   ROOMS PAGE — CSS Module
+   Paleta: notebook paper inside spine
+   ===================================================== */
+
+/* --- CABECERA DE SECCIÓN --- */
+.pageHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	margin-bottom: 1.5rem;
+	padding-left: 1rem;
+	padding-top: 1rem;
+}
+
+.titleBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.pageTitle {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 2rem;
+	font-weight: 900;
+	color: #393e42;
+	margin: 0;
+	line-height: 64px; /* 2 líneas de pauta */
+	letter-spacing: -0.5px;
+}
+
+.pageSubtitle {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	color: #8f9e9b;
+	margin: 0;
+	line-height: 32px;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid rgba(143, 158, 155, 0.4);
+}
+
+/* --- FILTROS --- */
+.filters {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 1rem;
+	padding-left: 1rem;
+}
+
+.filterBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	padding: 3px 12px;
+	border-radius: 2px;
+	border: 1.5px solid #8f9e9b;
+	background: transparent;
+	color: #8f9e9b;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	line-height: 28px;
+}
+
+.filterBtn:hover {
+	border-color: #393e42;
+	color: #393e42;
+}
+
+.filterAll.filterActive {
+	background-color: #393e42;
+	border-color: #393e42;
+	color: #d1d3d0;
+}
+
+.filterWaiting.filterActive {
+	background-color: #295c60;
+	border-color: #295c60;
+	color: #d1d3d0;
+}
+
+.filterInGame.filterActive {
+	background-color: #989083;
+	border-color: #989083;
+	color: #d1d3d0;
+}
+
+/* --- BOTÓN CREAR SALA --- */
+.createBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.78rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	padding: 10px 20px;
+	border-radius: 3px;
+	border: 2px solid #295c60;
+	background-color: #295c60;
+	color: #e6e3de;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	line-height: 1;
+}
+
+.createBtn:hover {
+	background-color: #1e4548;
+	border-color: #1e4548;
+}
+
+/* Wrapper del botón bloqueado */
+.createBtnWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+/* El botón bloqueado en sí */
+.createBtnLocked {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.78rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1.5px;
+	padding: 10px 20px;
+	border-radius: 3px;
+	border: 2px dashed #989083;
+	background-color: transparent;
+	color: #989083;
+	cursor: not-allowed;
+	position: relative;
+	white-space: nowrap;
+	line-height: 1;
+}
+
+/* Nota explicativa debajo del botón bloqueado */
+.lockedNote {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.65rem;
+	color: #989083;
+	text-align: right;
+	font-style: italic;
+	letter-spacing: 0.3px;
+	max-width: 180px;
+	line-height: 1.4;
+}
+
+/* --- PIE DE LISTA (botón unirse) --- */
+.listFooter {
+	margin-top: 1rem;
+	display: flex;
+	justify-content: flex-end;
+	padding-left: 1rem;
+}
+
+.joinBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	padding: 12px 32px;
+	border-radius: 3px;
+	border: 2px solid #016483;
+	background-color: #016483;
+	color: #e6e3de;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.joinBtn:hover {
+	background-color: #014f66;
+	border-color: #014f66;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(1, 100, 131, 0.25);
+}
+
+.joinBtnDisabled {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	padding: 12px 32px;
+	border-radius: 3px;
+	border: 2px dashed #989083;
+	background-color: transparent;
+	color: #989083;
+	cursor: not-allowed;
+}

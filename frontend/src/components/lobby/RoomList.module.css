@@ -1,0 +1,208 @@
+/* =====================================================
+   ROOM LIST — CSS Module
+   Estética: ficha de registro mecanografiada en papel
+   ===================================================== */
+
+.listContainer {
+	border: 1.5px solid rgba(143, 158, 155, 0.5);
+	border-radius: 4px;
+	overflow: hidden;
+	position: relative;
+	min-height: 200px;
+	margin-left: 1rem;
+	/* Sombra sutil hacia abajo, como papel apilado */
+	box-shadow:
+		0 2px 0 rgba(143, 158, 155, 0.3),
+		0 4px 0 rgba(143, 158, 155, 0.15),
+		0 6px 12px rgba(57, 62, 66, 0.08);
+}
+
+/* --- ESTADO: CARGANDO --- */
+.loadingOverlay {
+	position: absolute;
+	inset: 0;
+	background-color: rgba(210, 212, 209, 0.75);
+	backdrop-filter: blur(2px);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+	gap: 12px;
+}
+
+.loadingSpinner {
+	width: 28px;
+	height: 28px;
+	border: 3px solid rgba(41, 92, 96, 0.2);
+	border-top-color: #295c60;
+	border-radius: 50%;
+	animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.loadingText {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	color: #295c60;
+	animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.4;
+	}
+}
+
+/* --- ESTADO: VACÍO --- */
+.emptyState {
+	padding: 3rem 2rem;
+	text-align: center;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	color: #989083;
+	font-style: italic;
+	line-height: 32px;
+}
+
+/* --- FILA DE SALA --- */
+.roomRow {
+	padding: 0.75rem 1.25rem;
+	border-bottom: 1px solid rgba(143, 158, 155, 0.25);
+	cursor: pointer;
+	transition: background-color 0.12s ease;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	border-left: 4px solid transparent;
+	background-color: transparent;
+	/* Mantiene el ritmo de líneas del papel */
+	min-height: 64px;
+}
+
+.roomRow:last-child {
+	border-bottom: none;
+}
+
+.roomRow:hover {
+	background-color: rgba(41, 92, 96, 0.05);
+	border-left-color: rgba(41, 92, 96, 0.3);
+}
+
+.roomRowSelected {
+	background-color: rgba(41, 92, 96, 0.1) !important;
+	border-left-color: #295c60 !important;
+}
+
+/* --- INFO IZQUIERDA --- */
+.roomInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.roomName {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.9rem;
+	font-weight: bold;
+	color: #393e42;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	line-height: 1.4;
+}
+
+.roomPrivateIcon {
+	font-size: 0.75rem;
+	opacity: 0.7;
+}
+
+/* Badge de estado */
+.badgeWaiting {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.6rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	padding: 1px 7px;
+	border-radius: 2px;
+	background-color: rgba(203, 190, 52, 0.15);
+	color: #8a7d20;
+	border: 1px solid rgba(203, 190, 52, 0.5);
+}
+
+.badgeInGame {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.6rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	padding: 1px 7px;
+	border-radius: 2px;
+	background-color: rgba(152, 144, 131, 0.15);
+	color: #6b6358;
+	border: 1px solid rgba(152, 144, 131, 0.4);
+}
+
+.roomOwner {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	color: #8f9e9b;
+	line-height: 1.4;
+}
+
+.roomOwnerName {
+	color: #393e42;
+	font-weight: bold;
+}
+
+.roomPlayers {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.68rem;
+	color: #295c60;
+	opacity: 0.8;
+	line-height: 1.4;
+}
+
+/* --- INFO DERECHA --- */
+.roomMeta {
+	text-align: right;
+	flex-shrink: 0;
+	margin-left: 1rem;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.roomId {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.65rem;
+	color: #989083;
+	letter-spacing: 1px;
+	border-bottom: 1px dotted rgba(152, 144, 131, 0.5);
+	padding-bottom: 2px;
+}
+
+.roomCapacity {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: bold;
+	color: #295c60;
+}
+
+.roomCapacityFull {
+	color: #989083;
+}
