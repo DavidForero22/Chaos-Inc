@@ -39,7 +39,7 @@ export default function CreateRoomModal({
 				state: { playerName: user },
 			});
 		} catch (error) {
-			setError("Hubo un error al procesar la solicitud de sala.");
+			setError("Hubo un error al crear la sala.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -52,7 +52,7 @@ export default function CreateRoomModal({
 			onClose={onClose}
 			onSubmit={handleCreateRoom}
 			isLoading={isLoading}
-			submitText="Solicitar Sala"
+			submitText="Crear Sala"
 			loadingText="Aprobando..."
 		>
 			{/* Campo 1: Nombre */}
