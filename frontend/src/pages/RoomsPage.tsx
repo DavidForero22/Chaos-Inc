@@ -39,24 +39,27 @@ export default function RoomsPage() {
 		!selectedRoom ||
 		filteredRooms.find((r) => r.room_id === selectedRoom)?.status !== "waiting";
 
-	// Solo los usuarios con cuenta registrada (no invitados) pueden crear sala
-	const canCreate = !!user && !user.startsWith("guest_"); // ajusta según tu lógica
+	const canCreate = !!user && !user.startsWith("guest_");
 
 	return (
-		<div>
+		<div className="pl-6 pb-10">
 			{/* ── CABECERA ── */}
-			<div className={styles.pageHeader}>
-				<div className={styles.titleBlock}>
-					<h1 className={styles.pageTitle}>LISTADO DE SALAS</h1>
-					<p className={styles.pageSubtitle}>
-						Seleccione una sala activa.
-					</p>
+			<div className="mb-6">
+				{/* Títulos ocupando todo el ancho */}
+				<h1
+					className="text-4xl mb-6 font-black"
+					style={{ color: "var(--color-lomo)" }}
+				>
+					LISTADO DE SALAS
+				</h1>
+				<h2 className="text-xl mb-6 opacity-80 border-b border-gray-400 pb-2 font-bold">
+					Seleccione una sala activa.
+				</h2>
 
+				{/* Fila de controles: Filtros (Izquierda) - Botón Crear (Derecha) */}
+				<div className="flex justify-between items-end pr-2">
 					{/* Filtros de estado */}
-					<div
-						className={styles.filters}
-						style={{ paddingLeft: 0, marginTop: "0.25rem" }}
-					>
+					<div className={styles.filters} style={{ marginBottom: 0 }}>
 						{(["all", "waiting", "in_game"] as const).map((f) => (
 							<button
 								key={f}
@@ -77,30 +80,30 @@ export default function RoomsPage() {
 							</button>
 						))}
 					</div>
-				</div>
 
-				{/* Botón Crear Sala */}
-				{canCreate ? (
-					<button
-						onClick={() => setShowCreateModal(true)}
-						className={styles.createBtn}
-					>
-						+ Crear Sala
-					</button>
-				) : (
-					<div className={styles.createBtnWrapper}>
-						<button disabled className={styles.createBtnLocked}>
-							+ Crear Sala
-						</button>
-						<p className={styles.lockedNote}>
-							{user
-								? // Está logueado como invitado
-									"Los invitados no pueden abrir salas. Regístrese para acceder."
-								: // No tiene sesión
-									"Inicie sesión con una cuenta para crear salas."}
-						</p>
+					{/* Botón Crear Sala a la derecha */}
+					<div>
+						{canCreate ? (
+							<button
+								onClick={() => setShowCreateModal(true)}
+								className={styles.createBtn}
+							>
+								+ Crear Sala
+							</button>
+						) : (
+							<div className={styles.createBtnWrapper}>
+								<button disabled className={styles.createBtnLocked}>
+									+ Crear Sala
+								</button>
+								<p className={styles.lockedNote}>
+									{user
+										? "Los invitados no pueden abrir salas. Regístrese para acceder."
+										: "Inicie sesión con una cuenta para crear salas."}
+								</p>
+							</div>
+						)}
 					</div>
-				)}
+				</div>
 			</div>
 
 			{/* ── LISTA DE SALAS ── */}

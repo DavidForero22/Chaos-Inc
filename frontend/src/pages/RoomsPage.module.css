@@ -3,48 +3,12 @@
    Paleta: notebook paper inside spine
    ===================================================== */
 
-/* --- CABECERA DE SECCIÓN --- */
-.pageHeader {
-	display: flex;
-	justify-content: space-between;
-	align-items: flex-start;
-	margin-bottom: 1.5rem;
-	padding-left: 1rem;
-	padding-top: 1rem;
-}
-
-.titleBlock {
-	display: flex;
-	flex-direction: column;
-	gap: 0;
-}
-
-.pageTitle {
-	font-family: "Courier New", Courier, monospace;
-	font-size: 2rem;
-	font-weight: 900;
-	color: #393e42;
-	margin: 0;
-	line-height: 64px; /* 2 líneas de pauta */
-	letter-spacing: -0.5px;
-}
-
-.pageSubtitle {
-	font-family: "Courier New", Courier, monospace;
-	font-size: 0.8rem;
-	color: #8f9e9b;
-	margin: 0;
-	line-height: 32px;
-	padding-bottom: 0.5rem;
-	border-bottom: 1px solid rgba(143, 158, 155, 0.4);
-}
-
 /* --- FILTROS --- */
 .filters {
 	display: flex;
 	gap: 8px;
-	margin-bottom: 1rem;
-	padding-left: 1rem;
+	margin-bottom: 1.5rem;
+	/* Se elimina el padding-left para que encaje alineado al texto */
 }
 
 .filterBtn {
@@ -149,10 +113,9 @@
 
 /* --- PIE DE LISTA (botón unirse) --- */
 .listFooter {
-	margin-top: 1rem;
+	margin-top: 1.5rem;
 	display: flex;
 	justify-content: flex-end;
-	padding-left: 1rem;
 }
 
 .joinBtn {
