@@ -27,8 +27,8 @@ export function useProfileData() {
 		const fetchData = async () => {
 			try {
 				const [meRes, gamesRes] = await Promise.all([
-					api.get("/me"),
-					api.get("/me/games"),
+					api.get("/me", { hideLoader: true } as any),
+					api.get("/me/games", { hideLoader: true } as any),
 				]);
 				setMeId(meRes.data.id);
 				setGames(gamesRes.data.data ?? gamesRes.data);

@@ -1,9 +1,10 @@
 // src/pages/ProfilePage.tsx
 
-import { useAuthStore } from "../store/useAuthStore.ts";
-import { useProfileData } from "../hooks/profile/useProfileData.ts";
-import GuestProfileView from "../components/profile/GuestProfileView.tsx";
-import RegisteredProfileView from "../components/profile/RegisteredProfileView.tsx";
+import { useAuthStore } from "../store/useAuthStore";
+import { useProfileData } from "../hooks/profile/useProfileData";
+import GuestProfileView from "../components/profile/GuestProfileView";
+import RegisteredProfileView from "../components/profile/RegisteredProfileView";
+import styles from "../components/profile/Profile.module.css";
 
 export default function ProfilePage() {
 	const { isGuest } = useAuthStore();
@@ -12,8 +13,9 @@ export default function ProfilePage() {
 
 	if (loading) {
 		return (
-			<div className="flex justify-center items-center h-[60vh]">
-				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+			<div className={styles.loadingWrapper}>
+				<div className={styles.loadingSpinner} />
+				<span className={styles.loadingText}>Cargando perfil...</span>
 			</div>
 		);
 	}
