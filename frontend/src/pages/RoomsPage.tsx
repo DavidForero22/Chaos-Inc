@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useLobby } from "../hooks/useLobby";
-import RoomList from "../components/lobby/RoomList";
-import CreateRoomModal from "../components/lobby/CreateRoomModal";
+import RoomList from "../components/rooms/RoomList";
+import CreateRoomModal from "../components/rooms/CreateRoomModal";
 import GuestNameModal from "../components/lobby/GuestNameModal";
 import styles from "./RoomsPage.module.css";
 
