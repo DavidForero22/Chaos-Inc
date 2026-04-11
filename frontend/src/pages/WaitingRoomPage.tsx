@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../hooks/room/useRoom.ts";
 import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { FaShareAlt, FaCheck } from "react-icons/fa";
 
 import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
 import BoardPlayerList from "../components/lobby/BoardPlayerList.tsx";
@@ -30,6 +31,9 @@ export default function WaitingRoomPage() {
 
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
+	// --- ESTADO PARA EL FEEDBACK DE COPIA ---
+	const [copied, setCopied] = useState(false);
+
 	const missingPlayers = 3 - (room?.players.length || 0);
 	const isOwner = room?.owner_name === myPlayerName;
 
@@ -54,6 +58,17 @@ export default function WaitingRoomPage() {
 			await kickPlayer(playerToKick);
 		} finally {
 			stopLoading();
+		}
+	};
+
+	// --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
+	const handleShare = async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch (err) {
+			console.error("No se pudo copiar el enlace", err);
 		}
 	};
 
@@ -128,9 +143,30 @@ export default function WaitingRoomPage() {
 			<h1 className={`${styles.title} ${styles.markerBlack}`}>
 				SALA: <span className={styles.markerBlue}>{room.name}</span>
 			</h1>
-			<p className={`${styles.subtitle} ${styles.markerBlack}`}>
-				CÓDIGO DE INVITACIÓN: <span className={styles.markerRed}>{id}</span>
-			</p>
+
+			{/* --- BOTÓN DE COMPARTIR --- */}
+			<div className="flex justify-center mb-10 mt-4">
+				<button
+					onClick={handleShare}
+					className={`${styles.markerBlack} flex items-center gap-3 px-4 py-2 border-2 border-dashed border-gray-400 rounded hover:bg-gray-100 transition-colors`}
+					title="Copiar enlace de la sala"
+				>
+					<span className={styles.subtitle} style={{ marginBottom: 0 }}>
+						CÓDIGO: <span className={styles.markerRed}>{id}</span>
+					</span>
+
+					{/* Feedback visual interactivo */}
+					{copied ? (
+						<span className="flex items-center gap-1 text-green-600 text-sm font-bold">
+							<FaCheck /> ¡Copiado!
+						</span>
+					) : (
+						<span className="flex items-center gap-1 text-gray-500 text-sm hover:text-blue-600 transition-colors">
+							<FaShareAlt /> Compartir
+						</span>
+					)}
+				</button>
+			</div>
 
 			<div className="flex justify-between items-end mb-2">
 				<h3
@@ -166,6 +202,13 @@ export default function WaitingRoomPage() {
 					onClick={startGame}
 					disabled={missingPlayers > 0 || !isOwner}
 					className={`${styles.btnBase} ${styles.btnStart}`}
+					title={
+						!isOwner
+							? "Solo el Jefe tiene permisos para iniciar la partida"
+							: missingPlayers > 0
+								? `Faltan ${missingPlayers} para poder empezar la partida`
+								: "Comenzar la partida"
+					}
 				>
 					{missingPlayers > 0
 						? missingPlayers === 1

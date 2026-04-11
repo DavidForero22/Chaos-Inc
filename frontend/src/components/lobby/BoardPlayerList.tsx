@@ -38,9 +38,9 @@ export default function BoardPlayerList({
 						<button
 							onClick={() => onKickClick(player)}
 							className={styles.btnErase}
-							title="Borrar de la pizarra"
+							title={"Expulsar a " + player}
 						>
-							Borrar
+							Expulsar
 						</button>
 					)}
 				</div>

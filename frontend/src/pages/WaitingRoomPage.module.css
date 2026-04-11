@@ -9,6 +9,9 @@
 .markerBlack {
 	color: #1e293b;
 	text-shadow: 0.5px 0.5px 1px rgba(30, 41, 59, 0.2);
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
 }
 .markerBlue {
 	color: #2563eb;
