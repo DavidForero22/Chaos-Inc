@@ -1,3 +1,5 @@
+// src/components/admin/RoomsTab.tsx
+
 import type { RoomRecord } from "../../types/api.ts";
 
 interface Props {
@@ -6,38 +8,51 @@ interface Props {
 
 export default function RoomsTab({ rooms }: Props) {
 	return (
-		<div className="bg-gray-800 rounded-xl border border-gray-700 p-6 flex flex-col gap-3">
-			<h2 className="text-sm text-gray-400 uppercase font-bold mb-2">
-				Salas activas
-			</h2>
+		<div className="flex flex-col gap-2">
+			<h3 className="font-bold text-lg underline decoration-2 uppercase mb-4">
+				Salas de Reuniones Activas
+			</h3>
+
 			{rooms.length === 0 ? (
-				<p className="text-gray-500 text-sm">No hay salas activas.</p>
+				<p className="opacity-70 italic text-sm">
+					Todas las salas están vacías actualmente.
+				</p>
 			) : (
 				rooms.map((r) => (
 					<div
 						key={r.room_id}
-						className="bg-gray-900 rounded-lg border border-gray-700 p-4"
+						className="py-4 border-b border-dashed border-gray-400/50"
 					>
-						<div className="flex justify-between items-center">
+						<div className="flex justify-between items-start">
 							<div>
-								<p className="text-white font-bold">
+								<p className="font-bold text-lg flex items-center gap-3">
 									{r.name}
 									<span
-										className={`ml-2 text-xs px-2 py-0.5 rounded ${r.status === "in_game" ? "bg-green-900 text-green-400" : "bg-yellow-900 text-yellow-400"}`}
+										className={`text-xs px-2 py-0.5 border ${
+											r.status === "in_game"
+												? "border-blue-700 text-blue-700 bg-blue-100/50"
+												: "border-yellow-600 text-yellow-700 bg-yellow-100/50"
+										}`}
 									>
-										{r.status === "in_game" ? "En partida" : "Esperando"}
+										{r.status === "in_game" ? "EN CURSO" : "ESPERANDO"}
 									</span>
 								</p>
-								<p className="text-gray-500 text-xs">
-									ID: {r.room_id} · Owner: {r.owner_name} · {r.players.length}/
-									{r.max_players} jugadores
+								<p className="text-sm opacity-70 mt-1">
+									<span className="font-bold">ID:</span> {r.room_id}{" "}
+									<span className="mx-2">|</span>
+									<span className="font-bold">Jefe:</span> {r.owner_name}{" "}
+									<span className="mx-2">|</span>
+									<span className="font-bold">Aforo:</span> {r.players.length}/
+									{r.max_players}
 								</p>
 							</div>
-							<div className="flex flex-wrap gap-1">
+
+							{/* Lista de asistentes de la sala */}
+							<div className="flex flex-wrap justify-end gap-2 max-w-50">
 								{r.players.map((p) => (
 									<span
 										key={p}
-										className="text-xs bg-gray-800 border border-gray-700 px-2 py-0.5 rounded text-gray-300"
+										className="text-xs bg-gray-200 border border-gray-400 px-2 py-0.5 rounded-sm font-bold opacity-80"
 									>
 										{p}
 									</span>

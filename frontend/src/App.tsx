@@ -42,12 +42,12 @@ function App() {
 					<Route path="/profile" element={<ProfilePage />} />
 					<Route path="/how-to-play" element={<HowToPlayPage />} />
 					<Route path="/know-more" element={<KnowMorePage />} />
+					<Route path="/admin" element={<AdminPage />} />
 				</Route>
 
 				{/* ── Rutas con diseño propio ── */}
 				<Route path="/room/:id" element={<WaitingRoomPage />} />
 				<Route path="/game/:id" element={<GameBoardPage />} />
-				<Route path="/admin" element={<AdminPage />} />
 				<Route path="/room-not-found" element={<RoomNotFoundPage />} />
 			</Routes>
 

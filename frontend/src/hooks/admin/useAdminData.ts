@@ -1,4 +1,4 @@
-// useAdminData.ts
+// src/hooks/admin/useAdminData.ts
 
 import api from "../../api/axios.ts";
 
@@ -17,10 +17,11 @@ export function useAdminData() {
 	const fetchAll = useCallback(async () => {
 		setLoading(true);
 		try {
+			// Aplicamos el "hideLoader: true" a las 3 peticiones simultáneas
 			const [usersRes, gamesRes, roomsRes] = await Promise.all([
-				api.get("/users"),
-				api.get("/games"),
-				api.get("/rooms"),
+				api.get("/users", { hideLoader: true } as any),
+				api.get("/games", { hideLoader: true } as any),
+				api.get("/rooms", { hideLoader: true } as any),
 			]);
 			setUsers(usersRes.data.data ?? usersRes.data);
 			setGames(gamesRes.data.data ?? gamesRes.data);
