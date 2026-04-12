@@ -5,6 +5,7 @@ import type { UserRecord } from "../../types/api.ts";
 
 interface Props {
 	users: UserRecord[];
+	currentUser?: string | null; // Añadimos la prop opcional
 	onDelete: (id: number) => Promise<void>;
 	onUpdate: (
 		id: number,
@@ -20,6 +21,7 @@ interface Props {
 
 export default function UsersTab({
 	users,
+	currentUser,
 	onDelete,
 	onUpdate,
 	onCreate,
@@ -151,99 +153,117 @@ export default function UsersTab({
 
 			{/* Listado de Usuarios */}
 			<div className="flex flex-col">
-				{users.map((u) => (
-					<div
-						key={u.id}
-						className="py-4 border-b border-dashed border-gray-400/50"
-					>
-						{editingId === u.id ? (
-							<div className="flex flex-wrap gap-4 items-end bg-gray-400/10 p-3 -mx-3 rounded">
-								<input
-									className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
-									value={editData.username}
-									onChange={(e) =>
-										setEditData({ ...editData, username: e.target.value })
-									}
-								/>
-								<input
-									className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
-									value={editData.email}
-									onChange={(e) =>
-										setEditData({ ...editData, email: e.target.value })
-									}
-								/>
-								<select
-									className="w-24 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none"
-									value={editData.role}
-									onChange={(e) =>
-										setEditData({ ...editData, role: e.target.value })
-									}
-								>
-									<option value="user">user</option>
-									<option value="admin">admin</option>
-								</select>
-								<div className="flex gap-2">
-									<button
-										onClick={() => handleSave(u.id)}
-										className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase"
+				{users.map((u) => {
+					const isMe = u.username === currentUser;
+
+					return (
+						<div
+							key={u.id}
+							className="py-4 border-b border-dashed border-gray-400/50"
+						>
+							{editingId === u.id ? (
+								<div className="flex flex-wrap gap-4 items-end bg-gray-400/10 p-3 -mx-3 rounded">
+									<input
+										className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
+										value={editData.username}
+										onChange={(e) =>
+											setEditData({ ...editData, username: e.target.value })
+										}
+									/>
+									<input
+										className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
+										value={editData.email}
+										onChange={(e) =>
+											setEditData({ ...editData, email: e.target.value })
+										}
+									/>
+									<select
+										className="w-24 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none"
+										value={editData.role}
+										onChange={(e) =>
+											setEditData({ ...editData, role: e.target.value })
+										}
 									>
-										Guardar
-									</button>
-									<button
-										onClick={() => setEditingId(null)}
-										className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase"
-									>
-										Cancelar
-									</button>
-								</div>
-							</div>
-						) : (
-							<div className="flex justify-between items-center">
-								<div>
-									<p className="font-bold text-lg">
-										{u.username}
-										<span
-											className={`ml-3 text-xs px-2 py-0.5 border ${
-												u.role === "admin"
-													? "border-red-700 text-red-700 bg-red-100/50"
-													: "border-blue-700 text-blue-700 bg-blue-100/50"
-											}`}
+										<option value="user">user</option>
+										<option value="admin">admin</option>
+									</select>
+									<div className="flex gap-2">
+										<button
+											onClick={() => handleSave(u.id)}
+											className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase"
 										>
-											{u.role.toUpperCase()}
-										</span>
-									</p>
-									<p className="text-sm opacity-70 mt-1">
-										<span className="font-bold">Email:</span> {u.email}{" "}
-										<span className="mx-2">|</span>{" "}
-										<span className="font-bold">Alta:</span>{" "}
-										{new Date(u.joinedAt).toLocaleDateString("es-ES")}
-									</p>
+											Guardar
+										</button>
+										<button
+											onClick={() => setEditingId(null)}
+											className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase"
+										>
+											Cancelar
+										</button>
+									</div>
 								</div>
-								<div className="flex gap-3">
-									<button
-										onClick={() => {
-											setEditingId(u.id);
-											setEditData({
-												username: u.username,
-												email: u.email,
-												role: u.role,
-											});
-										}}
-										className="text-sm font-bold text-blue-700 hover:underline"
-									>
-										EDITAR
-									</button>
-									<button
-										onClick={() => handleDelete(u.id)}
-										className="text-sm font-bold text-red-700 hover:underline"
-									>
-										DESPEDIR
-									</button>
+							) : (
+								<div className="flex justify-between items-center">
+									<div>
+										<p className="font-bold text-lg flex items-center">
+											{u.username}
+											{isMe && (
+												<span className="ml-2 text-xs text-[#295c60] italic">
+													(TÚ)
+												</span>
+											)}
+											<span
+												className={`ml-3 text-xs px-2 py-0.5 border ${
+													u.role === "admin"
+														? "border-red-700 text-red-700 bg-red-100/50"
+														: "border-blue-700 text-blue-700 bg-blue-100/50"
+												}`}
+											>
+												{u.role.toUpperCase()}
+											</span>
+										</p>
+										<p className="text-sm opacity-70 mt-1">
+											<span className="font-bold">Email:</span> {u.email}{" "}
+											<span className="mx-2">|</span>{" "}
+											<span className="font-bold">Alta:</span>{" "}
+											{new Date(u.joinedAt).toLocaleDateString("es-ES")}
+										</p>
+									</div>
+									<div className="flex gap-3 items-center">
+										{/* Condicional de seguridad visual */}
+										{isMe ? (
+											<span className="text-xs font-bold text-gray-500 opacity-60 italic tracking-widest">
+												[SESIÓN ACTIVA - INMODIFICABLE]
+											</span>
+										) : (
+											<>
+												<button
+													onClick={() => {
+														setEditingId(u.id);
+														setEditData({
+															username: u.username,
+															email: u.email,
+															role: u.role,
+														});
+													}}
+													className="text-sm font-bold text-blue-700 hover:underline"
+												>
+													EDITAR
+												</button>
+												<button
+													onClick={() => handleDelete(u.id)}
+													className="text-sm font-bold text-red-700 hover:underline"
+												>
+													DESPEDIR
+												</button>
+											</>
+										)}
+									</div>
 								</div>
-							</div>
-						)}
-					</div>
-				))}
+							)}
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);

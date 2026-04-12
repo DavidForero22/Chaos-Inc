@@ -12,7 +12,7 @@ import RoomsTab from "../components/admin/RoomsTab.tsx";
 type Tab = "users" | "games" | "rooms";
 
 export default function AdminPage() {
-	const { role, token } = useAuthStore();
+	const { role, token, user } = useAuthStore();
 	const navigate = useNavigate();
 	const [tab, setTab] = useState<Tab>("users");
 
@@ -50,10 +50,10 @@ export default function AdminPage() {
 				className="text-4xl mb-6 font-black uppercase"
 				style={{ color: "var(--color-lomo)" }}
 			>
-				Panel de Dirección
+				Panel de Administración
 			</h1>
 			<h2 className="text-xl mb-6 opacity-80 border-b border-gray-400 pb-2 font-bold">
-				Nivel de Autorización: Máximo
+				Máximo nivel de Autorización
 			</h2>
 
 			{/* Pestañas de Navegación Interna */}
@@ -82,6 +82,7 @@ export default function AdminPage() {
 				{tab === "users" && (
 					<UsersTab
 						users={users}
+						currentUser={user} // Pasamos el usuario actual
 						onDelete={deleteUser}
 						onUpdate={updateUser}
 						onCreate={createUser}
