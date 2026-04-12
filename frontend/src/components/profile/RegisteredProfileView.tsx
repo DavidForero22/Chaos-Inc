@@ -183,13 +183,13 @@ export default function RegisteredProfileView({
 						className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
 						onClick={() => setConfirmDelete(true)}
 					>
-						Solicitar baja de expediente
+						Borrar Cuenta
 					</button>
 				) : (
 					<div className={styles.deleteConfirm}>
 						<p className={styles.deleteConfirmText}>
-							Esta acción es irreversible. El expediente será destruido
-							permanentemente por el comité de sanciones.
+							Esta acción es irreversible. La cuenta será eliminada
+							permanentemente.
 						</p>
 						<div className={styles.deleteConfirmBtns}>
 							<button
@@ -202,7 +202,7 @@ export default function RegisteredProfileView({
 								className={styles.confirmDelete}
 								onClick={onDeleteAccount}
 							>
-								Confirmar baja
+								Confirmar
 							</button>
 						</div>
 					</div>

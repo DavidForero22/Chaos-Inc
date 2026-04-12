@@ -50,7 +50,7 @@
 	box-shadow: 2px -6px 18px rgba(0, 0, 0, 0.3) !important;
 }
 
-.tabHome, .tabRooms, .tabHowTo, .tabKnow, .tabProfile {
+.tabHome, .tabRooms, .tabHowTo, .tabKnow, .tabProfile, .tabAdmin {
 	display: flex;
 	gap: 7px;
 	align-items: center;
@@ -120,7 +120,7 @@
 }
 
 /* Admin link pequeño dentro de la zona de pestañas */
-.adminTab {
+.tabAdmin {
     pointer-events: all;
     white-space: nowrap;
     padding: 8px 14px 18px 14px;
@@ -141,9 +141,4 @@
         padding-bottom 0.2s ease,
         filter 0.2s ease;
     margin-bottom: -2px;
-    
-    /* Le añadimos flex para que el icono del engranaje se alinee bien */
-    display: flex;
-    gap: 5px;
-    align-items: center;
 }

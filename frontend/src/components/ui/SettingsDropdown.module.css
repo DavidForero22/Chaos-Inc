@@ -1,0 +1,33 @@
+/* src/components/ui/SettingsDropdown.module.css */
+
+.settingsDropdown {
+	margin-top: 0.5rem;
+	background-color: #e5e7e4;
+	border: 2px solid var(--nb-lomo);
+	border-radius: 4px;
+	box-shadow: 4px 4px 0 rgba(57, 62, 66, 0.15);
+	padding: 0.75rem 1rem;
+	min-width: 180px;
+	font-family: "Courier New", Courier, monospace;
+	color: var(--nb-texto);
+	position: absolute; /* Importante para que flote debajo del botón */
+	top: 100%;
+	right: 0;
+}
+
+.dropdownSection {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	padding-bottom: 0.5rem;
+	margin-bottom: 0.5rem;
+	border-bottom: 1px dashed rgba(57, 62, 66, 0.3);
+}
+
+.dropdownLabel {
+	font-size: 0.7rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	opacity: 0.7;
+}

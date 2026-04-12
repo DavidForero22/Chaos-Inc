@@ -7,7 +7,7 @@ import LoginModal from "./AuthModal/LoginModal";
 import RegisterModal from "./AuthModal/RegisterModal";
 import styles from "./Navbar.module.css";
 
-import { FaRegUser, FaQuestion, FaBook } from "react-icons/fa";
+import { FaRegUser, FaQuestion, FaBook, FaFolder } from "react-icons/fa";
 import { IoHome, IoGameController } from "react-icons/io5";
 
 export default function Navbar() {
@@ -25,22 +25,39 @@ export default function Navbar() {
 		<>
 			<div className={styles.bookmarksContainer}>
 				{/* ── Pestañas de navegación principales ── */}
-				<NavLink to="/" end className={tabClass(styles.tabHome)} title="Página de Inicio">
+				<NavLink
+					to="/"
+					end
+					className={tabClass(styles.tabHome)}
+					title="Página de Inicio"
+				>
 					<IoHome />
 					Inicio
 				</NavLink>
 
-				<NavLink to="/rooms" className={tabClass(styles.tabRooms)} title="Salas Áctivas">
+				<NavLink
+					to="/rooms"
+					className={tabClass(styles.tabRooms)}
+					title="Salas Áctivas"
+				>
 					<IoGameController />
 					Salas
 				</NavLink>
 
-				<NavLink to="/how-to-play" className={tabClass(styles.tabHowTo)} title="Guía del Juego">
+				<NavLink
+					to="/how-to-play"
+					className={tabClass(styles.tabHowTo)}
+					title="Guía del Juego"
+				>
 					<FaBook />
 					Cómo Jugar
 				</NavLink>
 
-				<NavLink to="/know-more" className={tabClass(styles.tabKnow)} title="Información del Proyecto">
+				<NavLink
+					to="/know-more"
+					className={tabClass(styles.tabKnow)}
+					title="Información del Proyecto"
+				>
 					<FaQuestion />
 					Saber Más
 				</NavLink>
@@ -52,10 +69,11 @@ export default function Navbar() {
 						{role === "admin" && !isGuest && (
 							<NavLink
 								to="/admin"
-								className={tabClass(styles.adminTab)}
+								className={tabClass(styles.tabAdmin)}
 								title="Panel de Administración"
 							>
-								⚙ Admin
+								<FaFolder />
+								Admin
 							</NavLink>
 						)}
 
