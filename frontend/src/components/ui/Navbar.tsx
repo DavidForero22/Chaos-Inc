@@ -25,29 +25,29 @@ export default function Navbar() {
 		<>
 			<div className={styles.bookmarksContainer}>
 				{/* ── Pestañas de navegación principales ── */}
-				<NavLink to="/" end className={tabClass(styles.tabHome)}>
+				<NavLink to="/" end className={tabClass(styles.tabHome)} title="Página de Inicio">
 					<IoHome />
 					Inicio
 				</NavLink>
 
-				<NavLink to="/rooms" className={tabClass(styles.tabRooms)}>
+				<NavLink to="/rooms" className={tabClass(styles.tabRooms)} title="Salas Áctivas">
 					<IoGameController />
 					Salas
 				</NavLink>
 
-				<NavLink to="/how-to-play" className={tabClass(styles.tabHowTo)}>
+				<NavLink to="/how-to-play" className={tabClass(styles.tabHowTo)} title="Guía del Juego">
 					<FaBook />
 					Cómo Jugar
 				</NavLink>
 
-				<NavLink to="/know-more" className={tabClass(styles.tabKnow)}>
+				<NavLink to="/know-more" className={tabClass(styles.tabKnow)} title="Información del Proyecto">
 					<FaQuestion />
 					Saber Más
 				</NavLink>
 
 				{/* ── Zona derecha: Perfil o acceso ── */}
 				{user ? (
-					<>
+					<div className={styles.userGroup}>
 						{/* Admin si aplica */}
 						{role === "admin" && !isGuest && (
 							<NavLink
@@ -63,13 +63,12 @@ export default function Navbar() {
 						<NavLink
 							to="/profile"
 							className={tabClass(styles.tabProfile)}
-							title={isGuest ? "Expediente (Invitado)" : "Mi Expediente"}
+							title={isGuest ? "Mi Perfil (Invitado)" : "Mi Perfil"}
 						>
 							<FaRegUser />
-
 							{isGuest ? "Invitado" : "Perfil"}
 						</NavLink>
-					</>
+					</div>
 				) : (
 					/* Sin sesión: dos pestañas de acceso */
 					<div className={styles.authGroup}>
