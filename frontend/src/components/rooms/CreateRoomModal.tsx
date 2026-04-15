@@ -103,7 +103,7 @@ export default function CreateRoomModal({
 								fontWeight: "bold",
 							}}
 						>
-							Requiere Autorización (Sala Privada)
+							Sala Privada
 						</span>
 					</label>
 

@@ -10,12 +10,12 @@ export default function RoomsTab({ rooms }: Props) {
 	return (
 		<div className="flex flex-col gap-2">
 			<h3 className="font-bold text-lg underline decoration-2 uppercase mb-4">
-				Salas de Reuniones Activas
+				Salas de Juego Activas
 			</h3>
 
 			{rooms.length === 0 ? (
 				<p className="opacity-70 italic text-sm">
-					Todas las salas están vacías actualmente.
+					No hay salas actualmente.
 				</p>
 			) : (
 				rooms.map((r) => (

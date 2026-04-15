@@ -254,7 +254,7 @@ export default function UsersTab({
 													onClick={() => handleDelete(u.id)}
 													className="text-sm font-bold text-red-700 hover:underline"
 												>
-													DESPEDIR
+													ELIMINAR
 												</button>
 											</>
 										)}
