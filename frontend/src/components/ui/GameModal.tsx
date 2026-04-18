@@ -20,10 +20,10 @@ export function Modal({ children, maxWidth = "max-w-2xl" }: ModalProps) {
 				}}
 			>
 				{/* Margen rojo vertical clásico */}
-				<div className="absolute top-0 bottom-0 left-[50px] w-[2px] bg-[rgba(220,50,50,0.2)] pointer-events-none" />
+				<div className="absolute top-0 bottom-0 left-12.5 w-0.5 bg-[rgba(220,50,50,0.2)] pointer-events-none" />
 
 				{/* Contenedor principal con padding adaptado al margen */}
-				<div className="relative z-10 p-8 pl-[70px]">{children}</div>
+				<div className="relative z-10 p-8 pl-17.5">{children}</div>
 			</div>
 		</div>
 	);
