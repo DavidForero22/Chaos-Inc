@@ -26,7 +26,7 @@ export interface PlayerPerks {
 	vision_bonus: number;
 	has_distance: boolean;
 	has_storage: boolean;
-	has_luck: boolean
+	has_luck: boolean;
 }
 
 export interface TurnLimits {
@@ -49,6 +49,7 @@ export interface CombatState {
 export interface BasePlayer {
 	name: string;
 	stress: number;
+	max_stress: number;
 	is_dead: boolean;
 	is_online: boolean;
 	conditions: Pick<PlayerConditions, "acting_boss" | "is_blocked">;
@@ -113,7 +114,7 @@ export interface GameData {
 		player_pending_sabotage: string | null;
 
 		turn_timeout: number;
-        turn_expires_at: number;
+		turn_expires_at: number;
 		turn_remaining: number;
 	};
 }

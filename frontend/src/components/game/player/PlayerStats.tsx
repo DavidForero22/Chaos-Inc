@@ -123,18 +123,18 @@ export function PlayerStats({
 
 				{/* Campos */}
 				<div className={styles.formRow}>
-					<span className={styles.formLabel}>Posición</span>
+					<span className={styles.formLabel}>Rol</span>
 					<span className={`${styles.formValue} ${roleConfig.color}`}>
 						{roleConfig.label}
 					</span>
 				</div>
 
 				<div className={styles.formRow}>
-					<span className={styles.formLabel}>Estrés Actual</span>
+					<span className={styles.formLabel}>Estrés</span>
 					<span
 						className={`${styles.formValue} ${me.stress > 0 ? "text-red-600" : ""}`}
 					>
-						{me.stress} / 10
+						{me.stress} / {me.max_stress}
 					</span>
 				</div>
 
