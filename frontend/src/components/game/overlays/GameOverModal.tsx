@@ -1,46 +1,57 @@
 // src/components/game/GameOverModal.tsx
 
-import { Modal } from "../../ui/GameModal.tsx";
+import { createPortal } from "react-dom";
+import styles from "./GameOverModal.module.css";
 
 type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
 type PlayerRole = "boss" | "secretary" | "intern" | "union";
 type ConfigKey = "boss" | "union" | "intern" | "canceled";
 
+// Expandimos la configuración para el diseño de Periódico
 const RESULT_CONFIG: Record<
 	ConfigKey,
 	{
-		emoji: string;
-		title: string;
+		headline: string;
+		image: string;
+		description: string;
 		winners: PlayerRole[];
 	}
 > = {
 	boss: {
-		emoji: "👑",
-		title: "¡El Jefe ha ganado!",
+		headline: "¡LA DIRECCIÓN APLASTA LA REBELIÓN!",
+		image: "/placeholder_news_boss.jpg", // Usa las rutas que tengas preparadas
+		description:
+			"En un giro dramático de los acontecimientos, la cúpula directiva de Chaos Inc. ha logrado desmantelar la célula sindical que operaba en las sombras de la oficina. Se reportan despidos masivos y la instauración de una nueva política de 'cero tolerancia'. El orden corporativo ha sido restaurado.",
 		winners: ["boss", "secretary"],
 	},
 	union: {
-		emoji: "✊",
-		title: "¡El Sindicato ha ganado!",
+		headline: "¡EL SINDICATO TOMA EL CONTROL!",
+		image: "/placeholder_news_union.jpg",
+		description:
+			"Histórico motín en Chaos Inc. Tras una intensa jornada de sabotajes y papeleo extraviado, el Director General ha sido destituido. Las fuerzas sindicales han tomado las riendas de la compañía prometiendo máquinas de café gratuitas y el fin de las horas extra obligatorias.",
 		winners: ["union"],
 	},
 	intern: {
-		emoji: "🎓",
-		title: "¡El Becario ha ganado!",
+		headline: "¡UN BECARIO SE CORONA COMO CEO!",
+		image: "/placeholder_news_intern.jpg",
+		description:
+			"Lo que parecía una jornada de fotocopias rutinaria ha terminado con el ascenso más meteórico de la historia corporativa. Aprovechando el fuego cruzado entre la directiva y los sindicatos, un empleado en prácticas no remunerado ha usurpado el puesto de máxima autoridad.",
 		winners: ["intern"],
 	},
 	canceled: {
-		emoji: "🚫",
-		title: "Partida cancelada",
+		headline: "CIERRE PATRONAL INDEFINIDO",
+		image: "/placeholder_news_canceled.jpg",
+		description:
+			"Las autoridades han clausurado el edificio. Múltiples abandonos en puestos clave han provocado el colapso organizativo de Chaos Inc. La partida ha sido anulada por incomparecencia de los trabajadores. No hay vencedores, solo papeleo sin rellenar.",
 		winners: [],
 	},
 };
 
 const ROLE_LABELS: Record<PlayerRole, string> = {
-	boss: "👑 Jefe",
-	secretary: "📋 Secretario",
-	intern: "🎓 Becario",
-	union: "✊ Sindicalista",
+	boss: "Director General",
+	secretary: "Secretariado",
+	intern: "Becario",
+	union: "Enlace Sindical",
 };
 
 interface GameOverModalProps {
@@ -54,57 +65,87 @@ export function GameOverModal({
 	myRole,
 	onClose,
 }: GameOverModalProps) {
+	// Resolver configuración
 	const configKey: ConfigKey =
 		winnerRole === "canceled" || !winnerRole ? "canceled" : winnerRole;
 	const config = RESULT_CONFIG[configKey];
+
+	// Calcular estados
 	const iWon = config.winners.includes(myRole);
 	const isCancelled = configKey === "canceled";
 
-	return (
-		<Modal>
-			<div className="text-6xl mb-4">{config.emoji}</div>
-			<h2 className="text-3xl font-black text-white mb-2">{config.title}</h2>
+	// Obtener la fecha actual para el periódico
+	const today = new Date().toLocaleDateString("es-ES", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
 
-			{isCancelled ? (
-				<p className="text-gray-400 text-sm mb-6">
-					La partida no ha podido continuar y no se ha registrado ningún
-					resultado.
-				</p>
-			) : (
-				<>
+	return createPortal(
+		<div className={styles.overlay}>
+			{/* EL PERIÓDICO */}
+			<div className={styles.newspaper}>
+				{/* Cabecera del Periódico */}
+				<div className={styles.masthead}>
+					<h1 className={styles.newspaperName}>The Chaos Chronicle</h1>
+				</div>
+				<div className={styles.subhead}>
+					<span>Edición Especial de Cierre</span>
+					<span>{today}</span>
+					<span>GRATUITO</span>
+				</div>
+
+				{/* Titular Principal */}
+				<h2 className={styles.headline}>{config.headline}</h2>
+
+				{/* Gran Imagen Central */}
+				<div className={styles.photoWrapper}>
+					<img
+						src={config.image}
+						alt="Foto del evento"
+						className={styles.photoImage}
+						onError={(e) => {
+							e.currentTarget.style.display = "none";
+						}}
+					/>
+				</div>
+
+				{/* Sello de Resultado Personal (Si no ha sido cancelada) */}
+				{!isCancelled && (
 					<div
-						className={`inline-block px-4 py-2 rounded-full font-bold text-sm mb-6 ${
-							iWon
-								? "bg-green-900/50 text-green-400 border border-green-600"
-								: "bg-red-900/50 text-red-400 border border-red-600"
-						}`}
+						className={`${styles.resultStamp} ${iWon ? styles.stampWon : styles.stampLost}`}
 					>
-						{iWon ? "🏆 ¡Has ganado!" : "💀 Has perdido"}
+						{iWon ? "ASCENDIDO" : "DESPEDIDO"}
 					</div>
-					<div className="bg-gray-900 rounded-lg p-4 border border-gray-700 mb-6">
-						<p className="text-xs text-gray-500 uppercase font-bold mb-2">
-							Ganadores
-						</p>
-						<div className="flex justify-center gap-2 flex-wrap">
-							{config.winners.map((role: PlayerRole) => (
-								<span
-									key={role}
-									className="text-sm text-gray-300 font-semibold"
-								>
-									{ROLE_LABELS[role]}
-								</span>
-							))}
-						</div>
-					</div>
-				</>
-			)}
+				)}
 
-			<button
-				onClick={onClose}
-				className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg transition"
-			>
-				Volver al menú
-			</button>
-		</Modal>
+				{/* Cuerpo de la Noticia */}
+				<div className={styles.articleBody}>
+					<p>
+						<strong>MADRID —</strong> {config.description}
+					</p>
+
+					{!isCancelled && (
+						<div className="mt-6 border-t-2 border-black pt-4">
+							<strong>FACCIONES VICTORIOSAS RECONOCIDAS:</strong>
+							<ul className="list-disc pl-5 mt-2">
+								{config.winners.map((role) => (
+									<li key={role} className="font-bold">
+										{ROLE_LABELS[role]}
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
+				</div>
+
+				{/* Botón Inferior para volver (Como un anuncio en el periódico) */}
+				<button onClick={onClose} className={styles.exitButton}>
+					Volver a Recepción (Menú Principal)
+				</button>
+			</div>
+		</div>,
+		document.body,
 	);
 }

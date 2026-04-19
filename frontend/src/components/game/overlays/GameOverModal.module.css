@@ -1,0 +1,188 @@
+/* src/components/game/GameOverModal.module.css */
+
+.overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 100;
+	background-color: rgba(0, 0, 0, 0.75);
+	backdrop-filter: blur(5px);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 24px;
+	animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* --- EL PERIÓDICO --- */
+.newspaper {
+	background-color: #f4f0e6; /* Color de papel envejecido */
+	color: #1a1a1a;
+	width: 100%;
+	max-width: 800px;
+	max-height: 95vh;
+	padding: 32px 40px;
+	box-shadow:
+		0 25px 50px -12px rgba(0, 0, 0, 0.8),
+		inset 0 0 40px rgba(0, 0, 0, 0.05);
+	/* Textura de papel reciclado/prensa */
+	background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
+	overflow-y: auto;
+	position: relative;
+	/* Tirado de forma caótica en la mesa */
+	transform: rotate(1deg);
+	animation: dropPaper 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* Ocultar barra de scroll para que no rompa la ilusión del papel */
+.newspaper::-webkit-scrollbar {
+	width: 0px;
+}
+
+@keyframes dropPaper {
+	from {
+		opacity: 0;
+		transform: scale(1.5) rotate(-5deg) translateY(-50px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) rotate(1deg) translateY(0);
+	}
+}
+
+/* --- CABECERA (Masthead) --- */
+.masthead {
+	text-align: center;
+	border-bottom: 4px solid #1a1a1a;
+	margin-bottom: 8px;
+	padding-bottom: 8px;
+}
+
+.newspaperName {
+	font-family: "Times New Roman", Times, serif;
+	font-size: 3.5rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: -2px;
+	line-height: 1;
+	margin: 0;
+}
+
+.subhead {
+	display: flex;
+	justify-content: space-between;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	border-bottom: 2px solid #1a1a1a;
+	padding-bottom: 4px;
+	margin-bottom: 24px;
+}
+
+/* --- TITULAR Y FOTO --- */
+.headline {
+	font-family: "Impact", "Arial Black", sans-serif;
+	font-size: 3.5rem;
+	line-height: 1.1;
+	text-transform: uppercase;
+	text-align: center;
+	margin-bottom: 24px;
+	color: #000;
+}
+
+.photoWrapper {
+	width: 100%;
+	border: 2px solid #1a1a1a;
+	padding: 4px;
+	background-color: #fff;
+	margin-bottom: 24px;
+	/* Efecto de foto impresa de periódico viejo */
+	filter: grayscale(100%) contrast(120%) brightness(90%);
+}
+
+.photoImage {
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	object-fit: cover;
+	display: block;
+	background-color: #ccc; /* Por si falla la imagen */
+}
+
+/* --- CUERPO DE LA NOTICIA (Columnas) --- */
+.articleBody {
+	font-family: "Times New Roman", Times, serif;
+	font-size: 1.1rem;
+	line-height: 1.5;
+	text-align: justify;
+	margin-bottom: 32px;
+}
+
+/* En pantallas grandes lo partimos en 2 columnas estilo periódico */
+@media (min-width: 640px) {
+	.articleBody {
+		column-count: 2;
+		column-gap: 32px;
+	}
+}
+
+/* --- SELLO DE RESULTADO --- */
+.resultStamp {
+	position: absolute;
+	top: 250px;
+	left: 50%;
+	transform: translate(-50%, -50%) rotate(-15deg);
+	font-family: "Courier New", Courier, monospace;
+	font-size: 5rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	border: 8px solid;
+	padding: 8px 32px;
+	border-radius: 12px;
+	pointer-events: none;
+	mix-blend-mode: multiply;
+	z-index: 10;
+	box-shadow:
+		inset 0 0 4px currentColor,
+		0 0 4px currentColor;
+	opacity: 0.85;
+}
+
+.stampWon {
+	color: #166534; /* Verde oscuro tinta */
+	border-color: #166534;
+}
+
+.stampLost {
+	color: #991b1b; /* Rojo oscuro tinta */
+	border-color: #991b1b;
+}
+
+/* --- BOTÓN DE SALIDA --- */
+.exitButton {
+	display: block;
+	width: 100%;
+	background-color: #1a1a1a;
+	color: #f4f0e6;
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 1.2rem;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	padding: 16px;
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.exitButton:hover {
+	background-color: #333;
+}
