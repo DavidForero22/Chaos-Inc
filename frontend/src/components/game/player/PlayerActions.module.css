@@ -1,0 +1,84 @@
+/* src/components/game/player/PlayerActions.module.css */
+
+/* --- CINTA DYMO (Contador de cartas) --- */
+.dymoTape {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: bold;
+	font-size: 0.85rem;
+	color: #f3f4f6;
+	background-color: #1a1a1a;
+	padding: 4px 12px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	/* Relieve de plástico y sombra */
+	box-shadow:
+		2px 2px 0px rgba(0, 0, 0, 0.5),
+		inset 1px 1px 2px rgba(255, 255, 255, 0.2);
+	border: 1px solid #000;
+	transform: rotate(-1deg);
+	display: inline-block;
+	user-select: none;
+}
+
+.dymoTapeRed {
+	background-color: #8b0000;
+	border-color: #4a0000;
+}
+
+/* --- TINTA DE SELLO (Botones) --- */
+.inkStamp {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 0.9rem;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	padding: 6px 16px;
+	background: transparent;
+	border: 3px solid;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.1s ease-out;
+	opacity: 0.8; 
+}
+
+/* Al pasar el ratón se oscurece, y al hacer clic se "estampa" hundiéndose */
+.inkStamp:hover:not(.stampDisabled) {
+	opacity: 1;
+}
+.inkStamp:active:not(.stampDisabled) {
+	transform: scale(0.92);
+	opacity: 1;
+}
+
+/* Colores para las distintas acciones */
+.stampRed {
+	color: #dc2626;
+	border-color: #dc2626;
+	transform: rotate(-2deg);
+}
+
+.stampOrange {
+	color: #ea580c;
+	border-color: #ea580c;
+	transform: rotate(2deg);
+}
+
+.stampBlue {
+	color: #2563eb;
+	border-color: #2563eb;
+	transform: rotate(-1deg);
+}
+
+.stampBlack {
+	color: #1f2937;
+	border-color: #1f2937;
+	transform: rotate(1deg);
+}
+
+/* Estado bloqueado */
+.stampDisabled {
+	opacity: 0.3 !important;
+	cursor: not-allowed;
+	filter: grayscale(100%);
+	transform: rotate(0deg);
+}

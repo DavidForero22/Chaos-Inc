@@ -5,99 +5,99 @@ import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
 import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts";
 import type { CardInstance } from "../../../types/live-game.ts";
+import styles from "./PlayerHand.module.css";
 
 export function PlayerHand() {
-	const { myPlayerName } = usePlayerIdentity();
+    const { myPlayerName } = usePlayerIdentity();
 
-	// --- ESTADO GLOBAL Y UI ---
-	const gameData = useGameStore((state) => state.gameData);
-	const reactToAttack = useGameStore((state) => state.reactToAttack);
-	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-	const isActionLocked = useGameStore((state) => state.isActionLocked);
+    // --- ESTADO GLOBAL Y UI ---
+    const gameData = useGameStore((state) => state.gameData);
+    const reactToAttack = useGameStore((state) => state.reactToAttack);
+    const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+    const isActionLocked = useGameStore((state) => state.isActionLocked);
 
-	const {
-		isDiscardMode,
-		cardsToDiscard,
-		toggleDiscardCard,
-		selectedCardId,
-		setSelectedCardId,
-	} = useGameUIStore();
+    const {
+        isDiscardMode,
+        cardsToDiscard,
+        toggleDiscardCard,
+        selectedCardId,
+        setSelectedCardId,
+    } = useGameUIStore();
 
-	// Hook inteligente que dice si las cartas se pueden jugar o no
-	const { evaluateCard, globalConditions } = useCardPlayability(
-		gameData!,
-		myPlayerName!,
-		isDiscardMode,
-	);
+    const { evaluateCard, globalConditions } = useCardPlayability(
+        gameData!,
+        myPlayerName!,
+        isDiscardMode,
+    );
 
-	if (!gameData || !myPlayerName) return null;
-	const { me } = gameData;
+    if (!gameData || !myPlayerName) return null;
+    const { me } = gameData;
 
-	// --- MANEJADOR DE CLIC CENTRALIZADO ---
-	const handleCardClick = (card: CardInstance) => {
-		if (isActionLocked) return;
+    // --- MANEJADOR DE CLIC CENTRALIZADO ---
+    const handleCardClick = (card: CardInstance) => {
+        if (isActionLocked) return;
 
-		if (isDiscardMode) {
-			const maxCards = me.conditions.must_discard ? 1 : undefined;
-			toggleDiscardCard(card.id, maxCards);
-			return;
-		}
+        if (isDiscardMode) {
+            const maxCards = me.conditions.must_discard ? 1 : undefined;
+            toggleDiscardCard(card.id, maxCards);
+            return;
+        }
 
-		const {
-			hasPendingMultiAttack,
-			isMyTurn,
-			hasLuckChallenge,
-			isAttackerWaiting,
-		} = globalConditions;
-		const { canUseDodgeNow } = evaluateCard(card);
+        const {
+            hasPendingMultiAttack,
+            isMyTurn,
+            hasLuckChallenge,
+            isAttackerWaiting,
+        } = globalConditions;
+        const { canUseDodgeNow } = evaluateCard(card);
 
-		if (canUseDodgeNow) {
-			if (hasPendingMultiAttack) {
-				reactToMultiAttack("dodge", card.id);
-			} else {
-				reactToAttack("dodge", card.id);
-			}
-			return;
-		}
+        if (canUseDodgeNow) {
+            if (hasPendingMultiAttack) {
+                reactToMultiAttack("dodge", card.id);
+            } else {
+                reactToAttack("dodge", card.id);
+            }
+            return;
+        }
 
-		if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
+        if (!isMyTurn || hasLuckChallenge || isAttackerWaiting) return;
 
-		// Todas las cartas — seleccionar y confirmar con botón
-		setSelectedCardId(selectedCardId === card.id ? null : card.id);
-	};
+        setSelectedCardId(selectedCardId === card.id ? null : card.id);
+    };
 
-	return (
-		<div className="flex-1 min-w-0 border-l border-gray-700 pl-6 flex flex-col">
-			<p className="text-xs text-gray-500 uppercase font-bold mb-3">Tu Mano</p>
+    return (
+        <div className={styles.handContainer}>
+            {/* El contenedor escrolleable y oscuro del bolsillo */}
+            <div className={styles.cardsScrollArea}>
+                {me.cards.length === 0 ? (
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#8a6845] rounded-lg text-[#8a6845] opacity-60 h-30">
+                        <p className="italic text-sm font-bold uppercase tracking-widest">
+                            Bolsillo vacío
+                        </p>
+                    </div>
+                ) : (
+                    me.cards.map((card) => {
+                        const { isSelectable, canUseDodgeNow } = evaluateCard(card);
+                        const isSelected = selectedCardId === card.id;
+                        const isMarkedForDiscard = cardsToDiscard.includes(card.id);
 
-			<div className="w-full flex gap-3 overflow-x-auto no-scrollbar py-2 pt-6 min-h-36">
-				{me.cards.length === 0 ? (
-					<div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-gray-700 rounded-xl text-gray-500 opacity-50">
-						<p className="italic text-sm">Sin cartas en la mano</p>
-					</div>
-				) : (
-					me.cards.map((card) => {
-						const { isSelectable, canUseDodgeNow } = evaluateCard(card);
-						const isSelected = selectedCardId === card.id;
-						const isMarkedForDiscard = cardsToDiscard.includes(card.id);
-
-						return (
-							<Card
-								key={card.id}
-								card={card}
-								isSelectable={isSelectable}
-								isSelected={!isDiscardMode && isSelected}
-								isHighlighted={!isDiscardMode && canUseDodgeNow}
-								isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
-								onClick={() => {
-									if (!isSelectable) return;
-									handleCardClick(card);
-								}}
-							/>
-						);
-					})
-				)}
-			</div>
-		</div>
-	);
+                        return (
+                            <Card
+                                key={card.id}
+                                card={card}
+                                isSelectable={isSelectable}
+                                isSelected={!isDiscardMode && isSelected}
+                                isHighlighted={!isDiscardMode && canUseDodgeNow}
+                                isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
+                                onClick={() => {
+                                    if (!isSelectable) return;
+                                    handleCardClick(card);
+                                }}
+                            />
+                        );
+                    })
+                )}
+            </div>
+        </div>
+    );
 }

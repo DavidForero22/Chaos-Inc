@@ -7,6 +7,7 @@ import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
+import styles from "./PlayerArea.module.css";
 
 interface PlayerAreaProps {
 	turnTimeLeft: number | null;
@@ -42,35 +43,35 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	if (!me) return null;
 
 	return (
-		// Anclado abajo, centrado. Silueta de carpeta abierta.
-		<div className="absolute bottom-2.5 left-1/2 transform -translate-x-1/2 w-[90vw] max-w-5xl h-[35vh] min-h-70 z-40 flex items-end">
-			{/* Silueta de la Carpeta Manila */}
-			<div className="w-full h-full bg-[#c19a6b] rounded-t-xl border-x-4 border-t-4 border-[#8c6b45] shadow-[0_-15px_30px_rgba(0,0,0,0.5)] relative flex items-center px-6 gap-6">
-				{/* Textura de la carpeta */}
-				<div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cardboard.png')] pointer-events-none rounded-t-xl" />
+		<div className={styles.folderWrapper}>
+			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
+			<div className={styles.folderBackground}>
+				<div className={styles.tabRight}></div>
+				<div className={styles.texture} />
+			</div>
 
-				{/* Banner superior (Pegatina o Clip) */}
+			{/* --- CONTENIDO DE LA CARPETA --- */}
+			<div className={styles.contentArea}>
+				{/* Banner superior */}
 				<div className="absolute -top-6 left-8 z-50">
 					<PlayerBanners me={me} />
 				</div>
 
 				{/* 1. Tus Stats (Currículum sobresaliendo) */}
-                <div className="shrink-0 z-10 w-65 h-[99%] -mt-6 transform rotate-2">
-                    <PlayerStats
-                        me={me}
-                        turnTimeLeft={turnTimeLeft}
-                        isTurnPaused={isTurnPaused}
-                    />
-                </div>
-
-				{/* 2. Tu Mano (Centro de la carpeta) */}
-				<div className="flex-1 h-[90%] relative z-10 flex flex-col justify-end pb-4">
-					<PlayerHand />
+				<div className="shrink-0 z-40 w-65 h-[99%] -mt-6 transform rotate-2 relative">
+					<div className="absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2"></div>
+					<PlayerStats
+						me={me}
+						turnTimeLeft={turnTimeLeft}
+						isTurnPaused={isTurnPaused}
+					/>
 				</div>
 
-				{/* 3. Acciones (Sellos a la derecha) */}
-				<div className="shrink-0 z-10 w-37.5 h-[90%] flex flex-col justify-center items-center gap-4">
+				{/* 2 y 3. Acciones y Mano (Centro y Derecha Unificados) */}
+				{/* Ahora están en una sola columna, las acciones ocupan todo el ancho superior */}
+				<div className="flex-1 min-w-0 h-full relative z-20 flex flex-col justify-end pb-2 pt-10">
 					<PlayerActions />
+					<PlayerHand />
 				</div>
 			</div>
 		</div>

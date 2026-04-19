@@ -1,0 +1,72 @@
+/* src/components/game/player/PlayerHand.module.css */
+
+.handContainer {
+	position: relative;
+	width: 100%;
+	/* Color marrón oscuro, plano y sin sombras */
+	background-color: #7a5c3a;
+	border-radius: 8px 8px 4px 4px;
+
+	/* Bordes sutiles para delimitar pero sin dar volumen 3D */
+	border-top: 2px solid #5a4228;
+	border-left: 2px solid #5a4228;
+	border-right: 2px solid #5a4228;
+	border-bottom: 2px solid #5a4228;
+
+	/* overflow: hidden asegura que la barra de scroll y las cartas no salgan del bolsillo */
+	overflow: hidden;
+	height: 180px;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+/* Textura del cartón oscuro para el bolsillo */
+.handContainer::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	opacity: 0.15;
+	background-image: url("https://www.transparenttextures.com/patterns/cardboard.png");
+	pointer-events: none;
+	z-index: 1;
+}
+
+/* Contenedor escrolleable de las cartas */
+.cardsScrollArea {
+	position: relative;
+	z-index: 20;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	gap: 12px;
+	/* Activa el scroll horizontal cuando las cartas superen el ancho del padre */
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 20px 20px 10px 20px;
+}
+
+/* Scrollbar estilizado */
+.cardsScrollArea::-webkit-scrollbar {
+	height: 8px;
+}
+
+.cardsScrollArea::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 4px;
+	margin: 0 10px;
+}
+
+.cardsScrollArea::-webkit-scrollbar-thumb {
+	background: rgba(
+		200,
+		180,
+		150,
+		0.4
+	); /* Scrollbar un poco más claro para que se vea sobre el fondo oscuro */
+	border-radius: 4px;
+}
+
+.cardsScrollArea::-webkit-scrollbar-thumb:hover {
+	background: rgba(200, 180, 150, 0.8);
+}

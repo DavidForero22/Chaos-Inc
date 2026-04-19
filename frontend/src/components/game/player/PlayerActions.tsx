@@ -1,5 +1,6 @@
 // frontend/src/components/game/player/PlayerActions.tsx
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
+import styles from "./PlayerActions.module.css";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
@@ -30,106 +31,93 @@ export function PlayerActions() {
 	} = actionLogic;
 
 	return (
-		<div className="ml-auto flex flex-col items-end gap-2 shrink-0">
-			{/* Contador de Cartas */}
+		<div className="w-full flex justify-between items-end mb-4 px-2 shrink-0 z-40">
+			{/* Contador de Cartas (Cinta Dymo) */}
 			<div
-				className={`text-sm font-mono font-bold px-2 py-1 rounded ${
-					isDiscardMode
-						? willBeOverLimit
-							? "bg-red-900/50 text-red-400 border border-red-700"
-							: "bg-green-900/50 text-green-400 border border-green-700"
-						: isOverLimit
-							? "bg-red-900/50 text-red-400 border border-red-700"
-							: "bg-gray-700 text-gray-300"
+				className={`${styles.dymoTape} ${
+					(isDiscardMode ? willBeOverLimit : isOverLimit)
+						? styles.dymoTapeRed
+						: ""
 				}`}
+				title="Documentos en posesión"
 			>
-				Cartas: {isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
+				CARTAS: {isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
 				{me!.max_hand_size}
 			</div>
 
-			{/* Botones de Reacción Defensiva */}
-			{me!.combat_state.is_defending_single ? (
-				<button
-					onClick={() => reactToAttack("accept")}
-					disabled={isGlobalLoading}
-					className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
-				>
-					Asumir daño
-				</button>
-			) : hasPendingMultiAttack ? (
-				<button
-					onClick={() => reactToMultiAttack("accept")}
-					disabled={isGlobalLoading}
-					className="px-4 py-2 rounded font-bold text-sm transition bg-red-600 hover:bg-red-500 text-white"
-				>
-					Asumir daño
-				</button>
-			) : (
-				<div className="flex flex-col gap-2 items-end">
-					{/* Botones Modo Descarte */}
-					{isDiscardMode && !me!.conditions.must_discard ? (
-						<button
-							onClick={clearDiscardSelection}
-							disabled={isGlobalLoading}
-							className="px-4 py-2 rounded font-bold text-sm transition bg-orange-600 hover:bg-orange-500 text-white"
-						>
-							Cancelar
-						</button>
-					) : !isDiscardMode ? (
-						<button
-							onClick={() => setIsDiscardMode(true)}
-							disabled={!canDiscard}
-							className={`px-4 py-2 rounded font-bold text-sm transition ${
-								canDiscard
-									? "bg-orange-600 hover:bg-orange-500 text-white"
-									: "bg-gray-700 text-gray-500 cursor-not-allowed"
-							}`}
-						>
-							Descartar
-						</button>
-					) : null}
+			{/* Botones de Reacción Defensiva y Acción (Sellos) */}
+			<div className="flex gap-4 items-center">
+				{me!.combat_state.is_defending_single ? (
+					<button
+						onClick={() => reactToAttack("accept")}
+						disabled={isGlobalLoading}
+						className={`${styles.inkStamp} ${styles.stampRed}`}
+					>
+						ASUMIR DAÑO
+					</button>
+				) : hasPendingMultiAttack ? (
+					<button
+						onClick={() => reactToMultiAttack("accept")}
+						disabled={isGlobalLoading}
+						className={`${styles.inkStamp} ${styles.stampRed}`}
+					>
+						ASUMIR DAÑO
+					</button>
+				) : (
+					<>
+						{/* Botones Modo Descarte */}
+						{isDiscardMode && !me!.conditions.must_discard ? (
+							<button
+								onClick={clearDiscardSelection}
+								disabled={isGlobalLoading}
+								className={`${styles.inkStamp} ${styles.stampOrange}`}
+							>
+								CANCELAR
+							</button>
+						) : !isDiscardMode ? (
+							<button
+								onClick={() => setIsDiscardMode(true)}
+								disabled={!canDiscard}
+								className={`${styles.inkStamp} ${styles.stampOrange} ${!canDiscard ? styles.stampDisabled : ""}`}
+							>
+								DESCARTAR
+							</button>
+						) : null}
 
-					{/* Botón Principal (Confirmar Descarte, Usar carta o Terminar Turno) */}
-					{isDiscardMode ? (
-						<button
-							onClick={handleConfirmDiscard}
-							disabled={isConfirmDisabled}
-							className={`px-4 py-2 rounded font-bold text-sm transition ${
-								!isConfirmDisabled
-									? "bg-red-600 hover:bg-red-500 text-white shadow-[0_0_10px_rgba(220,38,38,0.5)]"
-									: "bg-gray-700 text-gray-500 cursor-not-allowed"
-							}`}
-						>
-							{isConfirmDisabled ? "Descartando..." : "Confirmar Descarte"}
-						</button>
-					) : canUseCard ? (
-						<button
-							onClick={handleUseCard}
-							disabled={!canUseCard}
-							className="px-4 py-2 rounded font-bold text-sm transition bg-blue-600 hover:bg-blue-500 text-white shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-						>
-							Usar carta
-						</button>
-					) : (
-						<button
-							onClick={endTurn}
-							disabled={!canEndTurn}
-							className={`px-4 py-2 rounded font-bold text-sm transition ${
-								canEndTurn
-									? "bg-purple-600 hover:bg-purple-500 text-white"
-									: "bg-gray-700 text-gray-500 cursor-not-allowed"
-							}`}
-							title={
-								isOverLimit
-									? "Debes descartar cartas antes de terminar tu turno"
-									: "Terminar turno"
-							}
-						>
-							Terminar turno
-						</button>
-					)}
-				</div>
-			)}
+						{/* Botón Principal (Confirmar Descarte, Usar carta o Terminar Turno) */}
+						{isDiscardMode ? (
+							<button
+								onClick={handleConfirmDiscard}
+								disabled={isConfirmDisabled}
+								className={`${styles.inkStamp} ${styles.stampRed} ${isConfirmDisabled ? styles.stampDisabled : ""}`}
+							>
+								{isConfirmDisabled ? "DESCARTANDO..." : "CONFIRMAR DESCARTE"}
+							</button>
+						) : canUseCard ? (
+							<button
+								onClick={handleUseCard}
+								disabled={!canUseCard}
+								className={`${styles.inkStamp} ${styles.stampBlue}`}
+							>
+								USAR CARTA
+							</button>
+						) : (
+							<button
+								onClick={endTurn}
+								disabled={!canEndTurn}
+								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn ? styles.stampDisabled : ""}`}
+								title={
+									isOverLimit
+										? "Debes descartar cartas antes de terminar tu turno"
+										: "Terminar turno"
+								}
+							>
+								TERMINAR TURNO
+							</button>
+						)}
+					</>
+				)}
+			</div>
 		</div>
 	);
 }
