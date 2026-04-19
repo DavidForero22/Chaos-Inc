@@ -1,0 +1,113 @@
+/* src/components/game/player/PlayerBanners.module.css */
+
+.bannersContainer {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-start;
+	/* Evita que los avisos bloqueen clics si asoman por donde no deben */
+	pointer-events: none;
+}
+
+/* --- PAPELETA DE AVISO (Papel de calco) --- */
+.warningSlip {
+	position: relative;
+	background-color: #fef2f2; /* Papel rojizo muy claro */
+	border: 2px solid #b91c1c;
+	border-radius: 2px;
+	padding: 8px 16px 10px 16px;
+	box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.4);
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	transform: rotate(-1deg);
+	/* Textura de papel rugoso */
+	background-image: url("https://www.transparenttextures.com/patterns/paper-fibers.png");
+	animation: slamDown 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.warningSlipOrange {
+	background-color: #fff7ed;
+	border-color: #c2410c;
+	transform: rotate(1deg);
+}
+
+/* --- EL TROZO DE CELO QUE LO SUJETA --- */
+.warningSlip::before {
+	content: "";
+	position: absolute;
+	top: -12px;
+	left: 20px;
+	width: 45px;
+	height: 18px;
+	background-color: rgba(255, 255, 255, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.4);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(1px);
+	transform: rotate(-4deg);
+	z-index: 5;
+}
+
+/* --- ENCABEZADO OFICIAL --- */
+.header {
+	background-color: #b91c1c;
+	color: white;
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 0.65rem;
+	padding: 2px 6px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	margin-top: -16px; /* Sobresale por arriba de la papeleta */
+	margin-bottom: 8px;
+	border-radius: 2px;
+	box-shadow: 1px 1px 0px rgba(0, 0, 0, 0.5);
+}
+
+.headerOrange {
+	background-color: #c2410c;
+}
+
+/* --- TEXTO DEL AVISO --- */
+.content {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 0.85rem;
+	color: #1f2937;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	white-space: nowrap;
+}
+
+/* --- SELLO DE TIEMPO ESTAMPADO --- */
+.timerStamp {
+	font-size: 1.1rem;
+	color: #dc2626;
+	border: 2px dashed rgba(220, 38, 38, 0.6);
+	padding: 0px 6px;
+	border-radius: 4px;
+	transform: rotate(4deg);
+	display: inline-block;
+	background-color: rgba(220, 38, 38, 0.1);
+	/* Efecto de tinta */
+	mix-blend-mode: multiply;
+}
+
+.timerStampOrange {
+	color: #ea580c;
+	border-color: rgba(234, 88, 12, 0.6);
+	background-color: rgba(234, 88, 12, 0.1);
+}
+
+/* Animación del golpe al aparecer */
+@keyframes slamDown {
+	from {
+		opacity: 0;
+		transform: scale(1.5) rotate(-5deg);
+	}
+	to {
+		opacity: 1;
+		/* El transform final depende de si es la clase normal o la naranja, pero lo dejamos sutil */
+	}
+}
