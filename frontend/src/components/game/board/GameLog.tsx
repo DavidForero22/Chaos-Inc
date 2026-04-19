@@ -42,7 +42,7 @@ export function GameLog() {
 			<button onClick={togglePhone} className={styles.tabButton} title={isOpen ? "Cerrar eventos de la partida" : "Mostrar eventos de la partida"}>
 				Eventos
 				{hasNew && !isOpen && (
-					<span className="absolute top-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
+					<span className="absolute top-px left-4 transform -translate-x-1/4 w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></span>
 				)}
 			</button>
 
