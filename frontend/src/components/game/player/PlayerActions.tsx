@@ -31,7 +31,7 @@ export function PlayerActions() {
 	} = actionLogic;
 
 	return (
-		<div className="w-full flex justify-between items-end mb-4 px-2 shrink-0 z-40">
+		<div className="w-full flex justify-between items-end mb-6 px-2 shrink-0 z-40">
 			{/* Contador de Cartas (Cinta Dymo) */}
 			<div
 				className={`${styles.dymoTape} ${

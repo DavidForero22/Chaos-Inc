@@ -78,22 +78,18 @@
 
 .pocketFlap {
     position: absolute;
-    /* Anclamos exacto abajo */
     bottom: 0; 
     left: 300px;
-    right: 20px; /* Ocupa el 100% de la carpeta */
-    height: 110px; /* Suficiente para tapar la base de las cartas */
+    right: 20px; 
+    height: 110px; 
     
-    /* El mismo color de la carpeta base */
     background-color: #c19a6b;
     
-    /* Bordes sutiles para dar sensación de pliegue */
     border-top: 2px solid #deb887;
     border-radius: 6px 6px 0 0;
     
-    z-index: 30; /* Por encima del currículum, botones y cartas */
-    pointer-events: none; /* Dejar hacer clic debajo */
+    z-index: 30;
+    pointer-events: none; 
 
-    /* La sombra interior ahora es más sutil para abarcar toda la carpeta */
     box-shadow: inset 0 20px 20px -15px rgba(0, 0, 0, 0.6);
 }

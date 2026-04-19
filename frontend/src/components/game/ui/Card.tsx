@@ -3,6 +3,7 @@ import { useState } from "react";
 import type { CardInstance } from "../../../types/live-game";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
+import styles from "./Card.module.css";
 
 interface CardProps {
 	card: CardInstance;
@@ -12,6 +13,20 @@ interface CardProps {
 	isMarkedForDiscard?: boolean;
 	onClick?: () => void;
 }
+
+// Función auxiliar para mapear el diseño (Hasta que el backend envíe las imágenes)
+const getCardVisuals = (name: string) => {
+	const lowerName = name.toLowerCase();
+	if (lowerName.includes("atacar")) return { drawing: "🗜️", icon: "💥" };
+	if (lowerName.includes("curar") || lowerName.includes("curación"))
+		return { drawing: "🩹", icon: "💖" };
+	if (lowerName.includes("esquivar")) return { drawing: "🏃", icon: "🛡️" };
+	if (lowerName.includes("robar")) return { drawing: "💵", icon: "🕵️" };
+	if (lowerName.includes("limpieza")) return { drawing: "🧹", icon: "✨" };
+	if (lowerName.includes("almacen") || lowerName.includes("almacén"))
+		return { drawing: "🗄️", icon: "📦" };
+	return { drawing: "📄", icon: "⚙️" };
+};
 
 export function Card({
 	card,
@@ -25,61 +40,66 @@ export function Card({
 	const [showInfo, setShowInfo] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
 
-	const baseClasses =
-		"shrink-0 w-24 h-36 rounded-lg border flex flex-col items-center justify-center shadow-lg transition-all text-center px-2 relative";
+	// Resolver las clases de estado dinámicas
+	let stateClass = "";
+	if (isMarkedForDiscard) stateClass = styles.markedForDiscard;
+	else if (isSelected && !isDiscardMode) stateClass = styles.selected;
+	else if (isHighlighted && !isDiscardMode) stateClass = styles.highlighted;
+	else if (isDiscardMode && isSelectable) stateClass = styles.discardMode;
 
-	const interactableClasses = isSelectable
-		? "cursor-pointer hover:-translate-y-4"
-		: "opacity-40 cursor-not-allowed";
+	const interactableClass = isSelectable
+		? styles.interactable
+		: styles.notInteractable;
 
-	let stateClasses = "bg-gray-700 border-gray-500";
-
-	if (isMarkedForDiscard) {
-		stateClasses =
-			"bg-red-900/60 border-red-500 -translate-y-2 ring-2 ring-red-500";
-	} else if (isSelected) {
-		stateClasses =
-			"bg-blue-800 border-blue-400 -translate-y-4 shadow-blue-500/50 ring-2 ring-blue-400";
-	} else if (isHighlighted) {
-		stateClasses =
-			"bg-yellow-900/40 border-yellow-400 ring-2 ring-yellow-400 animate-pulse";
-	} else if (isDiscardMode && isSelectable) {
-		stateClasses =
-			"bg-gray-700 border-red-400/50 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.2)]";
-	}
+	const visuals = getCardVisuals(card.name);
 
 	return (
 		<>
 			<div
-				onClick={isSelectable ? onClick : undefined}
+				className={`${styles.cardWrapper} ${interactableClass} ${stateClass}`}
 				onMouseEnter={() => setIsHovered(true)}
 				onMouseLeave={() => setIsHovered(false)}
-				className={`${baseClasses} ${interactableClasses} ${stateClasses}`}
-				title={card.description}
 			>
-				{isMarkedForDiscard && (
-					<div className="absolute top-1 right-1 text-red-400 text-xs font-black">
-						✕
+				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
+				<div
+					className={styles.cardBody}
+					onClick={isSelectable ? onClick : undefined}
+					title={card.description}
+				>
+					{/* Botón "?" visible en hover o seleccionada */}
+					{(isHovered || isSelected) && (
+						<button
+							onClick={(e) => {
+								e.stopPropagation(); // no propagar al onClick de la carta
+								setShowInfo(true);
+							}}
+							className="absolute top-1 left-1 w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-full flex items-center justify-center z-50 transition cursor-help hover:scale-110 shadow-md border border-blue-800"
+							title="Ver detalles del documento"
+						>
+							?
+						</button>
+					)}
+
+					{/* Título */}
+					<div className={styles.cardName} title={card.name}>
+						{card.name}
 					</div>
-				)}
 
-				{/* Botón "?" visible en hover o seleccionada */}
-				{(isHovered || isSelected) && (
-					<button
-						onClick={(e) => {
-							e.stopPropagation(); // no propagar al onClick de la carta
-							setShowInfo(true);
-						}}
-						className="absolute top-1 left-1 w-6 h-6 bg-gray-800 hover:bg-gray-600 text-white text-s font-black rounded-full flex items-center justify-center z-10 transition cursor-help hover:scale-110"
-						title="Ver más detalles de la carta"
-					>
-						?
-					</button>
-				)}
+					{/* [DIBUJO] */}
+					<div className={styles.drawingBox}>{visuals.drawing}</div>
 
-				<span className="text-sm text-gray-200 font-semibold leading-snug">
-					{card.name}
-				</span>
+					{/* [ICONO EFECTO] */}
+					<div className={styles.effectIcon}>{visuals.icon}</div>
+
+					{/* Overlay de Descarte (Marca de X roja grande) */}
+					{isMarkedForDiscard && (
+						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+							<span className="text-red-600 text-7xl opacity-70 font-black rotate-[-10deg]">
+								✕
+							</span>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{showInfo && (

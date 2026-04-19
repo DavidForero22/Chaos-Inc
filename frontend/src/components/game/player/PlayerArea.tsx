@@ -57,7 +57,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					<PlayerBanners me={me} />
 				</div>
 
-				{/* 1. Tus Stats (Currículum sobresaliendo) */}
+				{/* Tus Stats  */}
 				<div className="shrink-0 z-40 w-65 h-[99%] -mt-6 transform rotate-2 relative">
 					<div className="absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2"></div>
 					<PlayerStats
@@ -67,9 +67,8 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					/>
 				</div>
 
-				{/* 2 y 3. Acciones y Mano (Centro y Derecha Unificados) */}
-				{/* Ahora están en una sola columna, las acciones ocupan todo el ancho superior */}
-				<div className="flex-1 min-w-0 h-full relative z-20 flex flex-col justify-end pb-2 pt-10">
+				{/* Acciones y Mano (Centro y Derecha Unificados) */}
+				<div className="flex-1 min-w-0 h-full relative z-20 flex flex-col justify-start pb-2 pt-6">
 					<PlayerActions />
 					<PlayerHand />
 				</div>

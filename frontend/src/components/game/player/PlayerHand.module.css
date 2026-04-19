@@ -3,19 +3,16 @@
 .handContainer {
 	position: relative;
 	width: 100%;
-	/* Color marrón oscuro, plano y sin sombras */
 	background-color: #7a5c3a;
 	border-radius: 8px 8px 4px 4px;
 
-	/* Bordes sutiles para delimitar pero sin dar volumen 3D */
 	border-top: 2px solid #5a4228;
 	border-left: 2px solid #5a4228;
 	border-right: 2px solid #5a4228;
 	border-bottom: 2px solid #5a4228;
 
-	/* overflow: hidden asegura que la barra de scroll y las cartas no salgan del bolsillo */
 	overflow: hidden;
-	height: 180px;
+	height: 200px;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
@@ -40,7 +37,6 @@
 	height: 100%;
 	display: flex;
 	gap: 12px;
-	/* Activa el scroll horizontal cuando las cartas superen el ancho del padre */
 	overflow-x: auto;
 	overflow-y: hidden;
 	padding: 20px 20px 10px 20px;
@@ -63,7 +59,7 @@
 		180,
 		150,
 		0.4
-	); /* Scrollbar un poco más claro para que se vea sobre el fondo oscuro */
+	); 
 	border-radius: 4px;
 }
 
