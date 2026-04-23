@@ -199,28 +199,61 @@
 
 /* --- MENÚ DE AJUSTES --- */
 .settingsContainer {
-    position: absolute;
-    top: 1.5rem;
-    right: 2rem;
-    z-index: 50; /* Por encima del contenido de la hoja */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+	position: absolute;
+	top: 1.5rem;
+	right: 2rem;
+	z-index: 50; /* Por encima del contenido de la hoja */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
 }
 
 .settingsBtn {
-    background: transparent;
-    border: none;
-    color: var(--nb-texto);
-    font-size: 1.5rem;
-    cursor: pointer;
-    opacity: 0.5;
-    transition: all 0.3s ease;
-    padding: 0;
-    line-height: 1;
+	background: transparent;
+	border: none;
+	color: var(--nb-texto);
+	font-size: 1.5rem;
+	cursor: pointer;
+	opacity: 0.5;
+	transition: all 0.3s ease;
+	padding: 0;
+	line-height: 1;
 }
 
-.settingsBtn:hover, .settingsBtnActive {
-    opacity: 1;
-    transform: rotate(90deg);
+.settingsBtn:hover,
+.settingsBtnActive {
+	opacity: 1;
+	transform: rotate(90deg);
+}
+
+/* Media Query para móviles */
+@media (max-width: 768px) {
+	.pageWrapper {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.notebookContainer {
+		max-width: none;
+		border-radius: 0;
+	}
+
+	.notebookSpine {
+		border-radius: 0;
+	}
+
+	.notebookPaper {
+		border-radius: 0;
+		padding: 1.25rem 1.1rem;
+	}
+
+	/* Ocultar borde de libreta en móvil */
+	.notebookSpine {
+		display: none;
+	}
+
+	/* Ocultar linea roja en movil para mejorar legibilidad */
+	.notebookPaper::before {
+		display: none;
+	}
 }
