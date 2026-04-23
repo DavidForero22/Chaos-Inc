@@ -14,16 +14,32 @@ export default function RegisterModal({
 	onSwitchToLogin,
 }: RegisterModalProps) {
 	const { setAuth } = useAuthStore();
-	const [form, setForm] = useState({ username: "", email: "", password: "" });
+	const [form, setForm] = useState({
+		username: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+	});
 	const [error, setError] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setError("");
+
+		// Validar que las contraseñas coincidan
+		if (form.password !== form.confirmPassword) {
+			setError("Las contraseñas no coinciden.");
+			return;
+		}
+
 		setIsLoading(true);
 		try {
-			const res = await api.post("/register", form);
+			const res = await api.post("/register", {
+				username: form.username,
+				email: form.email,
+				password: form.password,
+			});
 			setAuth(
 				res.data.user.username,
 				res.data.token,
@@ -32,7 +48,7 @@ export default function RegisterModal({
 			);
 			onClose();
 		} catch {
-			setError("El usuario o correo ya están en uso.");
+			setError("El nombre o correo ya están en uso.");
 		} finally {
 			setIsLoading(false);
 		}
@@ -45,7 +61,7 @@ export default function RegisterModal({
 			onClose={onClose}
 			onSubmit={handleRegister}
 			isLoading={isLoading}
-			submitText="Solicitar Alta"
+			submitText="Registrarse"
 			loadingText="Procesando..."
 			switchButton={
 				onSwitchToLogin && (
@@ -63,7 +79,7 @@ export default function RegisterModal({
 				<span className={styles.annexNum}>1.</span>
 				<div className={styles.fieldWrap}>
 					<label className={`${styles.label} ${styles.labelFirst}`}>
-						Nombre de Usuario
+						Nombre de Usuario *
 					</label>
 					<input
 						className={styles.input}
@@ -80,7 +96,7 @@ export default function RegisterModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>2.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Correo Electrónico</label>
+					<label className={styles.label}>Correo Electrónico *</label>
 					<input
 						className={styles.input}
 						type="email"
@@ -95,16 +111,35 @@ export default function RegisterModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>3.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Contraseña</label>
+					<label className={styles.label}>Contraseña *</label>
 					<input
 						className={styles.input}
 						type="password"
 						placeholder="••••••••"
 						required
 						value={form.password}
+						minLength={8}
 						onChange={(e) => setForm({ ...form, password: e.target.value })}
 					/>
 					<p className={styles.hint}>Mínimo 8 caracteres.</p>
+				</div>
+			</div>
+
+			<div className={styles.fieldRow}>
+				<span className={styles.annexNum}>4.</span>
+				<div className={styles.fieldWrap}>
+					<label className={styles.label}>Confirmar Contraseña *</label>
+					<input
+						className={styles.input}
+						type="password"
+						placeholder="••••••••"
+						required
+						value={form.confirmPassword}
+						minLength={8}
+						onChange={(e) =>
+							setForm({ ...form, confirmPassword: e.target.value })
+						}
+					/>
 				</div>
 			</div>
 
