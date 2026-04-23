@@ -7,6 +7,7 @@ use App\Exceptions\UserException;
 use App\Models\User;
 use App\Services\Admin\UserService;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class AuthService
@@ -54,6 +55,29 @@ class AuthService
                 'Ha ocurrido un error al registrar el usuario.'
             );
         }
+    }
+
+    public function login(array $credentials): User
+    {
+        $login = trim($credentials['login']);
+        $password = $credentials['password'];
+
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+        $ok = Auth::guard('web')->attempt([
+            $field => $login,
+            'password' => $password,
+        ]);
+
+        if (!$ok) {
+            throw new UserException(
+                UserException::INVALID_DATA,
+                'Credenciales incorrectas.',
+                401
+            );
+        }
+
+        return Auth::guard('web')->user();
     }
 
     public function guestLogin(string $baseName)

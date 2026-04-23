@@ -24,7 +24,18 @@ export default function RegisterModal({
 		e.preventDefault();
 
 		const ok = await register(form);
-		if (ok) onClose();
+		if (!ok) return;
+
+		clearError();
+
+		// Si existe callback, abrir modal de login
+		if (onSwitchToLogin) {
+			onSwitchToLogin();
+			return;
+		}
+
+		// Fallback por si no se pasa callback
+		onClose();
 	};
 
 	return (

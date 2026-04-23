@@ -39,19 +39,14 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        // El núcleo de Laravel maneja la comprobación de contraseña y creación de sesión
-        if (Auth::guard('web')->attempt($request->validated())) {
+        $user = $this->authService->login($request->validated());
 
-            // Regenerar la sesión es vital para evitar ataques
-            $request->session()->regenerate();
+        $request->session()->regenerate();
 
-            return response()->json([
-                'user' => new UserResource(Auth::guard('web')->user()),
-                'message' => 'Login successful'
-            ], 200);
-        }
-
-        return response()->json(['message' => 'Credenciales incorrectas'], 401);
+        return response()->json([
+            'user' => new UserResource($user),
+            'message' => 'Inicio de sesión correcto.'
+        ], 200);
     }
 
     public function guestLogin(Request $request)
