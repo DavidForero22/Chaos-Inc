@@ -9,7 +9,7 @@
 	overflow: hidden;
 	position: relative;
 	min-height: 200px;
-	margin-left: 1rem;
+	margin-inline: 1rem;
 	/* Sombra sutil hacia abajo, como papel apilado */
 	box-shadow:
 		0 2px 0 rgba(143, 158, 155, 0.3),
@@ -189,7 +189,7 @@
 
 .roomId {
 	font-family: "Courier New", Courier, monospace;
-	font-size: 0.65rem;
+	font-size: 0.75rem;
 	color: #989083;
 	letter-spacing: 1px;
 	border-bottom: 1px dotted rgba(152, 144, 131, 0.5);
@@ -205,4 +205,11 @@
 
 .roomCapacityFull {
 	color: #989083;
+}
+
+/* Media Query para móviles */
+@media (max-width: 768px) {
+	.listContainer {
+		margin-inline: 0rem;
+	}
 }
