@@ -7,8 +7,6 @@ use App\Exceptions\UserException;
 use App\Models\User;
 use App\Services\Admin\UserService;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
 
 class AuthService
@@ -26,9 +24,7 @@ class AuthService
 
         try {
             $user = $this->userService->createUser($data);
-            $token = $user->createToken('auth_token')->plainTextToken;
-
-            return [$user, $token];
+            return $user;
         } catch (QueryException $e) {
             $message = strtolower($e->getMessage());
 
@@ -60,27 +56,6 @@ class AuthService
         }
     }
 
-    public function login(array $credentials)
-    {
-        $loginIdentifier = $credentials['login'];
-        $password = $credentials['password'];
-
-        // Buscar por email o username
-        $user = User::where('email', $loginIdentifier)
-            ->orWhere('username', $loginIdentifier)
-            ->first();
-
-        if (!$user || !Hash::check($password, $user->password)) {
-            throw ValidationException::withMessages([
-                'login' => ['Las credenciales introducidas son incorrectas.'],
-            ]);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return [$user, $token];
-    }
-
     public function guestLogin(string $baseName)
     {
         // Limpiar el nombre
@@ -91,8 +66,8 @@ class AuthService
             $username = $cleanName . '_' . rand(1000, 9999);
         } while (User::where('username', $username)->exists());
 
-        // Generar datos ficticios para satisfacer las restricciones de la base de datos
-        $fakeEmail = strtolower($username) . '@guest.chaos.inc';
+        // Generar datos ficticios para cumplir las restricciones de la base de datos
+        $fakeEmail = strtolower($username) . '@guest.chaosinc';
         $fakePassword = Str::random(16);
 
         $user = $this->userService->createUser([
@@ -103,18 +78,6 @@ class AuthService
             'is_guest' => true,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return [$user, $token];
-    }
-
-    public function revokeCurrentToken($user)
-    {
-        return $user->currentAccessToken()->delete();
-    }
-
-    public function revokeAllTokens($user)
-    {
-        return $user->tokens()->delete();
+        return $user;
     }
 }

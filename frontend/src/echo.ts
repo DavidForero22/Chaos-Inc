@@ -1,5 +1,8 @@
+// src/echo.ts
+
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
+import api from "./api/axios";
 
 declare global {
 	interface Window {
@@ -19,36 +22,24 @@ const echoInstance = new Echo({
 	forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
 	enabledTransports: ["ws", "wss"],
 
-	authorizer: (channel) => ({
-		authorize: (socketId, callback) => {
-			const token = localStorage.getItem("token") ?? "";
-
-			fetch(`${import.meta.env.VITE_API_URL}/broadcasting/auth`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					Accept: "application/json",
-					Authorization: `Bearer ${token}`,
-				},
-				body: JSON.stringify({
-					socket_id: socketId,
-					channel_name: channel.name,
-				}),
-			})
-				.then((res) => {
-					if (!res.ok) {
-						throw new Error(`Auth fallida: ${res.status}`);
-					}
-					return res.json();
-				})
-				.then((data) => {
-					callback(null, data);
-				})
-				.catch((err) => {
-					callback(err, null);
-				});
-		},
-	}),
+	// Autorización limpia y delegada en Axios
+	authorizer: (channel: any) => {
+		return {
+			authorize: (socketId: string, callback: Function) => {
+				api
+					.post(`${import.meta.env.VITE_API_URL}/broadcasting/auth`, {
+						socket_id: socketId,
+						channel_name: channel.name,
+					})
+					.then((response) => {
+						callback(false, response.data);
+					})
+					.catch((error) => {
+						callback(true, error);
+					});
+			},
+		};
+	},
 });
 
 window.Echo = echoInstance;

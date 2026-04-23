@@ -1,5 +1,7 @@
+// src/hooks/useAuth.ts
+
 import { useState } from "react";
-import api from "../api/axios";
+import api, { getCsrfCookie } from "../api/axios";
 import { useAuthStore } from "../store/useAuthStore";
 
 type RegisterInput = {
@@ -15,7 +17,7 @@ type LoginInput = {
 };
 
 export function useAuth() {
-	const { user, token, isGuest, role, setAuth, logout } = useAuthStore();
+	const { user, isGuest, role, setAuth, logout } = useAuthStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -31,22 +33,18 @@ export function useAuth() {
 
 		setIsLoading(true);
 		try {
-			const res = await api.post("/register", {
+			await getCsrfCookie();
+			
+			await api.post("/register", {
 				username: input.username,
 				email: input.email,
 				password: input.password,
 				password_confirmation: input.confirmPassword,
 			});
 
-			setAuth(
-				res.data.user.username,
-				res.data.token,
-				false,
-				res.data.user.role,
-			);
 			return true;
 		} catch (err: any) {
-			setError(err.response.message);
+			setError(err.response?.data?.message || "Error al registrar la cuenta.");
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -58,16 +56,18 @@ export function useAuth() {
 		setIsLoading(true);
 
 		try {
+			await getCsrfCookie();
+
 			const res = await api.post("/login", input);
+
 			setAuth(
 				res.data.user.username,
-				res.data.token,
-				false,
+				false, // isGuest
 				res.data.user.role,
 			);
 			return true;
 		} catch (err: any) {
-			setError(err.response.message);
+			setError(err.response?.data?.message || "Credenciales incorrectas.");
 			return false;
 		} finally {
 			setIsLoading(false);
@@ -76,10 +76,9 @@ export function useAuth() {
 
 	return {
 		user,
-		token,
 		isGuest,
 		role,
-		isAuthenticated: !!token,
+		isAuthenticated: !!user,
 		isLoading,
 		error,
 		clearError,

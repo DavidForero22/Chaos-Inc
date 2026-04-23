@@ -31,7 +31,7 @@ Route::prefix('v1')->group(function () {
     | Rutas Protegidas (Requieren token de Sanctum)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware(['auth:sanctum', 'auth.session'])->group(function () {
 
         // ==========================================================
         // RUTAS DE JUEGO Y SALAS (Solo usuarios autenticados)
@@ -48,7 +48,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/rooms/{id}/react', [LiveGameController::class, 'react']);
         Route::post('/rooms/{id}/react-discard', [LiveGameController::class, 'reactDiscard']);
         Route::post('/rooms/{id}/discard', [LiveGameController::class, 'discard']);
-        
+
         Route::post('/rooms/{id}/mark-offline', [PresenceController::class, 'markOffline']);
         Route::post('/rooms/{id}/report-disconnect', [PresenceController::class, 'reportDisconnect']);
         Route::post('/rooms/{id}/report-lobby-disconnect', [PresenceController::class, 'reportLobbyDisconnect']);
