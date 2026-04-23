@@ -70,7 +70,9 @@ api.interceptors.response.use(
 				if (
 					url.includes("/sync") ||
 					url.includes("/leave") ||
-					url.includes("/report-disconnect")
+					url.includes("/report-disconnect") ||
+					url.includes("/join") ||
+					url.includes("/broadcasting/auth")
 				) {
 					localStorage.removeItem("game_token");
 					logWithTime(
@@ -90,9 +92,9 @@ api.interceptors.response.use(
 				localStorage.removeItem("game_token");
 				useAuthStore.getState().logout();
 
-				if (window.location.pathname !== "/") {
-					window.location.href = "/";
-				}
+				// if (window.location.pathname !== "/") {
+				// 	window.location.href = "/";
+				// }
 
 				return Promise.resolve({ data: null });
 			}

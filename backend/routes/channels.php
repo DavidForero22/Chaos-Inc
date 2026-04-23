@@ -3,7 +3,7 @@
 
 use Illuminate\Support\Facades\Broadcast;
 
-Broadcast::routes(['middleware' => ['auth:sanctum']]);
+Broadcast::routes(['middleware' => ['api', 'auth:sanctum']]);
 
 // Canal de usuario por defecto de Laravel
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
