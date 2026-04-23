@@ -15,28 +15,28 @@ const ROLE_CONFIG: Record<
     }
 > = {
     boss: {
-        label: "Director General",
-        image: "/role_reveal_ES_boss.jpeg", 
+        label: "Jefe",
+        image: "/role_reveal_boss.jpeg", 
         objective:
             "Eres el jefe de la empresa. Tu prioridad absoluta es mantener el control y despedir a los Sindicalistas encubiertos antes de que organicen un motín que te deje en la calle.",
         titleLabel: "Tu rol en esta partida",
     },
     secretary: {
-        label: "Secretariado",
-        image: "/role_placeholder.png",
+        label: "Secretario",
+        image: "/role_reveal_secretary.jpeg",
         objective:
             "Eres la mano derecha de Dirección. Filtra la información, desvía sospechas y protege el puesto del Jefe por encima de todo. Si la Dirección cae, tú también.",
         titleLabel: "Tu rol en esta partida",
     },
     intern: {
-        label: "Becario en Prácticas",
+        label: "Becario",
         image: "/role_placeholder.png",
         objective:
             "Tu contrato no está remunerado y estás harto. Sobrevive al caos, elimina a la competencia directa y asciende en la cadena alimenticia hasta convertirte en el nuevo Jefe.",
         titleLabel: "Tu rol en esta partida",
     },
     union: {
-        label: "Enlace Sindical",
+        label: "Sindicalista",
         image: "/role_placeholder.png",
         objective:
             "El sistema está corrupto y tú eres la cura. Coordínate en secreto, expón las prácticas ilegales y acaba con la Dirección actual para tomar el control de la empresa.",
