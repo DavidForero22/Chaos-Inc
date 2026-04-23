@@ -10,7 +10,6 @@ import { useAuth } from "../useAuth.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
-import { useAuthStore } from "../../store/useAuthStore.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
@@ -18,18 +17,17 @@ import { useLoadingStore } from "../../store/useLoadingStore.ts";
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
 	const { user } = useAuth();
-	const { token } = useAuthStore();
 
 	const isKickedRef = useRef(false);
 
-	// -- EXTRAEMOS LO NECESARIO DEL STORE --
+	// -- EXTRAER LO NECESARIO DEL STORE --
 	const setRoomId = useGameStore((state) => state.setRoomId);
 	const syncGameStore = useGameStore((state) => state.syncGame);
 	const setIsConnecting = useGameStore((state) => state.setIsConnecting);
 	const isConnecting = useGameStore((state) => state.isConnecting);
 	const resetStore = useGameStore((state) => state.resetStore);
 
-	// Extraemos el current_turn para vigilarlo
+	// Extraer el current_turn para vigilarlo
 	const currentTurn = useGameStore(
 		(state) => state.gameData?.game?.current_turn,
 	);
@@ -106,7 +104,7 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 3. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
-			if (!roomId || !user || !token) return;
+			if (!roomId || !user) return;
 
 			try {
 				setIsConnecting(true);
@@ -137,14 +135,13 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, user, token, handleSync, navigate, setIsConnecting]);
+	}, [roomId, user, handleSync, navigate, setIsConnecting]);
 
 	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA --
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
 
-			const sanctumToken = localStorage.getItem("token") || "";
 			const gameToken = localStorage.getItem("game_token") || "";
 
 			if (roomId && gameToken) {
@@ -153,9 +150,9 @@ export function useLiveGame(roomId: string | undefined) {
 					headers: {
 						Accept: "application/json",
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${sanctumToken}`,
 						"X-Game-Token": gameToken,
 					},
+					credentials: "include",
 					keepalive: true,
 					body: JSON.stringify({}),
 				}).catch(() => {});

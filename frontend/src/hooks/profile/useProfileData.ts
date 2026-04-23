@@ -6,7 +6,7 @@ import { useAuthStore } from "../../store/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
 
 export function useProfileData() {
-	const { token, isGuest, logout } = useAuthStore();
+	const { user, isGuest, logout } = useAuthStore();
 	const navigate = useNavigate();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
@@ -14,7 +14,7 @@ export function useProfileData() {
 	const [meId, setMeId] = useState<number | null>(null);
 
 	useEffect(() => {
-		if (!token) {
+		if (!user) {
 			navigate("/");
 			return;
 		}
@@ -40,7 +40,7 @@ export function useProfileData() {
 		};
 
 		fetchData();
-	}, [token, isGuest, navigate]);
+	}, [user, isGuest, navigate]); 
 
 	const handleLogout = async () => {
 		try {

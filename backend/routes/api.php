@@ -31,7 +31,7 @@ Route::prefix('v1')->group(function () {
     | Rutas Protegidas (Requieren token de Sanctum)
     |--------------------------------------------------------------------------
     */
-    Route::middleware(['auth:sanctum', 'auth.session'])->group(function () {
+    Route::middleware(['auth:sanctum'])->group(function () {
 
         // ==========================================================
         // RUTAS DE JUEGO Y SALAS (Solo usuarios autenticados)
