@@ -78,6 +78,7 @@ export default function LoginModal({
 						type="password"
 						placeholder="••••••••"
 						minLength={8}
+						maxLength={128}
 						required
 						value={credentials.password}
 						onChange={(e) =>

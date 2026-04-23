@@ -23,7 +23,7 @@ export default function CreateRoomModal({
 		is_private: false,
 		password: "",
 		max_players: 4,
-		turn_timeout: 30,
+		turn_timeout: 45,
 	});
 
 	const handleCreateRoom = async (e: React.FormEvent) => {
@@ -65,8 +65,10 @@ export default function CreateRoomModal({
 					<input
 						className={styles.input}
 						type="text"
-						placeholder="Ej: Sala de Juntas B"
+						placeholder="Escribe el nombre..."
 						required
+						minLength={3}
+						maxLength={50}
 						autoFocus
 						value={formData.name}
 						onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -108,17 +110,22 @@ export default function CreateRoomModal({
 					</label>
 
 					{formData.is_private && (
-						<input
-							className={styles.input}
-							style={{ marginTop: "8px" }}
-							type="password"
-							placeholder="Contraseña"
-							required
-							value={formData.password}
-							onChange={(e) =>
-								setFormData({ ...formData, password: e.target.value })
-							}
-						/>
+						<div>
+							<input
+								className={styles.input}
+								style={{ marginTop: "8px" }}
+								type="password"
+								placeholder="Contraseña"
+								required
+								minLength={8}
+								maxLength={128}
+								value={formData.password}
+								onChange={(e) =>
+									setFormData({ ...formData, password: e.target.value })
+								}
+							/>
+							<p className={styles.hint}>Mínimo 8 caracteres.</p>
+						</div>
 					)}
 				</div>
 			</div>
@@ -161,8 +168,8 @@ export default function CreateRoomModal({
 					</label>
 					<input
 						type="range"
-						min="15"
-						max="45"
+						min="30"
+						max="90"
 						step="5"
 						style={{ width: "100%", marginTop: "8px", accentColor: "#295c60" }}
 						value={formData.turn_timeout}

@@ -62,7 +62,8 @@ export default function RegisterModal({
 						type="text"
 						placeholder="Escribe tu nombre..."
 						required
-						minLength={2}
+						minLength={3}
+						maxLength={30}
 						autoFocus
 						value={form.username}
 						onChange={(e) =>
@@ -80,6 +81,8 @@ export default function RegisterModal({
 						className={styles.input}
 						type="email"
 						placeholder="Escribe tu correo..."
+						minLength={3}
+						maxLength={255}
 						required
 						value={form.email}
 						onChange={(e) =>
@@ -99,6 +102,7 @@ export default function RegisterModal({
 						placeholder="••••••••"
 						required
 						minLength={8}
+						maxLength={128}
 						value={form.password}
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, password: e.target.value }))
@@ -118,6 +122,7 @@ export default function RegisterModal({
 						placeholder="••••••••"
 						required
 						minLength={8}
+						maxLength={128}
 						value={form.confirmPassword}
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
