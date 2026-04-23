@@ -1,6 +1,6 @@
 // src/components/navbar/Navbar.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
 import LoginModal from "../AuthModal/LoginModal";
 import RegisterModal from "../AuthModal/RegisterModal";
@@ -15,6 +15,7 @@ export default function Navbar() {
 	const [showRegister, setShowRegister] = useState(false);
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [disableMenuTransition, setDisableMenuTransition] = useState(false);
+	const menuWrapperRef = useRef<HTMLDivElement>(null);
 
 	// Props comunes que necesitan los enlaces
 	const navProps = {
@@ -25,11 +26,12 @@ export default function Navbar() {
 		setShowRegister,
 	};
 
+	// Asignar un listener para cuando se cambie la resolucion de la pantalla
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(max-width: 1050px)");
 
 		const handleBreakpointChange = (e: MediaQueryListEvent) => {
-			// Si pasamos a escritorio (>1050px), cerrar menú sin animación
+			// Si pasa a escritorio (>1050px), cerrar menú sin animación
 			if (!e.matches) {
 				setDisableMenuTransition(true);
 				setIsMenuOpen(false);
@@ -43,6 +45,7 @@ export default function Navbar() {
 		};
 	}, []);
 
+	// Cerrar al instante el menu desplegable
 	useEffect(() => {
 		if (!disableMenuTransition) return;
 
@@ -53,6 +56,28 @@ export default function Navbar() {
 		return () => cancelAnimationFrame(id);
 	}, [disableMenuTransition]);
 
+	// Cerrar menu desplegable si se hace click fuera
+	useEffect(() => {
+		if (!isMenuOpen) return;
+
+		const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+			const target = event.target;
+			if (!(target instanceof Node)) return;
+
+			if (menuWrapperRef.current && !menuWrapperRef.current.contains(target)) {
+				setIsMenuOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleOutsideClick);
+		document.addEventListener("touchstart", handleOutsideClick);
+
+		return () => {
+			document.removeEventListener("mousedown", handleOutsideClick);
+			document.removeEventListener("touchstart", handleOutsideClick);
+		};
+	}, [isMenuOpen]);
+
 	return (
 		<>
 			<div className={styles.bookmarksContainer}>
@@ -62,25 +87,27 @@ export default function Navbar() {
 				</div>
 
 				{/* ── GRUPO MÓVIL ── */}
-				<button
-					className={`${styles.bookmark} ${styles.mobileMenuTab}`}
-					onClick={() => setIsMenuOpen(!isMenuOpen)}
-					title="Abrir Menú"
-				>
-					<FaBars /> MENÚ
-				</button>
+				<div ref={menuWrapperRef}>
+					<button
+						className={`${styles.bookmark} ${styles.mobileMenuTab}`}
+						onClick={() => setIsMenuOpen(!isMenuOpen)}
+						title="Abrir Menú"
+					>
+						<FaBars /> MENÚ
+					</button>
 
-				{/* Desplegable Móvil */}
-				<div
-					className={`${styles.dropdownMenu} ${
-						isMenuOpen ? styles.dropdownMenuOpen : ""
-					} ${disableMenuTransition ? styles.dropdownMenuNoTransition : ""}`}
-				>
-					<NavLinks
-						{...navProps}
-						isMobile={true}
-						onItemClick={() => setIsMenuOpen(false)}
-					/>
+					{/* Desplegable Móvil */}
+					<div
+						className={`${styles.dropdownMenu} ${
+							isMenuOpen ? styles.dropdownMenuOpen : ""
+						} ${disableMenuTransition ? styles.dropdownMenuNoTransition : ""}`}
+					>
+						<NavLinks
+							{...navProps}
+							isMobile={true}
+							onItemClick={() => setIsMenuOpen(false)}
+						/>
+					</div>
 				</div>
 			</div>
 
