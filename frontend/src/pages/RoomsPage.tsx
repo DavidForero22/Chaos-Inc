@@ -14,6 +14,8 @@ export default function RoomsPage() {
 		setSelectedRoom,
 		filterStatus,
 		setFilterStatus,
+		searchQuery,
+		setSearchQuery,
 		handleJoinRoom,
 		user,
 		isLoadingRooms,
@@ -57,14 +59,16 @@ export default function RoomsPage() {
 					Seleccione una sala activa.
 				</h2>
 
-				{/* Buscador (sin funcionalidad por ahora) */}
+				{/* Buscador + Filtros */}
 				<div className={styles.controlsGrid}>
-					{/* Buscador (sin funcionalidad por ahora) */}
+					{/* Buscador */}
 					<div className={styles.searchBlock}>
 						<input
 							id="room-name-search"
 							type="text"
 							placeholder="Buscar por nombre..."
+							value={searchQuery}
+							onChange={(e) => setSearchQuery(e.target.value)}
 							className={styles.searchInput}
 						/>
 					</div>

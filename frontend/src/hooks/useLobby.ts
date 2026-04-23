@@ -14,6 +14,7 @@ export function useLobby() {
 	const [filterStatus, setFilterStatus] = useState<
 		"all" | "waiting" | "in_game"
 	>("all");
+	const [searchQuery, setSearchQuery] = useState("");
 
 	// ESTADO LOCAL para RoomList
 	const [isLoadingRooms, setIsLoadingRooms] = useState(true);
@@ -75,8 +76,16 @@ export function useLobby() {
 	};
 
 	const filteredRooms = rooms.filter((room) => {
-		if (filterStatus === "all") return true;
-		return room.status === filterStatus;
+		// Filtrar por estado
+		const matchesStatus =
+			filterStatus === "all" || room.status === filterStatus;
+
+		// Filtrar por nombre (búsqueda)
+		const matchesSearch = room.name
+			.toLowerCase()
+			.includes(searchQuery.toLowerCase());
+
+		return matchesStatus && matchesSearch;
 	});
 
 	return {
@@ -86,6 +95,8 @@ export function useLobby() {
 		setSelectedRoom,
 		filterStatus,
 		setFilterStatus,
+		searchQuery,
+		setSearchQuery,
 		handleJoinRoom,
 		user,
 		isLoadingRooms,
