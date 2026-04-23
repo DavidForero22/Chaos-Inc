@@ -1,6 +1,6 @@
 import { useGameStore } from "../../store/useGameStore";
 import { useGameUIStore } from "../../store/useGameUIStore";
-import { usePlayerIdentity } from "../usePlayerIdentity";
+import { useAuth } from "../useAuth";
 import { useState } from "react";
 import { useLoadingStore } from "../../store/useLoadingStore";
 
@@ -8,7 +8,7 @@ import { useLoadingStore } from "../../store/useLoadingStore";
 export const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
 
 export function usePlayerActions() {
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
@@ -35,18 +35,18 @@ export function usePlayerActions() {
 	const requestCount = useLoadingStore((state) => state.requestCount);
 	const isGlobalLoading = requestCount > 0 || isActionLocked;
 
-	if (!me || !game || !myPlayerName) {
+	if (!me || !game || !user) {
 		return { isReady: false as const };
 	}
 
-	const isMyTurn = game.current_turn === myPlayerName;
+	const isMyTurn = game.current_turn === user;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasPendingAttack = me.combat_state.is_attacking_single;
 	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
 	const isAttackerWaiting = me.combat_state.is_attacking_multi;
 	const hasPendingSabotage =
 		!!game.player_pending_sabotage &&
-		game.player_pending_sabotage !== myPlayerName;
+		game.player_pending_sabotage !== user;
 
 	const currentCardsCount = me.cards.length;
 	const projectedCardsCount = currentCardsCount - cardsToDiscard.length;
@@ -119,7 +119,7 @@ export function usePlayerActions() {
 	// Usar la carta seleccionada de auto-uso
 	const handleUseCard = async () => {
 		if (!canUseCard || !selectedCardId) return;
-		await playTurn(selectedCardId, myPlayerName);
+		await playTurn(selectedCardId, user);
 		setSelectedCardId(null);
 	};
 

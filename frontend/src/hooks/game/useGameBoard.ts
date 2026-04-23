@@ -1,9 +1,9 @@
 import { useGameStore } from "../../store/useGameStore.ts";
-import { usePlayerIdentity } from "../usePlayerIdentity.ts";
+import { useAuth } from "../useAuth.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
 
 export function useGameBoard() {
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 
 	// Extraer todo del Store
 	const gameData = useGameStore((state) => state.gameData);
@@ -21,7 +21,7 @@ export function useGameBoard() {
 	const me = gameData?.me;
 	const game = gameData?.game;
 
-	const isMyTurn = game?.current_turn === myPlayerName;
+	const isMyTurn = game?.current_turn === user;
 	const hasPendingAttack = me?.combat_state.is_attacking_single ?? false;
 	const hasPendingMultiAttack = me?.combat_state.is_defending_multi ?? false;
 	const isAttackerWaiting = me?.combat_state.is_attacking_multi ?? false;
@@ -29,8 +29,7 @@ export function useGameBoard() {
 	const hasLuckChallenge =
 		isMyTurn && !!me?.luck_challenge && luckResult === null;
 	const hasPendingSabotage =
-		!!game?.player_pending_sabotage &&
-		game?.player_pending_sabotage !== myPlayerName;
+		!!game?.player_pending_sabotage && game?.player_pending_sabotage !== user;
 
 	const handleEndTurn = async () => {
 		if (
@@ -46,7 +45,7 @@ export function useGameBoard() {
 	};
 
 	return {
-		myPlayerName,
+		user,
 		gameData,
 		me,
 		game,

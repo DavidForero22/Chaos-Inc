@@ -1,6 +1,5 @@
 import { useState } from "react";
-import api from "../../../api/axios";
-import { useAuthStore } from "../../../store/useAuthStore.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import ModalLayout from "../ModalLayout.tsx";
 import styles from "../ModalLayout.module.css";
 
@@ -13,45 +12,19 @@ export default function RegisterModal({
 	onClose,
 	onSwitchToLogin,
 }: RegisterModalProps) {
-	const { setAuth } = useAuthStore();
+	const { register, isLoading, error, clearError } = useAuth();
 	const [form, setForm] = useState({
 		username: "",
 		email: "",
 		password: "",
 		confirmPassword: "",
 	});
-	const [error, setError] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
 
 	const handleRegister = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError("");
 
-		// Validar que las contraseñas coincidan
-		if (form.password !== form.confirmPassword) {
-			setError("Las contraseñas no coinciden.");
-			return;
-		}
-
-		setIsLoading(true);
-		try {
-			const res = await api.post("/register", {
-				username: form.username,
-				email: form.email,
-				password: form.password,
-			});
-			setAuth(
-				res.data.user.username,
-				res.data.token,
-				false,
-				res.data.user.role,
-			);
-			onClose();
-		} catch {
-			setError("El nombre o correo ya están en uso.");
-		} finally {
-			setIsLoading(false);
-		}
+		const ok = await register(form);
+		if (ok) onClose();
 	};
 
 	return (
@@ -68,7 +41,10 @@ export default function RegisterModal({
 					<button
 						type="button"
 						className={styles.switchLink}
-						onClick={onSwitchToLogin}
+						onClick={() => {
+							clearError();
+							onSwitchToLogin();
+						}}
 					>
 						← Ya tengo cuenta
 					</button>
@@ -86,9 +62,12 @@ export default function RegisterModal({
 						type="text"
 						placeholder="Escribe tu nombre..."
 						required
+						minLength={2}
 						autoFocus
 						value={form.username}
-						onChange={(e) => setForm({ ...form, username: e.target.value })}
+						onChange={(e) =>
+							setForm((prev) => ({ ...prev, username: e.target.value }))
+						}
 					/>
 				</div>
 			</div>
@@ -103,7 +82,9 @@ export default function RegisterModal({
 						placeholder="Escribe tu correo..."
 						required
 						value={form.email}
-						onChange={(e) => setForm({ ...form, email: e.target.value })}
+						onChange={(e) =>
+							setForm((prev) => ({ ...prev, email: e.target.value }))
+						}
 					/>
 				</div>
 			</div>
@@ -117,9 +98,11 @@ export default function RegisterModal({
 						type="password"
 						placeholder="••••••••"
 						required
-						value={form.password}
 						minLength={8}
-						onChange={(e) => setForm({ ...form, password: e.target.value })}
+						value={form.password}
+						onChange={(e) =>
+							setForm((prev) => ({ ...prev, password: e.target.value }))
+						}
 					/>
 					<p className={styles.hint}>Mínimo 8 caracteres.</p>
 				</div>
@@ -134,10 +117,10 @@ export default function RegisterModal({
 						type="password"
 						placeholder="••••••••"
 						required
-						value={form.confirmPassword}
 						minLength={8}
+						value={form.confirmPassword}
 						onChange={(e) =>
-							setForm({ ...form, confirmPassword: e.target.value })
+							setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
 						}
 					/>
 				</div>

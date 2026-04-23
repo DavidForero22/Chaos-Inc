@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
-import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import styles from "./GameBanners.module.css";
 
@@ -62,7 +62,7 @@ export function GameBanners({
 	playerPendingSabotage,
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 	const luckResult = useGameUIStore((state) => state.luckResult);
 
 	if (!gameData) return null;
@@ -70,16 +70,16 @@ export function GameBanners({
 
 	const isSomeoneElseDefendingSingle = !!(
 		game.pending_single_attack_target &&
-		game.pending_single_attack_target !== myPlayerName
+		game.pending_single_attack_target !== user
 	);
 
 	const isSomeoneElseDefendingMulti =
 		game.pending_multi_attack_targets.length > 0 &&
-		!game.pending_multi_attack_targets.includes(myPlayerName || "");
+		!game.pending_multi_attack_targets.includes(user || "");
 
 	const isSomeoneElseInLuckChallenge = !!(
 		game.player_in_luck_challenge &&
-		game.player_in_luck_challenge !== myPlayerName
+		game.player_in_luck_challenge !== user
 	);
 
 	return (
@@ -126,7 +126,7 @@ export function GameBanners({
 
 			<AnimatedBanner
 				show={
-					!!(playerPendingSabotage && playerPendingSabotage !== myPlayerName)
+					!!(playerPendingSabotage && playerPendingSabotage !== user)
 				}
 				message={`¡${playerPendingSabotage} ESTÁ SIENDO OBLIGADO A DESCARTAR!`}
 				colorClass={styles.bgNotice}

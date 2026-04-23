@@ -91,7 +91,7 @@ api.interceptors.response.use(
 		}
 
 		// Error general
-		logWithTime("Error en la API", error, "error");
+		logWithTime("Error en la API", error.response, "error");
 
 		return Promise.reject(error);
 	},

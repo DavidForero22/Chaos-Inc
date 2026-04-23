@@ -2,7 +2,7 @@
 
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
-import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import { OpponentCard } from "./OpponentCard.tsx";
 import { SELF_TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
@@ -16,17 +16,17 @@ export function OpponentsBoard({
 	turnTimeLeft,
 	isTurnPaused,
 }: OpponentsBoardProps) {
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 
 	const gameData = useGameStore((state) => state.gameData);
 	const playTurn = useGameStore((state) => state.playTurn);
 	const { selectedCardId, setSelectedCardId } = useGameUIStore();
 
-	if (!gameData || !myPlayerName) return null;
+	if (!gameData || !user) return null;
 
 	const { me, game } = gameData;
 	const { opponents, current_turn } = game;
-	const isMyTurn = current_turn === myPlayerName;
+	const isMyTurn = current_turn === user;
 
 	const selectedCardType =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;

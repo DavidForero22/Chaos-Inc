@@ -1,7 +1,6 @@
 import { useState } from "react";
-import api from "../../../api/axios";
-import { useAuthStore } from "../../../store/useAuthStore.ts";
-import ModalLayout from "../ModalLayout.tsx";
+import { useAuth } from "../../../hooks/useAuth.ts";
+import ModalLayout from "../ModalLayout";
 import styles from "../ModalLayout.module.css";
 
 interface LoginModalProps {
@@ -13,78 +12,80 @@ export default function LoginModal({
 	onClose,
 	onSwitchToRegister,
 }: LoginModalProps) {
-	const { setAuth } = useAuthStore();
-	const [credentials, setCredentials] = useState({ login: "", password: "" });
-	const [error, setError] = useState("");
-	const [isLoading, setIsLoading] = useState(false);
+	const { login, isLoading, error, clearError } = useAuth();
+	const [credentials, setCredentials] = useState({
+		login: "",
+		password: "",
+	});
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-		setError("");
-		setIsLoading(true);
-		try {
-			const res = await api.post("/login", credentials);
-			setAuth(
-				res.data.user.username,
-				res.data.token,
-				false,
-				res.data.user.role,
-			);
-			onClose();
-		} catch {
-			setError("Credenciales incorrectas. Verifique su identificación.");
-		} finally {
-			setIsLoading(false);
-		}
+
+		const ok = await login(credentials);
+		if (ok) onClose();
 	};
 
 	return (
 		<ModalLayout
 			title="Chaos Inc."
-			subtitle="Formulario de Identificación de Empleado"
+			subtitle="Acceso de Empleado"
 			onClose={onClose}
 			onSubmit={handleLogin}
 			isLoading={isLoading}
-			submitText="Entrar"
+			submitText="Acceder"
 			loadingText="Verificando..."
 			switchButton={
 				onSwitchToRegister && (
 					<button
 						type="button"
 						className={styles.switchLink}
-						onClick={onSwitchToRegister}
+						onClick={() => {
+							clearError();
+							onSwitchToRegister();
+						}}
 					>
-						← ¿Sin cuenta? Registrarse
+						→ Crear cuenta
 					</button>
 				)
 			}
 		>
-			<label className={styles.label}>Identificador</label>
-			<input
-				className={styles.input}
-				type="text"
-				placeholder="usuario o correo electrónico"
-				required
-				autoFocus
-				value={credentials.login}
-				onChange={(e) =>
-					setCredentials({ ...credentials, login: e.target.value })
-				}
-			/>
+			<div className={styles.fieldRow}>
+				<span className={styles.annexNum}>1.</span>
+				<div className={styles.fieldWrap}>
+					<label className={`${styles.label} ${styles.labelFirst}`}>
+						Usuario o Correo
+					</label>
+					<input
+						className={styles.input}
+						type="text"
+						placeholder="Escribe aquí..."
+						required
+						autoFocus
+						value={credentials.login}
+						onChange={(e) =>
+							setCredentials((prev) => ({ ...prev, login: e.target.value }))
+						}
+					/>
+				</div>
+			</div>
 
-			<label className={`${styles.label} ${styles.labelSpaced}`}>
-				Contraseña
-			</label>
-			<input
-				className={styles.input}
-				type="password"
-				placeholder="••••••••"
-				required
-				value={credentials.password}
-				onChange={(e) =>
-					setCredentials({ ...credentials, password: e.target.value })
-				}
-			/>
+			<div className={styles.fieldRow}>
+				<span className={styles.annexNum}>2.</span>
+				<div className={styles.fieldWrap}>
+					<label className={styles.label}>Contraseña</label>
+					<input
+						className={styles.input}
+						type="password"
+						placeholder="••••••••"
+						minLength={8}
+						required
+						value={credentials.password}
+						onChange={(e) =>
+							setCredentials((prev) => ({ ...prev, password: e.target.value }))
+						}
+					/>
+				</div>
+			</div>
 
 			{error && <p className={styles.error}>⚠ {error}</p>}
 		</ModalLayout>

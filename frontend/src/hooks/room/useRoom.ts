@@ -1,12 +1,12 @@
 // src/hooks/room/useRoom.ts
 
-import { usePlayerIdentity } from "../usePlayerIdentity.ts";
+import { useAuth } from "../useAuth.ts";
 import { useRoomSession } from "./useRoomSession.ts";
 import { useRoomSockets } from "./useRoomSockets.ts";
 import { useRoomStore } from "../../store/useRoomStore.ts"; 
 
 export function useRoom(roomId: string | undefined) {
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 
 	// Iniciar la sesión (Join automático, redirects, etc.)
 	const {
@@ -16,7 +16,7 @@ export function useRoom(roomId: string | undefined) {
 		passwordError,
 		attemptJoin,
 		handleLeaveRoom,
-	} = useRoomSession(roomId, myPlayerName);
+	} = useRoomSession(roomId, user);
 
 	// Extraer las acciones directamente de Zustand
 	const startGame = useRoomStore((state) => state.startGame);
@@ -26,7 +26,7 @@ export function useRoom(roomId: string | undefined) {
 
 	return {
 		room,
-		myPlayerName: myPlayerName || "",
+		user: user || "",
 		isJoining,
 		needsPassword,
 		passwordError,

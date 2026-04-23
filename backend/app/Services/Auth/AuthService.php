@@ -3,8 +3,10 @@
 
 namespace App\Services\Auth;
 
+use App\Exceptions\UserException;
 use App\Models\User;
 use App\Services\Admin\UserService;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Str;
@@ -21,10 +23,41 @@ class AuthService
     public function register(array $data)
     {
         $data['role'] = 'user';
-        $user = $this->userService->createUser($data);
-        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return [$user, $token];
+        try {
+            $user = $this->userService->createUser($data);
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            return [$user, $token];
+        } catch (QueryException $e) {
+            $message = strtolower($e->getMessage());
+
+            if (str_contains($message, 'users_email_unique')) {
+                throw new UserException(
+                    UserException::EMAIL_ALREADY_EXISTS,
+                    'El correo electrónico ya está en uso.'
+                );
+            }
+
+            if (str_contains($message, 'users_username_unique')) {
+                throw new UserException(
+                    UserException::USERNAME_ALREADY_EXISTS,
+                    'El nombre de usuario ya está en uso.'
+                );
+            }
+
+            throw new UserException(
+                UserException::GENERAL_ERROR,
+                'Ha ocurrido un error al registrar el usuario.'
+            );
+        } catch (UserException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new UserException(
+                UserException::GENERAL_ERROR,
+                'Ha ocurrido un error al registrar el usuario.'
+            );
+        }
     }
 
     public function login(array $credentials)
@@ -39,7 +72,7 @@ class AuthService
 
         if (!$user || !Hash::check($password, $user->password)) {
             throw ValidationException::withMessages([
-                'login' => ['The credentials provided are incorrect.'],
+                'login' => ['Las credenciales introducidas son incorrectas.'],
             ]);
         }
 

@@ -6,7 +6,7 @@ import api from "../../api/axios.ts";
 
 // -- HOOKS CUSTOM --
 import { useGameSockets } from "./useGameSockets.ts";
-import { usePlayerIdentity } from "../usePlayerIdentity.ts";
+import { useAuth } from "../useAuth.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
@@ -17,7 +17,7 @@ import { useLoadingStore } from "../../store/useLoadingStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 	const { token } = useAuthStore();
 
 	const isKickedRef = useRef(false);
@@ -49,10 +49,7 @@ export function useLiveGame(roomId: string | undefined) {
 	useEffect(() => {
 		// Si el turno ha cambiado, o si se ha reiniciado por completo
 		if (currentTurn !== previousTurnRef.current) {
-			if (
-				previousTurnRef.current === myPlayerName &&
-				currentTurn !== myPlayerName
-			) {
+			if (previousTurnRef.current === user && currentTurn !== user) {
 				logWithTime(
 					"useLiveGame.ts - El turno ha pasado a otro jugador. Limpiando UI.",
 				);
@@ -61,7 +58,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 			previousTurnRef.current = currentTurn || null;
 		}
-	}, [currentTurn, myPlayerName, clearDiscardSelection]);
+	}, [currentTurn, user, clearDiscardSelection]);
 
 	// -- 2. WRAPPER DE SINCRONIZACIÓN (Maneja las redirecciones) --
 	const handleSync = useCallback(async () => {
@@ -109,7 +106,7 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 3. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
-			if (!roomId || !myPlayerName || !token) return;
+			if (!roomId || !user || !token) return;
 
 			try {
 				setIsConnecting(true);
@@ -140,7 +137,7 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, myPlayerName, token, handleSync, navigate, setIsConnecting]);
+	}, [roomId, user, token, handleSync, navigate, setIsConnecting]);
 
 	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA --
 	useEffect(() => {

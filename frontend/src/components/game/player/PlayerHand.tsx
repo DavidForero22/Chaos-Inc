@@ -2,13 +2,13 @@
 import { Card } from "../ui/Card.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
-import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts";
 import type { CardInstance } from "../../../types/live-game.ts";
 import styles from "./PlayerHand.module.css";
 
 export function PlayerHand() {
-    const { myPlayerName } = usePlayerIdentity();
+    const { user } = useAuth();
 
     // --- ESTADO GLOBAL Y UI ---
     const gameData = useGameStore((state) => state.gameData);
@@ -26,11 +26,11 @@ export function PlayerHand() {
 
     const { evaluateCard, globalConditions } = useCardPlayability(
         gameData!,
-        myPlayerName!,
+        user!,
         isDiscardMode,
     );
 
-    if (!gameData || !myPlayerName) return null;
+    if (!gameData || !user) return null;
     const { me } = gameData;
 
     // --- MANEJADOR DE CLIC CENTRALIZADO ---

@@ -2,6 +2,7 @@
 
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Exceptions\UserException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,10 +27,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        
+
         $exceptions->dontReport([
             RoomException::class,
             GameException::class,
+            UserException::class
         ]);
-
     })->create();
