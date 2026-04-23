@@ -10,27 +10,13 @@ import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
 import HowToPlayPage from "./pages/HowToPlayPage.tsx";
 import KnowMorePage from "./pages/KnowMorePage.tsx";
 
-import { useAuthStore } from "./store/useAuthStore.ts";
-import { useEffect } from "react";
-import api from "./api/axios.ts";
-
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 import MainMenuPage from "./pages/MainMenuPage.tsx";
 import NotebookLayout from "./layouts/NotebookLayout.tsx";
+import { useSessionGuard } from "./hooks/useSessionGuard.ts";
 
 function App() {
-	const { token } = useAuthStore();
-
-	useEffect(() => {
-		// Si hay token en el frontend, comprobamos si sigue vivo en el backend
-		const verifySession = async () => {
-			if (!token) return;
-
-			await api.get("/me", { hideLoader: true } as any);
-		};
-
-		verifySession();
-	}, [token]);
+	useSessionGuard();
 
 	return (
 		<Router>
