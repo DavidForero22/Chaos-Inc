@@ -6,7 +6,7 @@ interface BoardPlayerListProps {
 	players: string[];
 	maxPlayers: number;
 	ownerName: string;
-	myPlayerName: string | null;
+	user: string | null;
 	onKickClick: (player: string) => void;
 }
 
@@ -14,7 +14,7 @@ export default function BoardPlayerList({
 	players,
 	maxPlayers,
 	ownerName,
-	myPlayerName,
+	user,
 	onKickClick,
 }: BoardPlayerListProps) {
 	return (
@@ -24,7 +24,7 @@ export default function BoardPlayerList({
 					<div className={`flex items-center ${styles.markerBlack}`}>
 						<span className={`${styles.magnet} ${styles.magnetGreen}`}></span>
 						{player}
-						{player === myPlayerName && (
+						{player === user && (
 							<span className={`${styles.markerBlue} text-sm ml-3 italic`}>
 								(Tú)
 							</span>
@@ -34,7 +34,7 @@ export default function BoardPlayerList({
 						)}
 					</div>
 
-					{ownerName === myPlayerName && player !== myPlayerName && (
+					{ownerName === user && player !== user && (
 						<button
 							onClick={() => onKickClick(player)}
 							className={styles.btnErase}

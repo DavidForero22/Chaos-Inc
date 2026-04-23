@@ -19,7 +19,7 @@ export default function WaitingRoomPage() {
 
 	const {
 		room,
-		myPlayerName,
+		user,
 		isJoining,
 		needsPassword,
 		passwordError,
@@ -35,13 +35,13 @@ export default function WaitingRoomPage() {
 	const [copied, setCopied] = useState(false);
 
 	const missingPlayers = 3 - (room?.players.length || 0);
-	const isOwner = room?.owner_name === myPlayerName;
+	const isOwner = room?.owner_name === user;
 
 	useEffect(() => {
-		if (!isJoining && !myPlayerName && !showGuestModal) {
+		if (!isJoining && !user && !showGuestModal) {
 			setShowGuestModal(true);
 		}
-	}, [isJoining, myPlayerName, showGuestModal]);
+	}, [isJoining, user, showGuestModal]);
 
 	const onLeaveClick = async () => {
 		startLoading("Borrando de la pizarra...");
@@ -84,7 +84,7 @@ export default function WaitingRoomPage() {
 					>
 						Conectando a la sala...
 					</p>
-					{!myPlayerName && (
+					{!user && (
 						<p
 							className={`${styles.markerBlack} text-sm mt-4 italic opacity-70`}
 						>
@@ -186,7 +186,7 @@ export default function WaitingRoomPage() {
 				players={room.players}
 				maxPlayers={room.max_players}
 				ownerName={room.owner_name}
-				myPlayerName={myPlayerName}
+				user={user}
 				onKickClick={onKickClick}
 			/>
 
