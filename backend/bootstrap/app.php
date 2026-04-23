@@ -1,60 +1,39 @@
 <?php
-// routes/console.php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Schedule;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
-use App\Models\User;
+use App\Exceptions\GameException;
+use App\Exceptions\RoomException;
+use App\Exceptions\UserException;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 
-/**
- * Purgar invitados expirados (Con Anonimización y Soft Delete)
- * @return int Número de usuarios borrados
- */
-$purgeGuestsTask = function () {
-    // Definir el límite (invitados con más de 24 horas)
-    $expiredGuests = User::where('is_guest', true)
-        ->where('created_at', '<', now()->subDay())
-        ->get();
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__ . '/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php',
+        commands: __DIR__ . '/../routes/console.php',
+        channels: __DIR__ . '/../routes/channels.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware): void {
 
-    $count = $expiredGuests->count();
+        $middleware->statefulApi();
 
-    foreach ($expiredGuests as $guest) {
-
-        // Limpiar cualquier sesión activa en la base de datos 
-        DB::table('sessions')->where('user_id', $guest->id)->delete();
-
-        // Anonimanizar los datos para mantener el historial del juego intacto
-        $guest->update([
-            'username' => 'DeletedGuest_' . $guest->id,
-            'email'    => 'deleted_guest_' . $guest->id . '_' . time() . '@example.com',
-            'password' => Hash::make(Str::random(32)),
+        $middleware->web(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
         ]);
+        $middleware->api(append: [
+            \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+        $middleware->validateCsrfTokens(except: [
+            'broadcasting/auth',
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
 
-        // Apilcar Borrado Suave (Soft Delete)
-        $guest->delete();
-    }
-
-    return $count;
-};
-
-// COMANDO MANUAL
-Artisan::command('guests:purge', function () use ($purgeGuestsTask) {
-    $this->info("Iniciando purga manual de invitados...");
-
-    $count = $purgeGuestsTask();
-
-    if ($count <= 0) {
-        $this->info("No había invitados antiguos para eliminar.");
-    } else {
-        $this->info("Limpieza completada: Se han anonimizado y archivado {$count} invitados antiguos.");
-    }
-})->purpose('Anonimiza y archiva invitados con más de 24h de antigüedad');
-
-
-// TAREA PROGRAMADA (Cada hora)
-Schedule::call($purgeGuestsTask)
-    ->hourly()
-    ->name('purge-guests');
+        $exceptions->dontReport([
+            RoomException::class,
+            GameException::class,
+            UserException::class
+        ]);
+    })->create();

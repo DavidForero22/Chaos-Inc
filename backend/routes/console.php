@@ -1,17 +1,19 @@
 <?php
 // routes/console.php
 
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\User;
 
 /**
- * Purgar invitados expirados
+ * Purgar invitados expirados (Con Anonimización y Soft Delete)
  * @return int Número de usuarios borrados
  */
 $purgeGuestsTask = function () {
-    // Definimos el límite (invitados con más de 24 horas)
+    // Definir el límite (invitados con más de 24 horas)
     $expiredGuests = User::where('is_guest', true)
         ->where('created_at', '<', now()->subDay())
         ->get();
@@ -19,8 +21,19 @@ $purgeGuestsTask = function () {
     $count = $expiredGuests->count();
 
     foreach ($expiredGuests as $guest) {
-        $guest->tokens()->delete();
-        $guest->forceDelete();
+
+        // Limpiar cualquier sesión activa en la base de datos 
+        DB::table('sessions')->where('user_id', $guest->id)->delete();
+
+        // Anonimanizar los datos para mantener el historial del juego intacto
+        $guest->update([
+            'username' => 'DeletedGuest_' . $guest->id,
+            'email'    => 'deleted_guest_' . $guest->id . '_' . time() . '@example.com',
+            'password' => Hash::make(Str::random(32)),
+        ]);
+
+        // Apilcar Borrado Suave (Soft Delete)
+        $guest->delete();
     }
 
     return $count;
@@ -35,9 +48,9 @@ Artisan::command('guests:purge', function () use ($purgeGuestsTask) {
     if ($count <= 0) {
         $this->info("No había invitados antiguos para eliminar.");
     } else {
-        $this->info("Limpieza completada: Se han eliminado {$count} invitados antiguos.");
+        $this->info("Limpieza completada: Se han anonimizado y archivado {$count} invitados antiguos.");
     }
-})->purpose('Elimina invitados con más de 24h de antigüedad');
+})->purpose('Anonimiza y archiva invitados con más de 24h de antigüedad');
 
 
 // TAREA PROGRAMADA (Cada hora)
