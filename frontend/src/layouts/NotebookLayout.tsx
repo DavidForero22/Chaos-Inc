@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import Navbar from "../components/ui/Navbar";
+import Navbar from "../components/ui/Navbar/Navbar";
 import SettingsDropdown from "../components/ui/SettingsDropdown";
 import { FaGear } from "react-icons/fa6";
 import styles from "./NotebookLayout.module.css";
