@@ -19,7 +19,7 @@
 	writing-mode: vertical-rl;
 	text-orientation: mixed;
 	cursor: pointer;
-	z-index: 50;
+	z-index: 49;
 	transition: all 0.2s ease;
 	box-shadow: -4px 0 10px rgba(0, 0, 0, 0.3);
 }

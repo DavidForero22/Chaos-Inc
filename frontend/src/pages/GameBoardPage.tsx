@@ -7,9 +7,10 @@ import { useGameTimers } from "../hooks/game/useGameTimers.ts";
 
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
 import { PlayerArea } from "../components/game/player/PlayerArea.tsx";
-import { GameLog } from "../components/game/board/GameLog.tsx"; // <--- Importación
+import { GameLog } from "../components/game/board/GameLog.tsx";
 import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 import { GameOverlayManager } from "../components/game/overlays/GameOverlayManager.tsx";
+import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -89,6 +90,8 @@ export default function GameBoardPage() {
 				turnTimeLeft={timers.turnTimeLeft}
 				isTurnPaused={timers.isTurnPaused}
 			/>
+
+			<OrientationWarning />
 		</div>
 	);
 }
