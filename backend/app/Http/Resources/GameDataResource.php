@@ -121,7 +121,7 @@ class GameDataResource extends JsonResource
 
             'turn_timeout'                 => $turnTimeout,
             'turn_expires_at'              => $turnExpiresAt,
-            'turn_remaining'               => $turnRemaining,
+            'turn_remaining' => max(0, $turnExpiresAt - now('UTC')->timestamp),
         ];
     }
 

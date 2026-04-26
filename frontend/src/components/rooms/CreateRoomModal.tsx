@@ -23,7 +23,7 @@ export default function CreateRoomModal({
 		is_private: false,
 		password: "",
 		max_players: 4,
-		turn_timeout: 45,
+		turn_timeout: 80,
 	});
 
 	const handleCreateRoom = async (e: React.FormEvent) => {
@@ -168,8 +168,8 @@ export default function CreateRoomModal({
 					</label>
 					<input
 						type="range"
-						min="30"
-						max="90"
+						min="60"
+						max="120"
 						step="5"
 						style={{ width: "100%", marginTop: "8px", accentColor: "#295c60" }}
 						value={formData.turn_timeout}

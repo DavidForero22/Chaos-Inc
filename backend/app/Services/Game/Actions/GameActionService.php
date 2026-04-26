@@ -118,7 +118,6 @@ class GameActionService
             default => null,
         };
 
-        $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
         $newTurnId = uniqid('turn_', true);
         Redis::hset($roomStateKey, 'current_turn_id', $newTurnId);
 
@@ -128,11 +127,20 @@ class GameActionService
             Redis::exists("room:{$roomId}:pending_multi_attack");
 
         if ($needsReaction) {
-            // PAUSA: Borrar el tiempo de expiración para que el frontend detenga el reloj
+            // Calcular cuánto tiempo le sobraba y guardarlo
+            $currentExpiresAt = (int) Redis::hget($roomStateKey, 'turn_expires_at');
+
+            // Si currentExpiresAt es mayor que 0, calculamos la diferencia. Si no, asumir 0
+            $timeLeft = $currentExpiresAt > 0 ? max(0, $currentExpiresAt - now('UTC')->timestamp) : 0;
+
+            Redis::hset($roomStateKey, 'turn_paused_time_left', $timeLeft);
+
+            // Borrar el tiempo de expiración para que el frontend detenga el reloj
             Redis::hset($roomStateKey, 'turn_expires_at', 0);
-        } else {
-            Redis::hset($roomStateKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
-            AutoEndTurnJob::dispatch($roomId, $playerName, $newTurnId)->delay(now()->addSeconds($timeout));
+
+            // Generar un nuevo ID para invalidar el AutoEndTurnJob original que estaba contando.
+            $pausedTurnId = uniqid('turn_paused_', true);
+            Redis::hset($roomStateKey, 'current_turn_id', $pausedTurnId);
         }
 
         event(new RoomStateUpdated($roomId, $logMessage));
