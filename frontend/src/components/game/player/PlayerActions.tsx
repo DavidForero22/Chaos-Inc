@@ -1,11 +1,11 @@
 // frontend/src/components/game/player/PlayerActions.tsx
+
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
 
-	// Si los datos no han cargado, no renderizamos nada
 	if (!actionLogic.isReady) return null;
 
 	const {
@@ -31,10 +31,14 @@ export function PlayerActions() {
 	} = actionLogic;
 
 	return (
-		<div className="w-full flex justify-between items-end mb-6 px-2 shrink-0 z-40">
-			{/* Contador de Cartas (Cinta Dymo) */}
+		/* RESPONSIVE MÁGICO: 
+           - Móvil: fixed, bottom-4, right-4 (Flotante)
+           - PC (lg): static, justify-between, mb-6 (Vuelve a su sitio original dentro de la carpeta)
+        */
+		<div className="fixed bottom-4 right-4 z-60 flex flex-col items-end gap-2 pointer-events-auto lg:static lg:w-full lg:flex-row lg:justify-between lg:items-end lg:mb-6 lg:px-2 lg:z-40">
+			{/* Contador de Cartas (Cinta Dymo) - Solo se ve en PC */}
 			<div
-				className={`${styles.dymoTape} ${
+				className={`hidden lg:inline-block ${styles.dymoTape} ${
 					(isDiscardMode ? willBeOverLimit : isOverLimit)
 						? styles.dymoTapeRed
 						: ""
@@ -46,7 +50,7 @@ export function PlayerActions() {
 			</div>
 
 			{/* Botones de Reacción Defensiva y Acción (Sellos) */}
-			<div className="flex gap-4 items-center">
+			<div className="flex flex-col-reverse lg:flex-row gap-2 lg:gap-4 items-end lg:items-center">
 				{me!.combat_state.is_defending_single ? (
 					<button
 						onClick={() => reactToAttack("accept")}

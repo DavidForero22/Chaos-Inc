@@ -59,7 +59,11 @@ export default function GameBoardPage() {
 			/>
 
 			{/* ── 2. OBJETO CENTRAL (Teléfono Polycom) ── */}
-			<div className="absolute top-[45%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+			{/* RESPONSIVE APLICADO: 
+                - En Móvil: Pegado arriba (top-0 o top-2), escalado al 60% (scale-60) origin-top.
+                - En PC (lg:): Vuelve al centro (top-[45%]), escala original (scale-100).
+            */}
+			<div className="absolute left-1/2 transform -translate-x-1/2 z-10 top-0 scale-[0.6] origin-top lg:top-[45%] lg:-translate-y-1/2 lg:scale-100 lg:origin-center transition-all duration-500">
 				<div className="w-56 h-48 bg-[#2a2a2a] rounded-[40px] border-4 border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative">
 					<div className="bg-[#4a8fcf] w-3/4 h-20 border-[3px] border-[#111] shadow-inner flex flex-col items-center justify-center text-black">
 						<span className="text-sm font-bold opacity-80">SALA {roomId}</span>
@@ -82,7 +86,7 @@ export default function GameBoardPage() {
 				</div>
 			</div>
 
-			{/* ── 3. REGISTRO LOG (Componente autogestionado) ── */}
+			{/* ── 3. REGISTRO LOG ── */}
 			<GameLog />
 
 			{/* ── 4. ÁREA DEL JUGADOR ── */}

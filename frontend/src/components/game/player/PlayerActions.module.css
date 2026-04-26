@@ -10,7 +10,6 @@
 	padding: 4px 12px;
 	letter-spacing: 2px;
 	text-transform: uppercase;
-	/* Relieve de plástico y sombra */
 	box-shadow:
 		2px 2px 0px rgba(0, 0, 0, 0.5),
 		inset 1px 1px 2px rgba(255, 255, 255, 0.2);
@@ -29,25 +28,34 @@
 .inkStamp {
 	font-family: "Courier New", Courier, monospace;
 	font-weight: 900;
-	font-size: 0.9rem;
+	font-size: 0.8rem; /* Ligeramente más pequeño en móvil */
 	text-transform: uppercase;
 	letter-spacing: 1px;
-	padding: 6px 16px;
-	background: transparent;
+	padding: 6px 12px;
+	background: rgba(
+		255,
+		255,
+		255,
+		0.9
+	); /* Fondo blanco semitransparente para que destaque si flota sobre la mesa */
+	backdrop-filter: blur(2px);
 	border: 3px solid;
 	border-radius: 4px;
 	cursor: pointer;
 	transition: all 0.1s ease-out;
-	opacity: 0.8; 
+	opacity: 0.9;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra para que resalte más */
 }
 
 /* Al pasar el ratón se oscurece, y al hacer clic se "estampa" hundiéndose */
 .inkStamp:hover:not(.stampDisabled) {
 	opacity: 1;
+	background: #fff;
 }
 .inkStamp:active:not(.stampDisabled) {
 	transform: scale(0.92);
 	opacity: 1;
+	box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Colores para las distintas acciones */
@@ -77,8 +85,24 @@
 
 /* Estado bloqueado */
 .stampDisabled {
-	opacity: 0.3 !important;
+	opacity: 0.4 !important;
 	cursor: not-allowed;
 	filter: grayscale(100%);
 	transform: rotate(0deg);
+	background: rgba(200, 200, 200, 0.5);
+	box-shadow: none;
+}
+
+/* Media Query para Escritorio */
+@media (min-width: 1024px) {
+	.inkStamp {
+		font-size: 0.9rem;
+		padding: 6px 16px;
+		background: transparent; /* En PC vuelve a ser transparente porque está en la carpeta de cartón */
+		backdrop-filter: none;
+		box-shadow: none;
+	}
+	.inkStamp:hover:not(.stampDisabled) {
+		background: transparent;
+	}
 }

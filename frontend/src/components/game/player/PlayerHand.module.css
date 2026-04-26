@@ -2,7 +2,10 @@
 
 .handContainer {
 	position: relative;
-	width: 100%;
+
+	/* En móvil, ocupa casi todo pero deja un hueco a la derecha para los botones flotantes */
+	width: calc(100% - 180px);
+
 	background-color: #7a5c3a;
 	border-radius: 8px 8px 4px 4px;
 
@@ -12,7 +15,8 @@
 	border-bottom: 2px solid #5a4228;
 
 	overflow: hidden;
-	height: 200px;
+	height: 100%; 
+	min-height: 150px;
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
@@ -54,15 +58,20 @@
 }
 
 .cardsScrollArea::-webkit-scrollbar-thumb {
-	background: rgba(
-		200,
-		180,
-		150,
-		0.4
-	); 
+	background: rgba(200, 180, 150, 0.4);
 	border-radius: 4px;
 }
 
 .cardsScrollArea::-webkit-scrollbar-thumb:hover {
 	background: rgba(200, 180, 150, 0.8);
+}
+
+/* =========================================
+   DISEÑO ESCRITORIO (PC y Tablets Grandes)
+========================================= */
+@media (min-width: 1024px) {
+	.handContainer {
+		width: 100%;
+		height: 200px;
+	}
 }

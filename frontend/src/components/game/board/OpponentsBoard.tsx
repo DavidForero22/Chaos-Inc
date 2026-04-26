@@ -1,5 +1,6 @@
 // src/components/game/board/OpponentsBoard.tsx
 
+import { useState, useEffect } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
@@ -20,7 +21,16 @@ export function OpponentsBoard({
 
 	const gameData = useGameStore((state) => state.gameData);
 	const playTurn = useGameStore((state) => state.playTurn);
-	const { selectedCardId, setSelectedCardId } = useGameUIStore();
+
+	const { selectedCardId, setSelectedCardId, isFolderExpanded } =
+		useGameUIStore();
+
+	const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+	useEffect(() => {
+		const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
 	if (!gameData || !user) return null;
 
@@ -46,58 +56,73 @@ export function OpponentsBoard({
 	};
 
 	return (
-		// Cubre toda la pantalla por debajo del UI, centramos el origen de coordenadas
 		<div className="absolute inset-0 pointer-events-none z-20">
+			{/* Mensaje flotante de apuntado */}
 			{isMyTurn && isTargetingCard && (
-				<div className="absolute top-10 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-2 rounded shadow-lg font-bold animate-bounce z-30 border-2 border-black pointer-events-auto">
+				<div className="absolute top-16 lg:top-10 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-2 rounded shadow-lg font-bold animate-bounce z-30 border-2 border-black pointer-events-auto text-sm lg:text-base whitespace-nowrap">
 					{selectedCardType === 12
 						? "¡Elige una pasiva de un rival!"
 						: "¡Elige a un jugador objetivo!"}
 				</div>
 			)}
 
-			{/* Mapeo circular de los oponentes */}
-			{opponents.map((player: Opponent, index: number) => {
-				const total = opponents.length;
+			{/* CONTENEDOR INTELIGENTE:
+                - Móvil: fila recta, centrado arriba, se encoge al 75% si la carpeta está abierta.
+                - Escritorio: Ocupa toda la pantalla, sin flex, ignora si la carpeta está abierta.
+            */}
+			<div
+				className={`w-full absolute top-2 lg:inset-0 lg:top-auto flex justify-center gap-2 lg:block transition-transform duration-500 origin-top pointer-events-none ${
+					isFolderExpanded && !isDesktop
+						? "scale-75 -translate-y-2"
+						: "scale-100"
+				}`}
+			>
+				{opponents.map((player: Opponent, index: number) => {
+					const total = opponents.length;
 
-				// === LÓGICA DE POSICIONAMIENTO RADIAL ===
-				// El ángulo máximo de apertura (ej: de -70 grados a +70 grados)
-				const maxAngle = 70;
+					let inlineStyles: React.CSSProperties = {};
 
-				// Repartimos a los jugadores equitativamente en el arco
-				const angleDeg =
-					total === 1 ? 0 : -maxAngle + (index * (maxAngle * 2)) / (total - 1);
-				const angleRad = angleDeg * (Math.PI / 180);
+					if (isDesktop) {
+						// === LÓGICA DE POSICIONAMIENTO RADIAL (Solo PC) ===
+						const maxAngle = 70;
+						const angleDeg =
+							total === 1
+								? 0
+								: -maxAngle + (index * (maxAngle * 2)) / (total - 1);
+						const angleRad = angleDeg * (Math.PI / 180);
+						const radius = 380;
 
-				// Radio (Distancia desde el Polycom hacia el borde)
-				const radius = 380;
+						const x = Math.sin(angleRad) * radius;
+						const y = -Math.cos(angleRad) * radius;
 
-				// Calculamos las coordenadas X e Y
-				const x = Math.sin(angleRad) * radius;
-				const y = -Math.cos(angleRad) * radius;
-
-				return (
-					<div
-						key={player.name}
-						className="absolute top-[45%] left-1/2 pointer-events-auto"
-						style={{
-							// Movemos el componente a su posición circular
+						inlineStyles = {
+							position: "absolute",
+							top: "45%",
+							left: "50%",
 							transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) rotate(${angleDeg * 0.3}deg)`,
-							// Nota: Le he puesto un rotate pequeño para que no queden 100% rectos, sino orientados levemente hacia el centro.
-						}}
-					>
-						<OpponentCard
-							player={player}
-							isMyTurn={isMyTurn}
-							selectedCardId={selectedCardId}
-							selectedCardType={selectedCardType}
-							onAction={handleAction}
-							turnTimeLeft={turnTimeLeft}
-							isTurnPaused={isTurnPaused}
-						/>
-					</div>
-				);
-			})}
+						};
+					}
+
+					return (
+						<div
+							key={player.name}
+							// En móvil es relativo (Flex item), en PC se vuelve absoluto por el inlineStyle
+							className="relative pointer-events-auto transition-transform"
+							style={inlineStyles}
+						>
+							<OpponentCard
+								player={player}
+								isMyTurn={isMyTurn}
+								selectedCardId={selectedCardId}
+								selectedCardType={selectedCardType}
+								onAction={handleAction}
+								turnTimeLeft={turnTimeLeft}
+								isTurnPaused={isTurnPaused}
+							/>
+						</div>
+					);
+				})}
+			</div>
 		</div>
 	);
 }
