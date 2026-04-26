@@ -37,14 +37,16 @@ export function useCardPlayability(
 				o.is_online &&
 				(o.perks.has_shield ||
 					o.perks.vision_bonus > 0 ||
-					o.perks.has_distance),
+					o.perks.has_distance ||
+					o.perks.has_luck),
 		);
 
 		const myActivePerksCount =
 			(me.perks.has_shield ? 1 : 0) +
 			((me.perks.vision_bonus ?? 0) > 0 ? 1 : 0) +
 			(me.perks.has_distance ? 1 : 0) +
-			(me.perks.has_storage ? 1 : 0);
+			(me.perks.has_storage ? 1 : 0) +
+			(me.perks.has_luck ? 1 : 0);
 
 		return {
 			isMyTurn,
