@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore.ts";
-import { useAdminData } from "../hooks/admin/useAdminData.ts";
 
 import UsersTab from "../components/admin/UsersTab.tsx";
 import GamesTab from "../components/admin/GamesTab.tsx";
@@ -17,17 +16,6 @@ export default function AdminPage() {
 	const navigate = useNavigate();
 	const [tab, setTab] = useState<Tab>("users");
 
-	const {
-		users,
-		games,
-		rooms,
-		loading,
-		fetchAll,
-		deleteUser,
-		updateUser,
-		createUser,
-	} = useAdminData();
-
 	useEffect(() => {
 		// 2. Ahora comprobamos que el usuario esté logueado y sea admin
 		// Si no hay user, significa que no hay sesión activa en el cliente
@@ -35,18 +23,7 @@ export default function AdminPage() {
 			navigate("/");
 			return;
 		}
-		fetchAll();
-	}, [user, role, navigate, fetchAll]); // 'user' reemplaza a 'token' como dependencia
-
-	if (loading)
-		return (
-			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
-				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#295c60]"></div>
-				<span className="ml-3 font-mono">
-					Accediendo a administración...
-				</span>
-			</div>
-		);
+	}, [user, role, navigate]); // 'user' reemplaza a 'token' como dependencia
 
 	return (
 		<div className="pl-6 pb-10 pr-6">
@@ -81,16 +58,10 @@ export default function AdminPage() {
 
 			<div className="font-mono text-[#393e42]">
 				{tab === "users" && (
-					<UsersTab
-						users={users}
-						currentUser={user}
-						onDelete={deleteUser}
-						onUpdate={updateUser}
-						onCreate={createUser}
-					/>
+					<UsersTab currentUser={user}/>
 				)}
-				{tab === "games" && <GamesTab games={games} />}
-				{tab === "rooms" && <RoomsTab rooms={rooms} />}
+				{tab === "games" && <GamesTab />}
+				{tab === "rooms" && <RoomsTab/>}
 			</div>
 		</div>
 	);

@@ -1,31 +1,44 @@
 // src/components/admin/UsersTab.tsx
 
-import { useState } from "react";
-import type { UserRecord } from "../../types/api.ts";
+import { useState, useMemo } from "react";
+import { useEffect } from "react";
+import { useUsersData } from "../../hooks/admin/useUsersData.ts";
+import Pagination from "./Pagination.tsx";
 
+// Props
 interface Props {
-	users: UserRecord[];
-	currentUser?: string | null; // Añadimos la prop opcional
-	onDelete: (id: number) => Promise<void>;
-	onUpdate: (
-		id: number,
-		data: { username: string; email: string; role: string },
-	) => Promise<void>;
-	onCreate: (data: {
-		username: string;
-		email: string;
-		password: string;
-		role: string;
-	}) => Promise<void>;
+	currentUser?: string | null;
 }
 
-export default function UsersTab({
-	users,
-	currentUser,
-	onDelete,
-	onUpdate,
-	onCreate,
-}: Props) {
+// ── Constantes
+const PAGE_SIZE = 20;
+
+type SortField = "username" | "joinedAt";
+type SortDir = "asc" | "desc";
+type RoleFilter = "all" | "user" | "admin";
+
+// ── Icono flecha (inline, sin dependencias)
+function SortArrow({ active, dir }: { active: boolean; dir: SortDir }) {
+	return (
+		<span
+			className={`ml-1 inline-block transition-transform ${active ? "opacity-100" : "opacity-30"}`}
+			style={{ transform: dir === "desc" && active ? "scaleY(-1)" : undefined }}
+		>
+			▲
+		</span>
+	);
+}
+
+// ── Componente ────────────────────────────────────────────────────────────────
+export default function UsersTab({ currentUser }: Props) {
+	const { users, loading, fetchUsers, createUser, updateUser, deleteUser } =
+		useUsersData();
+
+	useEffect(() => {
+		fetchUsers();
+	}, [fetchUsers]);
+
+	// Edición
 	const [editingId, setEditingId] = useState<number | null>(null);
 	const [editData, setEditData] = useState({
 		username: "",
@@ -33,6 +46,7 @@ export default function UsersTab({
 		role: "user",
 	});
 
+	// Creación
 	const [showCreate, setShowCreate] = useState(false);
 	const [createData, setCreateData] = useState({
 		username: "",
@@ -41,10 +55,81 @@ export default function UsersTab({
 		role: "user",
 	});
 
+	// Filtros
+	const [search, setSearch] = useState("");
+	const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+
+	// Ordenación
+	const [sortField, setSortField] = useState<SortField>("username");
+	const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+	// Paginación
+	const [page, setPage] = useState(1);
+
+	// ── Lógica de filtrado + ordenación ─────────────────────────────────────
+	const filtered = useMemo(() => {
+		let result = [...users];
+
+		// Búsqueda por nombre
+		if (search.trim()) {
+			const q = search.trim().toLowerCase();
+			result = result.filter((u) => u.username.toLowerCase().includes(q));
+		}
+
+		// Filtro por rol
+		if (roleFilter !== "all") {
+			result = result.filter((u) => u.role === roleFilter);
+		}
+
+		// Ordenación
+		result.sort((a, b) => {
+			let cmp = 0;
+			if (sortField === "username") {
+				cmp = a.username.localeCompare(b.username);
+			} else {
+				cmp = new Date(a.joinedAt).getTime() - new Date(b.joinedAt).getTime();
+			}
+			return sortDir === "asc" ? cmp : -cmp;
+		});
+
+		return result;
+	}, [users, search, roleFilter, sortField, sortDir]);
+
+	// ── Paginación ───────────────────────────────────────────────────────────
+	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+	// Resetear página si los filtros reducen el total
+	const safePage = Math.min(page, totalPages);
+	const paginated = filtered.slice(
+		(safePage - 1) * PAGE_SIZE,
+		safePage * PAGE_SIZE,
+	);
+
+	const goTo = (p: number) => setPage(Math.max(1, Math.min(p, totalPages)));
+
+	// Resetear página al cambiar filtros
+	const handleSearch = (v: string) => {
+		setSearch(v);
+		setPage(1);
+	};
+	const handleRole = (v: RoleFilter) => {
+		setRoleFilter(v);
+		setPage(1);
+	};
+	const handleSort = (field: SortField) => {
+		if (sortField === field) {
+			setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+		} else {
+			setSortField(field);
+			setSortDir("asc");
+		}
+		setPage(1);
+	};
+
+	// ── Handlers CRUD ────────────────────────────────────────────────────────
 	const handleDelete = async (id: number) => {
-		if (!confirm("¿Proceder con el despido (eliminar usuario)?")) return;
+		if (!confirm("¿Eliminar usuario?")) return;
 		try {
-			await onDelete(id);
+			await deleteUser(id);
 		} catch (e: any) {
 			alert(e.response?.data?.message || "Error al eliminar.");
 		}
@@ -52,7 +137,7 @@ export default function UsersTab({
 
 	const handleSave = async (id: number) => {
 		try {
-			await onUpdate(id, editData);
+			await updateUser(id, editData);
 			setEditingId(null);
 		} catch (e: any) {
 			alert(e.response?.data?.message || "Error al actualizar.");
@@ -61,7 +146,7 @@ export default function UsersTab({
 
 	const handleCreate = async () => {
 		try {
-			await onCreate(createData);
+			await createUser(createData);
 			setCreateData({ username: "", email: "", password: "", role: "user" });
 			setShowCreate(false);
 		} catch (e: any) {
@@ -69,9 +154,17 @@ export default function UsersTab({
 		}
 	};
 
+	if (loading)
+		return (
+			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
+				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#295c60]"></div>
+				<span className="ml-3 font-mono">Cargando usuarios...</span>
+			</div>
+		);
+
 	return (
 		<div className="flex flex-col gap-4">
-			{/* Botón de Alta de Empleado */}
+			{/* Cabecera + botón alta */}
 			<div className="flex justify-between items-end mb-2">
 				<h3 className="font-bold text-lg underline decoration-2 uppercase">
 					Registro de Empleados
@@ -84,7 +177,7 @@ export default function UsersTab({
 				</button>
 			</div>
 
-			{/* Formulario de Creación */}
+			{/* Formulario de creación */}
 			{showCreate && (
 				<div className="bg-gray-400/10 border-2 border-dashed border-[#295c60]/50 p-4 flex flex-wrap gap-4 items-end mb-4">
 					<div className="flex-1 min-w-37.5">
@@ -151,120 +244,195 @@ export default function UsersTab({
 				</div>
 			)}
 
-			{/* Listado de Usuarios */}
-			<div className="flex flex-col">
-				{users.map((u) => {
-					const isMe = u.username === currentUser;
+			{/* ── Barra de filtros ── */}
+			<div className="flex flex-wrap gap-3 items-end border-y-2 border-dashed border-gray-400/50 py-3">
+				{/* Búsqueda */}
+				<div className="flex-1 min-w-48">
+					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
+						Buscar
+					</label>
+					<input
+						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60] text-sm"
+						value={search}
+						onChange={(e) => handleSearch(e.target.value)}
+						placeholder="Nombre de empleado…"
+					/>
+				</div>
 
-					return (
-						<div
-							key={u.id}
-							className="py-4 border-b border-dashed border-gray-400/50"
-						>
-							{editingId === u.id ? (
-								<div className="flex flex-wrap gap-4 items-end bg-gray-400/10 p-3 -mx-3 rounded">
-									<input
-										className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
-										value={editData.username}
-										onChange={(e) =>
-											setEditData({ ...editData, username: e.target.value })
-										}
-									/>
-									<input
-										className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
-										value={editData.email}
-										onChange={(e) =>
-											setEditData({ ...editData, email: e.target.value })
-										}
-									/>
-									<select
-										className="w-24 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none"
-										value={editData.role}
-										onChange={(e) =>
-											setEditData({ ...editData, role: e.target.value })
-										}
-									>
-										<option value="user">user</option>
-										<option value="admin">admin</option>
-									</select>
-									<div className="flex gap-2">
-										<button
-											onClick={() => handleSave(u.id)}
-											className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase"
-										>
-											Guardar
-										</button>
-										<button
-											onClick={() => setEditingId(null)}
-											className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase"
-										>
-											Cancelar
-										</button>
-									</div>
-								</div>
-							) : (
-								<div className="flex justify-between items-center">
-									<div>
-										<p className="font-bold text-lg flex items-center">
-											{u.username}
-											{isMe && (
-												<span className="ml-2 text-xs text-[#295c60] italic">
-													(TÚ)
-												</span>
-											)}
-											<span
-												className={`ml-3 text-xs px-2 py-0.5 border ${
-													u.role === "admin"
-														? "border-red-700 text-red-700 bg-red-100/50"
-														: "border-blue-700 text-blue-700 bg-blue-100/50"
-												}`}
-											>
-												{u.role.toUpperCase()}
-											</span>
-										</p>
-										<p className="text-sm opacity-70 mt-1">
-											<span className="font-bold">Email:</span> {u.email}{" "}
-											<span className="mx-2">|</span>{" "}
-											<span className="font-bold">Alta:</span>{" "}
-											{new Date(u.joinedAt).toLocaleDateString("es-ES")}
-										</p>
-									</div>
-									<div className="flex gap-3 items-center">
-										{/* Condicional de seguridad visual */}
-										{isMe ? (
-											<span className="text-xs font-bold text-gray-500 opacity-60 italic tracking-widest">
-												[SESIÓN ACTIVA - INMODIFICABLE]
-											</span>
-										) : (
-											<>
-												<button
-													onClick={() => {
-														setEditingId(u.id);
-														setEditData({
-															username: u.username,
-															email: u.email,
-															role: u.role,
-														});
-													}}
-													className="text-sm font-bold text-blue-700 hover:underline"
-												>
-													EDITAR
-												</button>
-												<button
-													onClick={() => handleDelete(u.id)}
-													className="text-sm font-bold text-red-700 hover:underline"
-												>
-													ELIMINAR
-												</button>
-											</>
-										)}
-									</div>
-								</div>
-							)}
-						</div>
-					);
-				})}
+				{/* Filtro rol */}
+				<div className="w-32">
+					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
+						Cargo
+					</label>
+					<select
+						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer text-sm"
+						value={roleFilter}
+						onChange={(e) => handleRole(e.target.value as RoleFilter)}
+					>
+						<option value="all">Todos</option>
+						<option value="user">User</option>
+						<option value="admin">Admin</option>
+					</select>
+				</div>
+
+				{/* Ordenación */}
+				<div className="flex gap-2 items-end pb-1">
+					<span className="text-xs font-bold uppercase opacity-60 pb-1.5">
+						Ordenar:
+					</span>
+					<button
+						onClick={() => handleSort("username")}
+						className={`text-xs font-bold uppercase px-2 py-1 border transition-colors ${
+							sortField === "username"
+								? "border-[#295c60] text-[#295c60] bg-[#295c60]/10"
+								: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"
+						}`}
+					>
+						Nombre
+						<SortArrow active={sortField === "username"} dir={sortDir} />
+					</button>
+					<button
+						onClick={() => handleSort("joinedAt")}
+						className={`text-xs font-bold uppercase px-2 py-1 border transition-colors ${
+							sortField === "joinedAt"
+								? "border-[#295c60] text-[#295c60] bg-[#295c60]/10"
+								: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"
+						}`}
+					>
+						Alta
+						<SortArrow active={sortField === "joinedAt"} dir={sortDir} />
+					</button>
+				</div>
 			</div>
+
+			{/* ── Listado paginado ── */}
+			<div className="flex flex-col">
+				{paginated.length === 0 ? (
+					<p className="py-8 text-center text-sm opacity-50 italic uppercase tracking-widest">
+						Sin resultados
+					</p>
+				) : (
+					paginated.map((u) => {
+						const isMe = u.username === currentUser;
+
+						return (
+							<div
+								key={u.id}
+								className="py-4 border-b border-dashed border-gray-400/50"
+							>
+								{editingId === u.id ? (
+									<div className="flex flex-wrap gap-4 items-end bg-gray-400/10 p-3 -mx-3 rounded">
+										<input
+											className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
+											value={editData.username}
+											onChange={(e) =>
+												setEditData({ ...editData, username: e.target.value })
+											}
+										/>
+										<input
+											className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
+											value={editData.email}
+											onChange={(e) =>
+												setEditData({ ...editData, email: e.target.value })
+											}
+										/>
+										<select
+											className="w-24 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none"
+											value={editData.role}
+											onChange={(e) =>
+												setEditData({ ...editData, role: e.target.value })
+											}
+										>
+											<option value="user">user</option>
+											<option value="admin">admin</option>
+										</select>
+										<div className="flex gap-2">
+											<button
+												onClick={() => handleSave(u.id)}
+												className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase"
+											>
+												Guardar
+											</button>
+											<button
+												onClick={() => setEditingId(null)}
+												className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase"
+											>
+												Cancelar
+											</button>
+										</div>
+									</div>
+								) : (
+									<div className="flex justify-between items-center">
+										<div>
+											<p className="font-bold text-lg flex items-center">
+												{u.username}
+												{isMe && (
+													<span className="ml-2 text-xs text-[#295c60] italic">
+														(TÚ)
+													</span>
+												)}
+												<span
+													className={`ml-3 text-xs px-2 py-0.5 border ${
+														u.role === "admin"
+															? "border-red-700 text-red-700 bg-red-100/50"
+															: "border-blue-700 text-blue-700 bg-blue-100/50"
+													}`}
+												>
+													{u.role.toUpperCase()}
+												</span>
+											</p>
+											<p className="text-sm opacity-70 mt-1">
+												<span className="font-bold">Email:</span> {u.email}{" "}
+												<span className="mx-2">|</span>{" "}
+												<span className="font-bold">Alta:</span>{" "}
+												{new Date(u.joinedAt).toLocaleDateString("es-ES")}
+											</p>
+										</div>
+										<div className="flex gap-3 items-center">
+											{isMe ? (
+												<span className="text-xs font-bold text-gray-500 opacity-60 italic tracking-widest">
+													[SESIÓN ACTIVA - INMODIFICABLE]
+												</span>
+											) : (
+												<>
+													<button
+														onClick={() => {
+															setEditingId(u.id);
+															setEditData({
+																username: u.username,
+																email: u.email,
+																role: u.role,
+															});
+														}}
+														className="text-sm font-bold text-blue-700 hover:underline"
+													>
+														EDITAR
+													</button>
+													<button
+														onClick={() => handleDelete(u.id)}
+														className="text-sm font-bold text-red-700 hover:underline"
+													>
+														ELIMINAR
+													</button>
+												</>
+											)}
+										</div>
+									</div>
+								)}
+							</div>
+						);
+					})
+				)}
+			</div>
+
+			<Pagination
+				page={safePage}
+				totalPages={totalPages}
+				pageSize={PAGE_SIZE}
+				filteredCount={filtered.length}
+				totalCount={users.length}
+				onGoTo={goTo}
+			/>
 		</div>
 	);
 }
