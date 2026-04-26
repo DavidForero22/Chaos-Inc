@@ -104,7 +104,7 @@ export default function GameBoardPage() {
 			>
 				<button
 					onClick={() => setSelectedCardId(null)}
-					className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 lg:px-4 lg:py-8 rounded-l-xl border-y-4 border-l-4 border-red-800 shadow-[-10px_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center group"
+					className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 lg:px-4 lg:py-8 rounded-l-xl border-y-4 border-l-4 border-red-800 flex items-center justify-center group"
 					style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
 					title="Cancelar carta seleccionada"
 				>

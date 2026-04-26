@@ -18,6 +18,10 @@ interface PlayerAreaProps {
 
 export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	const me = useGameStore((state) => state.gameData?.me);
+	const currentTurn = useGameStore(
+		(state) => state.gameData?.game?.current_turn,
+	);
+
 	const {
 		isDiscardMode,
 		setIsDiscardMode,
@@ -29,21 +33,21 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 	const [activeTab, setActiveTab] = useState<"hand" | "stats">("hand");
 
-	// Referencia para detectar si estábamos en modo apuntado
+	// Referencias para transiciones de estado
 	const prevIsTargeting = useRef<boolean>(false);
+	const prevIsDefending = useRef<boolean>(false);
 
-	const currentTurn = useGameStore(
-		(state) => state.gameData?.game?.current_turn,
-	);
-	const myName = me?.name;
-
+	// 1. Lógica de Descartes y Sabotajes
 	useEffect(() => {
 		if (!me) return;
+
+		// Si exigen descartar (Sabotaje o Límite de mano)
 		if (me.conditions.must_discard && !isDiscardMode) {
 			setIsDiscardMode(true);
 			setActiveTab("hand");
-			setFolderExpanded(true);
+			setFolderExpanded(true); 
 		}
+
 		if (
 			!me.conditions.must_discard &&
 			isDiscardMode &&
@@ -61,24 +65,47 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		setFolderExpanded,
 	]);
 
-	// Evaluamos si la carta actual requiere apuntar
+	// Evaluación de estados actuales
 	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
 	const isTargetingMode = selectedCard
 		? TARGET_CARDS.includes(selectedCard.type)
 		: false;
+	const isMyTurnNow = currentTurn === me?.name;
+	const isDefending =
+		me?.combat_state.is_defending_single || me?.combat_state.is_defending_multi;
 
-	// Auto-Minimizar/Maximizar solo al apuntar
+	// 2. Reacciones Automáticas de la Interfaz
 	useEffect(() => {
+		// A) Auto-Minimizar al apuntar
 		if (isTargetingMode && !prevIsTargeting.current) {
-			// Entrar en modo apuntado -> cerrar la carpeta
 			setFolderExpanded(false);
-		} else if (!isTargetingMode && prevIsTargeting.current) {
-			// Salir del modo apuntado -> abrir la carpeta
+		}
+		// B) Auto-Maximizar al soltar carta o atacar
+		else if (!isTargetingMode && prevIsTargeting.current) {
 			setFolderExpanded(true);
 		}
 
+		// C) Auto-Maximizar si empieza mi turno (y estaba cerrada)
+		if (isMyTurnNow && !isFolderExpanded && !isTargetingMode) {
+			setFolderExpanded(true);
+		}
+
+		// D) Auto-Maximizar si recibo un ataque (para buscar mi carta de Esquivar)
+		if (isDefending && !prevIsDefending.current && !isTargetingMode) {
+			setActiveTab("hand"); 
+			setFolderExpanded(true);
+		}
+
+		// Guardar los estados para la próxima evaluación
 		prevIsTargeting.current = isTargetingMode;
-	}, [isTargetingMode, setFolderExpanded]);
+		prevIsDefending.current = !!isDefending;
+	}, [
+		isTargetingMode,
+		isMyTurnNow,
+		isDefending,
+		isFolderExpanded,
+		setFolderExpanded,
+	]);
 
 	if (!me) return null;
 
@@ -99,22 +126,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 			setActiveTab(tab);
 		}
 	};
-
-	// Auto-abrir carpeta cuando empieza mi turno
-	useEffect(() => {
-		const isMyTurnNow = currentTurn === myName;
-
-		// Si empieza el turno y la carpeta está cerrada, abrirla
-		if (isMyTurnNow && !isFolderExpanded && !isTargetingMode) {
-			setFolderExpanded(true);
-		}
-	}, [
-		currentTurn,
-		myName,
-		isFolderExpanded,
-		isTargetingMode,
-		setFolderExpanded,
-	]);
 
 	return (
 		<div
@@ -139,7 +150,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						Mano ({me.cards.length})
 					</button>
 				</div>
-
 				<div className={`${styles.tabRight} hidden lg:block`}></div>
 				<div className={styles.texture} />
 			</div>
