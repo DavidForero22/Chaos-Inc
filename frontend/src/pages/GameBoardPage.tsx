@@ -69,8 +69,40 @@ export default function GameBoardPage() {
 				isTurnPaused={timers.isTurnPaused}
 			/>
 
-			{/* OBJETO CENTRAL (Teléfono Polycom) */}
-			<div className="absolute left-1/2 transform -translate-x-1/2 z-10 top-0 scale-[0.6] origin-top lg:top-[45%] lg:-translate-y-1/2 lg:scale-100 lg:origin-center transition-all duration-500">
+			{/* ── 2. MARCADOR Y MAZO ── */}
+			{/* VERSIÓN MÓVIL: Pestaña pequeña arriba a la derecha */}
+			<div className="absolute top-0 right-4 z-40 lg:hidden flex gap-2">
+				{/* Mazo (Móvil) */}
+				<div className="bg-[#e5e7eb] border-x-2 border-b-2 border-[#9ca3af] px-3 py-1 pb-2 rounded-b-md shadow-md flex flex-col items-center justify-center transform origin-top hover:translate-y-1 transition-transform">
+					<span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">
+						Mazo
+					</span>
+					<span className="text-sm font-black text-[#393e42] leading-none">
+						{board.game.deck_count}
+					</span>
+				</div>
+
+				{/* Sala y Ronda (Móvil) */}
+				<div className="bg-[#c19a6b] border-x-2 border-b-2 border-[#a68256] px-4 py-1 pb-2 rounded-b-md shadow-md flex flex-col items-center justify-center relative">
+					{/* Textura de cartón para la pestaña */}
+					<div
+						className="absolute inset-0 opacity-20 pointer-events-none rounded-b-md"
+						style={{
+							backgroundImage:
+								"url('https://www.transparenttextures.com/patterns/cardboard.png')",
+						}}
+					></div>
+					<span className="text-[9px] font-bold text-[#5c4a3d] uppercase tracking-wider mb-0.5 relative z-10">
+						Sala {roomId}
+					</span>
+					<span className="text-sm font-black text-[#2c1a12] leading-none relative z-10">
+						Ronda {board.game.round_number}
+					</span>
+				</div>
+			</div>
+
+			{/* VERSIÓN ESCRITORIO (PC): El Teléfono Polycom Central */}
+			<div className="hidden lg:block absolute left-1/2 top-[45%] transform -translate-x-1/2 -translate-y-1/2 z-10">
 				<div className="w-56 h-48 bg-[#2a2a2a] rounded-[40px] border-4 border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative">
 					<div className="bg-[#4a8fcf] w-3/4 h-20 border-[3px] border-[#111] shadow-inner flex flex-col items-center justify-center text-black">
 						<span className="text-sm font-bold opacity-80">SALA {roomId}</span>
