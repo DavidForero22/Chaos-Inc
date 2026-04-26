@@ -12,19 +12,22 @@
     justify-content: center;
 }
 
-@keyframes slideInFolder {
+@keyframes slideInDownFolder {
     0% { transform: translateY(-50px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes slideInLeftFolder {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
 .folderWrapper {
     display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column; /* Apilado vertical base (Móvil) */
+    width: 100vw;
     height: 100vh;
-    position: relative; 
-    animation: slideInFolder 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    animation: slideInDownFolder 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 /* =========================================
@@ -48,13 +51,23 @@
     color: #393e42;
     height: 95vh;
     max-width: 800px;
-    border-radius: 8px;
+    border-radius: 8px; /* Bordes suaves móviles */
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.4);
     overflow-y: auto;
     line-height: 32px;
+    /* Fondo con líneas y margen rojo */
     background-image:
         linear-gradient(to right, transparent 50px, rgba(220, 50, 50, 0.2) 50px, rgba(220, 50, 50, 0.2) 52px, transparent 52px),
         repeating-linear-gradient(transparent, transparent 31px, rgba(146, 158, 156, 0.35) 31px, rgba(146, 158, 156, 0.35) 32px);
+}
+
+.redMargin {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50px;
+    width: 2px;
+    background-color: rgba(220, 50, 50, 0.2);
+    pointer-events: none;
 }
 
 /* La flecha es VISIBLE por defecto (Móviles) */
@@ -86,10 +99,26 @@
 
 /* =========================================
    2. DISEÑO ESCRITORIO (PC y Tablets Grandes)
+   Se activa cuando la pantalla supera los 1024px
 ========================================= */
 @media (min-width: 1024px) {
     
-    /* Vuelve a aparecer la tapa de la carpeta a la izquierda */
+    /* ¡Volvemos a la carpeta fija a la izquierda! */
+    .folderWrapper {
+        display: flex;
+        flex-direction: row; /* Uno al lado del otro */
+        justify-content: flex-start; /* Pegado a la izquierda */
+        align-items: center;
+        height: 100vh;
+        width: auto; /* Ancho automático, ya no es full-screen centrado */
+        position: absolute; /* Para que la tapa marrón se pegue al borde */
+        left: 0;
+        top: 0;
+        bottom: 0;
+        animation: slideInLeftFolder 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    /* Vuelve a aparecer la tapa de la carpeta */
     .folderTab {
         display: block;
         position: relative;
@@ -126,12 +155,15 @@
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     }
 
-    /* El papel se encoge un poco y se pega a la carpeta por la izquierda */
+    /* El papel se encoge un poco y se pega a la carpeta */
     .paperSheet {
         width: 75vw;
-        margin-left: -10px;
-        border-top-left-radius: 0; 
+        height: 85vh; /* Alto original de PC */
+        max-width: 900px;
+        margin-left: -10px; /* Se esconde debajo de la tapa marrón */
+        border-top-left-radius: 0; /* Sin bordes redondeados a la izquierda en PC */
         border-bottom-left-radius: 0;
+        box-shadow: 20px 20px 40px rgba(0,0,0,0.3);
     }
 
     /* En monitores grandes no hace falta la flecha */

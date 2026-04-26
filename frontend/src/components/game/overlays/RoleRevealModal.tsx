@@ -101,10 +101,6 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 					onScroll={handleScroll}
 				>
 					<div className={styles.redMargin} />
-					{/* Marca de agua */}
-					<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 text-5xl md:text-8xl lg:text-[10rem] font-black text-red-600 opacity-[0.03] pointer-events-none uppercase tracking-widest whitespace-nowrap z-0">
-						TOP SECRET
-					</div>
 					{/* Contenido scrolleable */}
 					<div className="relative z-10 px-8 md:pl-20 md:pr-10 py-8 flex flex-col h-full">
 						<div className="shrink-0 mb-4 text-center">
