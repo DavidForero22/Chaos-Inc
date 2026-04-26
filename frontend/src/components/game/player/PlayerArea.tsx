@@ -37,6 +37,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	// Referencias para transiciones de estado
 	const prevIsTargeting = useRef<boolean>(false);
 	const prevIsDefending = useRef<boolean>(false);
+	const prevIsMyTurn = useRef<boolean>(false);
 
 	// 1. Lógica de Descartes y Sabotajes
 	useEffect(() => {
@@ -86,12 +87,12 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 			setFolderExpanded(true);
 		}
 
-		// C) Auto-Maximizar si empieza mi turno (y estaba cerrada)
-		if (isMyTurnNow && !isFolderExpanded && !isTargetingMode) {
+		// C) Auto-Maximizar SOLO cuando EMPIEZA el turno
+		if (isMyTurnNow && !prevIsMyTurn.current && !isTargetingMode) {
 			setFolderExpanded(true);
 		}
 
-		// D) Auto-Maximizar si recibo un ataque (para buscar mi carta de Esquivar)
+		// D) Auto-Maximizar si recibo un ataque
 		if (isDefending && !prevIsDefending.current && !isTargetingMode) {
 			setActiveTab("hand");
 			setFolderExpanded(true);
@@ -100,11 +101,11 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		// Guardar los estados para la próxima evaluación
 		prevIsTargeting.current = isTargetingMode;
 		prevIsDefending.current = !!isDefending;
+		prevIsMyTurn.current = isMyTurnNow; 
 	}, [
 		isTargetingMode,
 		isMyTurnNow,
 		isDefending,
-		isFolderExpanded,
 		setFolderExpanded,
 	]);
 
