@@ -12,6 +12,7 @@ interface RoomState {
 	needsPassword: boolean;
 	passwordError: string;
 	roomId: string | null;
+	hasToken: boolean;
 
 	// --- ACCIONES LOCALES ---
 	setRoomId: (id: string | null) => void;
@@ -36,6 +37,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	needsPassword: false,
 	passwordError: "",
 	roomId: null,
+	hasToken: !!localStorage.getItem("game_token"),
 
 	setRoomId: (id) => set({ roomId: id }),
 	setRoom: (room) => set({ room }),
@@ -48,6 +50,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 			needsPassword: false,
 			passwordError: "",
 			roomId: null,
+			hasToken: false,
 		}),
 
 	fetchRoomData: async () => {
@@ -68,7 +71,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	},
 
 	attemptJoin: async (password = "", myPlayerName) => {
-	const { roomId, fetchRoomData } = get();
+		const { roomId, fetchRoomData } = get();
 		if (!roomId || !myPlayerName) return "ERROR";
 
 		set({ passwordError: "" });
@@ -80,6 +83,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
 			if (res.data.game_token) {
 				localStorage.setItem("game_token", res.data.game_token);
+				set({ hasToken: true });
 			}
 
 			await fetchRoomData();

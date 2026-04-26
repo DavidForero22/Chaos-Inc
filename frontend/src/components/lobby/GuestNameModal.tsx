@@ -1,7 +1,7 @@
 // src/components/lobby/GuestNameModal.tsx
 
 import { useState } from "react";
-import api from "../../api/axios";
+import api, { getCsrfCookie } from "../../api/axios";
 import { useAuthStore } from "../../store/useAuthStore";
 import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
@@ -28,12 +28,11 @@ export default function GuestNameModal({
 		setError("");
 
 		try {
-			// Llamamos al nuevo endpoint que creamos en Laravel
+			await getCsrfCookie();
 			const res = await api.post("/guest-login", { username });
 
-			// Guardamos el token real que nos da el backend
-			// El tercer parámetro 'true' marca que es un invitado
-			setAuth(res.data.user.username, res.data.token, true);
+			// setAuth(user, isGuest?, role?)
+			setAuth(res.data.user.username, true, res.data.user.role ?? "guest");
 
 			onSuccess();
 		} catch (err) {
@@ -47,7 +46,7 @@ export default function GuestNameModal({
 	return (
 		<ModalLayout
 			title="Chaos Inc."
-			subtitle="Pase de Visitante Temporal"
+			subtitle="Pase de Jugador Temporal"
 			onClose={onClose}
 			onSubmit={handleSubmit}
 			isLoading={loading}
@@ -71,7 +70,7 @@ export default function GuestNameModal({
 						maxLength={15}
 					/>
 					<p className={styles.hint}>
-						Ingresa un nombre para unirte a la partida temporalmente.
+						Ingresa un nombre para unirte a la partida con un usuario invitado.
 					</p>
 				</div>
 			</div>
