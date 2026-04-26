@@ -9,6 +9,7 @@ import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
+import { PlayerTimer } from "./PlayerTimer.tsx";
 import styles from "./PlayerArea.module.css";
 
 interface PlayerAreaProps {
@@ -45,7 +46,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		if (me.conditions.must_discard && !isDiscardMode) {
 			setIsDiscardMode(true);
 			setActiveTab("hand");
-			setFolderExpanded(true); 
+			setFolderExpanded(true);
 		}
 
 		if (
@@ -92,7 +93,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 		// D) Auto-Maximizar si recibo un ataque (para buscar mi carta de Esquivar)
 		if (isDefending && !prevIsDefending.current && !isTargetingMode) {
-			setActiveTab("hand"); 
+			setActiveTab("hand");
 			setFolderExpanded(true);
 		}
 
@@ -150,13 +151,19 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						Mano ({me.cards.length})
 					</button>
 				</div>
+				<PlayerTimer
+					turnTimeLeft={turnTimeLeft}
+					isTurnPaused={isTurnPaused}
+					className="absolute -top-7 left-62 z-50 lg:hidden"
+				/>
+
 				<div className={`${styles.tabRight} hidden lg:block`}></div>
 				<div className={styles.texture} />
 			</div>
 
 			{/* --- CONTENIDO DE LA CARPETA --- */}
 			<div className={styles.contentArea}>
-				<div className="absolute -top-6 right-4 lg:left-8 lg:right-auto z-50">
+				<div className="absolute -top-6 right-4 lg:left-8 lg:right-auto z-49">
 					<PlayerBanners me={me} />
 				</div>
 

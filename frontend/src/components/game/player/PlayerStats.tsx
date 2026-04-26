@@ -1,10 +1,11 @@
 // frontend/src/components/game/player/PlayerStats.tsx
+
 import type { MyData } from "../../../types/live-game";
-import { useGameStore } from "../../../store/useGameStore";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
+import { PlayerTimer } from "./PlayerTimer.tsx";
 import type { CardInstance } from "../../../types/live-game";
 import styles from "./PlayerStats.module.css";
 
@@ -23,8 +24,6 @@ export function PlayerStats({
 	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
 		usePlayerStats(me);
 	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
-
-	const gameData = useGameStore((state) => state.gameData);
 
 	const renderDiscardablePerk = (
 		id: string,
@@ -57,12 +56,7 @@ export function PlayerStats({
 					if (isDiscardMode && !isUnderSabotage) {
 						toggleDiscardPerk(id);
 					} else if (cardType !== undefined) {
-						setInfoCard({
-							id,
-							type: cardType,
-							name,
-							description: title,
-						});
+						setInfoCard({ id, type: cardType, name, description: title });
 					}
 				}}
 			>
@@ -71,40 +65,14 @@ export function PlayerStats({
 		);
 	};
 
-	const game = gameData?.game;
-	const isMyTurn = game?.current_turn === me.name;
-
-	const hasActiveReaction =
-		game?.pending_single_attack_target === me.name ||
-		game?.pending_multi_attack_targets.includes(me.name) ||
-		game?.player_pending_sabotage === me.name ||
-		game?.player_in_luck_challenge === me.name;
-
-	const shouldShowTimer =
-		isMyTurn &&
-		!hasActiveReaction &&
-		turnTimeLeft !== undefined &&
-		turnTimeLeft !== null;
-
-	const isLowTime =
-		turnTimeLeft !== undefined && turnTimeLeft !== null && turnTimeLeft <= 10;
-
 	return (
 		<div className="relative w-full h-full">
-			{/* Banner temporizador estilo Post-it */}
-			{shouldShowTimer && (
-				<div
-					className={`absolute -top-6 -right-4 z-30 px-3 py-1 font-bold text-sm shadow-md transform rotate-[5deg] transition-colors border ${
-						isTurnPaused
-							? "bg-gray-300 border-gray-400 text-gray-700"
-							: isLowTime
-								? "bg-red-200 border-red-400 text-red-800 animate-pulse"
-								: "bg-[#cbbe34] border-[#a89d2b] text-black"
-					}`}
-				>
-					{isTurnPaused ? "PAUSA" : `⏳ ${turnTimeLeft}s`}
-				</div>
-			)}
+			{/* Temporizador Escritorio (Se oculta en móvil) */}
+			<PlayerTimer
+				turnTimeLeft={turnTimeLeft}
+				isTurnPaused={isTurnPaused}
+				className="hidden lg:block absolute -top-6 -right-4 z-30"
+			/>
 
 			{/* Documento de RRHH */}
 			<div
@@ -150,7 +118,7 @@ export function PlayerStats({
 
 				{/* Pasivas (En línea y alineadas a la derecha) */}
 				<div
-					className={`${styles.formRow} items-center  pb-1 mb-2 border-none`}
+					className={`${styles.formRow} items-center pb-1 mb-2 border-none`}
 				>
 					<span className={styles.formLabel}>Pasivas</span>
 					<div className="flex gap-1 items-center justify-baseline">
