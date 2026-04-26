@@ -50,7 +50,7 @@ export function PlayerActions() {
 			</div>
 
 			{/* Botones de Reacción Defensiva y Acción (Sellos) */}
-			<div className="flex flex-col-reverse lg:flex-row gap-2 lg:gap-4 items-end lg:items-center">
+			<div className="flex flex-col lg:flex-row gap-2 lg:gap-4 items-end lg:items-center">
 				{me!.combat_state.is_defending_single ? (
 					<button
 						onClick={() => reactToAttack("accept")}
@@ -95,7 +95,7 @@ export function PlayerActions() {
 								disabled={isConfirmDisabled}
 								className={`${styles.inkStamp} ${styles.stampRed} ${isConfirmDisabled ? styles.stampDisabled : ""}`}
 							>
-								{isConfirmDisabled ? "DESCARTANDO..." : "CONFIRMAR DESCARTE"}
+								{isConfirmDisabled ? "DESCARTANDO..." : "CONFIRMAR"}
 							</button>
 						) : canUseCard ? (
 							<button
