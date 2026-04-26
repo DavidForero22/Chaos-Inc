@@ -1,11 +1,11 @@
-// frontend/src/components/game/player/PlayerStats.tsx
+// src/components/game/player/PlayerStats.tsx
 
 import type { MyData } from "../../../types/live-game";
-import { useGameUIStore } from "../../../store/useGameUIStore";
 import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { PlayerTimer } from "./PlayerTimer.tsx";
+import { PerkSlot } from "./PerkSlot.tsx"; // NUEVO IMPORT
 import type { CardInstance } from "../../../types/live-game";
 import styles from "./PlayerStats.module.css";
 
@@ -20,50 +20,9 @@ export function PlayerStats({
 	turnTimeLeft,
 	isTurnPaused = false,
 }: PlayerStatsProps) {
-	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
 	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
 		usePlayerStats(me);
 	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
-
-	const renderDiscardablePerk = (
-		id: string,
-		icon: string,
-		title: string,
-		cardType: number,
-		name: string,
-	) => {
-		const isMarked = perksToDiscard.includes(id);
-		const isUnderSabotage = me.conditions.must_discard;
-
-		let modeClasses = "cursor-help hover:scale-110";
-
-		if (isDiscardMode && !isUnderSabotage) {
-			modeClasses = isMarked
-				? "cursor-pointer scale-110 ring-2 ring-red-600 bg-red-100 text-red-600 border-red-600"
-				: "cursor-pointer hover:scale-110 animate-pulse border-[#295c60] text-[#295c60]";
-		}
-
-		return (
-			<span
-				key={id}
-				title={
-					isDiscardMode && !isUnderSabotage
-						? "Clic para anular acreditación"
-						: title
-				}
-				className={`${styles.perkSlot} ${modeClasses} transition-all w-7 h-7 text-sm`}
-				onClick={() => {
-					if (isDiscardMode && !isUnderSabotage) {
-						toggleDiscardPerk(id);
-					} else if (cardType !== undefined) {
-						setInfoCard({ id, type: cardType, name, description: title });
-					}
-				}}
-			>
-				{icon}
-			</span>
-		);
-	};
 
 	return (
 		<div className="relative w-full h-full">
@@ -116,10 +75,7 @@ export function PlayerStats({
 					</span>
 				</div>
 
-				{/* Pasivas (En línea y alineadas a la derecha) */}
-				<div
-					className={`${styles.formRow} items-center pb-1 mb-2 border-none`}
-				>
+				<div className={`${styles.formRow} items-center pb-1 mb-2 border-none`}>
 					<span className={styles.formLabel}>Pasivas</span>
 					<div className="flex gap-1 items-center justify-baseline">
 						{displayPerks.map((perk) =>
@@ -132,13 +88,18 @@ export function PlayerStats({
 									{perk.icon}
 								</span>
 							) : (
-								renderDiscardablePerk(
-									perk.id,
-									perk.icon,
-									perk.title,
-									perk.cardType!,
-									perk.name!,
-								)
+								<PerkSlot
+									key={perk.id}
+									id={perk.id}
+									icon={perk.icon}
+									title={perk.title}
+									cardType={perk.cardType}
+									name={perk.name}
+									isUnderSabotage={me.conditions.must_discard}
+									onInfoClick={(id, type, name, desc) =>
+										setInfoCard({ id, type, name, description: desc })
+									}
+								/>
 							),
 						)}
 					</div>
@@ -150,7 +111,7 @@ export function PlayerStats({
 					<div className="flex gap-2 text-lg min-h-6 items-center">
 						{me.conditions.is_blocked && (
 							<span
-								title="Sancionado: No puedes actuar en tu proximo turno"
+								title="Sancionado"
 								className="cursor-help bg-purple-100 border border-purple-300 rounded px-1.5 py-0.5 text-xs font-bold"
 							>
 								🔒 SANCIONADO

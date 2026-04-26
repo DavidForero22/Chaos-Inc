@@ -10,6 +10,9 @@ import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
 import { PlayerTimer } from "./PlayerTimer.tsx";
+import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
+import { PerkSlot } from "./PerkSlot.tsx";
+
 import styles from "./PlayerArea.module.css";
 
 interface PlayerAreaProps {
@@ -101,13 +104,8 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		// Guardar los estados para la próxima evaluación
 		prevIsTargeting.current = isTargetingMode;
 		prevIsDefending.current = !!isDefending;
-		prevIsMyTurn.current = isMyTurnNow; 
-	}, [
-		isTargetingMode,
-		isMyTurnNow,
-		isDefending,
-		setFolderExpanded,
-	]);
+		prevIsMyTurn.current = isMyTurnNow;
+	}, [isTargetingMode, isMyTurnNow, isDefending, setFolderExpanded]);
 
 	if (!me) return null;
 
@@ -129,10 +127,38 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		}
 	};
 
+	const { displayPerks } = usePlayerStats(me);
+	const activePerks = displayPerks.filter((p) => !p.isEmpty);
+	const showPerksDiscardSheet =
+		isDiscardMode && !me.conditions.must_discard && activePerks.length > 0;
+
 	return (
 		<div
 			className={`${styles.folderWrapper} ${isFolderExpanded ? styles.folderExpanded : styles.folderClosed}`}
 		>
+			{/* HOJA FLOTANTE PARA DESCARTAR PASIVAS */}
+			<div
+				className={`absolute right-4 lg:right-10 z-0 transition-all duration-500 origin-bottom flex flex-col items-center
+                ${showPerksDiscardSheet ? "top-[-70px] lg:top-[-110px]" : "top-2 pointer-events-none"}`}
+			>
+				{/* El papelito */}
+				<div className="bg-[#f8f9f8] border border-[#c7c9c7] px-4 py-3 rounded-sm shadow-md flex flex-col items-center gap-2 transform rotate-3">
+					<span className="text-[10px] uppercase font-bold text-red-600 border-b border-red-600/30 w-full text-center pb-1">
+						Pasivas activas
+					</span>
+					<div className="flex gap-2">
+						{activePerks.map((perk) => (
+							<PerkSlot
+								key={`discard-${perk.id}`}
+								id={perk.id}
+								icon={perk.icon}
+								title={perk.title}
+								isUnderSabotage={false}
+							/>
+						))}
+					</div>
+				</div>			</div>
+
 			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
 			<div className={styles.folderBackground}>
 				{/* Pestañas para MÓVIL - Se DESHABILITAN visualmente en modo apuntado */}
