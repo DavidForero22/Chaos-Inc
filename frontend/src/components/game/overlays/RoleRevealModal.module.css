@@ -51,7 +51,7 @@
     color: #393e42;
     height: 95vh;
     max-width: 800px;
-    border-radius: 8px; /* Bordes suaves móviles */
+    border-radius: 8px; 
     box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.4);
     overflow-y: auto;
     line-height: 32px;
@@ -99,26 +99,23 @@
 
 /* =========================================
    2. DISEÑO ESCRITORIO (PC y Tablets Grandes)
-   Se activa cuando la pantalla supera los 1024px
 ========================================= */
 @media (min-width: 1024px) {
     
-    /* ¡Volvemos a la carpeta fija a la izquierda! */
     .folderWrapper {
         display: flex;
-        flex-direction: row; /* Uno al lado del otro */
-        justify-content: flex-start; /* Pegado a la izquierda */
+        flex-direction: row; 
+        justify-content: flex-start;
         align-items: center;
         height: 100vh;
-        width: auto; /* Ancho automático, ya no es full-screen centrado */
-        position: absolute; /* Para que la tapa marrón se pegue al borde */
+        width: auto;
+        position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
         animation: slideInLeftFolder 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
 
-    /* Vuelve a aparecer la tapa de la carpeta */
     .folderTab {
         display: block;
         position: relative;
@@ -155,13 +152,12 @@
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
     }
 
-    /* El papel se encoge un poco y se pega a la carpeta */
     .paperSheet {
         width: 75vw;
-        height: 85vh; /* Alto original de PC */
+        height: 85vh; 
         max-width: 900px;
-        margin-left: -10px; /* Se esconde debajo de la tapa marrón */
-        border-top-left-radius: 0; /* Sin bordes redondeados a la izquierda en PC */
+        margin-left: -10px; 
+        border-top-left-radius: 0; 
         border-bottom-left-radius: 0;
         box-shadow: 20px 20px 40px rgba(0,0,0,0.3);
     }
