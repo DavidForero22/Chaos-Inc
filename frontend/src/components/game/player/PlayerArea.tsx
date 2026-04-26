@@ -1,8 +1,10 @@
 // src/components/game/player/PlayerArea.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
+
 import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
@@ -22,16 +24,25 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		clearDiscardSelection,
 		isFolderExpanded,
 		setFolderExpanded,
+		selectedCardId,
 	} = useGameUIStore();
 
 	const [activeTab, setActiveTab] = useState<"hand" | "stats">("hand");
+
+	// Referencia para detectar si estábamos en modo apuntado
+	const prevIsTargeting = useRef<boolean>(false);
+
+	const currentTurn = useGameStore(
+		(state) => state.gameData?.game?.current_turn,
+	);
+	const myName = me?.name;
 
 	useEffect(() => {
 		if (!me) return;
 		if (me.conditions.must_discard && !isDiscardMode) {
 			setIsDiscardMode(true);
 			setActiveTab("hand");
-			setFolderExpanded(true); // Forzamos abrir la carpeta si hay que descartar
+			setFolderExpanded(true);
 		}
 		if (
 			!me.conditions.must_discard &&
@@ -50,22 +61,60 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		setFolderExpanded,
 	]);
 
+	// Evaluamos si la carta actual requiere apuntar
+	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
+	const isTargetingMode = selectedCard
+		? TARGET_CARDS.includes(selectedCard.type)
+		: false;
+
+	// Auto-Minimizar/Maximizar solo al apuntar
+	useEffect(() => {
+		if (isTargetingMode && !prevIsTargeting.current) {
+			// Entrar en modo apuntado -> cerrar la carpeta
+			setFolderExpanded(false);
+		} else if (!isTargetingMode && prevIsTargeting.current) {
+			// Salir del modo apuntado -> abrir la carpeta
+			setFolderExpanded(true);
+		}
+
+		prevIsTargeting.current = isTargetingMode;
+	}, [isTargetingMode, setFolderExpanded]);
+
 	if (!me) return null;
 
-	// --- NUEVA LÓGICA DE PESTAÑAS ---
+	// --- LÓGICA DE PESTAÑAS ---
 	const handleTabClick = (tab: "hand" | "stats") => {
+		// Bloquear el clic si esta apuntando a un enemigo
+		if (isTargetingMode) return;
+
 		if (!isFolderExpanded) {
-			// Si está cerrada, abrimos y seleccionamos la pestaña
+			// Si está cerrada, abrir y seleccionar la pestaña
 			setActiveTab(tab);
 			setFolderExpanded(true);
 		} else if (activeTab === tab) {
-			// Si está abierta y tocamos la misma pestaña, la cerramos
+			// Si está abierta y toca la misma pestaña, cerrarla
 			setFolderExpanded(false);
 		} else {
-			// Si está abierta y tocamos otra pestaña, solo cambiamos la vista
+			// Si está abierta y toca otra pestaña, solo cambiar la vista
 			setActiveTab(tab);
 		}
 	};
+
+	// Auto-abrir carpeta cuando empieza mi turno
+	useEffect(() => {
+		const isMyTurnNow = currentTurn === myName;
+
+		// Si empieza el turno y la carpeta está cerrada, abrirla
+		if (isMyTurnNow && !isFolderExpanded && !isTargetingMode) {
+			setFolderExpanded(true);
+		}
+	}, [
+		currentTurn,
+		myName,
+		isFolderExpanded,
+		isTargetingMode,
+		setFolderExpanded,
+	]);
 
 	return (
 		<div
@@ -73,8 +122,10 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		>
 			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
 			<div className={styles.folderBackground}>
-				{/* Pestañas para MÓVIL (Con la nueva lógica) */}
-				<div className="absolute -top-8 left-4 z-0 flex gap-2 lg:hidden">
+				{/* Pestañas para MÓVIL - Se DESHABILITAN visualmente en modo apuntado */}
+				<div
+					className={`absolute -top-8 left-4 z-0 flex gap-2 lg:hidden transition-opacity ${isTargetingMode ? "opacity-30 cursor-not-allowed" : "opacity-100"}`}
+				>
 					<button
 						onClick={() => handleTabClick("stats")}
 						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""}`}
@@ -89,7 +140,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					</button>
 				</div>
 
-				{/* Pestaña decorativa PC */}
 				<div className={`${styles.tabRight} hidden lg:block`}></div>
 				<div className={styles.texture} />
 			</div>
@@ -100,7 +150,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					<PlayerBanners me={me} />
 				</div>
 
-				{/* Contenido Expediente */}
 				<div
 					className={`shrink-0 z-40 w-full lg:w-65 h-[99%] lg:-mt-6 transform lg:rotate-2 relative ${activeTab === "stats" ? "block" : "hidden lg:block"}`}
 				>
@@ -112,7 +161,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					/>
 				</div>
 
-				{/* Contenido Mano */}
 				<div
 					className={`flex-1 min-w-0 h-full relative z-20 flex-col justify-start pb-2 pt-2 lg:pt-6 ${activeTab === "hand" ? "flex" : "hidden lg:flex"}`}
 				>

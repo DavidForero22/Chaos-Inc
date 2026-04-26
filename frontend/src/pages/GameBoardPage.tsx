@@ -4,7 +4,9 @@ import { useParams } from "react-router-dom";
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 import { useGameBoard } from "../hooks/game/useGameBoard.ts";
 import { useGameTimers } from "../hooks/game/useGameTimers.ts";
+import { useGameUIStore } from "../store/useGameUIStore.ts";
 
+import { TARGET_CARDS } from "../hooks/game/usePlayerActions.ts";
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
 import { PlayerArea } from "../components/game/player/PlayerArea.tsx";
 import { GameLog } from "../components/game/board/GameLog.tsx";
@@ -20,6 +22,9 @@ export default function GameBoardPage() {
 	const timers = useGameTimers();
 	const board = useGameBoard();
 
+	const selectedCardId = useGameUIStore((state) => state.selectedCardId);
+	const setSelectedCardId = useGameUIStore((state) => state.setSelectedCardId);
+
 	if (isConnecting || !board.gameData || !board.me || !board.game) {
 		return (
 			<div className="flex flex-col items-center justify-center h-screen bg-[#393e42] text-white">
@@ -30,6 +35,12 @@ export default function GameBoardPage() {
 			</div>
 		);
 	}
+
+	// LÓGICA INTELIGENTE: ¿Es una carta de apuntar?
+	const selectedCard = board.me.cards.find((c) => c.id === selectedCardId);
+	const isTargetingMode = selectedCard
+		? TARGET_CARDS.includes(selectedCard.type)
+		: false;
 
 	return (
 		<div
@@ -58,11 +69,7 @@ export default function GameBoardPage() {
 				isTurnPaused={timers.isTurnPaused}
 			/>
 
-			{/* ── 2. OBJETO CENTRAL (Teléfono Polycom) ── */}
-			{/* RESPONSIVE APLICADO: 
-                - En Móvil: Pegado arriba (top-0 o top-2), escalado al 60% (scale-60) origin-top.
-                - En PC (lg:): Vuelve al centro (top-[45%]), escala original (scale-100).
-            */}
+			{/* OBJETO CENTRAL (Teléfono Polycom) */}
 			<div className="absolute left-1/2 transform -translate-x-1/2 z-10 top-0 scale-[0.6] origin-top lg:top-[45%] lg:-translate-y-1/2 lg:scale-100 lg:origin-center transition-all duration-500">
 				<div className="w-56 h-48 bg-[#2a2a2a] rounded-[40px] border-4 border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative">
 					<div className="bg-[#4a8fcf] w-3/4 h-20 border-[3px] border-[#111] shadow-inner flex flex-col items-center justify-center text-black">
@@ -89,12 +96,28 @@ export default function GameBoardPage() {
 			{/* ── 3. REGISTRO LOG ── */}
 			<GameLog />
 
-			{/* ── 4. ÁREA DEL JUGADOR ── */}
+			{/* BOTÓN CANCELAR APUNTADO FLOTANTE (Solo sale si esTargetingMode es true) */}
+			<div
+				className={`fixed top-1/2 right-0 -translate-y-1/2 z-100 transition-transform duration-500 ease-in-out ${
+					isTargetingMode ? "translate-x-0" : "translate-x-full"
+				}`}
+			>
+				<button
+					onClick={() => setSelectedCardId(null)}
+					className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 lg:px-4 lg:py-8 rounded-l-xl border-y-4 border-l-4 border-red-800 shadow-[-10px_0_20px_rgba(0,0,0,0.5)] flex items-center justify-center group"
+					style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
+					title="Cancelar carta seleccionada"
+				>
+					<span className="transform rotate-180 tracking-widest text-base lg:text-lg group-hover:scale-110 transition-transform">
+						CANCELAR
+					</span>
+				</button>
+			</div>
+
 			<PlayerArea
 				turnTimeLeft={timers.turnTimeLeft}
 				isTurnPaused={timers.isTurnPaused}
 			/>
-
 			<OrientationWarning />
 		</div>
 	);
