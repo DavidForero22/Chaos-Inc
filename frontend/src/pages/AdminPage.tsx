@@ -12,7 +12,8 @@ import RoomsTab from "../components/admin/RoomsTab.tsx";
 type Tab = "users" | "games" | "rooms";
 
 export default function AdminPage() {
-	const { role, token, user } = useAuthStore();
+	// 1. Eliminamos 'token' de aquí, ya no existe en el store
+	const { role, user } = useAuthStore();
 	const navigate = useNavigate();
 	const [tab, setTab] = useState<Tab>("users");
 
@@ -28,18 +29,22 @@ export default function AdminPage() {
 	} = useAdminData();
 
 	useEffect(() => {
-		if (!token || role !== "admin") {
+		// 2. Ahora comprobamos que el usuario esté logueado y sea admin
+		// Si no hay user, significa que no hay sesión activa en el cliente
+		if (!user || role !== "admin") {
 			navigate("/");
 			return;
 		}
 		fetchAll();
-	}, [token, role, navigate, fetchAll]);
+	}, [user, role, navigate, fetchAll]); // 'user' reemplaza a 'token' como dependencia
 
 	if (loading)
 		return (
 			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
 				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#295c60]"></div>
-				<span>Cargando datos...</span>
+				<span className="ml-3 font-mono">
+					Accediendo a administración...
+				</span>
 			</div>
 		);
 
@@ -52,11 +57,8 @@ export default function AdminPage() {
 			>
 				Panel de Administración
 			</h1>
-			<h2 className="text-xl mb-6 opacity-80 border-b border-gray-400 pb-2 font-bold">
-				Máximo nivel de Autorización
-			</h2>
 
-			{/* Pestañas de Navegación Interna */}
+			{/* Pestañas */}
 			<div className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4">
 				{(["users", "games", "rooms"] as Tab[]).map((t) => (
 					<button
@@ -72,17 +74,16 @@ export default function AdminPage() {
 							? "📄 Usuarios"
 							: t === "games"
 								? "📂 Partidas"
-								: "🏢 Salas Activas"}
+								: "🏢 Salas"}
 					</button>
 				))}
 			</div>
 
-			{/* Contenedor de la pestaña activa */}
 			<div className="font-mono text-[#393e42]">
 				{tab === "users" && (
 					<UsersTab
 						users={users}
-						currentUser={user} // Pasamos el usuario actual
+						currentUser={user}
 						onDelete={deleteUser}
 						onUpdate={updateUser}
 						onCreate={createUser}

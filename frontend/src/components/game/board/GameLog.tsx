@@ -142,6 +142,7 @@ export function GameLog() {
 
 					{/* Pantalla del Teléfono */}
 					<div className="w-full h-full bg-black rounded-2xl overflow-hidden relative flex flex-col border-2 border-black">
+						{/* Cabecera estilo App de Chat Corporativo */}
 						<div className="bg-gray-800 text-center py-3 border-b border-gray-700 shrink-0">
 							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">
 								Slack Empresarial
