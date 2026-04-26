@@ -29,7 +29,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	const {
 		isDiscardMode,
 		setIsDiscardMode,
-		clearDiscardSelection,
 		isFolderExpanded,
 		setFolderExpanded,
 		selectedCardId,
@@ -52,20 +51,9 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 			setActiveTab("hand");
 			setFolderExpanded(true);
 		}
-
-		if (
-			!me.conditions.must_discard &&
-			isDiscardMode &&
-			me.cards.length <= me.max_hand_size
-		) {
-			clearDiscardSelection();
-		}
 	}, [
 		me?.conditions.must_discard,
 		isDiscardMode,
-		me?.cards.length,
-		me?.max_hand_size,
-		clearDiscardSelection,
 		setIsDiscardMode,
 		setFolderExpanded,
 	]);
@@ -157,7 +145,8 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 							/>
 						))}
 					</div>
-				</div>			</div>
+				</div>{" "}
+			</div>
 
 			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
 			<div className={styles.folderBackground}>

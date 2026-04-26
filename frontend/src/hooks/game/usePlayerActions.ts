@@ -55,12 +55,18 @@ export function usePlayerActions() {
 	const isOverLimit = currentCardsCount > me.max_hand_size;
 	const willBeOverLimit = projectedCardsCount > me.max_hand_size;
 
+	const hasEquippedPerks =
+		me.perks.has_shield ||
+		me.perks.has_distance ||
+		me.perks.has_storage ||
+		me.perks.has_luck ||
+		(me.perks.vision_bonus ?? 0) > 0;
+
 	const noSelection =
 		cardsToDiscard.length === 0 && perksToDiscard.length === 0;
 	const isEvadingSabotage =
 		me.conditions.must_discard && cardsToDiscard.length === 0;
 	const isConfirmDisabled =
-		willBeOverLimit ||
 		noSelection ||
 		isEvadingSabotage ||
 		isSubmitting ||
@@ -99,7 +105,7 @@ export function usePlayerActions() {
 		!hasPendingAttack &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
-		currentCardsCount > 0 &&
+		(currentCardsCount > 0 || hasEquippedPerks) &&
 		!isGlobalLoading;
 
 	const handleConfirmDiscard = async () => {
