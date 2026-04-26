@@ -168,7 +168,7 @@ export default function GamesTab() {
 						>
 							<div className="flex justify-between items-center mb-3">
 								<p className="font-bold text-lg">
-									Expediente #{g.id} <span className="mx-2 opacity-50">|</span>{" "}
+									#{g.id} <span className="mx-2 opacity-50">|</span>{" "}
 									<span className="uppercase text-green-700">
 										Victoria: {roleTranslations[g.winnerRole] || g.winnerRole}
 									</span>

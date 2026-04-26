@@ -364,7 +364,8 @@ export default function UsersTab({ currentUser }: Props) {
 								) : (
 									<div className="flex justify-between items-center">
 										<div>
-											<p className="font-bold text-lg flex items-center">
+											<span className="font-bold text-lg">
+												#{u.id} <span className="mx-2 opacity-50">|</span>{" "}
 												{u.username}
 												{isMe && (
 													<span className="ml-2 text-xs text-[#295c60] italic">
@@ -380,7 +381,7 @@ export default function UsersTab({ currentUser }: Props) {
 												>
 													{u.role.toUpperCase()}
 												</span>
-											</p>
+											</span>
 											<p className="text-sm opacity-70 mt-1">
 												<span className="font-bold">Email:</span> {u.email}{" "}
 												<span className="mx-2">|</span>{" "}
