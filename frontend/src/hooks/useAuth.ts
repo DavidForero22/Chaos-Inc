@@ -34,7 +34,7 @@ export function useAuth() {
 		setIsLoading(true);
 		try {
 			await getCsrfCookie();
-			
+
 			await api.post("/register", {
 				username: input.username,
 				email: input.email,
@@ -61,6 +61,7 @@ export function useAuth() {
 			const res = await api.post("/login", input);
 
 			setAuth(
+				res.data.user.id,
 				res.data.user.username,
 				false, // isGuest
 				res.data.user.role,
