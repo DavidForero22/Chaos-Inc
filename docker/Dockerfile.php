@@ -1,4 +1,4 @@
-FROM php:8.4-fpm
+FROM dunglas/frankenphp:1-php8.4
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
@@ -9,16 +9,16 @@ RUN apt-get update && apt-get install -y \
     unzip \
     curl
 
-# Instalar extensiones de PHP (He quitado la línea repetida)
+# Instalar extensiones de PHP
 RUN pecl install redis && docker-php-ext-enable redis
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+RUN install-php-extensions pdo_mysql mbstring exif pcntl bcmath gd
 
-# INSTALAR COMPOSER (Vital para tu TFG)
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copiamos el contenido del backend
+# Copiar el contenido del backend
 COPY ./backend /var/www/html
 
 # Permisos para Laravel (Evita errores de escritura en logs y caché)

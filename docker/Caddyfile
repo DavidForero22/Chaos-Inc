@@ -1,0 +1,24 @@
+{
+    log {
+        level ERROR
+    }
+}
+
+:8000 {
+    root * /var/www/html/public
+    php_server
+
+    log {
+        format filter {
+            wrap console
+            fields {
+                request>headers delete
+                resp_headers delete
+                request>remote_port delete
+                request>client_ip delete
+                user_id delete
+                bytes_read delete
+            }
+        }
+    }
+}

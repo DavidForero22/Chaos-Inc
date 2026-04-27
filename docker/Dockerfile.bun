@@ -2,14 +2,13 @@ FROM oven/bun:1.2-alpine
 
 WORKDIR /app
 
-# Copiamos archivos de dependencias
-COPY ./frontend/package.json ./frontend/bun.lock* ./
+COPY package.json bun.lock* ./
 
-# Instalamos usando bun
 RUN bun install
 
-COPY ./frontend . 
+# Solo copia el código, node_modules ya está en la capa anterior
+COPY . .
 
 EXPOSE 5173
-# Comando optimizado para Bun
+
 CMD ["bun", "run", "dev", "--host"]

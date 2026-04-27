@@ -2,8 +2,8 @@ services:
   # FRONTEND (React + Vite)
   frontend:
     build:
-      context: .
-      dockerfile: ./docker/Dockerfile.bun
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.bun
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -23,10 +23,15 @@ services:
       dockerfile: ./docker/Dockerfile.php
     volumes:
       - ./backend:/var/www/html
+      - ./docker/Caddyfile:/etc/caddy/Caddyfile
     ports:
       - "8000:8000"
+    env_file:
+      - ./backend/.env          
+    environment:
+      SERVER_NAME: ":8000"     
     command: >
-      sh -c "php artisan guests:purge && php artisan serve --host=0.0.0.0 --port=8000"
+      sh -c "php artisan guests:purge && frankenphp run --config /etc/caddy/Caddyfile"
     depends_on:
       - mysql
       - redis
