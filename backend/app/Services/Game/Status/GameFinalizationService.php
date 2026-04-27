@@ -71,42 +71,6 @@ class GameFinalizationService
         CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
     }
 
-    public function cleanupRedis(string $roomId, array $playerNames): void
-    {
-        $roomKey = "room:{$roomId}";
-        $expireTime = 7;
-
-        // Poner fecha de caducidad
-        foreach ($playerNames as $name) {
-            Redis::expire("{$roomKey}:player:{$name}:info", $expireTime);
-            Redis::expire("{$roomKey}:player:{$name}:stats", $expireTime);
-            Redis::expire("{$roomKey}:player:{$name}:turn_state", $expireTime);
-            Redis::expire("{$roomKey}:player:{$name}:perks", $expireTime);
-            Redis::expire("{$roomKey}:player:{$name}:hand", $expireTime);
-        }
-
-        // Borrar tokens de la sala
-        $prefix = config('database.redis.options.prefix', '');
-        $tokenKeys = Redis::keys("{$roomKey}:token:*");
-
-        foreach ($tokenKeys as $key) {
-            $cleanKey = str_replace($prefix, '', $key);
-            Redis::expire($cleanKey, $expireTime);
-        }
-
-        Redis::expire("{$roomKey}:deck", $expireTime);
-        Redis::expire("{$roomKey}:turn_order", $expireTime);
-        Redis::expire("{$roomKey}:pending_attack", $expireTime);
-        Redis::expire("{$roomKey}:pending_multi_attack", $expireTime);
-        Redis::expire("{$roomKey}:pending_sabotage", $expireTime);
-        Redis::expire("{$roomKey}:players", $expireTime);
-        Redis::expire("{$roomKey}:info", $expireTime);
-        Redis::expire("{$roomKey}:state", $expireTime);
-
-        // La unica llave que se borra al instante es la de "active_rooms"
-        Redis::srem("active_rooms", $roomId);
-    }
-
     public function cancelAndCleanup(string $roomId): void
     {
         $roomStateKey = "room:{$roomId}:state";
@@ -131,17 +95,20 @@ class GameFinalizationService
 
     public function destroyRoom(string $roomId): void
     {
+        // Buscar todas las llaves de la sala
         $allRoomKeys = Redis::keys("room:{$roomId}*");
-        $prefix = config('database.redis.options.prefix', '');
-        $cleanKeys = array_map(fn($key) => str_replace($prefix, '', $key), $allRoomKeys);
 
-        if (!empty($cleanKeys)) {
-            Redis::del(...$cleanKeys);
+        if (!empty($allRoomKeys)) {
+            // En Laravel, Redis::del acepta un array de llaves o múltiples argumentos
+            // Como REDIS_PREFIX es "" en el .env, no hay que limpiar nada del string.
+            Redis::del($allRoomKeys);
+
+            Log::info("GameFinalizationService: Se han borrado " . count($allRoomKeys) . " llaves de la sala {$roomId}.");
         }
 
-        Log::info("GameFinalizationService.php::destroyRoom - Partida {$roomId} sin jugadores. Borrando partida.\n");
+        // Limpieza de metadatos globales
         Redis::srem("active_rooms", $roomId);
-        event(new RoomListUpdated($roomId));
+        event(new \App\Events\RoomListUpdated($roomId));
     }
 
     public function checkDisconnectionVictory(string $roomId): bool
