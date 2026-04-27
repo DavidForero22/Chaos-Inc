@@ -6,24 +6,20 @@ import { useAuthStore } from "../store/useAuthStore.ts";
 
 import UsersTab from "../components/admin/UsersTab.tsx";
 import GamesTab from "../components/admin/GamesTab.tsx";
-import RoomsTab from "../components/admin/RoomsTab.tsx";
 
-type Tab = "users" | "games" | "rooms";
+type Tab = "users" | "games";
 
 export default function AdminPage() {
-	// 1. Eliminamos 'token' de aquí, ya no existe en el store
 	const { role, user } = useAuthStore();
 	const navigate = useNavigate();
 	const [tab, setTab] = useState<Tab>("users");
 
 	useEffect(() => {
-		// 2. Ahora comprobamos que el usuario esté logueado y sea admin
-		// Si no hay user, significa que no hay sesión activa en el cliente
 		if (!user || role !== "admin") {
 			navigate("/");
 			return;
 		}
-	}, [user, role, navigate]); // 'user' reemplaza a 'token' como dependencia
+	}, [user, role, navigate]);
 
 	return (
 		<div className="pl-6 pb-10 pr-6">
@@ -37,7 +33,7 @@ export default function AdminPage() {
 
 			{/* Pestañas */}
 			<div className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4">
-				{(["users", "games", "rooms"] as Tab[]).map((t) => (
+				{(["users", "games"] as Tab[]).map((t) => (
 					<button
 						key={t}
 						onClick={() => setTab(t)}
@@ -51,7 +47,7 @@ export default function AdminPage() {
 							? "📄 Usuarios"
 							: t === "games"
 								? "📂 Partidas"
-								: "🏢 Salas"}
+								: null}
 					</button>
 				))}
 			</div>
@@ -61,7 +57,6 @@ export default function AdminPage() {
 					<UsersTab currentUser={user}/>
 				)}
 				{tab === "games" && <GamesTab />}
-				{tab === "rooms" && <RoomsTab/>}
 			</div>
 		</div>
 	);
