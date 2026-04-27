@@ -6,6 +6,7 @@ namespace App\Services\Admin;
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\RoomException;
+use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
@@ -56,21 +57,30 @@ class RoomService
         return $rooms;
     }
 
-    public function getRoom(string $roomId): ?array
+    public function getRoom(string $roomId): array 
     {
-        $infoKey = "room:{$roomId}:info";
-        $stateKey = "room:{$roomId}:state";
+        // Usar un pipeline para pedir todo a Redis de un solo golpe
+        $responses = Redis::pipeline(function ($pipe) use ($roomId) {
+            $pipe->hgetall("room:{$roomId}:info");
+            $pipe->hgetall("room:{$roomId}:state");
+            $pipe->smembers("room:{$roomId}:players");
+        });
 
-        if (!Redis::exists($infoKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+        [$infoData, $stateData, $players] = $responses;
+
+        // Si infoData está vacío, la sala no existe
+        if (empty($infoData)) {
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
-        $infoData = Redis::hgetall($infoKey);
-        $stateData = Redis::hgetall($stateKey);
-
+        // Construir el resultado
         $room = array_merge($infoData, $stateData);
         $room['room_id'] = $roomId;
-        $room['players'] = Redis::smembers("room:{$roomId}:players");
+        $room['players'] = $players;
+
+        if (isset($room['is_private'])) {
+            $room['is_private'] = CastHelper::toBool($room['is_private']);
+        }
 
         return $room;
     }

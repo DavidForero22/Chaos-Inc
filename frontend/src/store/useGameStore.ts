@@ -107,7 +107,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 
 		try {
-			const res = await api.post(`/rooms/${roomId}/sync`, {}, {
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/sync`, {}, {
 				hideLoader: true,
 			} as any);
 
@@ -148,7 +148,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true }); 
 		try {
-			await api.post(`/rooms/${roomId}/action`, {
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/action`, {
 				card_id: cardId,
 				target_name: targetName,
 				...(perkKey && { perk_key: perkKey }),
@@ -169,7 +169,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/react`, {
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/react`, {
 				reaction,
 				card_id: cardId,
 			});
@@ -189,7 +189,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/react-multi`, {
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/react-multi`, {
 				reaction,
 				card_id: cardId,
 			});
@@ -213,7 +213,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/end-turn`, {});
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/end-turn`, {});
 			await syncGame();
 		} catch (error) {
 			set({ isActionLocked: false });
@@ -226,7 +226,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/discard`, { card_ids: cardIds });
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/discard`, { card_ids: cardIds });
 			await syncGame();
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -240,7 +240,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/discard-perks`, { perk_ids: perkIds });
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/discard-perks`, { perk_ids: perkIds });
 			await syncGame();
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -256,7 +256,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${roomId}/react-discard`, { card_id: cardId });
+			await api.post(`/rooms/${encodeURIComponent(roomId)}/react-discard`, { card_id: cardId });
 			await syncGame();
 		} catch (error) {
 			set({ isActionLocked: false });
