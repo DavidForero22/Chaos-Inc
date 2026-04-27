@@ -142,7 +142,7 @@ export function GameOverModal({
 
 				{/* Botón Inferior para volver (Como un anuncio en el periódico) */}
 				<button onClick={onClose} className={styles.exitButton}>
-					Volver a Recepción (Menú Principal)
+					Volver a al Menú Principal
 				</button>
 			</div>
 		</div>,
