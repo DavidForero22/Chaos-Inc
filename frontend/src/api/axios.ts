@@ -57,6 +57,17 @@ api.interceptors.response.use(
 		const status = error.response?.status;
 		const url = error.config?.url ?? "";
 
+		// ─── MANEJO DE RATE LIMIT (TOO MANY REQUESTS) ───
+		if (status === 429) {
+			logWithTime(
+				"[Rate Limit] Se ha superado el límite de peticiones (429).",
+				null,
+				"warn",
+			);
+			alert("¡Vas muy rápido! Por favor, espera un momento.");
+			return Promise.reject(error);
+		}
+
 		// 419 Page Expired (CSRF Mismatch): Significa que la cookie caducó o el servidor se reinició
 		// Tratar igual que un 401 (Unauthorized)
 		if (status === 401 || status === 419) {
@@ -93,7 +104,7 @@ api.interceptors.response.use(
 				useAuthStore.getState().logout();
 
 				// if (window.location.pathname !== "/") {
-				// 	window.location.href = "/";
+				//  window.location.href = "/";
 				// }
 
 				return Promise.resolve({ data: null });
