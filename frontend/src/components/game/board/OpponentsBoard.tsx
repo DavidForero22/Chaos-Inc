@@ -70,13 +70,16 @@ export function OpponentsBoard({
                 - Móvil: fila recta, centrado arriba, se encoge al 75% si la carpeta está abierta.
                 - Escritorio: Ocupa toda la pantalla, sin flex, ignora si la carpeta está abierta.
             */}
-			<div 
-                className={`w-full absolute top-2 lg:inset-0 flex justify-center gap-1 lg:gap-2 lg:block transition-transform duration-500 origin-top pointer-events-none ${
-                    isFolderExpanded && !isDesktop ? 'scale-75 -translate-y-2' : 'scale-100'
-                }`}
-            >
+			<div
+				className={`w-full absolute top-2 lg:inset-0 flex justify-center gap-3 lg:gap-2 lg:block transition-transform duration-500 origin-top pointer-events-none ${
+					isFolderExpanded && !isDesktop
+						? "scale-75 -translate-y-2"
+						: "scale-100"
+				}`}
+			>
 				{opponents.map((player: Opponent, index: number) => {
 					const total = opponents.length;
+					const isBoss = player.role === "boss";
 
 					let inlineStyles: React.CSSProperties = {};
 
@@ -104,8 +107,8 @@ export function OpponentsBoard({
 					return (
 						<div
 							key={player.name}
-							// En móvil es relativo (Flex item), en PC se vuelve absoluto por el inlineStyle
-							className="relative pointer-events-auto transition-transform"
+							// NUEVO: Si es el jefe, le damos z-50 para que sobresalga su pegatina. Si no, z-10.
+							className={`relative pointer-events-auto transition-transform ${isBoss ? "z-50" : "z-10"}`}
 							style={inlineStyles}
 						>
 							<OpponentCard
