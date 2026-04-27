@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->id();
 
-            $table->enum('winner_role', ['boss', 'secretary', 'intern', 'union']);
+            // Añadir ->index() aquí para búsquedas instantáneas
+            $table->enum('winner_role', ['boss', 'secretary', 'intern', 'union'])->index();
             $table->integer('total_rounds');
             $table->integer('total_eliminations');
-            
+
             $table->timestamps();
+
+            // Añadir un índice compuesto o simple para ordenar rápido por fecha
+            $table->index('created_at');
         });
     }
 

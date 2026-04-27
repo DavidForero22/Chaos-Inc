@@ -14,13 +14,14 @@ return new class extends Migration
         Schema::create('game_user', function (Blueprint $table) {
             $table->id();
 
-            // FK1 y FK2
+            // FK1 y FK2 (Laravel crea índices para estas automáticamente al usar constrained)
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('game_id')->constrained()->onDelete('cascade');
 
-            // Atributos de la partida para ECharts
+            // Atributos de la partida para gráficos
             $table->boolean('has_won');
-            $table->enum('role', ['boss', 'secretary', 'intern', 'union']);
+            // Añadir ->index() por si luego se filtran estadísticas por rol
+            $table->enum('role', ['boss', 'secretary', 'intern', 'union'])->index();
             $table->integer('damage_dealt');
             $table->integer('damage_received');
             $table->integer('cards_played');
