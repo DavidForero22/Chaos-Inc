@@ -27,9 +27,9 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - ./backend/.env          
+      - ./backend/.env
     environment:
-      SERVER_NAME: ":8000"     
+      SERVER_NAME: ":8000"
     command: >
       sh -c "php artisan guests:purge && frankenphp run --config /etc/caddy/Caddyfile"
     depends_on:
@@ -111,12 +111,13 @@ services:
 
   # CACHÉ/TIEMPO REAL (Redis)
   redis:
-    image: redis:alpine
-    container_name: chaosinc_redis
+    image: valkey/valkey:8.0-alpine
+    container_name: chaosinc_valkey
+    restart: always
     command: >
-      sh -c "redis-server --requirepass ${REDIS_PASSWORD} & 
+      sh -c "valkey-server --requirepass ${REDIS_PASSWORD} & 
              sleep 2; 
-             redis-cli -a ${REDIS_PASSWORD} flushall; 
+             valkey-cli -a ${REDIS_PASSWORD} flushall; 
              wait"
     ports:
       - "6379:6379"

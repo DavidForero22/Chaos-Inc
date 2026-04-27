@@ -21,8 +21,13 @@ class LiveGameController extends Controller
     protected $turnService;
     protected $playerHandService;
 
-    public function __construct(LiveGameService $liveGameService, GameActionService $gameActionService, GameReactionService $gameReactionService,TurnService $turnService, PlayerHandService $playerHandService)
-    {
+    public function __construct(
+        LiveGameService $liveGameService,
+        GameActionService $gameActionService,
+        GameReactionService $gameReactionService,
+        TurnService $turnService,
+        PlayerHandService $playerHandService
+    ) {
         $this->liveGameService = $liveGameService;
         $this->gameActionService = $gameActionService;
         $this->gameReactionService = $gameReactionService;
@@ -30,42 +35,44 @@ class LiveGameController extends Controller
         $this->playerHandService = $playerHandService;
     }
 
-    public function start(Request $request, $id)
+    // MÉTODOS PRIVADOS DE AYUDA 
+
+    private function getPlayerName(Request $request, $id): ?string
     {
         $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        return Redis::get("room:{$id}:token:{$gameToken}");
+    }
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
+    private function syncResponse($id, $playerName)
+    {
+        $data = $this->liveGameService->getPlayerData($id, $playerName);
+        return response()->json($data, 200);
+    }
+
+    // ENDPOINTS
+
+    public function start(Request $request, $id)
+    {
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->liveGameService->startGame($id, $playerName);
 
-        return response()->json(['message' => 'Game started'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function sync(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
-
-        $data = $this->liveGameService->getPlayerData($id, $playerName);
-
-        return response()->json($data, 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function action(PlayActionRequest $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
-
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->gameActionService->playAction(
             $id,
@@ -75,55 +82,49 @@ class LiveGameController extends Controller
             $request->input('perk_key')
         );
 
-        return response()->json(['message' => 'Action executed successfully'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function endTurn(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
-
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->turnService->endTurn($id, $playerName);
 
-        return response()->json(['message' => 'Turn ended'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function react(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
+        $this->gameReactionService->reactToAttack(
+            $id,
+            $playerName,
+            $request->input('reaction'),
+            $request->input('card_id')
+        );
 
-        $reaction = $request->input('reaction');
-        $cardId = $request->input('card_id');
-
-        $this->gameReactionService->reactToAttack($id, $playerName, $reaction, $cardId);
-
-        return response()->json(['message' => 'Reaction processed'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function resolveLuckChallenge(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
-
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized.'], 401);
-        }
-
-        $chosen = $request->input('color');
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         try {
-            $success = $this->gameReactionService->resolveLuckChallenge($id, $playerName, $chosen);
+            $success = $this->gameReactionService->resolveLuckChallenge($id, $playerName, $request->input('color'));
 
-            return response()->json(['result' => $success ? 'success' : 'fail']);
+            // Obtener los datos sincronizados
+            $data = $this->liveGameService->getPlayerData($id, $playerName);
+
+            // Inyectar el resultado del challenge en la respuesta para que el frontend no pierda esa info
+            $data['_luck_result'] = $success ? 'success' : 'fail';
+
+            return response()->json($data, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
@@ -131,74 +132,52 @@ class LiveGameController extends Controller
 
     public function reactMulti(Request $request, $id)
     {
-        $gameToken  = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
+        $this->gameReactionService->reactToMultiAttack(
+            $id,
+            $playerName,
+            $request->input('reaction'),
+            $request->input('card_id')
+        );
 
-        $reaction = $request->input('reaction');
-        $cardId   = $request->input('card_id');
-
-        $this->gameReactionService->reactToMultiAttack($id, $playerName, $reaction, $cardId);
-
-        return response()->json(['message' => 'Reaction processed.'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function discard(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
-
-        $request->validate([
-            'card_ids'   => 'required|array',
-            'card_ids.*' => 'string'
-        ]);
+        $request->validate(['card_ids' => 'required|array', 'card_ids.*' => 'string']);
 
         $this->playerHandService->discardCards($id, $playerName, $request->input('card_ids'));
 
-        return response()->json(['message' => 'Cards discarded successfully'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function reactDiscard(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
-
-        $request->validate([
-            'card_id' => 'required|string'
-        ]);
+        $request->validate(['card_id' => 'required|string']);
 
         $this->gameReactionService->resolveSabotage($id, $playerName, $request->input('card_id'));
 
-        return response()->json(['message' => 'Discard reaction processed'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 
     public function discardPerks(Request $request, $id)
     {
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
-        $playerName = Redis::get("room:{$id}:token:{$gameToken}");
+        $playerName = $this->getPlayerName($request, $id);
+        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        if (!$playerName) {
-            return response()->json(['error' => 'Unauthorized or expired token.'], 401);
-        }
-
-        $request->validate([
-            'perk_ids'   => 'required|array',
-            'perk_ids.*' => 'string'
-        ]);
+        $request->validate(['perk_ids' => 'required|array', 'perk_ids.*' => 'string']);
 
         $this->playerHandService->discardPerks($id, $playerName, $request->input('perk_ids'));
 
-        return response()->json(['message' => 'Perks discarded successfully'], 200);
+        return $this->syncResponse($id, $playerName);
     }
 }
