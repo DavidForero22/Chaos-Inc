@@ -3,10 +3,11 @@
 
 namespace App\Services\Auth;
 
+use App\Exceptions\UserException;
 use App\Models\User;
 use App\Services\Admin\UserService;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class AuthService
@@ -21,31 +22,62 @@ class AuthService
     public function register(array $data)
     {
         $data['role'] = 'user';
-        $user = $this->userService->createUser($data);
-        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return [$user, $token];
+        try {
+            $user = $this->userService->createUser($data);
+            return $user;
+        } catch (QueryException $e) {
+            $message = strtolower($e->getMessage());
+
+            if (str_contains($message, 'users_email_unique')) {
+                throw new UserException(
+                    UserException::EMAIL_ALREADY_EXISTS,
+                    'El correo electrónico ya está en uso.'
+                );
+            }
+
+            if (str_contains($message, 'users_username_unique')) {
+                throw new UserException(
+                    UserException::USERNAME_ALREADY_EXISTS,
+                    'El nombre de usuario ya está en uso.'
+                );
+            }
+
+            throw new UserException(
+                UserException::GENERAL_ERROR,
+                'Ha ocurrido un error al registrar el usuario.'
+            );
+        } catch (UserException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new UserException(
+                UserException::GENERAL_ERROR,
+                'Ha ocurrido un error al registrar el usuario.'
+            );
+        }
     }
 
-    public function login(array $credentials)
+    public function login(array $credentials): User
     {
-        $loginIdentifier = $credentials['login'];
+        $login = trim($credentials['login']);
         $password = $credentials['password'];
 
-        // Buscar por email o username
-        $user = User::where('email', $loginIdentifier)
-            ->orWhere('username', $loginIdentifier)
-            ->first();
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (!$user || !Hash::check($password, $user->password)) {
-            throw ValidationException::withMessages([
-                'login' => ['The credentials provided are incorrect.'],
-            ]);
+        $ok = Auth::guard('web')->attempt([
+            $field => $login,
+            'password' => $password,
+        ]);
+
+        if (!$ok) {
+            throw new UserException(
+                UserException::INVALID_DATA,
+                'Credenciales incorrectas.',
+                401
+            );
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return [$user, $token];
+        return Auth::guard('web')->user();
     }
 
     public function guestLogin(string $baseName)
@@ -58,8 +90,8 @@ class AuthService
             $username = $cleanName . '_' . rand(1000, 9999);
         } while (User::where('username', $username)->exists());
 
-        // Generar datos ficticios para satisfacer las restricciones de la base de datos
-        $fakeEmail = strtolower($username) . '@guest.chaos.inc';
+        // Generar datos ficticios para cumplir las restricciones de la base de datos
+        $fakeEmail = strtolower($username) . '@guest.chaosinc';
         $fakePassword = Str::random(16);
 
         $user = $this->userService->createUser([
@@ -70,18 +102,6 @@ class AuthService
             'is_guest' => true,
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return [$user, $token];
-    }
-
-    public function revokeCurrentToken($user)
-    {
-        return $user->currentAccessToken()->delete();
-    }
-
-    public function revokeAllTokens($user)
-    {
-        return $user->tokens()->delete();
+        return $user;
     }
 }

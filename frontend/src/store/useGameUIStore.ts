@@ -8,6 +8,7 @@ interface GameUIState {
 	cardsToDiscard: string[];
 	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
+	isFolderExpanded: boolean;
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
@@ -15,6 +16,8 @@ interface GameUIState {
 	toggleDiscardPerk: (id: string, maxCards?: number) => void;
 	clearDiscardSelection: () => void;
 	handleLuckResult: (success: boolean) => void;
+	toggleFolder: () => void;
+	setFolderExpanded: (expanded: boolean) => void;
 }
 
 export const useGameUIStore = create<GameUIState>((set) => ({
@@ -23,6 +26,7 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	cardsToDiscard: [],
 	perksToDiscard: [],
 	luckResult: null,
+	isFolderExpanded: false,
 
 	setSelectedCardId: (id) => set({ selectedCardId: id }),
 
@@ -77,4 +81,8 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 			set({ luckResult: null });
 		}, 4000);
 	},
+
+	toggleFolder: () =>
+		set((state) => ({ isFolderExpanded: !state.isFolderExpanded })),
+	setFolderExpanded: (expanded) => set({ isFolderExpanded: expanded }),
 }));

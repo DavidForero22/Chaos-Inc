@@ -6,30 +6,28 @@ import api from "../../api/axios.ts";
 
 // -- HOOKS CUSTOM --
 import { useGameSockets } from "./useGameSockets.ts";
-import { usePlayerIdentity } from "../usePlayerIdentity.ts";
+import { useAuth } from "../useAuth.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
-import { useAuthStore } from "../../store/useAuthStore.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
-	const { myPlayerName } = usePlayerIdentity();
-	const { token } = useAuthStore();
+	const { user } = useAuth();
 
 	const isKickedRef = useRef(false);
 
-	// -- EXTRAEMOS LO NECESARIO DEL STORE --
+	// -- EXTRAER LO NECESARIO DEL STORE --
 	const setRoomId = useGameStore((state) => state.setRoomId);
 	const syncGameStore = useGameStore((state) => state.syncGame);
 	const setIsConnecting = useGameStore((state) => state.setIsConnecting);
 	const isConnecting = useGameStore((state) => state.isConnecting);
 	const resetStore = useGameStore((state) => state.resetStore);
 
-	// Extraemos el current_turn para vigilarlo
+	// Extraer el current_turn para vigilarlo
 	const currentTurn = useGameStore(
 		(state) => state.gameData?.game?.current_turn,
 	);
@@ -49,10 +47,7 @@ export function useLiveGame(roomId: string | undefined) {
 	useEffect(() => {
 		// Si el turno ha cambiado, o si se ha reiniciado por completo
 		if (currentTurn !== previousTurnRef.current) {
-			if (
-				previousTurnRef.current === myPlayerName &&
-				currentTurn !== myPlayerName
-			) {
+			if (previousTurnRef.current === user && currentTurn !== user) {
 				logWithTime(
 					"useLiveGame.ts - El turno ha pasado a otro jugador. Limpiando UI.",
 				);
@@ -61,7 +56,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 			previousTurnRef.current = currentTurn || null;
 		}
-	}, [currentTurn, myPlayerName, clearDiscardSelection]);
+	}, [currentTurn, user, clearDiscardSelection]);
 
 	// -- 2. WRAPPER DE SINCRONIZACIÓN (Maneja las redirecciones) --
 	const handleSync = useCallback(async () => {
@@ -109,7 +104,7 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 3. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
-			if (!roomId || !myPlayerName || !token) return;
+			if (!roomId || !user) return;
 
 			try {
 				setIsConnecting(true);
@@ -140,14 +135,13 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, myPlayerName, token, handleSync, navigate, setIsConnecting]);
+	}, [roomId, user, handleSync, navigate, setIsConnecting]);
 
 	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA --
 	useEffect(() => {
 		const handleUnload = () => {
 			if (isKickedRef.current) return;
 
-			const sanctumToken = localStorage.getItem("token") || "";
 			const gameToken = localStorage.getItem("game_token") || "";
 
 			if (roomId && gameToken) {
@@ -156,9 +150,9 @@ export function useLiveGame(roomId: string | undefined) {
 					headers: {
 						Accept: "application/json",
 						"Content-Type": "application/json",
-						Authorization: `Bearer ${sanctumToken}`,
 						"X-Game-Token": gameToken,
 					},
+					credentials: "include",
 					keepalive: true,
 					body: JSON.stringify({}),
 				}).catch(() => {});

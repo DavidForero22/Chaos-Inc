@@ -1,13 +1,35 @@
 // src/components/profile/RegisteredProfileView.tsx
-import { useState, useMemo } from "react";
-import { useAuthStore } from "../../store/useAuthStore.ts";
-import type { GameRecord } from "../../types/api.ts";
 
-const ROLE_LABELS: Record<string, string> = {
+import { useState, useMemo } from "react";
+import { useAuthStore } from "../../store/useAuthStore";
+import type { GameRecord } from "../../types/api";
+import styles from "./Profile.module.css";
+
+const GAME_ROLE_LABELS: Record<string, string> = {
 	boss: "👑 Jefe",
 	secretary: "📋 Secretario",
 	intern: "🎓 Becario",
 	union: "✊ Sindicalista",
+};
+
+const ACCOUNT_ROLE_CONFIG: Record<
+	string,
+	{
+		label: string;
+		badgeClass: string;
+		dotClass: string;
+	}
+> = {
+	admin: {
+		label: "Administrador",
+		badgeClass: styles.roleAdmin,
+		dotClass: styles.roleAdminDot,
+	},
+	user: {
+		label: "Empleado",
+		badgeClass: styles.roleUser,
+		dotClass: styles.roleUserDot,
+	},
 };
 
 interface RegisteredProfileViewProps {
@@ -21,10 +43,13 @@ export default function RegisteredProfileView({
 	onLogout,
 	onDeleteAccount,
 }: RegisteredProfileViewProps) {
-	const { user } = useAuthStore();
+	const { user, role } = useAuthStore();
 	const [confirmDelete, setConfirmDelete] = useState(false);
 
-	const myStats = useMemo(() => {
+	const roleConfig =
+		ACCOUNT_ROLE_CONFIG[role ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
+
+	const stats = useMemo(() => {
 		return games.reduce(
 			(acc, game) => {
 				const me = game.players.find((p) => p.displayName === user);
@@ -42,73 +67,96 @@ export default function RegisteredProfileView({
 	}, [games, user]);
 
 	return (
-		<div className="max-w-3xl mx-auto py-6 flex flex-col gap-6">
-			{/* Cabecera */}
-			<div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-				<h1 className="text-2xl font-black text-white mb-1">👤 {user}</h1>
-				<p className="text-gray-500 text-sm">{games.length} partidas jugadas</p>
-			</div>
+		<div className={styles.dossier}>
+			{/* ── CABECERA ── */}
+			<div className={styles.header}>
+				<div className={styles.headerLeft}>
+					<h1 className={styles.employeeName}>{user}</h1>
+					<p className={styles.headerMeta}>
+						{games.length} partidas en el registro
+					</p>
+				</div>
 
-			{/* Estadísticas globales */}
-			<div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-				<h2 className="text-sm text-gray-400 uppercase font-bold mb-4">
-					Estadísticas globales
-				</h2>
-				<div className="grid grid-cols-3 gap-4 text-center">
-					{[
-						{ label: "Victorias", value: myStats.wins },
-						{ label: "Derrotas", value: games.length - myStats.wins },
-						{ label: "Eliminaciones", value: myStats.eliminations },
-						{ label: "Daño infligido", value: myStats.damage },
-						{ label: "Daño recibido", value: myStats.received },
-						{ label: "Cartas jugadas", value: myStats.cards },
-					].map(({ label, value }) => (
-						<div
-							key={label}
-							className="bg-gray-900 rounded-lg p-3 border border-gray-700"
-						>
-							<p className="text-xs text-gray-500 uppercase mb-1">{label}</p>
-							<p className="text-xl font-black text-white">{value}</p>
-						</div>
-					))}
+				{/* Badge de rol de cuenta */}
+				<div className={`${styles.roleBadge} ${roleConfig.badgeClass}`}>
+					<span className={`${styles.roleDot} ${roleConfig.dotClass}`} />
+					{roleConfig.label}
 				</div>
 			</div>
 
-			{/* Historial */}
-			<div className="bg-gray-800 rounded-xl border border-gray-700 p-6">
-				<h2 className="text-sm text-gray-400 uppercase font-bold mb-4">
-					Historial de partidas
-				</h2>
+			{/* ── ESTADÍSTICAS GLOBALES ── */}
+			<div className={styles.section}>
+				<p className={styles.sectionLabel}>Estadísticas Globales</p>
+				<div className={styles.statsGrid}>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Victorias</span>
+						<span
+							className={`${styles.statValue} ${styles.statValueHighlight}`}
+						>
+							{stats.wins}
+						</span>
+					</div>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Derrotas</span>
+						<span className={styles.statValue}>
+							{games.length - stats.wins}
+						</span>
+					</div>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Eliminaciones</span>
+						<span className={styles.statValue}>{stats.eliminations}</span>
+					</div>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Daño infligido</span>
+						<span className={styles.statValue}>{stats.damage}</span>
+					</div>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Daño recibido</span>
+						<span className={styles.statValue}>{stats.received}</span>
+					</div>
+					<div className={styles.statCell}>
+						<span className={styles.statLabel}>Cartas jugadas</span>
+						<span className={styles.statValue}>{stats.cards}</span>
+					</div>
+				</div>
+			</div>
+
+			{/* ── HISTORIAL ── */}
+			<div className={styles.section}>
+				<p className={styles.sectionLabel}>Historial de Partidas</p>
+
 				{games.length === 0 ? (
-					<p className="text-gray-500 text-sm">
-						Aún no has jugado ninguna partida registrada.
+					<p className={styles.emptyHistory}>
+						[ Sin partidas registradas en el archivo corporativo ]
 					</p>
 				) : (
-					<div className="flex flex-col gap-3">
+					<div className={styles.gameList}>
 						{games.map((game) => {
 							const me = game.players.find((p) => p.displayName === user);
 							if (!me) return null;
+							const won = me.stats.hasWon;
 							return (
 								<div
 									key={game.id}
-									className={`rounded-lg border p-4 flex justify-between items-center ${
-										me.stats.hasWon
-											? "bg-green-900/20 border-green-800"
-											: "bg-red-900/10 border-red-900"
-									}`}
+									className={`${styles.gameRow} ${won ? styles.gameRowWin : styles.gameRowLoss}`}
 								>
 									<div>
-										<p className="text-sm font-bold text-white">
-											{me.stats.hasWon ? "🏆 Victoria" : "💀 Derrota"} —{" "}
-											{ROLE_LABELS[me.stats.role] ?? me.stats.role}
+										<p
+											className={`${styles.gameResult} ${won ? styles.gameResultWin : styles.gameResultLoss}`}
+										>
+											{won ? "Victoria" : "Derrota"}
 										</p>
-										<p className="text-xs text-gray-500 mt-1">
-											{new Date(game.playedAt).toLocaleDateString("es-ES")} ·{" "}
+										<p className={styles.gameRole}>
+											{GAME_ROLE_LABELS[me.stats.role] ?? me.stats.role}
+										</p>
+										<p className={styles.gameMeta}>
+											{new Date(game.playedAt).toLocaleDateString("es-ES")}
+											{" · "}
 											{game.totalRounds} rondas
 										</p>
 									</div>
-									<div className="text-right text-xs text-gray-400">
-										<p>⚔️ {me.stats.damageDealt} daño</p>
+									<div className={styles.gameStats}>
+										<p>⚔ {me.stats.damageDealt} daño</p>
 										<p>🃏 {me.stats.cardsPlayed} cartas</p>
 										<p>💀 {me.stats.eliminations} elim.</p>
 									</div>
@@ -119,39 +167,42 @@ export default function RegisteredProfileView({
 				)}
 			</div>
 
-			{/* Acciones */}
-			<div className="bg-gray-800 rounded-xl border border-gray-700 p-6 flex flex-col gap-3">
+			{/* ── ACCIONES ── */}
+			<div className={styles.section}>
+				<p className={styles.sectionLabel}>Gestión de Cuenta</p>
+
 				<button
+					className={`${styles.actionBtn} ${styles.actionBtnLogout}`}
 					onClick={onLogout}
-					className="w-full py-2 rounded bg-gray-700 hover:bg-gray-600 text-white font-bold transition text-sm cursor-pointer"
 				>
 					Cerrar sesión
 				</button>
 
 				{!confirmDelete ? (
 					<button
+						className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
 						onClick={() => setConfirmDelete(true)}
-						className="w-full py-2 rounded bg-red-900/40 hover:bg-red-900/70 text-red-400 font-bold transition text-sm border border-red-800 cursor-pointer"
 					>
-						Eliminar cuenta
+						Borrar Cuenta
 					</button>
 				) : (
-					<div className="bg-red-900/20 border border-red-700 rounded-lg p-4 flex flex-col gap-2">
-						<p className="text-sm text-red-300 font-semibold text-center">
-							¿Seguro? Esta acción no se puede deshacer.
+					<div className={styles.deleteConfirm}>
+						<p className={styles.deleteConfirmText}>
+							Esta acción es irreversible. La cuenta será eliminada
+							permanentemente.
 						</p>
-						<div className="flex gap-2">
+						<div className={styles.deleteConfirmBtns}>
 							<button
+								className={styles.confirmCancel}
 								onClick={() => setConfirmDelete(false)}
-								className="flex-1 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm font-bold transition"
 							>
 								Cancelar
 							</button>
 							<button
+								className={styles.confirmDelete}
 								onClick={onDeleteAccount}
-								className="flex-1 py-2 rounded bg-red-600 hover:bg-red-500 text-white text-sm font-bold transition"
 							>
-								Sí, eliminar
+								Confirmar
 							</button>
 						</div>
 					</div>

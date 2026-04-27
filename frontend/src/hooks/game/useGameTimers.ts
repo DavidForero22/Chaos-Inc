@@ -37,7 +37,7 @@ export function useGameTimers() {
 		gameData?.me?.combat_state.is_defending_single ?? false;
 	const hasLuckChallenge = !!gameData?.me?.luck_challenge;
 
-	// --- Countdown del Turno Principal ---
+	// --- Variables Clave del Turno ---
 	const turnExpiresAt = gameData?.game?.turn_expires_at;
 	const turnRemaining = gameData?.game?.turn_remaining;
 	const currentTurn = gameData?.game?.current_turn;
@@ -51,14 +51,18 @@ export function useGameTimers() {
 		(gameData?.game?.pending_multi_attack_targets &&
 			gameData.game.pending_multi_attack_targets.length > 0) ||
 		gameData?.game?.player_pending_sabotage !== null;
+
 	const gameOver = useGameStore((state) => state.gameOver);
 
 	const isGlobalPause =
 		bossDisconnected || actingBossDisconnected || endingSoon;
-	const isTurnPaused = isSomeoneWaitingForReaction || isGlobalPause;
+	// Si expires_at es 0, también considerarlo una pausa
+	const isTurnPaused =
+		isSomeoneWaitingForReaction || isGlobalPause || turnExpiresAt === 0;
 
 	const [turnTimeLeft, setTurnTimeLeft] = useState<number | null>(null);
 
+	// --- COUNTDOWN INMUNE A DESFASES DE RELOJ ---
 	useEffect(() => {
 		if (gameOver) {
 			setTurnTimeLeft(null);
@@ -68,45 +72,48 @@ export function useGameTimers() {
 			return;
 		}
 
-		if (turnRemaining === undefined && !isTurnPaused) {
+		// Si no hay tiempo restante, matar el reloj
+		if (isTurnPaused || turnRemaining === undefined || turnRemaining === null) {
 			setTurnTimeLeft(null);
-			return;
-		}
-
-		if (isTurnPaused) {
-			logWithTime(
-				"useGameTimers.ts - Turno en pausa, congelando reloj global.",
-			);
 			return;
 		}
 
 		let didTriggerLoader = false;
 		const loadingStore = useLoadingStore.getState();
 
-		// Iniciar el cronómetro local con el valor del backend
-		if (turnRemaining !== undefined && turnRemaining > 0) {
-			setTurnTimeLeft(turnRemaining);
+		// ---------------------------------------------------------
+		// MAGIA ANTI-DESFASE: Crear una caducidad 100% LOCAL
+		// Sumar los segundos que dijo el servidor al reloj local.
+		// ---------------------------------------------------------
+		const localExpireMs = Date.now() + turnRemaining * 1000;
+
+		const calculateTimeLeft = () => {
+			const secondsLeft = Math.floor((localExpireMs - Date.now()) / 1000);
+			return secondsLeft > 0 ? secondsLeft : 0;
+		};
+
+		const initialTime = calculateTimeLeft();
+		setTurnTimeLeft(initialTime);
+
+		if (initialTime > 0) {
 			logWithTime(
-				`useGameTimers.ts - Iniciando reloj para el turno de ${currentTurn}. Segundos restantes: ${turnRemaining}`,
+				`useGameTimers.ts - Iniciando reloj para ${currentTurn}. Segundos reales: ${initialTime}`,
 			);
 		}
 
 		const interval = setInterval(() => {
-			setTurnTimeLeft((prev) => {
-				if (isTurnPaused) return prev;
+			const currentSecondsLeft = calculateTimeLeft();
 
-				if (prev === null || prev <= 1) {
-					clearInterval(interval);
+			setTurnTimeLeft(currentSecondsLeft);
 
-					if (isMyTurn && !didTriggerLoader) {
-						loadingStore.startLoading("Procesando fin de turno...");
-						didTriggerLoader = true;
-					}
+			if (currentSecondsLeft <= 0) {
+				clearInterval(interval);
 
-					return 0;
+				if (isMyTurn && !didTriggerLoader) {
+					loadingStore.startLoading("Procesando fin de turno...");
+					didTriggerLoader = true;
 				}
-				return prev - 1;
-			});
+			}
 		}, 1000);
 
 		return () => {
@@ -115,14 +122,7 @@ export function useGameTimers() {
 				loadingStore.stopLoading();
 			}
 		};
-	}, [
-		isMyTurn,
-		turnExpiresAt,
-		isTurnPaused,
-		turnRemaining,
-		gameOver,
-		currentTurn,
-	]);
+	}, [isMyTurn, turnExpiresAt, isTurnPaused, gameOver, currentTurn]);
 
 	// --- Banner de herencia ---
 	const [showInheritanceBanner, setShowInheritanceBanner] = useState(false);

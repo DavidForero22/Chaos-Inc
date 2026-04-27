@@ -1,8 +1,10 @@
 // src/components/game/ui/GameBanners.tsx
 
+import { useState, useEffect } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
-import { usePlayerIdentity } from "../../../hooks/usePlayerIdentity.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import styles from "./GameBanners.module.css";
 
 interface GameBannersProps {
 	showBossWaiting: boolean;
@@ -10,6 +12,46 @@ interface GameBannersProps {
 	showEndingWaiting: boolean;
 	showInheritanceBanner: boolean;
 	playerPendingSabotage?: string | null;
+}
+
+// Componente auxiliar para que el banner espere a la animación antes de desaparecer
+function AnimatedBanner({
+	show,
+	message,
+	colorClass = "",
+}: {
+	show: boolean;
+	message: string;
+	colorClass?: string;
+}) {
+	const [shouldRender, setShouldRender] = useState(show);
+	const [isExiting, setIsExiting] = useState(false);
+
+	useEffect(() => {
+		if (show) {
+			setShouldRender(true);
+			setIsExiting(false);
+		} else if (shouldRender) {
+			// Empezar la animación de salida
+			setIsExiting(true);
+			// 300ms es el tiempo que dura la animación CSS (pullUp)
+			const timer = setTimeout(() => {
+				setShouldRender(false);
+			}, 300);
+			return () => clearTimeout(timer);
+		}
+	}, [show, shouldRender]);
+
+	if (!shouldRender) return null;
+
+	return (
+		<div
+			className={`${styles.shoutRow} ${isExiting ? styles.slideOutTop : styles.slideInTop}`}
+		>
+			<div className={styles.megaphone}>📢</div>
+			<div className={`${styles.shoutBubble} ${colorClass}`}>{message}</div>
+		</div>
+	);
 }
 
 export function GameBanners({
@@ -20,97 +62,87 @@ export function GameBanners({
 	playerPendingSabotage,
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
-	const { myPlayerName } = usePlayerIdentity();
-
+	const { user } = useAuth();
 	const luckResult = useGameUIStore((state) => state.luckResult);
 
 	if (!gameData) return null;
 	const { game } = gameData;
 
-	// Calculamos si debemos mostrar el banner de "alguien está decidiendo".
-	// No lo mostramos si somos nosotros, porque nosotros ya tenemos la UI de los botones.
-	const isSomeoneElseDefendingSingle =
+	const isSomeoneElseDefendingSingle = !!(
 		game.pending_single_attack_target &&
-		game.pending_single_attack_target !== myPlayerName;
+		game.pending_single_attack_target !== user
+	);
 
 	const isSomeoneElseDefendingMulti =
 		game.pending_multi_attack_targets.length > 0 &&
-		!game.pending_multi_attack_targets.includes(myPlayerName || "");
+		!game.pending_multi_attack_targets.includes(user || "");
 
-	const isSomeoneElseInLuckChallenge =
+	const isSomeoneElseInLuckChallenge = !!(
 		game.player_in_luck_challenge &&
-		game.player_in_luck_challenge !== myPlayerName;
+		game.player_in_luck_challenge !== user
+	);
 
 	return (
-		<div className="flex flex-col gap-2 mb-4">
+		<div className={styles.bannersContainer}>
 			{/* NUEVOS BANNERS INFORMATIVOS */}
-			{isSomeoneElseDefendingSingle && (
-				<div className="bg-purple-900/40 border border-purple-700 text-purple-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-pulse shadow-[0_0_15px_rgba(147,51,234,0.3)]">
-					⚔️ {game.pending_single_attack_target} está decidiendo si esquivar o
-					asumir daño...
-				</div>
-			)}
+			<AnimatedBanner
+				show={isSomeoneElseDefendingSingle}
+				message={`¡${game.pending_single_attack_target} ESTÁ DECIDIENDO SI ASUMIR EL ATAQUE!`}
+				colorClass={styles.bgNotice}
+			/>
 
-			{isSomeoneElseDefendingMulti && (
-				<div className="bg-purple-900/40 border border-purple-700 text-purple-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-pulse shadow-[0_0_15px_rgba(147,51,234,0.3)]">
-					⚔️ Múltiples jugadores están decidiendo si esquivar o asumir el ataque
-					masivo...
-				</div>
-			)}
+			<AnimatedBanner
+				show={isSomeoneElseDefendingMulti}
+				message={`¡ALERTA! ¡ATAQUE MASIVO EN CURSO EN LA OFICINA!`}
+				colorClass={styles.bgAlert}
+			/>
 
-			{isSomeoneElseInLuckChallenge && (
-				<div className="bg-cyan-900/40 border border-cyan-700 text-cyan-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-pulse shadow-[0_0_15px_rgba(6,182,212,0.3)]">
-					🔒 {game.player_in_luck_challenge} está intentando escapar del
-					bloqueo...
-				</div>
-			)}
+			<AnimatedBanner
+				show={isSomeoneElseInLuckChallenge}
+				message={`¡${game.player_in_luck_challenge} INTENTA ESCAPAR DEL BLOQUEO DE RRHH!`}
+				colorClass={styles.bgNotice}
+			/>
 
-			{/* TUS BANNERS ANTIGUOS */}
-			{showActingBossWaiting && (
-				<div className="bg-orange-900/40 border border-orange-700 text-orange-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
-					⏳ El jefe heredado se ha desconectado. Esperando 10s para
-					reconexión...
-				</div>
-			)}
+			<AnimatedBanner
+				show={showActingBossWaiting}
+				message={`¡EL JEFE EN FUNCIONES NO RESPONDE! ESPERANDO RECONEXIÓN...`}
+			/>
 
-			{showBossWaiting && (
-				<div className="bg-blue-900/40 border border-blue-700 text-blue-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
-					⏳ El jefe se ha desconectado. Esperando 10s para reconexión o
-					sucesión...
-				</div>
-			)}
+			<AnimatedBanner
+				show={showBossWaiting}
+				message={`¡EL JEFE SE HA DESCONECTADO! ESPERANDO SUCESIÓN...`}
+			/>
 
-			{showInheritanceBanner && (
-				<div className="bg-yellow-900/40 border border-yellow-700 text-yellow-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
-					⚠️ El tiempo expiró. Alguien ha heredado el cargo en secreto.
-				</div>
-			)}
+			<AnimatedBanner
+				show={showInheritanceBanner}
+				message={`¡EL TIEMPO EXPIRÓ! ALGUIEN HA HEREDADO EL CARGO EN SECRETO.`}
+			/>
 
-			{showEndingWaiting && (
-				<div className="bg-red-900/40 border border-red-700 text-red-300 text-sm font-semibold px-4 py-2 rounded-lg text-center animate-fade-in">
-					⚠️ La partida podría terminar por abandono. Dando 10s de cortesía...
-				</div>
-			)}
+			<AnimatedBanner
+				show={showEndingWaiting}
+				message={`¡LA PARTIDA SE CANCELARÁ POR ABANDONO EN 10 SEGUNDOS!`}
+				colorClass={styles.bgCritical}
+			/>
 
-			{playerPendingSabotage && playerPendingSabotage !== myPlayerName && (
-				<div className="bg-purple-900/40 border border-purple-700 text-purple-300 text-sm font-semibold px-4 py-2 rounded-lg mb-3 text-center">
-					⏳ {playerPendingSabotage} está decidiendo qué carta descartar...
-				</div>
-			)}
+			<AnimatedBanner
+				show={
+					!!(playerPendingSabotage && playerPendingSabotage !== user)
+				}
+				message={`¡${playerPendingSabotage} ESTÁ SIENDO OBLIGADO A DESCARTAR!`}
+				colorClass={styles.bgNotice}
+			/>
 
-			{luckResult && (
-				<div
-					className={`px-4 py-2 rounded-lg text-center text-sm font-semibold border animate-fade-in ${
-						luckResult === "success"
-							? "bg-green-900/40 border-green-700 text-green-300 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
-							: "bg-red-900/40 border-red-700 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.3)]"
-					}`}
-				>
-					{luckResult === "success"
-						? "✅ ¡Acertaste! Puedes jugar tu turno."
-						: "❌ Fallaste. Pierdes tu turno."}
-				</div>
-			)}
+			<AnimatedBanner
+				show={!!luckResult}
+				message={
+					luckResult === "success"
+						? "¡ACERTASTE EL DESAFÍO! ¡VUELVES AL TRABAJO!"
+						: "¡FALLASTE EL DESAFÍO! ¡TURNO PERDIDO!"
+				}
+				colorClass={
+					luckResult === "success" ? styles.bgSuccess : styles.bgCritical
+				}
+			/>
 		</div>
 	);
 }

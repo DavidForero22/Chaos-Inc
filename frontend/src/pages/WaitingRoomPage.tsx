@@ -1,13 +1,16 @@
 // src/pages/WaitingRoomPage.tsx
 
-// -- HOOKS --
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../hooks/room/useRoom.ts";
-import { useLoadingStore } from "../store/useLoadingStore.ts"; 
+import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { FaShareAlt, FaCheck } from "react-icons/fa";
 
-// -- COMPONENTES --
 import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
+import BoardPlayerList from "../components/lobby/BoardPlayerList.tsx";
+import RoomPasswordBoard from "../components/lobby/RoomPasswordBoard.tsx";
+import WallLayout from "../layouts/WallLayout.tsx";
+import styles from "./WaitingRoomPage.module.css";
 
 export default function WaitingRoomPage() {
 	const { id } = useParams();
@@ -16,7 +19,7 @@ export default function WaitingRoomPage() {
 
 	const {
 		room,
-		myPlayerName,
+		user,
 		isJoining,
 		needsPassword,
 		passwordError,
@@ -26,21 +29,22 @@ export default function WaitingRoomPage() {
 		kickPlayer,
 	} = useRoom(id);
 
-	const [passwordInput, setPasswordInput] = useState("");
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
+	// --- ESTADO PARA EL FEEDBACK DE COPIA ---
+	const [copied, setCopied] = useState(false);
+
 	const missingPlayers = 3 - (room?.players.length || 0);
-	const isOwner = room?.owner_name === myPlayerName;
+	const isOwner = room?.owner_name === user;
 
 	useEffect(() => {
-		if (!isJoining && !myPlayerName && !showGuestModal) {
+		if (!isJoining && !user && !showGuestModal) {
 			setShowGuestModal(true);
 		}
-	}, [isJoining, myPlayerName, showGuestModal]);
+	}, [isJoining, user, showGuestModal]);
 
-	// --- WRAPPERS PARA EL GLOBAL LOADER ---
 	const onLeaveClick = async () => {
-		startLoading("Saliendo de la sala...");
+		startLoading("Borrando de la pizarra...");
 		try {
 			await handleLeaveRoom();
 		} finally {
@@ -49,7 +53,7 @@ export default function WaitingRoomPage() {
 	};
 
 	const onKickClick = async (playerToKick: string) => {
-		startLoading(`Expulsando a ${playerToKick}...`);
+		startLoading(`Borrando a ${playerToKick}...`);
 		try {
 			await kickPlayer(playerToKick);
 		} finally {
@@ -57,23 +61,42 @@ export default function WaitingRoomPage() {
 		}
 	};
 
-	// (El startGame no le ponemos loader global porque ya redirige al tablero y tiene su propio sistema de carga ahí)
+	// --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
+	const handleShare = async () => {
+		try {
+			await navigator.clipboard.writeText(window.location.href);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2000);
+		} catch (err) {
+			console.error("No se pudo copiar el enlace", err);
+		}
+	};
 
+	// 1. Estado: Cargando/Conectando
 	if (isJoining) {
 		return (
-			<div className="flex flex-col items-center justify-center mt-20 text-white">
-				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500 mb-4"></div>
-				<p className="animate-pulse font-medium">Conectando a la sala...</p>
-
-				{!myPlayerName && (
-					<p className="text-xs text-gray-500 mt-4 italic">
-						Esperando identificación del jugador...
+			<WallLayout boardWidth="500px">
+				<div className="flex flex-col items-center justify-center text-center">
+					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+					<p
+						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
+						style={{ fontFamily: "'Kalam', cursive" }}
+					>
+						Conectando a la sala...
 					</p>
-				)}
-			</div>
+					{!user && (
+						<p
+							className={`${styles.markerBlack} text-sm mt-4 italic opacity-70`}
+						>
+							Esperando identificación en recepción...
+						</p>
+					)}
+				</div>
+			</WallLayout>
 		);
 	}
 
+	// 2. Estado: Invitado sin nombre
 	if (showGuestModal) {
 		return (
 			<GuestNameModal
@@ -86,143 +109,116 @@ export default function WaitingRoomPage() {
 		);
 	}
 
+	// 3. Estado: Petición de contraseña
 	if (needsPassword) {
 		return (
-			<div className="max-w-md mx-auto mt-20 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
-				<h2 className="text-2xl font-bold text-white mb-4">🔒 Sala Privada</h2>
-				<p className="text-gray-400 mb-6">
-					Introduce la contraseña para acceder a la sala{" "}
-					<span className="text-yellow-400 font-mono">{id}</span>
-				</p>
-
-				<input
-					type="password"
-					className="w-full p-3 mb-2 bg-gray-900 border border-gray-600 rounded text-white focus:border-blue-500 outline-none transition"
-					placeholder="Contraseña"
-					value={passwordInput}
-					onChange={(e) => setPasswordInput(e.target.value)}
-					onKeyDown={(e) => e.key === "Enter" && attemptJoin(passwordInput)}
-				/>
-
-				{passwordError && (
-					<p className="text-red-400 text-sm mb-4 text-left">{passwordError}</p>
-				)}
-
-				<div className="flex justify-end gap-3 mt-6">
-					<button
-						onClick={() => navigate("/")}
-						className="px-5 py-2.5 text-gray-400 hover:text-white transition"
-					>
-						Volver al Menú
-					</button>
-					<button
-						onClick={() => attemptJoin(passwordInput)}
-						className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded shadow-lg shadow-blue-900/20"
-					>
-						Entrar
-					</button>
-				</div>
-			</div>
+			<RoomPasswordBoard
+				roomId={id || ""}
+				error={passwordError}
+				onCancel={() => navigate("/")}
+				onSubmit={attemptJoin}
+			/>
 		);
 	}
 
+	// 4. Estado: Faltan datos de la sala
 	if (!room) {
 		return (
-			<div className="text-center text-white mt-20">
-				Cargando datos de la sala...
-			</div>
+			<WallLayout boardWidth="500px">
+				<div className="text-center">
+					<p
+						className={`${styles.markerBlack} font-bold text-xl`}
+						style={{ fontFamily: "'Kalam', cursive" }}
+					>
+						Revisando agenda de salas...
+					</p>
+				</div>
+			</WallLayout>
 		);
 	}
 
+	// 5. Estado: Pizarra Principal de la Sala
 	return (
-		<div className="max-w-2xl mx-auto mt-12 bg-gray-800 p-8 rounded-xl shadow-2xl border border-gray-700 text-center">
-			<h1 className="text-3xl font-bold text-white mb-2">{room.name}</h1>
-			<p className="text-gray-400 font-mono text-xl mb-8">
-				Código de invitación: <span className="text-yellow-400">{id}</span>
-			</p>
+		<WallLayout>
+			<h1 className={`${styles.title} ${styles.markerBlack}`}>
+				SALA: <span className={styles.markerBlue}>{room.name}</span>
+			</h1>
 
-			<div className="bg-gray-900 p-6 rounded-lg mb-8 text-left">
-				<div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-2">
-					<h3 className="text-lg font-bold text-blue-400">
-						Jugadores Conectados
-					</h3>
-					<span className="text-sm text-gray-400">
-						{room.players.length} / {room.max_players}
+			{/* --- BOTÓN DE COMPARTIR --- */}
+			<div className="flex justify-center mb-10 mt-4">
+				<button
+					onClick={handleShare}
+					className={`${styles.markerBlack} flex items-center gap-3 px-4 py-2 border-2 border-dashed border-gray-400 rounded hover:bg-gray-100 transition-colors`}
+					title="Copiar enlace de la sala"
+				>
+					<span className={styles.subtitle} style={{ marginBottom: 0 }}>
+						CÓDIGO: <span className={styles.markerRed}>{id}</span>
 					</span>
-				</div>
 
-				<ul className="space-y-3">
-					{room.players.map((player: string) => (
-						<li
-							key={player}
-							className="flex justify-between items-center bg-gray-800 p-2 rounded"
-						>
-							<div className="flex items-center gap-2 text-white">
-								<span className="w-2 h-2 rounded-full bg-green-500"></span>
-								{player}
-								{player === myPlayerName && (
-									<span className="text-xs text-blue-400 ml-2">(Tú)</span>
-								)}
-								{player === room.owner_name && (
-									<span className="text-xs text-yellow-500 ml-2">👑 Líder</span>
-								)}
-							</div>
-
-							{/* BOTÓN DE EXPULSAR (Usa el wrapper onKickClick) */}
-							{room.owner_name === myPlayerName && player !== myPlayerName && (
-								<button
-									onClick={() => onKickClick(player)}
-									className="text-xs bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white px-2 py-1 rounded border border-red-700/50 transition"
-									title="Expulsar jugador"
-								>
-									Expulsar
-								</button>
-							)}
-						</li>
-					))}
-
-					{room.players.length < room.max_players && (
-						<li className="flex items-center gap-2 text-gray-500 italic p-2">
-							<span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse"></span>
-							Esperando a más jugadores...
-						</li>
+					{/* Feedback visual interactivo */}
+					{copied ? (
+						<span className="flex items-center gap-1 text-green-600 text-sm font-bold">
+							<FaCheck /> ¡Copiado!
+						</span>
+					) : (
+						<span className="flex items-center gap-1 text-gray-500 text-sm hover:text-blue-600 transition-colors">
+							<FaShareAlt /> Compartir
+						</span>
 					)}
-				</ul>
+				</button>
 			</div>
 
-			<div className="flex justify-center gap-4">
-				{/* BOTÓN DE ABANDONAR (Usa el wrapper onLeaveClick) */}
+			<div className="flex justify-between items-end mb-2">
+				<h3
+					className={`${styles.markerBlack} font-black text-lg underline decoration-2`}
+				>
+					ASISTENTES CONFIRMADOS
+				</h3>
+				<span
+					className={`${styles.markerBlue} font-bold`}
+					style={{ fontFamily: "'Kalam', cursive", fontSize: "1.2rem" }}
+				>
+					{room.players.length} / {room.max_players}
+				</span>
+			</div>
+
+			<BoardPlayerList
+				players={room.players}
+				maxPlayers={room.max_players}
+				ownerName={room.owner_name}
+				user={user}
+				onKickClick={onKickClick}
+			/>
+
+			<div className="flex justify-between items-center mt-12 border-t-2 border-gray-300 pt-6">
 				<button
 					onClick={onLeaveClick}
-					className="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded font-bold transition"
+					className={`${styles.btnBase} ${styles.btnLeave}`}
 				>
 					Abandonar Sala
 				</button>
+
 				<button
 					onClick={startGame}
 					disabled={missingPlayers > 0 || !isOwner}
-					className={`px-6 py-3 rounded font-bold transition-all ${
-						missingPlayers > 0 || !isOwner
-							? "bg-gray-700 text-gray-500 cursor-not-allowed border border-gray-600"
-							: "bg-green-600 hover:bg-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.4)]"
-					}`}
+					className={`${styles.btnBase} ${styles.btnStart}`}
 					title={
 						!isOwner
-							? "Solo el líder puede empezar la partida"
+							? "Solo el Jefe tiene permisos para iniciar la partida"
 							: missingPlayers > 0
-								? "Se necesitan al menos 3 jugadores"
-								: "Empezar partida"
+								? `Faltan ${missingPlayers} para poder empezar la partida`
+								: "Comenzar la partida"
 					}
 				>
 					{missingPlayers > 0
 						? missingPlayers === 1
-							? "Falta 1 jugador..."
-							: `Faltan ${missingPlayers} jugadores...`
+							? "Falta 1 asistente"
+							: `Faltan ${missingPlayers} asistentes`
 						: !isOwner
-							? "Esperando al líder..."
-							: "Empezar Partida"}
+							? "Esperando al Jefe..."
+							: "EMPEZAR REUNIÓN"}
 				</button>
 			</div>
-		</div>
+		</WallLayout>
 	);
 }

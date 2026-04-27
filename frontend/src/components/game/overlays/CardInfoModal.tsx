@@ -1,5 +1,8 @@
+// src/components/game/overlays/CardInfoModal.tsx
+import { useState } from "react";
 import type { CardInstance } from "../../../types/live-game.ts";
 import { createPortal } from "react-dom";
+import styles from "./CardInfoModal.module.css";
 
 const CARD_LORE: Record<number, string> = {
 	1: "En toda oficina hay tensión acumulada. A veces, un empujón bien dado puede ser la gota que colme el vaso de tu rival.",
@@ -23,43 +26,62 @@ interface CardInfoModalProps {
 }
 
 export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
-	return createPortal (
+	const [isExiting, setIsExiting] = useState(false);
+
+	// En lugar de cerrar de golpe, activar la salida y esperamos 250ms
+	const handleClose = () => {
+		if (isExiting) return; // Evitar dobles clics
+		setIsExiting(true);
+		setTimeout(() => {
+			onClose();
+		}, 250); // Mismo tiempo que dura la animación CSS
+	};
+
+	return createPortal(
 		<div
-			className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-			onClick={onClose}
+			className={`fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-sm ${
+				isExiting ? styles.fadeOut : styles.overlay
+			}`}
+			onClick={handleClose}
 		>
+			{/* El Bloc de Notas que se desliza desde la derecha (o se retira hacia la derecha) */}
 			<div
-				className="bg-gray-800 border border-gray-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4"
+				className={`${styles.notepadContainer} ${
+					isExiting ? styles.slideOutRight : styles.slideInRight
+				}`}
 				onClick={(e) => e.stopPropagation()}
 			>
-				<div className="flex justify-between items-start mb-4">
-					<h2 className="text-xl font-black text-white">{card.name}</h2>
+				{/* La encuadernación con el botón de cerrar */}
+				<div className={styles.binding}>
 					<button
-						onClick={onClose}
-						className="text-gray-500 hover:text-white transition text-lg font-bold leading-none ml-4"
+						onClick={handleClose}
+						className="text-gray-400 hover:text-white transition text-2xl font-black leading-none"
+						title="Cerrar notas"
 					>
 						✕
 					</button>
 				</div>
 
-				<div className="bg-gray-900 rounded-lg p-3 border border-gray-700 mb-4">
-					<p className="text-xs text-gray-500 uppercase font-bold mb-1">
-						Efecto
-					</p>
-					<p className="text-gray-300 text-sm">{card.description}</p>
-				</div>
+				{/* El papel con líneas y el contenido */}
+				<div className={styles.paper}>
+					<h2 className={styles.title}>{card.name}</h2>
 
-				<div className="bg-gray-900 rounded-lg p-3 border border-gray-700">
-					<p className="text-xs text-gray-500 uppercase font-bold mb-1">
-						Contexto
-					</p>
-					<p className="text-gray-400 text-sm italic leading-relaxed">
+					<div className={styles.sectionLabel}>EFECTO</div>
+					<p className={styles.typewriterText}>{card.description}</p>
+
+					<div
+						className={styles.sectionLabel}
+						style={{ transform: "rotate(1deg)" }}
+					>
+						NOTA
+					</div>
+					<p className={`${styles.typewriterText} text-gray-500 `}>
 						{CARD_LORE[card.type] ??
 							"Una carta misteriosa con poderes desconocidos."}
 					</p>
 				</div>
 			</div>
 		</div>,
-		document.body
+		document.body,
 	);
 }

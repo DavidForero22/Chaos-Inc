@@ -1,30 +1,18 @@
-// useAdminData.ts
+// src/hooks/admin/useUsersData.ts
 
-import api from "../../api/axios.ts";
-
-// -- HOOKS --
 import { useState, useCallback } from "react";
+import api from "../../api/axios.ts";
+import type { UserRecord } from "../../types/api.ts";
 
-// -- INTERFACES --
-import type { UserRecord, GameRecord, RoomRecord } from "../../types/api.ts";
-
-export function useAdminData() {
+export function useUsersData() {
 	const [users, setUsers] = useState<UserRecord[]>([]);
-	const [games, setGames] = useState<GameRecord[]>([]);
-	const [rooms, setRooms] = useState<RoomRecord[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	const fetchAll = useCallback(async () => {
+	const fetchUsers = useCallback(async () => {
 		setLoading(true);
 		try {
-			const [usersRes, gamesRes, roomsRes] = await Promise.all([
-				api.get("/users"),
-				api.get("/games"),
-				api.get("/rooms"),
-			]);
-			setUsers(usersRes.data.data ?? usersRes.data);
-			setGames(gamesRes.data.data ?? gamesRes.data);
-			setRooms(roomsRes.data);
+			const res = await api.get("/users", { hideLoader: true } as any);
+			setUsers(res.data.data ?? res.data);
 		} finally {
 			setLoading(false);
 		}
@@ -55,10 +43,8 @@ export function useAdminData() {
 
 	return {
 		users,
-		games,
-		rooms,
 		loading,
-		fetchAll,
+		fetchUsers,
 		deleteUser,
 		updateUser,
 		createUser,

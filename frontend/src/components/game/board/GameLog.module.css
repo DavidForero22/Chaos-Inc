@@ -1,0 +1,92 @@
+/* src/components/game/board/GameLog.module.css */
+
+/* =========================================
+   DISEÑO MÓVIL (< lg)
+========================================= */
+
+/* BOTÓN MÓVIL (Icono de Chat Izquierda) */
+.mobileLogButton {
+	position: fixed;
+	left: 0;
+	top: 25%;
+	transform: translateY(-50%);
+	background-color: #2a2a2a;
+	color: #a3a3a3;
+	border: 2px solid #404040;
+	border-left: none;
+	border-radius: 0 8px 8px 0;
+	padding: 10px 12px 10px 8px;
+	cursor: pointer;
+	z-index: 49;
+	transition: all 0.2s ease;
+	box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mobileLogButton:hover {
+	background-color: #393e42;
+	color: #3b82f6;
+	border-color: #505050;
+	padding-left: 12px;
+}
+
+/* =========================================
+   DISEÑO ESCRITORIO (>= lg)
+========================================= */
+
+/* CONTENEDOR DEL TELÉFONO */
+.phoneWrapper {
+	position: fixed;
+	left: 120px;
+	top: 50%;
+	transform: translateY(-50%) translateX(-160%);
+	z-index: 40;
+	transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.phoneWrapperOpen {
+	transform: translateY(-50%) translateX(-10%);
+}
+
+/* CHASIS DEL TELÉFONO */
+.phoneChassis {
+	width: 280px;
+	height: 520px;
+	background-color: #1a1a1a;
+	border-radius: 36px;
+	border: 8px solid #2a2a2a;
+	box-shadow:
+		inset 0 0 10px rgba(0, 0, 0, 0.8),
+		-10px 10px 30px rgba(0, 0, 0, 0.6);
+	padding: 15px 10px 60px 10px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+/* BOTÓN HOME */
+.homeButton {
+	position: absolute;
+	bottom: 15px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	border: 2px solid #444;
+	background-color: #1a1a1a;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.homeButton:hover {
+	background-color: #333;
+	border-color: #666;
+}
+
+.homeButton:active {
+	transform: translateX(-50%) scale(0.95);
+	background-color: #000;
+}

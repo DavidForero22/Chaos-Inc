@@ -4,37 +4,58 @@ import { create } from "zustand";
 
 interface AuthState {
 	user: string | null;
-	token: string | null;
 	isGuest: boolean;
 	role: string | null;
-	setAuth: (
-		user: string,
-		token: string,
-		isGuest?: boolean,
-		role?: string,
-	) => void;
+	setAuth: (user: string, isGuest?: boolean, role?: string) => void;
 	logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-	user: localStorage.getItem("user"),
-	token: localStorage.getItem("token"),
-	isGuest: localStorage.getItem("isGuest") === "true",
-	role: localStorage.getItem("role"),
+// Helper seguro para entornos SSR / Tests (evita crashes si 'window' no existe)
+const getSafeStorage = (key: string): string | null => {
+	if (typeof window !== "undefined") {
+		return localStorage.getItem(key);
+	}
+	return null;
+};
 
-	setAuth: (user, token, isGuest = false, role = "user") => {
-		localStorage.setItem("user", user);
-		localStorage.setItem("token", token);
-		localStorage.setItem("isGuest", String(isGuest));
-		localStorage.setItem("role", role ?? "user");
-		set({ user, token, isGuest, role });
+export const useAuthStore = create<AuthState>((set) => ({
+	user: getSafeStorage("user"),
+	isGuest: getSafeStorage("isGuest") === "true",
+	role: getSafeStorage("role"),
+
+	setAuth: (user, isGuest = false, role = "user") => {
+		if (typeof window !== "undefined") {
+			localStorage.setItem("user", user);
+			localStorage.setItem("isGuest", String(isGuest));
+			localStorage.setItem("role", role ?? "user");
+		}
+		set({ user, isGuest, role });
 	},
 
 	logout: () => {
-		localStorage.removeItem("user");
-		localStorage.removeItem("token");
-		localStorage.removeItem("isGuest");
-		localStorage.removeItem("role");
-		set({ user: null, token: null, isGuest: false, role: null });
+		if (typeof window !== "undefined") {
+			localStorage.removeItem("user");
+			localStorage.removeItem("isGuest");
+			localStorage.removeItem("role");
+		}
+		set({ user: null, isGuest: false, role: null });
 	},
 }));
+
+// Sincronización entre múltiples pestañas
+if (typeof window !== "undefined") {
+	window.addEventListener("storage", (event) => {
+		// Si el evento afecta a variables de autenticación, sincronizar el estado de Zustand
+		if (
+			event.key === "user" ||
+			event.key === "isGuest" ||
+			event.key === "role"
+		) {
+			useAuthStore.setState({
+				user: getSafeStorage("user"),
+				isGuest: getSafeStorage("isGuest") === "true",
+				role: getSafeStorage("role"),
+			});
+		}
+	});
+}

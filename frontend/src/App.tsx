@@ -1,52 +1,43 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/navbar/Navbar.tsx";
 
 // -- PÁGINAS --
-import MainMenuPage from "./pages/MainMenuPage.tsx";
+import RoomsPage from "./pages/RoomsPage.tsx";
 import WaitingRoomPage from "./pages/WaitingRoomPage.tsx";
 import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
 import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
-
-import { useAuthStore } from "./store/useAuthStore.ts";
-import { useEffect } from "react";
-import api from "./api/axios.ts";
+import HowToPlayPage from "./pages/HowToPlayPage.tsx";
+import KnowMorePage from "./pages/KnowMorePage.tsx";
 
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
+import MainMenuPage from "./pages/MainMenuPage.tsx";
+import NotebookLayout from "./layouts/NotebookLayout.tsx";
+import { useSessionGuard } from "./hooks/useSessionGuard.ts";
 
 function App() {
-	const { token } = useAuthStore();
-
-	useEffect(() => {
-		// Si hay token en el frontend, comprobamos si sigue vivo en el backend
-		const verifySession = async () => {
-			if (!token) return;
-
-			await api.get("/me", { hideLoader: true } as any);
-		};
-
-		verifySession();
-	}, [token]);
+	useSessionGuard();
 
 	return (
 		<Router>
-			<div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col">
-				<Navbar />
+			<Routes>
+				{/* ── Rutas con el diseño de libreta ── */}
+				<Route element={<NotebookLayout />}>
+					<Route path="/" element={<MainMenuPage />} />
+					<Route path="/rooms" element={<RoomsPage />} />
+					<Route path="/profile" element={<ProfilePage />} />
+					<Route path="/how-to-play" element={<HowToPlayPage />} />
+					<Route path="/know-more" element={<KnowMorePage />} />
+					<Route path="/admin" element={<AdminPage />} />
+				</Route>
 
-				<div className="p-6 grow">
-					<Routes>
-						<Route path="/" element={<MainMenuPage />} />
-						<Route path="/room/:id" element={<WaitingRoomPage />} />
-						<Route path="/game/:id" element={<GameBoardPage />} />
-						<Route path="/profile" element={<ProfilePage />} />
-						<Route path="/admin" element={<AdminPage />} />
-						<Route path="/room-not-found" element={<RoomNotFoundPage />} />
-					</Routes>
-				</div>
+				{/* ── Rutas con diseño propio ── */}
+				<Route path="/room/:id" element={<WaitingRoomPage />} />
+				<Route path="/game/:id" element={<GameBoardPage />} />
+				<Route path="/room-not-found" element={<RoomNotFoundPage />} />
+			</Routes>
 
-				<GlobalLoader />
-			</div>
+			<GlobalLoader />
 		</Router>
 	);
 }

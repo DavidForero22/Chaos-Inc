@@ -11,10 +11,10 @@ interface UseRoomSocketsProps {
 
 export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 	const navigate = useNavigate();
-	const { isJoining, needsPassword, fetchRoomData } = useRoomStore();
+	const { isJoining, needsPassword, hasToken, fetchRoomData } = useRoomStore();
 
 	useEffect(() => {
-		if (isJoining || needsPassword || !roomId) return;
+		if (isJoining || needsPassword || !hasToken || !roomId) return;
 
 		const channel = echo.join(`room.${roomId}`);
 
@@ -33,5 +33,5 @@ export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 		return () => {
 			echo.leave(`room.${roomId}`);
 		};
-	}, [roomId, isJoining, needsPassword, fetchRoomData, navigate]);
+	}, [roomId, isJoining, needsPassword, hasToken, fetchRoomData, navigate]);
 }

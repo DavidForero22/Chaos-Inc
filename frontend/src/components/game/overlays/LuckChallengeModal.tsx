@@ -1,13 +1,16 @@
+// src/components/game/ui/LuckChallengeModal.tsx
+
 import { useState } from "react";
 import api from "../../../api/axios.ts";
-import { Modal } from "../../ui/Modal.tsx";
+import { Modal } from "../ui/GameModal.tsx";
 import { useTimerStore } from "../../../store/useTimerStore.ts";
 
+// Estilos de las puertas (más oscuros para dar sensación de pasillo cerrado)
 const COLOR_STYLES: Record<string, string> = {
-	red: "bg-red-600 hover:bg-red-500 border-red-400",
-	blue: "bg-blue-600 hover:bg-blue-500 border-blue-400",
-	green: "bg-green-600 hover:bg-green-500 border-green-400",
-	yellow: "bg-yellow-500 hover:bg-yellow-400 border-yellow-300",
+	red: "bg-red-700 hover:bg-red-600 border-red-900",
+	blue: "bg-blue-700 hover:bg-blue-600 border-blue-900",
+	green: "bg-green-700 hover:bg-green-600 border-green-900",
+	yellow: "bg-yellow-600 hover:bg-yellow-500 border-yellow-800",
 };
 
 interface LuckChallengeModalProps {
@@ -45,48 +48,59 @@ export function LuckChallengeModal({
 	};
 
 	return (
-		<Modal maxWidth="max-w-sm">
-			<p className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-2">
-				¡Tu turno está bloqueado!
+		<Modal maxWidth="max-w-md">
+			<p className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-2 text-center">
+				Control de Acceso de RRHH
 			</p>
-			<h2 className="text-2xl font-black text-white mb-2">Prueba de suerte</h2>
+			<h2 className="text-2xl font-black text-white mb-2 text-center">
+				Protocolo de Verificación
+			</h2>
 
-			<p className="text-gray-400 text-sm mb-6">
-				Elige un color. Si aciertas el correcto, podrás jugar tu turno.
+			<p className="text-gray-400 text-sm mb-6 text-center">
+				Tu credencial ha sido bloqueada. Selecciona la puerta correcta para
+				recuperar tu turno.
 			</p>
 
-			{/* NUEVO: El temporizador visual */}
+			{/* Temporizador visual */}
 			{luckChallengeSecondsLeft !== null && (
-				<div className="bg-red-900/40 border border-red-700/50 text-red-300 px-3 py-2 rounded-lg mb-6 text-center animate-pulse flex flex-col items-center justify-center">
+				<div className="bg-red-900/40 border border-red-700/50 text-red-300 px-3 py-3 rounded-lg mb-8 text-center flex flex-col items-center justify-center">
 					<span className="text-xs uppercase font-bold tracking-wider mb-1">
-						Tiempo Restante
+						Tiempo de Decisión
 					</span>
-					<span className="font-mono text-2xl font-black text-white">
+					<span className="font-mono text-3xl font-black text-white animate-pulse">
 						{luckChallengeSecondsLeft}s
 					</span>
 				</div>
 			)}
 
-			<div className="grid grid-cols-2 gap-4">
+			{/* LAS 4 PUERTAS EN HORIZONTAL */}
+			<div className="flex flex-row justify-between gap-3 h-36">
 				{colors.map((color) => (
 					<button
 						key={color}
 						onClick={() => handleChoose(color)}
 						disabled={!!chosen || loading || luckChallengeSecondsLeft === null}
-						className={`h-20 rounded-xl border-2 transition font-bold text-white text-sm ${COLOR_STYLES[color]} ${
-							chosen === color ? "ring-4 ring-white scale-95" : ""
-						} ${chosen && chosen !== color ? "opacity-40" : ""} ${
+						className={`flex-1 rounded-t-md rounded-b-sm border-b-8 border-x-4 border-t-4 transition-all duration-200 relative overflow-hidden shadow-lg ${COLOR_STYLES[color]} ${
+							chosen === color
+								? "translate-y-4 border-b-0 brightness-125 shadow-none" /* Animación de puerta hundiéndose/abriéndose */
+								: "hover:-translate-y-1"
+						} ${chosen && chosen !== color ? "opacity-30 grayscale" : ""} ${
 							chosen || loading || luckChallengeSecondsLeft === null
 								? "cursor-not-allowed"
 								: "cursor-pointer"
 						}`}
-					/>
+					>
+						{/* Pequeño detalle visual (simula el pomo de una puerta) */}
+						<div className="absolute top-1/2 right-2 w-2 h-5 bg-black/40 rounded-sm"></div>
+						{/* Marco interior de la puerta */}
+						<div className="absolute inset-1 border border-black/20 pointer-events-none"></div>
+					</button>
 				))}
 			</div>
 
 			{chosen && (
-				<p className="text-gray-500 text-xs mt-6 animate-pulse">
-					Comprobando resultado...
+				<p className="text-gray-400 font-mono text-xs mt-8 text-center animate-pulse uppercase tracking-widest">
+					Verificando credenciales en el servidor...
 				</p>
 			)}
 		</Modal>

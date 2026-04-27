@@ -1,14 +1,17 @@
 import { useGameStore } from "../../store/useGameStore";
 import { useGameUIStore } from "../../store/useGameUIStore";
-import { usePlayerIdentity } from "../usePlayerIdentity";
+import { useAuth } from "../useAuth";
 import { useState } from "react";
 import { useLoadingStore } from "../../store/useLoadingStore";
 
 // Cartas que se juegan sobre uno mismo (sin seleccionar oponente)
 export const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
 
+// Cartas que requieren seleccionar un oponente o un perk objetivo
+export const TARGET_CARDS = [1, 4, 6, 9, 12];
+
 export function usePlayerActions() {
-	const { myPlayerName } = usePlayerIdentity();
+	const { user } = useAuth();
 
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
@@ -35,30 +38,35 @@ export function usePlayerActions() {
 	const requestCount = useLoadingStore((state) => state.requestCount);
 	const isGlobalLoading = requestCount > 0 || isActionLocked;
 
-	if (!me || !game || !myPlayerName) {
+	if (!me || !game || !user) {
 		return { isReady: false as const };
 	}
 
-	const isMyTurn = game.current_turn === myPlayerName;
+	const isMyTurn = game.current_turn === user;
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasPendingAttack = me.combat_state.is_attacking_single;
 	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
 	const isAttackerWaiting = me.combat_state.is_attacking_multi;
 	const hasPendingSabotage =
-		!!game.player_pending_sabotage &&
-		game.player_pending_sabotage !== myPlayerName;
+		!!game.player_pending_sabotage && game.player_pending_sabotage !== user;
 
 	const currentCardsCount = me.cards.length;
 	const projectedCardsCount = currentCardsCount - cardsToDiscard.length;
 	const isOverLimit = currentCardsCount > me.max_hand_size;
 	const willBeOverLimit = projectedCardsCount > me.max_hand_size;
 
+	const hasEquippedPerks =
+		me.perks.has_shield ||
+		me.perks.has_distance ||
+		me.perks.has_storage ||
+		me.perks.has_luck ||
+		(me.perks.vision_bonus ?? 0) > 0;
+
 	const noSelection =
 		cardsToDiscard.length === 0 && perksToDiscard.length === 0;
 	const isEvadingSabotage =
 		me.conditions.must_discard && cardsToDiscard.length === 0;
 	const isConfirmDisabled =
-		willBeOverLimit ||
 		noSelection ||
 		isEvadingSabotage ||
 		isSubmitting ||
@@ -97,7 +105,7 @@ export function usePlayerActions() {
 		!hasPendingAttack &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
-		currentCardsCount > 0 &&
+		(currentCardsCount > 0 || hasEquippedPerks) &&
 		!isGlobalLoading;
 
 	const handleConfirmDiscard = async () => {
@@ -119,7 +127,7 @@ export function usePlayerActions() {
 	// Usar la carta seleccionada de auto-uso
 	const handleUseCard = async () => {
 		if (!canUseCard || !selectedCardId) return;
-		await playTurn(selectedCardId, myPlayerName);
+		await playTurn(selectedCardId, user);
 		setSelectedCardId(null);
 	};
 

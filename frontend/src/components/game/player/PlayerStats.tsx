@@ -1,11 +1,13 @@
-// frontend/src/components/game/player/PlayerStats.tsx
+// src/components/game/player/PlayerStats.tsx
+
 import type { MyData } from "../../../types/live-game";
-import { useGameStore } from "../../../store/useGameStore";
-import { useGameUIStore } from "../../../store/useGameUIStore";
 import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
+import { PlayerTimer } from "./PlayerTimer.tsx";
+import { PerkSlot } from "./PerkSlot.tsx"; // NUEVO IMPORT
 import type { CardInstance } from "../../../types/live-game";
+import styles from "./PlayerStats.module.css";
 
 interface PlayerStatsProps {
 	me: MyData;
@@ -18,185 +20,113 @@ export function PlayerStats({
 	turnTimeLeft,
 	isTurnPaused = false,
 }: PlayerStatsProps) {
-	const { isDiscardMode, perksToDiscard, toggleDiscardPerk } = useGameUIStore();
 	const { roleConfig, displayPerks, hasAnyCondition, myRange } =
 		usePlayerStats(me);
 	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
 
-	const gameData = useGameStore((state) => state.gameData);
-
-	const renderDiscardablePerk = (
-		id: string,
-		icon: string,
-		title: string,
-		cardType: number,
-		name: string,
-	) => {
-		const isMarked = perksToDiscard.includes(id);
-		const isUnderSabotage = me.conditions.must_discard;
-
-		const baseClasses =
-			"flex items-center justify-center w-8 h-8 relative transition-transform bg-gray-800 rounded border border-gray-500/50";
-		let modeClasses = "cursor-help hover:scale-110";
-
-		// Si esta en modo descarte pero no bajo sabotaje, permitir interactuar
-		if (isDiscardMode && !isUnderSabotage) {
-			modeClasses = isMarked
-				? "cursor-pointer scale-110 ring-2 ring-red-500 rounded bg-red-900/30"
-				: "cursor-pointer hover:scale-110 animate-pulse bg-gray-800 rounded border border-red-500/50";
-		}
-
-		return (
-			<span
-				key={id}
-				title={
-					isDiscardMode && !isUnderSabotage ? "Clic para descartar" : title
-				}
-				className={`${baseClasses} ${modeClasses}`}
-				onClick={() => {
-					// Si esta en modo descarte normal (exceso de cartas al final del turno), marcar
-					if (isDiscardMode && !isUnderSabotage) {
-						toggleDiscardPerk(id);
-					}
-					// Si no es modo descarte (o es sabotaje), mostrar la info modal
-					else if (cardType !== undefined) {
-						setInfoCard({
-							id,
-							type: cardType,
-							name,
-							description: title,
-						});
-					}
-				}}
-			>
-				{icon}
-			</span>
-		);
-	};
-
-	const game = gameData?.game;
-	const isMyTurn = game?.current_turn === me.name;
-
-	// Verificar si hay otra reacción obligatoria
-	const hasActiveReaction =
-		game?.pending_single_attack_target === me.name ||
-		game?.pending_multi_attack_targets.includes(me.name) ||
-		game?.player_pending_sabotage === me.name ||
-		game?.player_in_luck_challenge === me.name;
-
-	// Solo se mostrar en su turno, sin reaccion a nada, y hay tiempo válido
-	const shouldShowTimer =
-		isMyTurn &&
-		!hasActiveReaction &&
-		turnTimeLeft !== undefined &&
-		turnTimeLeft !== null;
-
-	const isLowTime =
-		turnTimeLeft !== undefined && turnTimeLeft !== null && turnTimeLeft <= 10;
-
 	return (
-		<div>
-			{/* Banner temporizador*/}
-			{shouldShowTimer && (
-				<div
-					className={`absolute top-3 z-0 left-7 px-4 py-1 rounded-t-lg border-t border-x font-bold text-sm shadow-lg flex items-center justify-center gap-2 transition-colors ${
-						isTurnPaused
-							? "bg-gray-600 border-gray-400 text-gray-300" // ESTADO DE PAUSA
-							: isLowTime
-								? "bg-red-900 border-red-500 text-red-200 animate-pulse" // ESTADO CRÍTICO
-								: "bg-gray-800 border-blue-500 text-blue-300" // ESTADO NORMAL
-					}`}
-				>
-					{isTurnPaused ? "Esperando..." : `${turnTimeLeft}s`}
+		<div className="relative w-full h-full">
+			{/* Temporizador Escritorio (Se oculta en móvil) */}
+			<PlayerTimer
+				turnTimeLeft={turnTimeLeft}
+				isTurnPaused={isTurnPaused}
+				className="hidden lg:block absolute -top-6 -right-4 z-30"
+			/>
+
+			{/* Documento de RRHH */}
+			<div
+				className={`${styles.documentContainer} ${me.is_dead ? "grayscale opacity-80" : ""}`}
+			>
+				<div className={styles.paperClip}></div>
+
+				{me.is_dead && <div className={styles.stampDead}>CESADO</div>}
+
+				{/* Cabecera del Documento */}
+				<div className="text-center border-b-2 border-[#393e42] pb-1 mb-4">
+					<h3 className="font-black text-lg truncate uppercase mt-1">
+						{me.name}
+					</h3>
 				</div>
-			)}
-			<div className="relative bg-gray-900 p-4 rounded-lg border border-gray-700 min-w-50 mt-4">
-				{/* ---------------------------------- */}
 
-				{/* Nombre */}
-				<h3
-					className={`font-bold truncate mb-3 ${me.is_dead ? "text-red-500 line-through" : "text-blue-400"}`}
-				>
-					{me.name} (Tú) {me.is_dead && "💀"}
-				</h3>
-
-				{/* Rol */}
-				<div className="flex justify-between items-center mb-2 gap-4">
-					<span className="text-xs text-gray-500 uppercase">Rol</span>
-					<span className={`text-sm font-bold ${roleConfig.color}`}>
+				{/* Campos */}
+				<div className={styles.formRow}>
+					<span className={styles.formLabel}>Rol</span>
+					<span className={`${styles.formValue} ${roleConfig.color}`}>
 						{roleConfig.label}
 					</span>
 				</div>
 
-				{/* Estrés */}
-				<div className="flex justify-between items-center">
-					<span className="text-xs text-gray-500 uppercase">Estrés</span>
-					<span className="text-sm font-bold text-red-500">{me.stress}</span>
-				</div>
-
-				{/* Alcance */}
-				<div className="flex justify-between items-center mt-2">
-					<span className="text-xs text-gray-500 uppercase">Alcance</span>
+				<div className={styles.formRow}>
+					<span className={styles.formLabel}>Estrés</span>
 					<span
-						className="text-sm font-bold text-blue-300 flex items-center gap-1"
-						title="A cuántos compañeros de distancia puedes atacar"
+						className={`${styles.formValue} ${me.stress > 0 ? "text-red-600" : ""}`}
 					>
-						👁️ {myRange}
+						{me.stress} / {me.max_stress}
 					</span>
 				</div>
 
-				{/* PASIVAS */}
-				<div className="flex justify-between items-center mt-2 pt-2 border-t h-10 border-gray-800">
-					<span className="text-xs uppercase text-gray-500">Pasivas</span>
+				<div className={styles.formRow}>
+					<span className={styles.formLabel}>Alcance</span>
+					<span
+						className={styles.formValue}
+						title={`Puedes atacar a oponentes a ${myRange} de distancia`}
+					>
+						{myRange}
+					</span>
+				</div>
 
-					{/* Contenedor alineado a la derecha */}
-					<div className="flex gap-1 text-lg items-center">
+				<div className={`${styles.formRow} items-center pb-1 mb-2 border-none`}>
+					<span className={styles.formLabel}>Pasivas</span>
+					<div className="flex gap-1 items-center justify-baseline">
 						{displayPerks.map((perk) =>
 							perk.isEmpty ? (
-								// Renderizar el slot vacío
 								<span
 									key={perk.id}
 									title={perk.title}
-									className="flex items-center justify-center w-8 h-8 text-gray-600 font-mono bg-gray-900 rounded border border-gray-700/50"
+									className={`${styles.perkSlot} ${styles.perkSlotEmpty} w-7 h-7 text-sm`}
 								>
 									{perk.icon}
 								</span>
 							) : (
-								// Renderizar el Perk interactivo
-								renderDiscardablePerk(
-									perk.id,
-									perk.icon,
-									perk.title,
-									perk.cardType!,
-									perk.name!,
-								)
+								<PerkSlot
+									key={perk.id}
+									id={perk.id}
+									icon={perk.icon}
+									title={perk.title}
+									cardType={perk.cardType}
+									name={perk.name}
+									isUnderSabotage={me.conditions.must_discard}
+									onInfoClick={(id, type, name, desc) =>
+										setInfoCard({ id, type, name, description: desc })
+									}
+								/>
 							),
 						)}
 					</div>
 				</div>
 
-				{/* ESTADOS */}
-				<div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-800 h-8">
-					<span className="text-xs text-gray-500 uppercase">Estado</span>
-					<div className="flex gap-2 text-lg">
+				{/* Notas de Estado */}
+				<div className="mt-1">
+					<span className={`${styles.formLabel} block mb-0.5`}>Estado</span>
+					<div className="flex gap-2 text-lg min-h-6 items-center">
 						{me.conditions.is_blocked && (
 							<span
-								title="Bloqueado: No puedes jugar en tu turno."
-								className="cursor-help hover:scale-110 transition-transform"
+								title="Sancionado"
+								className="cursor-help bg-purple-100 border border-purple-300 rounded px-1.5 py-0.5 text-xs font-bold"
 							>
-								🔒
+								🔒 SANCIONADO
 							</span>
 						)}
 						{me.conditions.acting_boss && (
 							<span
-								title="Jefe en Funciones: Has heredado el poder de la directiva."
-								className="cursor-help hover:scale-110 transition-transform"
+								title="Jefe en Funciones"
+								className="cursor-help bg-yellow-100 border border-yellow-400 rounded px-1.5 py-0.5 text-xs font-bold"
 							>
-								👑
+								👑 INTERINO
 							</span>
 						)}
 						{!hasAnyCondition && (
-							<span className="text-gray-600 text-xs font-mono">-</span>
+							<span className="text-gray-500 text-xs italic">Sin estados.</span>
 						)}
 					</div>
 				</div>

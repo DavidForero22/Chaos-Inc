@@ -29,6 +29,16 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 				);
 			})
 			.leaving((user: any) => {
+				const state = useGameStore.getState();
+
+				// Si la partida terminó, ignorar desconexiones
+				if (state.gameOver) {
+					logWithTime(
+						`useGameSockets.ts - Ignorando desconexión de ${user.username} (Game Over).`,
+					);
+					return;
+				}
+
 				const secondsSinceConnect = (Date.now() - connectedAt) / 1000;
 				if (secondsSinceConnect < 2) return;
 
@@ -43,23 +53,29 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 					.then(() => {
 						logWithTime(`report-disconnect enviado para ${user.username}`);
 
-						const state = useGameStore.getState();
-						if (!state.isConnecting && !state.gameOver) {
-							state.syncGame();
+						// Volver a obtener el estado más reciente por si acaso
+						const currentState = useGameStore.getState();
+						if (!currentState.isConnecting && !currentState.gameOver) {
+							currentState.syncGame();
 						}
 					})
 					.catch(() => {});
 			})
 			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
-				logWithTime("useGameSockets.ts - Estado actualizado.");
-
 				const state = useGameStore.getState();
+
+				// Si la partida terminó, ignorar actualizaciones
+				if (state.gameOver) {
+					return;
+				}
+
+				logWithTime("useGameSockets.ts - Estado actualizado.");
 
 				if (data.log_message) {
 					state.addLog(data.log_message);
 				}
 
-				if (!state.isConnecting && !state.gameOver) {
+				if (!state.isConnecting) {
 					state.syncGame();
 				}
 			});

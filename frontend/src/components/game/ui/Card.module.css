@@ -1,0 +1,144 @@
+/* src/components/game/ui/Card.module.css */
+
+.cardWrapper {
+	position: relative;
+	width: 110px;
+	height: 160px;
+	flex-shrink: 0;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	/* Se elimina el margin-top: 24px para ahorrar espacio vertical */
+}
+
+/* --- EL CUERPO DE LA FICHA --- */
+.cardBody {
+	position: absolute;
+	inset: 0;
+	background-color: #fdfbf2; /* Color cartulina envejecida */
+	border: 2px solid #374151;
+	border-radius: 8px;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 10px 6px 8px 6px;
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+
+	/* El patrón de líneas azules horizontales de las fichas de estudio */
+	background-image: repeating-linear-gradient(
+		transparent,
+		transparent 23px,
+		rgba(176, 212, 227, 0.8) 23px,
+		rgba(176, 212, 227, 0.8) 24px
+	);
+	background-position: 0 14px; /* Alinear la primera raya debajo del título */
+	overflow: hidden;
+}
+
+/* --- ESTADOS DINÁMICOS --- */
+.interactable {
+	cursor: pointer;
+}
+.cardWrapper.interactable:hover {
+	transform: translateY(-12px);
+}
+.notInteractable {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.selected {
+	transform: translateY(-16px) !important;
+}
+.selected .cardBody {
+	border-color: #2563eb;
+	box-shadow: 0 0 15px rgba(37, 99, 235, 0.6);
+	outline: 2px solid #2563eb;
+}
+
+.highlighted .cardBody {
+	border-color: #eab308;
+	box-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+	animation: pulse-yellow 2s infinite;
+}
+
+.discardMode .cardBody {
+	border-color: #ef4444;
+	box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+	animation: pulse-red 2s infinite;
+}
+
+.markedForDiscard {
+	transform: translateY(-8px) !important;
+}
+.markedForDiscard .cardBody {
+	background-color: #fee2e2;
+	border-color: #dc2626;
+	filter: grayscale(0.4);
+}
+
+/* --- ELEMENTOS INTERNOS DE LA FICHA --- */
+.cardName {
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 0.8rem;
+	color: #1f2937;
+	text-transform: uppercase;
+	text-align: center;
+	line-height: 1;
+	margin-bottom: 14px;
+	background-color: #fdfbf2; /* Tapa la raya trasera para que se lea bien */
+	padding: 0 4px;
+	max-width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.drawingBox {
+	width: 64px;
+	height: 64px;
+	border: 2px dashed #9ca3af;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2.5rem;
+	margin-bottom: auto;
+	/* Simula tinta estampada sobre la cartulina */
+	background-color: rgba(255, 255, 255, 0.4);
+	mix-blend-mode: multiply;
+}
+
+.effectIcon {
+	width: 26px;
+	height: 26px;
+	border: 2px solid #374151;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.8rem;
+	background-color: #fdfbf2;
+	margin-top: 8px;
+	box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Animaciones */
+@keyframes pulse-yellow {
+	0%,
+	100% {
+		box-shadow: 0 0 15px rgba(234, 179, 8, 0.6);
+	}
+	50% {
+		box-shadow: 0 0 25px rgba(234, 179, 8, 0.9);
+	}
+}
+@keyframes pulse-red {
+	0%,
+	100% {
+		box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
+	}
+}

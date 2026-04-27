@@ -1,0 +1,259 @@
+/* =====================================================
+   NOTEBOOK LAYOUT — CSS Module
+   ===================================================== */
+
+/* --- VARIABLES PROPIAS DEL NOTEBOOK --- */
+:root {
+	--nb-papel: #d2d4d1;
+	--nb-lineas: rgba(146, 158, 156, 0.35);
+	--nb-lomo: #393e42;
+	--nb-texto: #393e42;
+	--nb-margen: rgba(220, 50, 50, 0.2);
+
+	--nb-tab-inicio: #cbbe34;
+	--nb-tab-inicio-text: #393e42;
+	--nb-tab-salas: #2b5c61;
+	--nb-tab-salas-text: #d2d4d1;
+	--nb-tab-saber: #999184;
+	--nb-tab-saber-text: #393e42;
+	--nb-tab-howto: #86b648;
+	--nb-tab-howto-text: #333638;
+	--nb-tab-perfil: #393e42;
+	--nb-tab-perfil-text: #d2d4d1;
+}
+
+/* --- WRAPPER DE PÁGINA (La "pared") --- */
+.pageWrapper {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 5rem 1.5rem 4rem 1.5rem;
+	font-family: "Courier New", Courier, monospace;
+	color: var(--nb-texto);
+
+	/* Textura de madera simulada con CSS */
+	background-image: url("/background_1.jpg");
+}
+
+/* --- CONTENEDOR PRINCIPAL DE LA LIBRETA --- */
+.notebookContainer {
+	position: relative;
+	display: flex;
+	width: 100%;
+	max-width: 1100px;
+	box-shadow:
+		15px 15px 40px rgba(0, 0, 0, 0.4),
+		-5px 5px 20px rgba(0, 0, 0, 0.2);
+	border-radius: 8px;
+	z-index: 10;
+}
+
+/* --- LOMO DE LA LIBRETA (Izquierda) --- */
+.notebookSpine {
+	width: 45px;
+	flex-shrink: 0;
+	background-color: var(--nb-lomo);
+	border-radius: 8px 0 0 8px;
+	background-image: repeating-linear-gradient(
+		rgba(255, 255, 255, 0.05) 0px,
+		rgba(255, 255, 255, 0.05) 2px,
+		transparent 2px,
+		transparent 4px
+	);
+	box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 20;
+}
+
+/* --- HOJA DE PAPEL (Área de contenido) --- */
+.notebookPaper {
+	flex: 1;
+	background-color: var(--nb-papel);
+	border-radius: 0 8px 8px 0;
+	padding: 2rem 4rem;
+	min-height: 600px;
+	position: relative;
+	z-index: 10; /* Tapa la base de los marcapáginas */
+	overflow: hidden;
+
+	/* Líneas horizontales */
+	background-image: repeating-linear-gradient(
+		transparent,
+		transparent 31px,
+		var(--nb-lineas) 31px,
+		var(--nb-lineas) 32px
+	);
+	line-height: 32px;
+}
+
+/* Línea roja vertical de margen */
+.notebookPaper::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 3.5rem;
+	width: 2px;
+	background-color: var(--nb-margen);
+	pointer-events: none;
+}
+
+/* --- ÁREA DE USUARIO (Top-right del papel) --- */
+.userArea {
+	position: absolute;
+	top: 1.2rem;
+	right: 2rem;
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	z-index: 30;
+}
+
+.userBadge {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.75rem;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	color: var(--nb-texto);
+	text-decoration: none;
+	opacity: 0.7;
+	transition: opacity 0.2s;
+}
+
+.userBadge:hover {
+	opacity: 1;
+}
+
+.userAvatar {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background-color: var(--nb-lomo);
+	color: var(--nb-papel);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.65rem;
+	font-weight: bold;
+	border: 1.5px solid var(--nb-lomo);
+}
+
+.authButtons {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.authBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	padding: 4px 10px;
+	border: 1.5px solid var(--nb-lomo);
+	border-radius: 3px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	background: transparent;
+	color: var(--nb-texto);
+}
+
+.authBtn:hover {
+	background-color: var(--nb-lomo);
+	color: var(--nb-papel);
+}
+
+.authBtnPrimary {
+	background-color: var(--nb-lomo);
+	color: var(--nb-papel);
+}
+
+.authBtnPrimary:hover {
+	opacity: 0.85;
+}
+
+/* --- FOOTER EN LA PARED --- */
+.wallFooter {
+	margin-top: 3rem;
+	text-align: center;
+	color: rgba(210, 212, 209, 0.45);
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.78rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	max-width: 800px;
+}
+
+.wallFooter a {
+	color: inherit;
+	text-decoration: none;
+	transition: color 0.2s;
+}
+
+.wallFooter a:hover {
+	color: rgba(210, 212, 209, 0.75);
+}
+
+/* --- MENÚ DE AJUSTES --- */
+.settingsContainer {
+	position: absolute;
+	top: 1.5rem;
+	right: 2rem;
+	z-index: 50; /* Por encima del contenido de la hoja */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
+.settingsBtn {
+	background: transparent;
+	border: none;
+	color: var(--nb-texto);
+	font-size: 1.5rem;
+	cursor: pointer;
+	opacity: 0.5;
+	transition: all 0.3s ease;
+	padding: 0;
+	line-height: 1;
+}
+
+.settingsBtn:hover,
+.settingsBtnActive {
+	opacity: 1;
+	transform: rotate(90deg);
+}
+
+/* Media Query para móviles */
+@media (max-width: 768px) {
+	.pageWrapper {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.notebookContainer {
+		max-width: none;
+		border-radius: 0;
+	}
+
+	.notebookSpine {
+		border-radius: 0;
+	}
+
+	.notebookPaper {
+		border-radius: 0;
+		padding: 1.25rem 1.1rem;
+	}
+
+	/* Ocultar borde de libreta en móvil */
+	.notebookSpine {
+		display: none;
+	}
+
+	/* Ocultar linea roja en movil para mejorar legibilidad */
+	.notebookPaper::before {
+		display: none;
+	}
+}

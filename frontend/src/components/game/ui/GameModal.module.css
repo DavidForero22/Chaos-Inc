@@ -1,0 +1,99 @@
+/* src/components/ui/GameModal.module.css */
+
+/* --- CARCASA DEL MONITOR (Plástico Retro) --- */
+.monitorCasing {
+	background-color: #e5e7eb; /* Plástico gris claro/beige */
+	border-radius: 12px;
+	/* Efecto 3D de luz y sombra en los bordes del plástico */
+	border-top: 2px solid #ffffff;
+	border-left: 2px solid #ffffff;
+	border-right: 4px solid #9ca3af;
+	border-bottom: 4px solid #9ca3af;
+	padding: 24px 24px 36px 24px; /* Más espacio abajo para simular la base */
+	box-shadow:
+		0 25px 50px -12px rgba(0, 0, 0, 0.8),
+		inset 0 0 15px rgba(0, 0, 0, 0.05);
+	position: relative;
+	/* Añadimos una ligera textura granulada al plástico */
+	background-image: url("https://www.transparenttextures.com/patterns/dust.png");
+}
+
+/* El piloto LED verde de encendido en la esquina inferior derecha */
+.monitorCasing::after {
+	content: "";
+	position: absolute;
+	bottom: 14px;
+	right: 28px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: #22c55e;
+	box-shadow:
+		0 0 8px #22c55e,
+		inset 1px 1px 2px rgba(255, 255, 255, 0.5);
+	border: 1px solid #14532d;
+}
+
+/* --- LA PANTALLA CRT (Cristal hundido) --- */
+.screen {
+	background-color: #020617; /* Azul/Negro muy profundo */
+	border: 8px solid #1f2937; /* Marco interior oscuro del monitor */
+	border-radius: 16px; /* Bordes redondeados típicos de los monitores viejos */
+	position: relative;
+	overflow: hidden;
+}
+
+/* Sombra interior para simular la curvatura del tubo de rayos catódicos */
+.screen::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9);
+	z-index: 10;
+	pointer-events: none;
+}
+
+/* Scanlines (Líneas horizontales del monitor CRT) */
+.screen::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: repeating-linear-gradient(
+		0deg,
+		transparent,
+		transparent 2px,
+		rgba(0, 0, 0, 0.3) 2px,
+		rgba(0, 0, 0, 0.3) 4px
+	);
+	z-index: 15;
+	pointer-events: none;
+}
+
+/* --- CONTENIDO DE LA PANTALLA --- */
+.content {
+	position: relative;
+	z-index: 20;
+	padding: 32px;
+	/* Fuente de terminal retro por defecto */
+	font-family: "Courier New", Courier, monospace;
+	/* Ligero resplandor en los textos para que parezcan fósforo iluminado */
+	text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+	/* Animación de parpadeo sutil de monitor antiguo */
+	animation: flicker 4s infinite;
+}
+
+/* Animación de parpadeo */
+@keyframes flicker {
+	0% {
+		opacity: 0.98;
+	}
+	5% {
+		opacity: 0.85;
+	}
+	10% {
+		opacity: 0.98;
+	}
+	100% {
+		opacity: 1;
+	}
+}

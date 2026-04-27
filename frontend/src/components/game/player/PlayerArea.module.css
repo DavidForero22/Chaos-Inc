@@ -1,0 +1,151 @@
+/* src/components/game/player/PlayerArea.module.css */
+
+/* =========================================
+   1. DISEÑO MÓVIL (Por defecto - Expandible)
+========================================= */
+.folderWrapper {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 100vw; 
+    height: 45vh;
+    min-height: 220px; 
+    z-index: 39;
+    display: flex;
+    align-items: flex-end;
+    filter: drop-shadow(0 -10px 15px rgba(0, 0, 0, 0.5));
+    transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ESTADOS DE LA CARPETA EN MÓVIL */
+.folderClosed {
+    /* Esconde la carpeta hacia abajo, dejando solo 65px asomando (suficiente para los banners y el botón) */
+    transform: translate(-50%, 100%);
+}
+
+.folderExpanded {
+    /* La carpeta sube hasta su posición original (fondo de la pantalla) */
+    transform: translate(-50%, 0);
+}
+
+.folderBackground {
+    position: absolute;
+    inset: 0;
+    background-color: #c19a6b;
+    border-radius: 12px 12px 0 0;
+    border-top: 2px solid #deb887;
+    border-left: 2px solid #a68256;
+    border-right: 2px solid #a68256;
+    z-index: 0;
+}
+
+.texture {
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: url("https://www.transparenttextures.com/patterns/cardboard.png");
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+/* Pestañas interactivas móviles */
+.mobileTab {
+    background-color: #8c6a45;
+    padding: 6px 16px;
+    height: 32px;
+    border-radius: 8px 8px 0 0;
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-bottom: none;
+    transition: all 0.2s ease;
+    box-shadow: inset 0 -5px 10px rgba(0,0,0,0.2);
+}
+
+.mobileTab.activeTab {
+    background-color: #c19a6b;
+    color: #393e42;
+    transform: translateY(2px); 
+    box-shadow: none;
+}
+
+.contentArea {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 12px 8px 12px; 
+    gap: 16px;
+}
+
+.pocketFlap {
+    display: none;
+}
+
+.tabRight {
+    position: absolute;
+    top: -26px;
+    right: 8%;
+    width: 220px;
+    height: 28px;
+    background-color: #c19a6b;
+    border-top: 2px solid #deb887;
+    border-radius: 12px 12px 0 0;
+    border-left: 1px solid #a68256;
+    border-right: 2px solid #a68256;
+    z-index: -1;
+}
+
+.tabRight::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.15;
+    background-image: url("https://www.transparenttextures.com/patterns/cardboard.png");
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+
+/* =========================================
+   2. DISEÑO ESCRITORIO (PC y Tablets Grandes)
+========================================= */
+@media (min-width: 1024px) {
+    .folderWrapper {
+        bottom: -10px;
+        width: 95vw;
+        max-width: 1100px;
+        height: 35vh;
+        min-height: 280px; 
+        filter: drop-shadow(0 -15px 25px rgba(0, 0, 0, 0.6));
+        transform: translateX(-50%) !important;
+    }
+
+    .folderBackground {
+        border-radius: 16px 16px 0 0;
+    }
+
+    .contentArea {
+        padding: 0 24px 16px 24px;
+        gap: 24px;
+    }
+
+    .pocketFlap {
+        display: block; 
+        position: absolute;
+        bottom: 0; 
+        left: 300px;
+        right: 20px; 
+        height: 110px; 
+        background-color: #c19a6b;
+        border-top: 2px solid #deb887;
+        border-radius: 6px 6px 0 0;
+        z-index: 30;
+        pointer-events: none; 
+        box-shadow: inset 0 20px 20px -15px rgba(0, 0, 0, 0.6);
+    }
+}

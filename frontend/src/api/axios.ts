@@ -9,25 +9,29 @@ import { logWithTime } from "../utils/logger.ts";
 const api = axios.create({
 	baseURL: "http://localhost:8000/api/v1",
 	withCredentials: true,
+	withXSRFToken: true,
 	headers: {
 		Accept: "application/json",
 		"Content-Type": "application/json",
 	},
 });
 
+/**
+ * Pide el token CSRF antes de autenticar
+ */
+export const getCsrfCookie = async () => {
+	// La ruta de sanctum suele estar en la raíz de la API (fuera de v1), por eso usamos una URL absoluta
+	await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+		withCredentials: true,
+		withXSRFToken: true,
+	});
+};
+
 api.interceptors.request.use((config) => {
-	// Solo encender el loader si no se pide explícitamente ocultarlo
 	if (!(config as any).hideLoader) {
 		useLoadingStore.getState().startLoading();
 	}
 
-	// Token de Usuario (Sanctum)
-	const token = useAuthStore.getState().token;
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
-	}
-
-	// Token de Partida (Game Token)
 	const gameToken = localStorage.getItem("game_token");
 	if (gameToken) {
 		config.headers["X-Game-Token"] = gameToken;
@@ -52,46 +56,52 @@ api.interceptors.response.use(
 
 		const status = error.response?.status;
 		const url = error.config?.url ?? "";
-		const isAuthRoute =
-			url.includes("/login") ||
-			url.includes("/register") ||
-			url.includes("/guest");
 
-		if (status === 401 && !isAuthRoute) {
-			// Si es un 401 de una ruta exclusiva de sala, solo borar el game_token
-			if (
-				url.includes("/sync") ||
-				url.includes("/leave") ||
-				url.includes("/report-disconnect")
-			) {
-				localStorage.removeItem("game_token");
+		// 419 Page Expired (CSRF Mismatch): Significa que la cookie caducó o el servidor se reinició
+		// Tratar igual que un 401 (Unauthorized)
+		if (status === 401 || status === 419) {
+			const isAuthRoute =
+				url.includes("/login") ||
+				url.includes("/register") ||
+				url.includes("/guest");
+
+			if (!isAuthRoute) {
+				// Si es un error de sala, solo borrar el game_token
+				if (
+					url.includes("/sync") ||
+					url.includes("/leave") ||
+					url.includes("/report-disconnect") ||
+					url.includes("/join") ||
+					url.includes("/broadcasting/auth")
+				) {
+					localStorage.removeItem("game_token");
+					logWithTime(
+						"[Sala] Sesión de juego caducada. Limpiando game_token...",
+						null,
+						"warn",
+					);
+					return Promise.resolve({ data: null });
+				}
+
 				logWithTime(
-					"[Sala] Sesión de juego caducada. Limpiando game_token...",
+					"[Auth] Sesión caducada o CSRF inválido. Limpiando sesión local...",
 					null,
 					"warn",
 				);
+
+				localStorage.removeItem("game_token");
+				useAuthStore.getState().logout();
+
+				// if (window.location.pathname !== "/") {
+				// 	window.location.href = "/";
+				// }
+
 				return Promise.resolve({ data: null });
 			}
-
-			// Usuario no existe.
-			logWithTime(
-				"[Auth] Usuario invitado purgado o token inválido. Limpiando sesión...",
-				null,
-				"warn",
-			);
-
-			localStorage.removeItem("game_token");
-			useAuthStore.getState().logout();
-
-			if (window.location.pathname !== "/") {
-				window.location.href = "/";
-			}
-
-			return Promise.resolve({ data: null });
 		}
 
 		// Error general
-		logWithTime("Error en la API", error, "error");
+		logWithTime("Error en la API", error.response, "error");
 
 		return Promise.reject(error);
 	},

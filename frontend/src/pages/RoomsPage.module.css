@@ -1,0 +1,182 @@
+/* =====================================================
+   ROOMS PAGE — CSS Module
+   Paleta: notebook paper inside spine
+   ===================================================== */
+
+.filterBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	padding: 3px 12px;
+	border-radius: 2px;
+	border: 1.5px solid #8f9e9b;
+	background: transparent;
+	color: #8f9e9b;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	line-height: 28px;
+}
+
+.filterBtn:hover {
+	border-color: #393e42;
+	color: #393e42;
+}
+
+.filterAll.filterActive {
+	background-color: #393e42;
+	border-color: #393e42;
+	color: #d1d3d0;
+}
+
+.filterWaiting.filterActive {
+	background-color: #295c60;
+	border-color: #295c60;
+	color: #d1d3d0;
+}
+
+.filterInGame.filterActive {
+	background-color: #989083;
+	border-color: #989083;
+	color: #d1d3d0;
+}
+
+/* --- BOTÓN CREAR SALA --- */
+
+.createBtn,
+.createBtnLocked {
+	font-size: 0.85rem;
+	padding: 12px 32px;
+	width: 100%;
+	letter-spacing: 1.5px;
+	white-space: nowrap;
+	font-family: "Courier New", Courier, monospace;
+	font-weight: bold;
+	text-transform: uppercase;
+	border-radius: 3px;
+}
+
+.createBtn {
+	border: 2px solid #295c60;
+	background-color: #295c60;
+	color: #e6e3de;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.createBtn:hover {
+	background-color: #1e4548;
+	border-color: #1e4548;
+}
+
+/* Wrapper del botón bloqueado */
+.createBtnWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+}
+
+/* El botón bloqueado en sí */
+.createBtnLocked {
+	border: 2px dashed #989083;
+	background-color: transparent;
+	color: #989083;
+	cursor: not-allowed;
+	position: relative;
+}
+
+/* Nota explicativa debajo del botón bloqueado */
+.lockedNote {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.7rem;
+	color: #7c766b;
+	text-align: left;
+	letter-spacing: 0.3px;
+	max-width: 220px;
+	line-height: 1.4;
+}
+
+/* --- PIE DE LISTA (botón unirse) --- */
+.listFooter {
+	margin-top: 1.5rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+}
+
+.joinBtn {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	padding: 12px 32px;
+	border-radius: 3px;
+	border: 2px solid #016483;
+	background-color: #016483;
+	color: #e6e3de;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.joinBtn:hover {
+	background-color: #014f66;
+	border-color: #014f66;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 12px rgba(1, 100, 131, 0.25);
+}
+
+.joinBtnDisabled {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: bold;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	padding: 12px 32px;
+	border-radius: 3px;
+	border: 2px dashed #989083;
+	background-color: transparent;
+	color: #989083;
+	cursor: not-allowed;
+}
+
+/* Buscador + filtros en grid */
+.controlsGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	row-gap: 10px;
+	width: max-content;
+}
+
+/* --- BUSCADOR --- */
+.searchBlock {
+	display: flex;
+	width: 100%;
+}
+
+.searchInput {
+	width: 100%;
+	box-sizing: border-box;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.78rem;
+	padding-inline: 10px;
+	border-radius: 3px;
+	border: 1.5px solid #8f9e9b;
+	background: transparent;
+	color: #393e42;
+	outline: none;
+}
+
+.searchInput:focus {
+	border-color: #295c60;
+}
+
+/* --- FILTROS --- */
+.filters {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 1.5rem;
+}
