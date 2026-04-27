@@ -8,15 +8,44 @@ export function useUsersData() {
 	const [users, setUsers] = useState<UserRecord[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	const fetchUsers = useCallback(async () => {
-		setLoading(true);
-		try {
-			const res = await api.get("/users", { hideLoader: true } as any);
-			setUsers(res.data.data ?? res.data);
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+	// Paginación del backend
+	const [totalPages, setTotalPages] = useState(1);
+	const [totalCount, setTotalCount] = useState(0);
+
+	const fetchUsers = useCallback(
+		async (
+			page: number = 1,
+			search: string = "",
+			role: string = "all",
+			sortField: string = "username",
+			sortDir: string = "asc",
+		) => {
+			setLoading(true);
+			try {
+				const params = new URLSearchParams({
+					page: page.toString(),
+					search: search,
+					role: role,
+					sortField: sortField,
+					sortDir: sortDir,
+				});
+
+				const res = await api.get(`/users?${params.toString()}`, {
+					hideLoader: true,
+				} as any);
+				console.log(res)
+
+				setUsers(res.data.data);
+				setTotalPages(res.data.meta.last_page);
+				setTotalCount(res.data.meta.total);
+			} catch (error) {
+				console.error("Error fetching users:", error);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[],
+	);
 
 	const deleteUser = async (id: number) => {
 		await api.delete(`/users/${id}`);
@@ -45,6 +74,8 @@ export function useUsersData() {
 		users,
 		loading,
 		fetchUsers,
+		totalPages,
+		totalCount,
 		deleteUser,
 		updateUser,
 		createUser,

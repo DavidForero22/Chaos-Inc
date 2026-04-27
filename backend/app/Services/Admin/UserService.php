@@ -8,9 +8,35 @@ use Illuminate\Support\Facades\Hash;
 
 class UserService
 {
-    public function getAllUsers()
+    public function getAllUsers($perPage = 20, array $filters = [])
     {
-        return User::all();
+        $query = User::query();
+
+        // Filtro: Búsqueda por nombre
+        if (!empty($filters['search'])) {
+            $query->where('username', 'LIKE', '%' . $filters['search'] . '%');
+        }
+
+        // Filtro: Rol
+        if (!empty($filters['role']) && $filters['role'] !== 'all') {
+            if ($filters['role'] === 'guest') {
+                $query->where('is_guest', true);
+            } else {
+                $query->where('role', $filters['role'])
+                    ->where('is_guest', false);
+            }
+        }
+
+        // Ordenación
+        $sortField = $filters['sortField'] ?? 'username';
+        $sortDir = (!empty($filters['sortDir']) && $filters['sortDir'] === 'desc') ? 'desc' : 'asc';
+
+        // Mapeamos el campo del frontend ('joinedAt') a la columna real de la BD ('created_at')
+        $dbField = $sortField === 'joinedAt' ? 'created_at' : 'username';
+
+        $query->orderBy($dbField, $sortDir);
+
+        return $query->paginate($perPage);
     }
 
     public function getUserById($id)

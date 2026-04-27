@@ -20,6 +20,7 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'email' => $this->email,
             'role' => $this->role,
+            'isGuest' => $this->is_guest,
             'joinedAt' => $this->created_at->toIso8601String(),
 
             // Si en algún momento pedimos el usuario con sus partidas, las mostramos:

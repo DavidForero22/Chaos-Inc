@@ -8,6 +8,7 @@ use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Services\Admin\UserService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
@@ -19,9 +20,12 @@ class UserController extends Controller
         $this->userService = $userService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = $this->userService->getAllUsers();
+        $filters = $request->only(['search', 'role', 'sortField', 'sortDir']);
+
+        $users = $this->userService->getAllUsers(20, $filters);
+
         return UserResource::collection($users);
     }
 
