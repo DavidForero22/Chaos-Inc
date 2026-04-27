@@ -8,9 +8,26 @@ use Illuminate\Support\Facades\DB;
 
 class GameService
 {
-    public function getAllGames()
+    public function getAllGames($perPage = 20, array $filters = [])
     {
-        return Game::with('participants')->get();
+        $query = Game::with('participants');
+
+        // Filtro: Ganador
+        if (!empty($filters['winner']) && $filters['winner'] !== 'all') {
+            $query->where('winner_role', $filters['winner']);
+        }
+
+        // Filtro: Cantidad de jugadores
+        if (!empty($filters['players']) && $filters['players'] !== 'all') {
+            $count = (int) $filters['players'];
+            $query->has('participants', '=', $count);
+        }
+
+        // Ordenación por fecha
+        $sortDir = (!empty($filters['sort']) && $filters['sort'] === 'asc') ? 'asc' : 'desc';
+        $query->orderBy('created_at', $sortDir);
+
+        return $query->paginate($perPage);
     }
 
     public function getGameById($id)

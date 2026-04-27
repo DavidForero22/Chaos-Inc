@@ -1,6 +1,6 @@
 // src/components/admin/GamesTab.tsx
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useGamesData } from "../../hooks/admin/useGamesData.ts";
 import Pagination from "./Pagination.tsx";
 
@@ -19,11 +19,7 @@ type WinnerFilter = "all" | string;
 
 // Componente
 export default function GamesTab() {
-	const { games, loading, fetchGames } = useGamesData();
-
-	useEffect(() => {
-		fetchGames();
-	}, [fetchGames]);
+	const { games, loading, fetchGames, totalPages, totalCount } = useGamesData();
 
 	// Filtros
 	const [winnerFilter, setWinnerFilter] = useState<WinnerFilter>("all");
@@ -33,40 +29,19 @@ export default function GamesTab() {
 	// Paginación
 	const [page, setPage] = useState(1);
 
+	// Cada vez que cambie cualquier parámetro, pedir datos nuevos al backend
+	useEffect(() => {
+		fetchGames(page, winnerFilter, playerCount, sortDir);
+	}, [fetchGames, page, winnerFilter, playerCount, sortDir]);
+
+	// Handlers para resetear a la página 1 cuando se cambia un filtro
 	const resetPage = () => setPage(1);
 
-	// Lógica filtrado + ordenación
-	const filtered = useMemo(() => {
-		let result = [...games];
+	const goTo = (p: number) => {
+		const safeP = Math.max(1, Math.min(p, totalPages > 0 ? totalPages : 1));
+		setPage(safeP);
+	};
 
-		if (winnerFilter !== "all") {
-			result = result.filter((g) => g.winnerRole === winnerFilter);
-		}
-
-		if (playerCount !== "all") {
-			result = result.filter((g) => (g.players?.length ?? 0) === playerCount);
-		}
-
-		result.sort((a, b) => {
-			const diff =
-				new Date(a.playedAt).getTime() - new Date(b.playedAt).getTime();
-			return sortDir === "asc" ? diff : -diff;
-		});
-
-		return result;
-	}, [games, winnerFilter, playerCount, sortDir]);
-
-	// ── Paginación ───────────────────────────────────────────────────────────
-	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-	const safePage = Math.min(page, totalPages);
-	const paginated = filtered.slice(
-		(safePage - 1) * PAGE_SIZE,
-		safePage * PAGE_SIZE,
-	);
-
-	const goTo = (p: number) => setPage(Math.max(1, Math.min(p, totalPages)));
-
-	// ── Render ───────────────────────────────────────────────────────────────
 	if (loading)
 		return (
 			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
@@ -156,12 +131,12 @@ export default function GamesTab() {
 
 			{/* ── Listado ── */}
 			<div className="flex flex-col">
-				{paginated.length === 0 ? (
+				{games.length === 0 ? (
 					<p className="py-8 text-center text-sm opacity-50 italic uppercase tracking-widest">
 						Sin resultados
 					</p>
 				) : (
-					paginated.map((g) => (
+					games.map((g) => (
 						<div
 							key={g.id}
 							className="py-4 border-b border-dashed border-gray-400/50"
@@ -201,11 +176,11 @@ export default function GamesTab() {
 
 			{/* ── Paginación ── */}
 			<Pagination
-				page={safePage}
+				page={page}
 				totalPages={totalPages}
 				pageSize={PAGE_SIZE}
-				filteredCount={filtered.length}
-				totalCount={games.length}
+				filteredCount={totalCount}
+				totalCount={totalCount}
 				onGoTo={goTo}
 			/>
 		</div>

@@ -18,9 +18,12 @@ class GameController extends Controller
         $this->gameService = $gameService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $games = $this->gameService->getAllGames();
+        $filters = $request->only(['winner', 'players', 'sort']);
+
+        $games = $this->gameService->getAllGames(20, $filters);
+
         return GameResource::collection($games);
     }
 
