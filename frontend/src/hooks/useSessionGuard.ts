@@ -24,6 +24,7 @@ export function useSessionGuard() {
 
 				if (active) {
 					setAuth(
+						me.id,
 						me.username,
 						String(me.username).startsWith("guest_"),
 						me.role ?? "user",

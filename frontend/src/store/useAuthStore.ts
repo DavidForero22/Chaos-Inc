@@ -3,10 +3,16 @@
 import { create } from "zustand";
 
 interface AuthState {
+	id: number | null;
 	user: string | null;
 	isGuest: boolean;
 	role: string | null;
-	setAuth: (user: string, isGuest?: boolean, role?: string) => void;
+	setAuth: (
+		id: number | null,
+		user: string,
+		isGuest?: boolean,
+		role?: string,
+	) => void;
 	logout: () => void;
 }
 
@@ -19,26 +25,29 @@ const getSafeStorage = (key: string): string | null => {
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
+	id: Number(getSafeStorage("userId")) || null,
 	user: getSafeStorage("user"),
 	isGuest: getSafeStorage("isGuest") === "true",
 	role: getSafeStorage("role"),
 
-	setAuth: (user, isGuest = false, role = "user") => {
+	setAuth: (id, user, isGuest = false, role = "user") => {
 		if (typeof window !== "undefined") {
+			localStorage.setItem("userId", String(id));
 			localStorage.setItem("user", user);
 			localStorage.setItem("isGuest", String(isGuest));
 			localStorage.setItem("role", role ?? "user");
 		}
-		set({ user, isGuest, role });
+		set({ id, user, isGuest, role });
 	},
 
 	logout: () => {
 		if (typeof window !== "undefined") {
+			localStorage.removeItem("userId");
 			localStorage.removeItem("user");
 			localStorage.removeItem("isGuest");
 			localStorage.removeItem("role");
 		}
-		set({ user: null, isGuest: false, role: null });
+		set({ id: null, user: null, isGuest: false, role: null });
 	},
 }));
 

@@ -6,12 +6,11 @@ import { useAuthStore } from "../../store/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
 
 export function useProfileData() {
-	const { user, isGuest, logout } = useAuthStore();
+	const { user, isGuest, logout, id } = useAuthStore();
 	const navigate = useNavigate();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
 	const [loading, setLoading] = useState(true);
-	const [meId, setMeId] = useState<number | null>(null);
 
 	useEffect(() => {
 		if (!user) {
@@ -26,12 +25,11 @@ export function useProfileData() {
 
 		const fetchData = async () => {
 			try {
-				const [meRes, gamesRes] = await Promise.all([
-					api.get("/me", { hideLoader: true } as any),
-					api.get("/me/games", { hideLoader: true } as any),
-				]);
-				setMeId(meRes.data.id);
+				const gamesRes = await api.get("/me/games", {
+					hideLoader: true,
+				} as any);
 				setGames(gamesRes.data.data ?? gamesRes.data);
+
 			} catch {
 				navigate("/");
 			} finally {
@@ -40,7 +38,7 @@ export function useProfileData() {
 		};
 
 		fetchData();
-	}, [user, isGuest, navigate]); 
+	}, [user, isGuest, id]);
 
 	const handleLogout = async () => {
 		try {
@@ -51,9 +49,9 @@ export function useProfileData() {
 	};
 
 	const handleDeleteAccount = async () => {
-		if (!meId) return;
+		if (!id) return;
 		try {
-			await api.delete(`/users/${meId}`);
+			await api.delete(`/users/${id}`);
 			logout();
 			navigate("/");
 		} catch (e: any) {

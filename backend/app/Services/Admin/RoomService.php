@@ -15,11 +15,31 @@ class RoomService
     public function getAllRooms(): array
     {
         $roomIds = Redis::smembers('active_rooms');
-        $rooms = [];
 
+        if (empty($roomIds)) {
+            return [];
+        }
+
+        // Enviar todas las consultas a Redis en un solo viaje
+        $results = Redis::pipeline(function ($pipe) use ($roomIds) {
+            foreach ($roomIds as $id) {
+                $pipe->hgetall("room:{$id}:info");
+                $pipe->hgetall("room:{$id}:state");
+                $pipe->smembers("room:{$id}:players");
+            }
+        });
+
+        $rooms = [];
+        $index = 0;
+
+        // Procesar los resultados que devolvió el Pipeline
         foreach ($roomIds as $id) {
-            $infoData = Redis::hgetall("room:{$id}:info");
-            $stateData = Redis::hgetall("room:{$id}:state");
+            $infoData = $results[$index];
+            $stateData = $results[$index + 1];
+            $players = $results[$index + 2];
+
+            // Avanzar el índice de 3 en 3 (porque hicimos 3 consultas por sala)
+            $index += 3;
 
             if (!empty($infoData)) {
                 $roomData = array_merge($infoData, $stateData);
@@ -27,7 +47,6 @@ class RoomService
 
                 unset($roomData['password']);
 
-                $players = Redis::smembers("room:{$id}:players");
                 $roomData['players'] = $players;
 
                 $rooms[] = $roomData;
