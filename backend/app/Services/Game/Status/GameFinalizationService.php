@@ -182,7 +182,7 @@ class GameFinalizationService
         return true;
     }
 
-    public function finalizeVictory(string $roomId): void
+    public function finalizeVictory(string $roomId, bool $isDisconnection = false): void
     {
         $roomStateKey = "room:{$roomId}:state";
         $players      = Redis::smembers("room:{$roomId}:players");
@@ -218,20 +218,22 @@ class GameFinalizationService
         } elseif (!$hasBoss && !$hasSecretary) {
             $winnerRole = 'union';
         } else {
-            // La condición ya no se cumple — alguien se reconectó
-            Log::info("GameFinalizationService.php::finalizeVictory - condición de victoria ya no se cumple en {$roomId}");
+            // La condición ya no se cumple, alguien se reconectó o sigue vivo
+            Log::info("GameFinalizationService.php::finalizeVictory - condición de victoria no se cumple en {$roomId}");
             return;
         }
 
-        if ($roundNumber >= 3) {
+        // Gana SI NO fue por desconexión, O SI fue por desconexión pero ya pasó la ronda 3
+        if (!$isDisconnection || $roundNumber >= 3) {
             Redis::hset($roomStateKey, 'game_over', 1);
             Redis::hset($roomStateKey, 'winner_role', $winnerRole);
             event(new RoomStateUpdated($roomId));
             $this->finalize($roomId);
 
-            Log::info("GameFinalizationService.php::finalizeVictory - Victoria confirmada en sala {$roomId} para {$winnerRole} ($roundNumber rondas).");
+            $cause = $isDisconnection ? "abandono del rival (Ronda $roundNumber)" : "combate";
+            Log::info("GameFinalizationService.php::finalizeVictory - Victoria confirmada en sala {$roomId} para {$winnerRole} por {$cause}.");
         } else {
-            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes para ganar ($roundNumber). Cancelando victoria en {$roomId}.");
+            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes para ganar por desconexión ($roundNumber). Cancelando victoria en {$roomId}.");
             $this->cancelAndCleanup($roomId);
         }
     }

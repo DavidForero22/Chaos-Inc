@@ -28,6 +28,6 @@ class CheckVictoryJob implements ShouldQueue
         }
 
         Redis::del("room:{$this->roomId}:ending_grace_period");
-        $finalizationService->finalizeVictory($this->roomId);
+        $finalizationService->finalizeVictory($this->roomId, true);
     }
 }

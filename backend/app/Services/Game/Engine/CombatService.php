@@ -38,60 +38,12 @@ class CombatService
 
     public function checkVictory(string $roomId, ?string $targetName = null): void
     {
-        $roomStateKey = "room:{$roomId}:state";
-        $players = Redis::smembers("room:{$roomId}:players");
-
-        $bossAlive       = false;
-        $internAlive     = false;
-        $unionAliveCount = 0;
-        $totalAlive      = 0;
-
-        // Recolectar el estado exacto de la mesa
-        foreach ($players as $name) {
-            $infoKey = "room:{$roomId}:player:{$name}:info";
-            $data    = Redis::hgetall($infoKey);
-
-            $isDead = CastHelper::toBool($data['is_dead'] ?? 0);
-            $role   = $data['role'] ?? '';
-            $isActingBoss = CastHelper::toBool($data['acting_boss'] ?? 0);
-
-            if (!$isDead) {
-                $totalAlive++;
-                // El jefe efectivo es el real o quien tenga acting_boss
-                if ($role === 'boss' || $isActingBoss) $bossAlive = true;
-                if ($role === 'union')  $unionAliveCount++;
-                if ($role === 'intern' && !$isActingBoss) $internAlive = true;
-            }
-        }
-
-        $winnerRole = null;
-
-        // Evaluar condiciones de victoria de forma jerárquica
-        if (!$bossAlive) {
-            // Si el jefe muere, el juego termina. ¿Quién gana?
-            if ($totalAlive === 1 && $internAlive) {
-                $winnerRole = 'intern';
-            } else {
-                $winnerRole = 'union';
-            }
-        } elseif ($unionAliveCount === 0 && !$internAlive) {
-            // Si el Jefe sigue vivo y todas las amenazas están muertas
-            $winnerRole = 'boss';
-        }
-
-        // Si nadie ha ganado aún, pero alguien murió, notificamos la eliminación
-        if ($winnerRole === null && $targetName !== null) {
+        // Si alguien murió por el ataque, avisar por el chat de juego
+        if ($targetName !== null) {
             event(new RoomStateUpdated($roomId, "{$targetName} ha sido eliminado."));
         }
 
-        // Si hay un ganador, procesar el final de la partida
-        if ($winnerRole !== null) {
-            Redis::hset($roomStateKey, 'game_over', 1);
-            Redis::hset($roomStateKey, 'winner_role', $winnerRole);
-
-            event(new RoomStateUpdated($roomId));
-            $this->finalizationService->finalize($roomId);
-        }
+        $this->finalizationService->finalizeVictory($roomId, false);
     }
 
     /**
