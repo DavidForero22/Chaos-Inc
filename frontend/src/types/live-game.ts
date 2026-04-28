@@ -67,13 +67,33 @@ export interface Opponent extends BasePlayer {
 }
 
 /**
- * Tipado de una carta individual
+ * Tipos de iconos disponibles enviados por el backend
+ */
+export type CardIconType =
+	| "self"
+	| "opponent"
+	| "all"
+	| "attack"
+	| "heal"
+	| "dodge"
+	| "block"
+	| "steal"
+	| "discard"
+	| "perk";
+
+/**
+ * Tipado de una carta individual en la mano del jugador
  */
 export interface CardInstance {
-	id: string;
-	type: number;
-	name: string;
+	id: string; // El identificador único de esta instancia (ej: "uuid-1234")
+	card_id: number; // El ID de la base de la carta (ej: 1)
+	type: "attack" | "heal" | "default" | "perk"; // Borde y estilo visual
+	base_name: string; // Nombre mecánico (ej: "Atacar")
+	name: string; // Nombre de la variante (ej: "Café Derramado")
 	description: string;
+	lore: string;
+	image?: string;
+	icons: CardIconType[];
 }
 
 /**

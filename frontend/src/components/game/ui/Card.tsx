@@ -1,9 +1,33 @@
 // src/components/game/ui/Card.tsx
 import { useState } from "react";
-import type { CardInstance } from "../../../types/live-game";
+import type { CardInstance, CardIconType } from "../../../types/live-game";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import styles from "./Card.module.css";
+
+// Iconos
+import { GiHealthNormal } from "react-icons/gi";
+import { FaFileImage, FaRunning, FaTrash, FaUser } from "react-icons/fa";
+import { BsBackpack2Fill } from "react-icons/bs";
+import { FaUsers } from "react-icons/fa6";
+import { RiSwordFill } from "react-icons/ri";
+import { IoIosLock } from "react-icons/io";
+import { IoHandLeftSharp } from "react-icons/io5";
+import { ImTarget } from "react-icons/im";
+
+// Diccionario para renderizar dinámicamente los iconos que manda el servidor
+const ICON_MAP: Record<CardIconType, React.ElementType> = {
+	attack: RiSwordFill,
+	heal: GiHealthNormal,
+	dodge: FaRunning,
+	block: IoIosLock,
+	steal: IoHandLeftSharp,
+	discard: FaTrash,
+	perk: BsBackpack2Fill,
+	self: FaUser,
+	opponent: ImTarget,
+	all: FaUsers,
+};
 
 interface CardProps {
 	card: CardInstance;
@@ -14,18 +38,19 @@ interface CardProps {
 	onClick?: () => void;
 }
 
-// Función auxiliar para mapear el diseño (Hasta que el backend envíe las imágenes)
-const getCardVisuals = (name: string) => {
-	const lowerName = name.toLowerCase();
-	if (lowerName.includes("atacar")) return { drawing: "🗜️", icon: "💥" };
-	if (lowerName.includes("curar") || lowerName.includes("curación"))
-		return { drawing: "🩹", icon: "💖" };
-	if (lowerName.includes("esquivar")) return { drawing: "🏃", icon: "🛡️" };
-	if (lowerName.includes("robar")) return { drawing: "💵", icon: "🕵️" };
-	if (lowerName.includes("limpieza")) return { drawing: "🧹", icon: "✨" };
-	if (lowerName.includes("almacen") || lowerName.includes("almacén"))
-		return { drawing: "🗄️", icon: "📦" };
-	return { drawing: "📄", icon: "⚙️" };
+// Función para mapear el color del borde según el TIPO de carta
+const getTypeBorderClass = (type: string) => {
+	switch (type) {
+		case "attack":
+			return "border-4 border-red-600 shadow-[0_0_10px_rgba(220,38,38,0.4)]";
+		case "heal":
+			return "border-4 border-green-600 shadow-[0_0_10px_rgba(22,163,74,0.4)]";
+		case "perk":
+			return "border-4 border-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]";
+		case "default":
+		default:
+			return "border-4 border-gray-800 shadow-[0_0_10px_rgba(31,41,55,0.4)]";
+	}
 };
 
 export function Card({
@@ -51,7 +76,7 @@ export function Card({
 		? styles.interactable
 		: styles.notInteractable;
 
-	const visuals = getCardVisuals(card.name);
+	const typeBorderClass = getTypeBorderClass(card.type);
 
 	return (
 		<>
@@ -62,7 +87,7 @@ export function Card({
 			>
 				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
 				<div
-					className={styles.cardBody}
+					className={`${styles.cardBody} ${typeBorderClass} transition-colors duration-300 relative overflow-hidden`}
 					onClick={isSelectable ? onClick : undefined}
 					title={card.description}
 				>
@@ -80,21 +105,52 @@ export function Card({
 						</button>
 					)}
 
-					{/* Título */}
-					<div className={styles.cardName} title={card.name}>
+					{/* Título (Nombre de la variante) */}
+					<div
+						className={`${styles.cardName} z-10 relative bg-white/80 backdrop-blur-sm px-1 rounded mx-1 mt-1`}
+						title={card.name}
+					>
 						{card.name}
 					</div>
 
-					{/* [DIBUJO] */}
-					<div className={styles.drawingBox}>{visuals.drawing}</div>
+					{/* [IMAGEN REAL DE LA CARTA] */}
+					<div className="absolute inset-0 z-0 flex items-center justify-center opacity-90">
+						{card.image ? (
+							<img
+								src={`/images/cards/${card.image}`}
+								alt={card.name}
+								className="w-full h-full object-cover"
+							/>
+						) : (
+							// Fallback en caso de que la carta no tenga imagen asignada aún
+							<div className="text-gray-300 flex items-center justify-center h-full w-full bg-gray-100">
+								<FaFileImage size={40} />
+							</div>
+						)}
+					</div>
 
-					{/* [ICONO EFECTO] */}
-					<div className={styles.effectIcon}>{visuals.icon}</div>
+					{/* [ICONOS DE EFECTO */}
+					<div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-10">
+						{card.icons?.map((iconKey, index) => {
+							const IconComponent = ICON_MAP[iconKey];
+							if (!IconComponent) return null;
+
+							return (
+								<div
+									key={`${iconKey}-${index}`}
+									className="bg-white/90 p-1.5 rounded-full shadow-sm border border-gray-200 text-gray-800"
+									title={`Mecánica: ${iconKey}`}
+								>
+									<IconComponent size={20} strokeWidth={2.5} />
+								</div>
+							);
+						})}
+					</div>
 
 					{/* Overlay de Descarte (Marca de X roja grande) */}
 					{isMarkedForDiscard && (
-						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-							<span className="text-red-600 text-7xl opacity-70 font-black rotate-[-10deg]">
+						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-white/40 backdrop-blur-[2px]">
+							<span className="text-red-600 text-7xl opacity-90 font-black rotate-[-10deg] drop-shadow-lg">
 								✕
 							</span>
 						</div>
