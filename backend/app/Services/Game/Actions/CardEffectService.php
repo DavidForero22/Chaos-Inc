@@ -23,7 +23,7 @@ class CardEffectService
 
         $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
 
-        $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+        $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['card_id'] ?? null) === 3));
         $hasShield   = Redis::hget($targetPerksKey, 'has_shield') === '1';
 
         if ($hasShield) {
@@ -116,7 +116,7 @@ class CardEffectService
 
             $hasShield   = Redis::hget($targetPerksKey, 'has_shield') === '1';
             $targetCards = json_decode(Redis::get($targetHandKey) ?: '[]', true);
-            $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['type'] ?? null) === 3));
+            $hasDodge    = !empty(array_filter($targetCards, fn($c) => is_array($c) && ($c['card_id'] ?? null) === 3));
 
             if ($hasShield) {
                 // Escudo absorbe y se rompe

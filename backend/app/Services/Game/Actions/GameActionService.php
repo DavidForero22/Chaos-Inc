@@ -22,7 +22,6 @@ class GameActionService
     public function playAction(string $roomId, string $playerName, string $cardId, string $targetName, ?string $perkKey = null): void
     {
         $roomStateKey = "room:{$roomId}:state";
-        $roomInfoKey  = "room:{$roomId}:info";
 
         if (!Redis::exists($roomStateKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
@@ -58,10 +57,10 @@ class GameActionService
             throw new GameException(GameException::CARD_NOT_IN_HAND, "No tienes esa carta en tu mano.", 422);
         }
 
-        $cardType = $card['type'];
+        $cardBaseId = $card['card_id'];
 
         // Match de validación
-        match ($cardType) {
+        match ($cardBaseId) {
             1 => $this->cardValidationService->validateAttack($roomId, $playerName, $targetName),
             2 => $this->cardValidationService->validateHeal($roomId, $playerName),
             4 => $this->cardValidationService->validateSteal($roomId, $playerName, $targetName),
@@ -79,7 +78,7 @@ class GameActionService
         };
 
         // Match de efecto
-        $effectResult = match ($cardType) {
+        $effectResult = match ($cardBaseId) {
             1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
@@ -99,7 +98,7 @@ class GameActionService
         $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
         // Match de log
-        $logMessage = match ($cardType) {
+        $logMessage = match ($cardBaseId) {
             1 => ($effectResult === 'shield_broken')
                 ? __('game.attack_shield_broken', ['attacker' => $playerName, 'target' => $targetName])
                 : __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),

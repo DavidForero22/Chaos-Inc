@@ -13,17 +13,28 @@ class DeckService
         $deck = [];
 
         foreach ($definitions as $card) {
-            $id = $card['id'] ?? null;
+            $cardId = $card['id'] ?? null; // ID numérico base
             $count = $card['count'] ?? 0;
 
-            if ($id === null || $count <= 0) continue;
+            if ($cardId === null || $count <= 0) continue;
+
+            $hasVariants = !empty($card['variants']);
+            $variants = $hasVariants ? $card['variants'] : [];
 
             for ($i = 0; $i < $count; $i++) {
+                // Elegir una variante aleatoria si existen, o array vacío si no hay
+                $variant = $hasVariants ? $variants[array_rand($variants)] : [];
+
                 $deck[] = [
-                    'id'          => uniqid((string) $id . '_', true),
-                    'type'        => $id,
-                    'name'        => $card['name'] ?? 'Carta',
-                    'description' => $card['description'] ?? '',
+                    'id'                   => uniqid((string) $cardId . '_', true), // ID único de la instancia en la mano
+                    'card_id'              => $cardId, // El ID base (1, 2, 3...)
+                    'type'                 => $card['type'] ?? 'default', // Para el color del borde en React
+                    'base_name'            => $card['base_name'] ?? 'Carta',
+                    'name'                 => $variant['name'] ?? ($card['base_name'] ?? 'Carta'),
+                    'description'          => $card['description'] ?? '',
+                    'lore'                 => $variant['lore'] ?? '',
+                    'image'                => $variant['image'] ?? null,
+                    'icons'                => $card['icons'] ?? [],
                 ];
             }
         }

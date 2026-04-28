@@ -37,7 +37,7 @@ class GameReactionService
 
             $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-            if (($card['type'] ?? null) !== 3) {
+            if (($card['card_id'] ?? null) !== 3) {
                 throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
             }
 
@@ -114,7 +114,7 @@ class GameReactionService
 
             $card = $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-            if (($card['type'] ?? null) !== 3) {
+            if (($card['card_id'] ?? null) !== 3) {
                 throw new GameException(GameException::INVALID_ACTION, "La carta seleccionada no es un esquive.", 422);
             }
 

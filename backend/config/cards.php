@@ -13,7 +13,7 @@ return [
             'id'                   => 1,
             'type'                 => 'attack',
             'base_name'            => 'Atacar',
-            'mechanic_description' => 'Inflige 1 punto de estrés a un rival.',
+            'description' => 'Inflige 1 punto de estrés a un rival.',
             'icons'                => ['opponent', 'attack'],
             'count'                => 22,
             'variants'             => [
@@ -40,7 +40,7 @@ return [
             'id'                   => 2,
             'type'                 => 'heal',
             'base_name'            => 'Curar',
-            'mechanic_description' => 'Reduce tu propio estrés en 1 punto.',
+            'description' => 'Reduce tu propio estrés en 1 punto.',
             'icons'                => ['self', 'heal'],
             'count'                => 10,
             'variants'             => [
@@ -67,7 +67,7 @@ return [
             'id'                   => 3,
             'type'                 => 'default',
             'base_name'            => 'Esquivar',
-            'mechanic_description' => 'Evita un ataque contra ti.',
+            'description' => 'Evita un ataque contra ti.',
             'icons'                => ['self', 'dodge'],
             'count'                => 16,
             'variants'             => [
@@ -94,7 +94,7 @@ return [
             'id'                   => 4,
             'type'                 => 'default',
             'base_name'            => 'Robar',
-            'mechanic_description' => 'Roba una carta aleatoria de la mano de un rival.',
+            'description' => 'Roba una carta aleatoria de la mano de un rival.',
             'icons'                => ['opponent', 'steal'],
             'count'                => 5,
             'variants'             => [
@@ -116,7 +116,7 @@ return [
             'id'                   => 5,
             'type'                 => 'perk',
             'base_name'            => 'Escudo',
-            'mechanic_description' => 'Bloquea el siguiente ataque que recibas.',
+            'description' => 'Bloquea el siguiente ataque que recibas.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -133,7 +133,7 @@ return [
             'id'                   => 6,
             'type'                 => 'default',
             'base_name'            => 'Bloqueo',
-            'mechanic_description' => 'Bloquea el siguiente turno de un rival.',
+            'description' => 'Bloquea el siguiente turno de un rival.',
             'icons'                => ['opponent', 'block'],
             'count'                => 4,
             'variants'             => [
@@ -155,7 +155,7 @@ return [
             'id'                   => 7,
             'type'                 => 'attack',
             'base_name'            => 'Ataque Masivo',
-            'mechanic_description' => 'Ataca a todos los oponentes a la vez.',
+            'description' => 'Ataca a todos los oponentes a la vez.',
             'icons'                => ['all', 'attack'],
             'count'                => 4,
             'variants'             => [
@@ -177,7 +177,7 @@ return [
             'id'                   => 8,
             'type'                 => 'heal',
             'base_name'            => 'Curación Masiva',
-            'mechanic_description' => 'Cura a todos los jugadores 1 punto de estrés.',
+            'description' => 'Cura a todos los jugadores 1 punto de estrés.',
             'icons'                => ['all', 'heal'],
             'count'                => 3,
             'variants'             => [
@@ -198,7 +198,7 @@ return [
             'id'                   => 9,
             'type'                 => 'default', 
             'base_name'            => 'Sabotaje',
-            'mechanic_description' => 'Obliga a un rival a descartar una carta de su mano.',
+            'description' => 'Obliga a un rival a descartar una carta de su mano.',
             'icons'                => ['opponent', 'discard'],
             'count'                => 6,
             'variants'             => [
@@ -220,7 +220,7 @@ return [
             'id'                   => 10,
             'type'                 => 'perk',
             'base_name'            => 'Visión',
-            'mechanic_description' => 'Te da +1 punto de rango de visión.',
+            'description' => 'Te da +1 punto de rango de visión.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -237,7 +237,7 @@ return [
             'id'                   => 11,
             'type'                 => 'perk', 
             'base_name'            => 'Lejanía',
-            'mechanic_description' => 'Los jugadores te ven a +1 de distancia.',
+            'description' => 'Los jugadores te ven a +1 de distancia.',
             'icons'                => ['self', 'perk'],
             'count'                => 3,
             'variants'             => [
@@ -254,7 +254,7 @@ return [
             'id'                   => 12,
             'type'                 => 'default',
             'base_name'            => 'Limpieza',
-            'mechanic_description' => 'Destruye un equipamiento activo de cualquier compañero.',
+            'description' => 'Destruye un equipamiento activo de cualquier compañero.',
             'icons'                => ['opponent', 'discard'],
             'count'                => 6,
             'variants'             => [
@@ -276,7 +276,7 @@ return [
             'id'                   => 13,
             'type'                 => 'perk',
             'base_name'            => 'Almacén',
-            'mechanic_description' => 'Aumenta tu límite máximo de cartas en la mano en 1.',
+            'description' => 'Aumenta tu límite máximo de cartas en la mano en 1.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -293,7 +293,7 @@ return [
             'id'                   => 14,
             'type'                 => 'perk',
             'base_name'            => 'Suerte',
-            'mechanic_description' => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
+            'description' => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
             'icons'                => ['self', 'perk'],
             'count'                => 3,
             'variants'             => [
