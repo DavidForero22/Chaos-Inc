@@ -16,6 +16,7 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 
 		const roomChannel = echo.join(`room.${roomId}`);
 		const connectedAt = Date.now();
+		let syncTimeout: ReturnType<typeof setTimeout> | null = null;
 
 		roomChannel
 			.here((users: any[]) => {
@@ -63,20 +64,18 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 			})
 			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
 				const state = useGameStore.getState();
-
-				// Si la partida terminó, ignorar actualizaciones
-				if (state.gameOver) {
-					return;
-				}
-
-				logWithTime("useGameSockets.ts - Estado actualizado.");
+				if (state.gameOver) return;
 
 				if (data.log_message) {
 					state.addLog(data.log_message);
 				}
 
 				if (!state.isConnecting) {
-					state.syncGame();
+					if (syncTimeout) clearTimeout(syncTimeout);
+					syncTimeout = setTimeout(() => {
+						useGameStore.getState().syncGame();
+						syncTimeout = null;
+					}, 100);
 				}
 			});
 

@@ -33,7 +33,6 @@ export function useUsersData() {
 				const res = await api.get(`/users?${params.toString()}`, {
 					hideLoader: true,
 				} as any);
-				console.log(res)
 
 				setUsers(res.data.data);
 				setTotalPages(res.data.meta.last_page);

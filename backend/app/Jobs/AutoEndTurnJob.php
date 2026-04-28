@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Services\Game\Engine\TurnService;
 use App\Events\RoomStateUpdated;
+use Illuminate\Support\Facades\Log;
 
 class AutoEndTurnJob implements ShouldQueue
 {
@@ -56,6 +57,7 @@ class AutoEndTurnJob implements ShouldQueue
             $handService->enforceHandLimit($this->roomId, $this->playerName);
             $turnService->advanceTurn($this->roomId);
 
+            Log::info("AutoEndTurnJob.php:: Saltando automáticamente el turno de {$this->playerName} ");
             $mensaje = "El tiempo de {$this->playerName} se ha agotado.";
             event(new RoomStateUpdated($this->roomId, $mensaje));
         }

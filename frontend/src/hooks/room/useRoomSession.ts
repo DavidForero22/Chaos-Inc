@@ -51,23 +51,9 @@ export function useRoomSession(
 
 	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
 	useEffect(() => {
-		console.log(
-			"[Vigilante] room:",
-			room?.players,
-			"myPlayerName:",
-			myPlayerName,
-			"isJoining:",
-			isJoining,
-			"needsPassword:",
-			needsPassword,
-		);
 		if (!room || !myPlayerName || isJoining || needsPassword) return;
 		const stillInRoom = room.players?.includes(myPlayerName) ?? true;
-		console.log("[Vigilante] stillInRoom:", stillInRoom);
 		if (!stillInRoom) {
-			// logWithTime(
-			// 	"[Vigilante] ⚠️ Jugador no encontrado en sala, redirigiendo...",
-			// );
 			alert("Has sido expulsado de la sala.");
 			localStorage.removeItem("game_token");
 			resetRoomStore();

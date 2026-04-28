@@ -31,6 +31,7 @@ interface GameState {
 	clearLogs: () => void;
 	setIsActionLocked: (locked: boolean) => void;
 
+	applyGameData: (newGameData: GameData) => void;
 	syncGame: () => Promise<void>;
 	playTurn: (
 		cardId: string,
@@ -95,45 +96,42 @@ export const useGameStore = create<GameState>((set, get) => ({
 			isActionLocked: false,
 		}),
 
-	syncGame: async () => {
-		const { roomId } = get();
-		if (!roomId) return;
+	applyGameData: (newGameData: GameData) => {
+		const currentData = get().gameData;
 
-		if (!localStorage.getItem("game_token")) {
-			console.warn(
-				"Ignorando sync prematuro: aún estamos obteniendo el token.",
-			);
-			return;
+		const isNowActingBoss = newGameData?.me?.conditions?.acting_boss === true;
+		const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
+
+		if (isNowActingBoss && !wasActingBoss) {
+			logWithTime("Cambio detectado: ¡Eres el nuevo Jefe Heredado!");
+			set({ showActingBossModal: true });
 		}
 
+		set({ gameData: newGameData, isActionLocked: false });
+
+		if (newGameData.game?.game_over) {
+			set({ gameOver: true });
+			localStorage.removeItem("game_token");
+		}
+	},
+
+	syncGame: async () => {
+		const { roomId, applyGameData } = get();
+		if (!roomId) return;
+		if (!localStorage.getItem("game_token")) return;
+
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/sync`, {}, {
-				hideLoader: true,
-			} as any);
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/sync`,
+				{},
+				{
+					hideLoader: true,
+				} as any,
+			);
 
-			if (!res || res.data === null) {
-				return;
-			}
+			if (!res || res.data === null) return;
 
-			const newGameData = res.data;
-			const currentData = get().gameData;
-
-			const isNowActingBoss = newGameData?.me?.conditions?.acting_boss === true;
-			const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
-
-			if (isNowActingBoss && !wasActingBoss) {
-				logWithTime(
-					"useGameStore.ts - Cambio detectado: ¡Eres el nuevo Jefe Heredado!",
-				);
-				set({ showActingBossModal: true });
-			}
-
-			set({ gameData: newGameData });
-
-			if (newGameData.game?.game_over) {
-				set({ gameOver: true });
-				localStorage.removeItem("game_token");
-			}
+			applyGameData(res.data);
 		} catch (error: any) {
 			console.error("ERROR en /sync:", error);
 			throw error;
@@ -143,17 +141,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	playTurn: async (cardId, targetName, perkKey) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return false;
 
-		set({ isActionLocked: true }); 
+		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/action`, {
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/action`, {
 				card_id: cardId,
 				target_name: targetName,
 				...(perkKey && { perk_key: perkKey }),
 			});
-			await syncGame();
+			applyGameData(res.data);
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -164,16 +162,16 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	reactToAttack: async (reaction, cardId) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return false;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/react`, {
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/react`, {
 				reaction,
 				card_id: cardId,
 			});
-			await syncGame();
+			applyGameData(res.data);
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -184,16 +182,16 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	reactToMultiAttack: async (reaction, cardId) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return false;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/react-multi`, {
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/react-multi`, {
 				reaction,
 				card_id: cardId,
 			});
-			await syncGame();
+			applyGameData(res.data);
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -208,26 +206,28 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	endTurn: async () => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/end-turn`, {});
-			await syncGame();
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/end-turn`, {});
+			applyGameData(res.data);
 		} catch (error) {
 			set({ isActionLocked: false });
 		}
 	},
 
 	discardCards: async (cardIds: string[]) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/discard`, { card_ids: cardIds });
-			await syncGame();
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/discard`, {
+				card_ids: cardIds,
+			});
+			applyGameData(res.data);
 		} catch (error: any) {
 			set({ isActionLocked: false });
 			alert(error.response?.data?.message || "Error al descartar cartas.");
@@ -235,13 +235,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	discardPerks: async (perkIds: string[]) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/discard-perks`, { perk_ids: perkIds });
-			await syncGame();
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/discard-perks`, {
+				perk_ids: perkIds,
+			});
+			applyGameData(res.data);
 		} catch (error: any) {
 			set({ isActionLocked: false });
 			alert(
@@ -251,13 +253,15 @@ export const useGameStore = create<GameState>((set, get) => ({
 	},
 
 	resolveSabotage: async (cardId: string) => {
-		const { roomId, syncGame, isActionLocked } = get();
+		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return;
 
 		set({ isActionLocked: true });
 		try {
-			await api.post(`/rooms/${encodeURIComponent(roomId)}/react-discard`, { card_id: cardId });
-			await syncGame();
+			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/react-discard`, {
+				card_id: cardId,
+			});
+			applyGameData(res.data);
 		} catch (error) {
 			set({ isActionLocked: false });
 			console.error("Error al descartar por sabotaje:", error);

@@ -16,8 +16,6 @@ export function useSessionGuard() {
 			try {
 				const res = await api.get("/me", { hideLoader: true } as any);
 				const me = res?.data?.user?.data ?? res?.data?.user;
-				console.log("me: ", me)
-
 				if (!me?.username) {
 					logout();
 					return;
