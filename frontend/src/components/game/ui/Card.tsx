@@ -40,17 +40,19 @@ interface CardProps {
 
 // Función para mapear el color del borde según el TIPO de carta
 const getTypeBorderClass = (type: string) => {
-	switch (type) {
-		case "attack":
-			return "border-4 border-red-600 shadow-[0_0_10px_rgba(220,38,38,0.4)]";
-		case "heal":
-			return "border-4 border-green-600 shadow-[0_0_10px_rgba(22,163,74,0.4)]";
-		case "perk":
-			return "border-4 border-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]";
-		case "default":
-		default:
-			return "border-4 border-gray-800 shadow-[0_0_10px_rgba(31,41,55,0.4)]";
-	}
+    switch (type) {
+        case "attack":
+            return "!border-4 !border-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]";
+        case "heal":
+            return "!border-4 !border-green-600 shadow-[0_0_10px_rgba(22,163,74,0.5)]";
+        case "perk":
+            // Amarillo oscuro / Dorado (yellow-600)
+            return "!border-4 !border-yellow-600 shadow-[0_0_10px_rgba(202,138,4,0.5)]";
+        case "default":
+        default:
+            // Gris neutro (gray-500) para las cartas de interacción/normales
+            return "!border-4 !border-gray-500 shadow-[0_0_10px_rgba(107,114,128,0.5)]";
+    }
 };
 
 export function Card({
@@ -87,7 +89,7 @@ export function Card({
 			>
 				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
 				<div
-					className={`${styles.cardBody} ${typeBorderClass} transition-colors duration-300 relative overflow-hidden`}
+					className={`${styles.cardBody} ${typeBorderClass} transition-colors duration-300 relative overflow-hidden flex flex-col`}
 					onClick={isSelectable ? onClick : undefined}
 					title={card.description}
 				>
@@ -95,7 +97,7 @@ export function Card({
 					{(isHovered || isSelected) && (
 						<button
 							onClick={(e) => {
-								e.stopPropagation(); // no propagar al onClick de la carta
+								e.stopPropagation();
 								setShowInfo(true);
 							}}
 							className="absolute top-1 left-1 w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-full flex items-center justify-center z-50 transition cursor-help hover:scale-110 shadow-md border border-blue-800"
@@ -105,32 +107,31 @@ export function Card({
 						</button>
 					)}
 
-					{/* Título (Nombre de la variante) */}
-					<div
-						className={`${styles.cardName} z-10 relative bg-white/80 backdrop-blur-sm px-1 rounded mx-1 mt-1`}
-						title={card.name}
-					>
-						{card.name}
+					{/* 1. CABECERA: Título (Formato BANG!) */}
+					<div className="w-full grow flex items-center justify-center px-1 pt-1 pb-1 z-10">
+						<div className={styles.cardName} title={card.name}>
+							{card.name}
+						</div>
 					</div>
 
-					{/* [IMAGEN REAL DE LA CARTA] */}
-					<div className="absolute inset-0 z-0 flex items-center justify-center opacity-90">
+					{/* 2. MEDIO: Imagen (Ahora Rectangular y más baja) */}
+					{/* h-[80px] hace la imagen rectangular y reduce la altura total */}
+					<div className="w-full h-20 relative shrink-0 bg-gray-900 border-y-2 border-gray-800/10 flex items-center justify-center overflow-hidden">
 						{card.image ? (
 							<img
 								src={`/images/cards/${card.image}`}
 								alt={card.name}
-								className="w-full h-full object-cover"
+								className="w-full h-full object-cover opacity-95"
 							/>
 						) : (
-							// Fallback en caso de que la carta no tenga imagen asignada aún
-							<div className="text-gray-300 flex items-center justify-center h-full w-full bg-gray-100">
-								<FaFileImage size={40} />
+							<div className="text-gray-400 flex items-center justify-center h-full w-full bg-gray-200">
+								<FaFileImage size={24} />
 							</div>
 						)}
 					</div>
 
-					{/* [ICONOS DE EFECTO */}
-					<div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-10">
+					{/* 3. PIE: Iconos (Abajo, sin círculo) */}
+					<div className="w-full h-6 shrink-0 flex justify-center items-center gap-1 z-10 ">
 						{card.icons?.map((iconKey, index) => {
 							const IconComponent = ICON_MAP[iconKey];
 							if (!IconComponent) return null;
@@ -138,10 +139,10 @@ export function Card({
 							return (
 								<div
 									key={`${iconKey}-${index}`}
-									className="bg-white/90 p-1.5 rounded-full shadow-sm border border-gray-200 text-gray-800"
+									className="text-gray-800 drop-shadow-sm flex items-center justify-center"
 									title={`Mecánica: ${iconKey}`}
 								>
-									<IconComponent size={20} strokeWidth={2.5} />
+									<IconComponent size={16} />
 								</div>
 							);
 						})}
@@ -150,7 +151,7 @@ export function Card({
 					{/* Overlay de Descarte (Marca de X roja grande) */}
 					{isMarkedForDiscard && (
 						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-white/40 backdrop-blur-[2px]">
-							<span className="text-red-600 text-7xl opacity-90 font-black rotate-[-10deg] drop-shadow-lg">
+							<span className="text-red-600 text-6xl opacity-90 font-black rotate-[-10deg] drop-shadow-lg">
 								✕
 							</span>
 						</div>
