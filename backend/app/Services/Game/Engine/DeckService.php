@@ -28,7 +28,8 @@ class DeckService
                 $deck[] = [
                     'id'                   => uniqid((string) $cardId . '_', true), // ID único de la instancia en la mano
                     'card_id'              => $cardId, // El ID base (1, 2, 3...)
-                    'type'                 => $card['type'] ?? 'default', // Para el color del borde en React
+                    'type'                 => $card['type'], 
+                    'target'               => $card['target'],
                     'base_name'            => $card['base_name'] ?? 'Carta',
                     'name'                 => $variant['name'] ?? ($card['base_name'] ?? 'Carta'),
                     'description'          => $card['description'] ?? '',
