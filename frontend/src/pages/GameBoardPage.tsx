@@ -13,6 +13,7 @@ import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 import { GameOverlayManager } from "../components/game/overlays/GameOverlayManager.tsx";
 import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx";
 import { IconGuide } from "../components/game/board/IconGuide.tsx";
+import { LeaveMatch } from "../components/game/board/LeaveMatch.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -98,11 +99,12 @@ export default function GameBoardPage() {
 				</div>
 			</div>
 
-			{/* ── 3. REGISTRO LOG ── */}
-			<GameLog />
-
-			{/* ── 4. GUÍA DE ICONOS ── */}
-			<IconGuide />
+			{/* ── 3. MENÚ SUPERIOR IZQUIERDO (HUD Pegados) ── */}
+			<div className="absolute -top-1 left-10 z-48 flex gap-3 items-start">
+				<LeaveMatch />
+				<GameLog />
+				<IconGuide />
+			</div>
 
 			{/* BOTÓN CANCELAR APUNTADO FLOTANTE */}
 			<div

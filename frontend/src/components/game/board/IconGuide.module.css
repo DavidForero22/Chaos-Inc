@@ -1,19 +1,17 @@
 /* src/components/game/board/IconGuide.module.css */
 
+.mobileLogButton,
 .guideButton {
-	position: fixed;
-	left: 0;
-	top: calc(25% + 64px);
+	position: relative;
 	background-color: #2a2a2a;
 	color: #a3a3a3;
 	border: 2px solid #404040;
-	border-left: none;
-	border-radius: 0 8px 8px 0;
-	padding: 10px 12px 10px 8px;
+	border-radius: 6px;
+	height: 40px; 
+	width: 40px;
 	cursor: pointer;
-	z-index: 49;
 	transition: all 0.2s ease;
-	box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -23,7 +21,6 @@
 	background-color: #393e42;
 	color: #eab308;
 	border-color: #505050;
-	padding-left: 12px;
 }
 
 /* --- ANIMACIONES ESCRITORIO --- */
@@ -61,15 +58,15 @@
 .desktopWrapper {
 	position: fixed;
 	left: 56px;
-	top: 15%; 
+	top: 15%;
 	z-index: 48;
 }
 
 /* --- ESTILO POST-IT --- */
 .postIt {
-	background-color: #fdf6bd; 
+	background-color: #fdf6bd;
 	position: relative;
-	border-bottom-right-radius: 12px 30px; 
+	border-bottom-right-radius: 12px 30px;
 	display: flex;
 	flex-direction: column;
 	box-shadow:
