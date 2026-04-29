@@ -44,7 +44,7 @@ export default function WaitingRoomPage() {
 	}, [isJoining, user, showGuestModal]);
 
 	const onLeaveClick = async () => {
-		startLoading("Borrando de la pizarra...");
+		startLoading("Saliendo de la sala...");
 		try {
 			await handleLeaveRoom();
 		} finally {
@@ -53,7 +53,7 @@ export default function WaitingRoomPage() {
 	};
 
 	const onKickClick = async (playerToKick: string) => {
-		startLoading(`Borrando a ${playerToKick}...`);
+		startLoading(`Expulsando a ${playerToKick}...`);
 		try {
 			await kickPlayer(playerToKick);
 		} finally {
@@ -88,7 +88,7 @@ export default function WaitingRoomPage() {
 						<p
 							className={`${styles.markerBlack} text-sm mt-4 italic opacity-70`}
 						>
-							Esperando identificación en recepción...
+							Esperando identificación...
 						</p>
 					)}
 				</div>
@@ -130,7 +130,7 @@ export default function WaitingRoomPage() {
 						className={`${styles.markerBlack} font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
 					>
-						Revisando agenda de salas...
+						Cargando datos de la sala...
 					</p>
 				</div>
 			</WallLayout>
@@ -172,7 +172,7 @@ export default function WaitingRoomPage() {
 				<h3
 					className={`${styles.markerBlack} font-black text-lg underline decoration-2`}
 				>
-					ASISTENTES CONFIRMADOS
+					JUGADORES
 				</h3>
 				<span
 					className={`${styles.markerBlue} font-bold`}
@@ -204,7 +204,7 @@ export default function WaitingRoomPage() {
 					className={`${styles.btnBase} ${styles.btnStart}`}
 					title={
 						!isOwner
-							? "Solo el Jefe tiene permisos para iniciar la partida"
+							? "Solo el líder puede iniciar la partida"
 							: missingPlayers > 0
 								? `Faltan ${missingPlayers} para poder empezar la partida`
 								: "Comenzar la partida"
@@ -212,11 +212,11 @@ export default function WaitingRoomPage() {
 				>
 					{missingPlayers > 0
 						? missingPlayers === 1
-							? "Falta 1 asistente"
-							: `Faltan ${missingPlayers} asistentes`
+							? "Falta 1 jugador"
+							: `Faltan ${missingPlayers} jugadores`
 						: !isOwner
-							? "Esperando al Jefe..."
-							: "EMPEZAR REUNIÓN"}
+							? "Esperando al líder..."
+							: "Empezar partida"}
 				</button>
 			</div>
 		</WallLayout>

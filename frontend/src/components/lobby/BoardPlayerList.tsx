@@ -30,7 +30,7 @@ export default function BoardPlayerList({
 							</span>
 						)}
 						{player === ownerName && (
-							<span className="text-sm ml-3">⭐ Jefe</span>
+							<span className="text-sm ml-3">⭐ Líder</span>
 						)}
 					</div>
 
@@ -54,7 +54,7 @@ export default function BoardPlayerList({
 						<span
 							className={`${styles.magnet} ${styles.magnetGray} animate-pulse`}
 						></span>
-						Esperando asistentes...
+						Esperando jugadores...
 					</div>
 				</div>
 			)}
