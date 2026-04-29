@@ -41,11 +41,46 @@ class PresenceService
 
     public function processDisconnectReport(string $roomId, string $disconnectedPlayer): string
     {
-        $isOnline = Redis::hget("room:{$roomId}:player:{$disconnectedPlayer}:info", 'is_online');
+        // 1. Verificar que quien reporta está realmente en la sala
+        $reporterUsername = request()->user()?->username;
+        if (!$reporterUsername) {
+            return 'unauthorized';
+        }
 
-        // Si está online ('1'), procesar la caída porque el testigo sabe más que nosotros
-        if ($isOnline === '1') {
-            Log::info("PresenceService.php::processDisconnectReport - Jugador reportó la caída de {$disconnectedPlayer}. Procesando desconexión...");
+        $reporterOnline = Redis::hget("room:{$roomId}:player:{$reporterUsername}:info", 'is_online');
+        if ($reporterOnline !== '1') {
+            Log::warning("PresenceService: {$reporterUsername} intentó reportar a {$disconnectedPlayer} pero no está en la partida.");
+            return 'unauthorized';
+        }
+
+        // 2. Si el jugador reportado ya está offline, nada que hacer
+        $isOnline = Redis::hget("room:{$roomId}:player:{$disconnectedPlayer}:info", 'is_online');
+        if ($isOnline !== '1') {
+            return 'already_offline';
+        }
+
+        // 3. Registrar el voto de este jugador (TTL de 30s para limpiar votos caducados)
+        $voteKey = "room:{$roomId}:disconnect_votes:{$disconnectedPlayer}";
+        Redis::sadd($voteKey, $reporterUsername);
+        Redis::expire($voteKey, 30);
+
+        $votes = Redis::scard($voteKey);
+
+        // 4. Calcular quórum: todos los jugadores online excepto el reportado
+        $playerKeys = Redis::keys("room:{$roomId}:player:*:info");
+        $onlinePlayers = collect($playerKeys)->filter(function ($key) use ($roomId, $disconnectedPlayer) {
+            $name = $this->extractPlayerName($key, $roomId);
+            if ($name === $disconnectedPlayer) return false;
+            return Redis::hget($key, 'is_online') === '1';
+        });
+
+        $quorum = max(1, $onlinePlayers->count()); // Al menos 1 voto
+
+        Log::info("PresenceService: {$votes}/{$quorum} votos para desconectar a {$disconnectedPlayer}.");
+
+        if ($votes >= $quorum) {
+            Redis::del($voteKey);
+            Log::info("PresenceService: Quórum alcanzado. Procesando desconexión de {$disconnectedPlayer}.");
             $this->disconnectionService->processInGameDisconnection(
                 $roomId,
                 $disconnectedPlayer,
@@ -54,10 +89,17 @@ class PresenceService
             return 'reported';
         }
 
-        // Si ya era '0', significa que mark-offline ya hizo su trabajo
-        Log::info("PresenceService.php:: processDisconnectReport: {$disconnectedPlayer} ya estaba offline, nada que hacer.");
-        return 'already_offline';
+        return 'vote_registered';
     }
+
+    private function extractPlayerName(string $key, string $roomId): string
+    {
+        // "room:{roomId}:player:{name}:info" → "{name}"
+        $prefix = "room:{$roomId}:player:";
+        $suffix = ":info";
+        return str_replace([$prefix, $suffix], '', $key);
+    }
+
 
     public function processLobbyDisconnectReport(string $roomId, string $disconnectedPlayer): string
     {
@@ -66,14 +108,33 @@ class PresenceService
             return 'ignored';
         }
 
-        try {
-            $this->liveRoomService->leaveRoom($roomId, $disconnectedPlayer);
-        } catch (\Throwable $e) {
-            // Si ya no estaba en la sala, ignorar
+        // Verificar que el reporter está en el lobby
+        $reporterUsername = request()->user()?->username;
+        $lobbyMembers = Redis::smembers("room:{$roomId}:players"); // ajusta según tu estructura
+        if (!$reporterUsername || !in_array($reporterUsername, $lobbyMembers)) {
+            return 'unauthorized';
         }
 
-        return 'reported';
+        // Sistema de votos igual que en partida
+        $voteKey = "room:{$roomId}:lobby_disconnect_votes:{$disconnectedPlayer}";
+        Redis::sadd($voteKey, $reporterUsername);
+        Redis::expire($voteKey, 30);
+
+        $votes = Redis::scard($voteKey);
+        $quorum = max(1, count($lobbyMembers) - 1);
+
+        if ($votes >= $quorum) {
+            Redis::del($voteKey);
+            try {
+                $this->liveRoomService->leaveRoom($roomId, $disconnectedPlayer);
+            } catch (\Throwable $e) {
+            }
+            return 'reported';
+        }
+
+        return 'vote_registered';
     }
+
 
     public function handleReverbWebhook(array $payload): void
     {
