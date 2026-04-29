@@ -14,6 +14,7 @@ type RegisterInput = {
 type LoginInput = {
 	login: string;
 	password: string;
+	remember?: boolean;
 };
 
 export function useAuth() {

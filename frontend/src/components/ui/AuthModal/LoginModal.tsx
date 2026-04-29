@@ -16,6 +16,7 @@ export default function LoginModal({
 	const [credentials, setCredentials] = useState({
 		login: "",
 		password: "",
+		remember: false,
 	});
 
 	const handleLogin = async (e: React.FormEvent) => {
@@ -85,6 +86,41 @@ export default function LoginModal({
 							setCredentials((prev) => ({ ...prev, password: e.target.value }))
 						}
 					/>
+				</div>
+			</div>
+
+			{/* Recordar sesion */}
+			<div className={styles.fieldRow}>
+				<span className={styles.annexNum}></span>
+				<div
+					className={styles.fieldWrap}
+					style={{
+						display: "flex",
+						flexDirection: "row",
+						alignItems: "center",
+						gap: "8px",
+						paddingTop: "14px",
+					}}
+				>
+					<input
+						type="checkbox"
+						id="remember-me"
+						checked={credentials.remember}
+						onChange={(e) =>
+							setCredentials((prev) => ({
+								...prev,
+								remember: e.target.checked,
+							}))
+						}
+						style={{ cursor: "pointer", width: "16px", height: "16px" }}
+					/>
+					<label
+						htmlFor="remember-me"
+						className={styles.label}
+						style={{ cursor: "pointer", margin: 0 }}
+					>
+						Mantener sesión iniciada
+					</label>
 				</div>
 			</div>
 

@@ -61,13 +61,14 @@ class AuthService
     {
         $login = trim($credentials['login']);
         $password = $credentials['password'];
+        $remember = (bool) ($credentials['remember'] ?? false);
 
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         $ok = Auth::guard('web')->attempt([
             $field => $login,
             'password' => $password,
-        ]);
+        ], $remember);
 
         if (!$ok) {
             throw new UserException(
