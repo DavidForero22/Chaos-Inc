@@ -2,6 +2,8 @@
 
 import { create } from "zustand";
 
+export type ActiveModalType = "none" | "log" | "guide";
+
 interface GameUIState {
 	selectedCardId: string | null;
 	isDiscardMode: boolean;
@@ -9,6 +11,7 @@ interface GameUIState {
 	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
 	isFolderExpanded: boolean;
+	activeModal: ActiveModalType;
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
@@ -18,6 +21,7 @@ interface GameUIState {
 	handleLuckResult: (success: boolean) => void;
 	toggleFolder: () => void;
 	setFolderExpanded: (expanded: boolean) => void;
+	setActiveModal: (modal: ActiveModalType) => void;
 }
 
 export const useGameUIStore = create<GameUIState>((set) => ({
@@ -27,6 +31,7 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	perksToDiscard: [],
 	luckResult: null,
 	isFolderExpanded: false,
+	activeModal: "none",
 
 	setSelectedCardId: (id) => set({ selectedCardId: id }),
 
@@ -85,4 +90,6 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	toggleFolder: () =>
 		set((state) => ({ isFolderExpanded: !state.isFolderExpanded })),
 	setFolderExpanded: (expanded) => set({ isFolderExpanded: expanded }),
+
+	setActiveModal: (modal) => set({ activeModal: modal }),
 }));

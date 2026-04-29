@@ -12,6 +12,7 @@ import { GameLog } from "../components/game/board/GameLog.tsx";
 import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 import { GameOverlayManager } from "../components/game/overlays/GameOverlayManager.tsx";
 import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx";
+import { IconGuide } from "../components/game/board/IconGuide.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -124,6 +125,9 @@ export default function GameBoardPage() {
 
 			{/* ── 3. REGISTRO LOG ── */}
 			<GameLog />
+
+			{/* ── 4. GUÍA DE ICONOS ── */}
+			<IconGuide />
 
 			{/* BOTÓN CANCELAR APUNTADO FLOTANTE (Solo sale si esTargetingMode es true) */}
 			<div

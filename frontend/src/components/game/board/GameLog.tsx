@@ -1,13 +1,17 @@
 // src/components/game/board/GameLog.tsx
-
 import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore";
+import { useGameUIStore } from "../../../store/useGameUIStore"; // <-- Importar
 import styles from "./GameLog.module.css";
 
 export function GameLog() {
 	const logs = useGameStore((state) => state.logs);
 
-	const [isOpen, setIsOpen] = useState(false);
+	// --- ESTADO GLOBAL EN LUGAR DE LOCAL ---
+	const activeModal = useGameUIStore((state) => state.activeModal);
+	const setActiveModal = useGameUIStore((state) => state.setActiveModal);
+	const isOpen = activeModal === "log";
+
 	const [hasNew, setHasNew] = useState(false);
 
 	const prevLengthRef = useRef(logs.length);
@@ -35,7 +39,8 @@ export function GameLog() {
 	}, [logs.length, isOpen]);
 
 	const toggleLog = () => {
-		setIsOpen(!isOpen);
+		// Alternar entre abrir el log o cerrar todo
+		setActiveModal(isOpen ? "none" : "log");
 		if (!isOpen) {
 			setTimeout(scrollToBottom, 50);
 		}
@@ -173,7 +178,7 @@ export function GameLog() {
 					</div>
 					<button
 						className={styles.homeButton}
-						onClick={() => setIsOpen(false)}
+						onClick={() => setActiveModal("none")}
 						title="Cerrar eventos de la partida"
 					></button>
 				</div>
