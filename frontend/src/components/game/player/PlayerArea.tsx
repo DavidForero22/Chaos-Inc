@@ -124,7 +124,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 			{/* HOJA FLOTANTE PARA DESCARTAR PASIVAS */}
 			<div
 				className={`lg:hidden absolute right-4 lg:right-10 z-0 transition-all duration-500 origin-bottom flex flex-col items-center
-                ${showPerksDiscardSheet ? "top-[-70px] lg:top-[-110px]" : "top-2 pointer-events-none"}`}
+                ${showPerksDiscardSheet ? "-top-17.5 lg:-top-27.5" : "top-2 pointer-events-none"}`}
 			>
 				{/* El papelito */}
 				<div className="bg-[#f8f9f8] border border-[#c7c9c7] px-4 py-3 rounded-sm shadow-md flex flex-col items-center gap-2 transform rotate-3">
