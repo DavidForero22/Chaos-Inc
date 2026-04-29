@@ -12,6 +12,7 @@ return [
         [
             'id'                   => 1,
             'type'                 => 'attack',
+            'target'               => 'opponent',
             'base_name'            => 'Atacar',
             'description' => 'Inflige 1 punto de estrés a un rival.',
             'icons'                => ['opponent', 'attack'],
@@ -39,6 +40,7 @@ return [
         [
             'id'                   => 2,
             'type'                 => 'heal',
+            'target'               => 'self',
             'base_name'            => 'Curar',
             'description' => 'Reduce tu propio estrés en 1 punto.',
             'icons'                => ['self', 'heal'],
@@ -66,6 +68,7 @@ return [
         [
             'id'                   => 3,
             'type'                 => 'default',
+            'target'               => 'self',
             'base_name'            => 'Esquivar',
             'description' => 'Evita un ataque contra ti.',
             'icons'                => ['self', 'dodge'],
@@ -93,6 +96,7 @@ return [
         [
             'id'                   => 4,
             'type'                 => 'default',
+            'target'               => 'opponent',
             'base_name'            => 'Robar',
             'description' => 'Roba una carta aleatoria de la mano de un rival.',
             'icons'                => ['opponent', 'steal'],
@@ -115,6 +119,7 @@ return [
         [
             'id'                   => 5,
             'type'                 => 'perk',
+            'target'               => 'self',
             'base_name'            => 'Escudo',
             'description' => 'Bloquea el siguiente ataque que recibas.',
             'icons'                => ['self', 'perk'],
@@ -132,6 +137,7 @@ return [
         [
             'id'                   => 6,
             'type'                 => 'default',
+            'target'               => 'opponent',
             'base_name'            => 'Bloqueo',
             'description' => 'Bloquea el siguiente turno de un rival.',
             'icons'                => ['opponent', 'block'],
@@ -154,6 +160,7 @@ return [
         [
             'id'                   => 7,
             'type'                 => 'attack',
+            'target'               => 'all',
             'base_name'            => 'Ataque Masivo',
             'description' => 'Ataca a todos los oponentes a la vez.',
             'icons'                => ['all', 'attack'],
@@ -176,6 +183,7 @@ return [
         [
             'id'                   => 8,
             'type'                 => 'heal',
+            'target'               => 'all',
             'base_name'            => 'Curación Masiva',
             'description' => 'Cura a todos los jugadores 1 punto de estrés.',
             'icons'                => ['all', 'heal'],
@@ -194,9 +202,11 @@ return [
             ]
         ],
 
+        // ─── 9. SABOTAJE (Compleja - 2 Variantes) ────────────────────
         [
             'id'                   => 9,
             'type'                 => 'default', 
+            'target'               => 'opponent',
             'base_name'            => 'Sabotaje',
             'description' => 'Obliga a un rival a descartar una carta de su mano.',
             'icons'                => ['opponent', 'discard'],
@@ -219,6 +229,7 @@ return [
         [
             'id'                   => 10,
             'type'                 => 'perk',
+            'target'               => 'self',
             'base_name'            => 'Visión',
             'description' => 'Te da +1 punto de rango de visión.',
             'icons'                => ['self', 'perk'],
@@ -236,6 +247,7 @@ return [
         [
             'id'                   => 11,
             'type'                 => 'perk', 
+            'target'               => 'self',
             'base_name'            => 'Lejanía',
             'description' => 'Los jugadores te ven a +1 de distancia.',
             'icons'                => ['self', 'perk'],
@@ -253,6 +265,7 @@ return [
         [
             'id'                   => 12,
             'type'                 => 'default',
+            'target'               => 'opponent',
             'base_name'            => 'Limpieza',
             'description' => 'Destruye un equipamiento activo de cualquier compañero.',
             'icons'                => ['opponent', 'discard'],
@@ -275,6 +288,7 @@ return [
         [
             'id'                   => 13,
             'type'                 => 'perk',
+            'target'               => 'self',
             'base_name'            => 'Almacén',
             'description' => 'Aumenta tu límite máximo de cartas en la mano en 1.',
             'icons'                => ['self', 'perk'],
@@ -292,6 +306,7 @@ return [
         [
             'id'                   => 14,
             'type'                 => 'perk',
+            'target'               => 'self',
             'base_name'            => 'Suerte',
             'description' => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
             'icons'                => ['self', 'perk'],

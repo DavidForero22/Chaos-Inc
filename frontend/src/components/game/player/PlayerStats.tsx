@@ -5,7 +5,7 @@ import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { PlayerTimer } from "./PlayerTimer.tsx";
-import { PerkSlot } from "./PerkSlot.tsx"; // NUEVO IMPORT
+import { PerkSlot } from "./PerkSlot.tsx";
 import type { CardInstance } from "../../../types/live-game";
 import styles from "./PlayerStats.module.css";
 
@@ -97,7 +97,17 @@ export function PlayerStats({
 									name={perk.name}
 									isUnderSabotage={me.conditions.must_discard}
 									onInfoClick={(id, type, name, desc) =>
-										setInfoCard({ id, type, name, description: desc })
+										setInfoCard({
+											id: id,
+											card_id: 0,
+											type: type as any,
+											target: "none",
+											base_name: "Pasiva",
+											name: name,
+											description: desc,
+											lore: "",
+											icons: [],
+										})
 									}
 								/>
 							),

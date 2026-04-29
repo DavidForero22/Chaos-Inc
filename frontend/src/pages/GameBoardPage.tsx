@@ -6,7 +6,6 @@ import { useGameBoard } from "../hooks/game/useGameBoard.ts";
 import { useGameTimers } from "../hooks/game/useGameTimers.ts";
 import { useGameUIStore } from "../store/useGameUIStore.ts";
 
-import { TARGET_CARDS } from "../hooks/game/usePlayerActions.ts";
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
 import { PlayerArea } from "../components/game/player/PlayerArea.tsx";
 import { GameLog } from "../components/game/board/GameLog.tsx";
@@ -38,9 +37,7 @@ export default function GameBoardPage() {
 
 	// LÓGICA INTELIGENTE: ¿Es una carta de apuntar?
 	const selectedCard = board.me.cards.find((c) => c.id === selectedCardId);
-	const isTargetingMode = selectedCard
-		? TARGET_CARDS.includes(selectedCard.type)
-		: false;
+	const isTargetingMode = selectedCard?.target === "opponent";
 
 	return (
 		<div

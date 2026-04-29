@@ -1,14 +1,10 @@
+// src/hooks/game/usePlayerActions.ts
+
 import { useGameStore } from "../../store/useGameStore";
 import { useGameUIStore } from "../../store/useGameUIStore";
 import { useAuth } from "../useAuth";
 import { useState } from "react";
 import { useLoadingStore } from "../../store/useLoadingStore";
-
-// Cartas que se juegan sobre uno mismo (sin seleccionar oponente)
-export const SELF_TARGET_CARDS = [2, 5, 7, 8, 10, 11, 13, 14];
-
-// Cartas que requieren seleccionar un oponente o un perk objetivo
-export const TARGET_CARDS = [1, 4, 6, 9, 12];
 
 export function usePlayerActions() {
 	const { user } = useAuth();
@@ -67,15 +63,12 @@ export function usePlayerActions() {
 	const isEvadingSabotage =
 		me.conditions.must_discard && cardsToDiscard.length === 0;
 	const isConfirmDisabled =
-		noSelection ||
-		isEvadingSabotage ||
-		isSubmitting ||
-		isGlobalLoading;
+		noSelection || isEvadingSabotage || isSubmitting || isGlobalLoading;
 
-	// Detectar si la carta seleccionada es de auto-uso
+	// Detectar si la carta seleccionada es de auto-uso leyendo su target directamente
 	const selectedCard = me.cards.find((c) => c.id === selectedCardId);
 	const isSelfTargetCard = selectedCard
-		? SELF_TARGET_CARDS.includes(selectedCard.type)
+		? ["self", "all", "none"].includes(selectedCard.target)
 		: false;
 
 	const canUseCard =

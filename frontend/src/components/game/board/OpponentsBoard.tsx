@@ -5,7 +5,6 @@ import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { OpponentCard } from "./OpponentCard.tsx";
-import { SELF_TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 
 interface OpponentsBoardProps {
@@ -38,10 +37,9 @@ export function OpponentsBoard({
 	const { opponents, current_turn } = game;
 	const isMyTurn = current_turn === user;
 
-	const selectedCardType =
-		me.cards.find((c: CardInstance) => c.id === selectedCardId)?.type ?? null;
-	const isTargetingCard =
-		selectedCardType !== null && !SELF_TARGET_CARDS.includes(selectedCardType);
+	const selectedCard =
+		me.cards.find((c: CardInstance) => c.id === selectedCardId) ?? null;
+	const isTargetingCard = selectedCard?.target === "opponent";
 
 	const handleAction = async (
 		targetName: string,
@@ -60,16 +58,12 @@ export function OpponentsBoard({
 			{/* Mensaje flotante de apuntado */}
 			{isMyTurn && isTargetingCard && (
 				<div className="absolute top-16 lg:top-10 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-2 rounded shadow-lg font-bold animate-bounce z-30 border-2 border-black pointer-events-auto text-sm lg:text-base whitespace-nowrap">
-					{selectedCardType === 12
+					{selectedCard.card_id === 12 // Mantenemos esta validación si la carta 12 roba pasivas
 						? "¡Elige una pasiva de un rival!"
 						: "¡Elige a un jugador objetivo!"}
 				</div>
 			)}
 
-			{/* CONTENEDOR INTELIGENTE:
-                - Móvil: fila recta, centrado arriba, se encoge al 75% si la carpeta está abierta.
-                - Escritorio: Ocupa toda la pantalla, sin flex, ignora si la carpeta está abierta.
-            */}
 			<div
 				className={`w-full absolute top-2 lg:inset-0 flex justify-center gap-3 lg:gap-2 lg:block transition-transform duration-500 origin-top pointer-events-none ${
 					isFolderExpanded && !isDesktop
@@ -84,7 +78,6 @@ export function OpponentsBoard({
 					let inlineStyles: React.CSSProperties = {};
 
 					if (isDesktop) {
-						// === LÓGICA DE POSICIONAMIENTO RADIAL (Solo PC) ===
 						const maxAngle = 70;
 						const angleDeg =
 							total === 1
@@ -107,15 +100,13 @@ export function OpponentsBoard({
 					return (
 						<div
 							key={player.name}
-							// NUEVO: Si es el jefe, le damos z-50 para que sobresalga su pegatina. Si no, z-10.
 							className={`relative pointer-events-auto transition-transform ${isBoss ? "z-50" : "z-10"}`}
 							style={inlineStyles}
 						>
 							<OpponentCard
 								player={player}
 								isMyTurn={isMyTurn}
-								selectedCardId={selectedCardId}
-								selectedCardType={selectedCardType}
+								selectedCard={selectedCard}
 								onAction={handleAction}
 								turnTimeLeft={turnTimeLeft}
 								isTurnPaused={isTurnPaused}

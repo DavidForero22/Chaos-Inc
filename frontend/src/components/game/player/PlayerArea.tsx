@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
-import { TARGET_CARDS } from "../../../hooks/game/usePlayerActions.ts";
 
 import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";
@@ -60,9 +59,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 	// Evaluación de estados actuales
 	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
-	const isTargetingMode = selectedCard
-		? TARGET_CARDS.includes(selectedCard.type)
-		: false;
+	const isTargetingMode = selectedCard?.target === "opponent";
 	const isMyTurnNow = currentTurn === me?.name;
 	const isDefending =
 		me?.combat_state.is_defending_single || me?.combat_state.is_defending_multi;

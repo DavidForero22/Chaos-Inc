@@ -3,19 +3,25 @@
 /* Animaciones de Entrada */
 .overlay {
 	animation: fadeIn 0.25s ease-out forwards;
+	will-change: opacity; 
 }
 
 .slideInRight {
 	animation: slideIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+	will-change: transform; 
+	backface-visibility: hidden; 
 }
 
 /* Animaciones de Salida */
 .fadeOut {
 	animation: fadeOut 0.25s ease-in forwards;
+	will-change: opacity; 
 }
 
 .slideOutRight {
 	animation: slideOut 0.25s cubic-bezier(0.8, 0.2, 0.8, 1) forwards;
+	will-change: transform; 
+	backface-visibility: hidden;
 }
 
 @keyframes fadeIn {
@@ -27,12 +33,13 @@
 	}
 }
 
+/* Uso de translate3d para forzar la aceleración GPU */
 @keyframes slideIn {
 	from {
-		transform: translateX(100%);
+		transform: translate3d(100%, 0, 0);
 	}
 	to {
-		transform: translateX(0);
+		transform: translate3d(0, 0, 0);
 	}
 }
 
@@ -47,10 +54,10 @@
 
 @keyframes slideOut {
 	from {
-		transform: translateX(0);
+		transform: translate3d(0, 0, 0);
 	}
 	to {
-		transform: translateX(100%);
+		transform: translate3d(100%, 0, 0);
 	}
 }
 
@@ -61,11 +68,12 @@
 	top: 0;
 	height: 100%;
 	width: 100%;
-	max-width: 420px; 
+	max-width: 420px;
 	background-color: #fef08a;
 	box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 	display: flex;
 	flex-direction: column;
+	transform: translateZ(0);
 }
 
 /* La encuadernación negra superior */
@@ -101,7 +109,7 @@
 			#93c5fd 32px
 		);
 	background-size: 100% 32px;
-	padding: 32px 24px 24px 64px; 
+	padding: 32px 24px 24px 64px;
 	overflow-y: auto;
 }
 
@@ -112,7 +120,7 @@
 	color: #1f2937;
 	text-transform: uppercase;
 	letter-spacing: -1px;
-	line-height: 32px; 
+	line-height: 32px;
 	margin-bottom: 32px;
 }
 
@@ -125,7 +133,7 @@
 	padding: 0 6px;
 	border-radius: 3px;
 	display: inline-block;
-	background-color: #fef1b5; 
+	background-color: #fef1b5;
 	transform: rotate(-2deg);
 	margin-bottom: 8px;
 	margin-top: 16px;

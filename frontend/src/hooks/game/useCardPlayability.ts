@@ -80,49 +80,49 @@ export function useCardPlayability(
 			myActivePerksCount,
 		} = globalConditions;
 
-		// Evaluar si la carta está deshabilitada por reglas de juego
-		const isHealDisabled = card.type === 2 && me.stress <= 0;
+		// Evaluar si la carta está deshabilitada por reglas de juego usando card_id
+		const isHealDisabled = card.card_id === 2 && me.stress <= 0;
 		const isAttackDisabled =
-			card.type === 1 &&
+			card.card_id === 1 &&
 			(me.turn_limits.single_attack_used || !isAnyOpponentInRange);
 		const isAttackAllDisabled =
-			card.type === 7 && me.turn_limits.multi_attack_used;
+			card.card_id === 7 && me.turn_limits.multi_attack_used;
 		const isDodgeDisabled =
-			card.type === 3 && !incomingAttack && !hasPendingMultiAttack;
-		const isStealDisabled = card.type === 4 && !anyOpponentHasCards;
-		const isHealAllDisabled = card.type === 8 && !anyoneHasStress;
+			card.card_id === 3 && !incomingAttack && !hasPendingMultiAttack;
+		const isStealDisabled = card.card_id === 4 && !anyOpponentHasCards;
+		const isHealAllDisabled = card.card_id === 8 && !anyoneHasStress;
 		const isSabotageDisabled =
-			card.type === 9 &&
+			card.card_id === 9 &&
 			!opponents.some((o) => !o.is_dead && o.is_online && o.cards_count > 0);
 		const isBlockDisabled =
-			card.type === 6 &&
+			card.card_id === 6 &&
 			!opponents.some((o) => {
 				const isBlocked = o.conditions?.is_blocked ?? (o as any).is_blocked;
 				return !o.is_dead && o.is_online && !isBlocked;
 			});
-		const isCleanDisabled = card.type === 12 && !anyOpponentHasPerks;
+		const isCleanDisabled = card.card_id === 12 && !anyOpponentHasPerks;
 
 		let isPerkLimitReached = false;
-		if ([5, 11, 13, 14].includes(card.type)) {
+		if ([5, 11, 13, 14].includes(card.card_id)) {
 			// Escudo, Lejanía o Deposito: bloqueados si tiene 3 slots llenos
 			isPerkLimitReached = myActivePerksCount >= 3;
-		} else if (card.type === 10) {
+		} else if (card.card_id === 10) {
 			// Visión: bloqueada por límite solo si NO la tenía ya (va a ocupar hueco nuevo)
 			isPerkLimitReached =
 				myActivePerksCount >= 3 && (me.perks.vision_bonus ?? 0) === 0;
 		}
 
 		const isShieldDisabled =
-			(card.type === 5 && me.perks.has_shield) || isPerkLimitReached;
+			(card.card_id === 5 && me.perks.has_shield) || isPerkLimitReached;
 		const isVisionDisabled =
-			(card.type === 10 && (me.perks.vision_bonus ?? 0) >= 2) ||
+			(card.card_id === 10 && (me.perks.vision_bonus ?? 0) >= 2) ||
 			isPerkLimitReached;
 		const isDistanceDisabled =
-			(card.type === 11 && me.perks.has_distance) || isPerkLimitReached;
+			(card.card_id === 11 && me.perks.has_distance) || isPerkLimitReached;
 		const isStorageDisabled =
-			(card.type === 13 && me.perks.has_storage) || isPerkLimitReached;
+			(card.card_id === 13 && me.perks.has_storage) || isPerkLimitReached;
 		const isLuckDisabled =
-			(card.type === 14 && me.perks.has_luck) || isPerkLimitReached;
+			(card.card_id === 14 && me.perks.has_luck) || isPerkLimitReached;
 
 		const isDisabled =
 			isHealDisabled ||
@@ -142,7 +142,7 @@ export function useCardPlayability(
 
 		// Evaluar condiciones especiales
 		const canUseDodgeNow =
-			(incomingAttack || hasPendingMultiAttack) && card.type === 3;
+			(incomingAttack || hasPendingMultiAttack) && card.card_id === 3;
 
 		// Evaluar si se puede hacer clic (seleccionar/jugar)
 		const isSelectable = isDiscardMode

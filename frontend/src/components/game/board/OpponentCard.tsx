@@ -1,20 +1,18 @@
-// frontend/src/components/game/board/OpponentCard.tsx
-import type { Opponent } from "../../../types/live-game.ts";
+// src/components/game/board/OpponentCard.tsx
+import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 import {
 	useOpponentPerks,
 	type OpponentPerkSlot,
 } from "../../../hooks/game/useOpponentPerks.ts";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
-import type { CardInstance } from "../../../types/live-game.ts";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 
 interface OpponentCardProps {
 	player: Opponent;
 	isMyTurn: boolean;
-	selectedCardId: string | null;
-	selectedCardType: number | null;
+	selectedCard: CardInstance | null;
 	onAction: (targetName: string, isOnline: boolean, perkKey?: string) => void;
 	turnTimeLeft?: number | null;
 	isTurnPaused?: boolean;
@@ -23,8 +21,7 @@ interface OpponentCardProps {
 export function OpponentCard({
 	player,
 	isMyTurn,
-	selectedCardId,
-	selectedCardType,
+	selectedCard,
 	onAction,
 	turnTimeLeft,
 	isTurnPaused,
@@ -38,44 +35,45 @@ export function OpponentCard({
 	const isThisOpponentTurn = currentTurn === player.name && !player.is_dead;
 
 	// --- REGLAS DE SELECCIÓN ---
-	const isCardActive = isMyTurn && selectedCardId !== null;
-	const isTargetingCard = [1, 4, 6, 9].includes(selectedCardType || 0);
-	const isOutOfRange = selectedCardType === 1 && !player.is_in_range;
-	const isUnstealable = selectedCardType === 4 && player.cards_count === 0;
+	const isCardActive = isMyTurn && selectedCard !== null;
+	const isTargetingCard = selectedCard?.target === "opponent";
 
+	// Validaciones específicas basadas en la mecánica de la carta (card_id)
+	const isOutOfRange = selectedCard?.card_id === 1 && !player.is_in_range;
+	const isUnstealable = selectedCard?.card_id === 4 && player.cards_count === 0;
 	const isPlayerBlocked =
-		player.conditions?.is_blocked ?? (player as any).is_blocked;
-	const isAlreadyBlocked = selectedCardType === 6 && isPlayerBlocked;
+		selectedCard?.card_id === 6 &&
+		(player.conditions?.is_blocked ?? (player as any).is_blocked);
 	const isSabotageUntargetable =
-		selectedCardType === 9 && player.cards_count === 0;
+		selectedCard?.card_id === 9 && player.cards_count === 0;
 
 	let tooltipMessage = "";
 	let isUnclickable = false;
 
 	if (player.is_dead) {
-		tooltipMessage = "Este empleado ha sido cesado (Muerto).";
+		tooltipMessage = "Este jugador ya está muerto..";
 		isUnclickable = true;
 	} else if (!player.is_online) {
-		tooltipMessage = "Este empleado no está en su puesto (Desconectado).";
+		tooltipMessage = "Este jugador está desconectado.";
 		isUnclickable = true;
 	} else if (isCardActive && isTargetingCard) {
 		if (isOutOfRange) {
-			tooltipMessage = "Demasiado lejos para tu rango actual.";
+			tooltipMessage = "Este jugador está demasiado lejos para tu rango actual.";
 			isUnclickable = true;
 		} else if (isUnstealable) {
-			tooltipMessage = "No tiene documentos que robar.";
+			tooltipMessage = "Este jugador no tiene cartas que robar.";
 			isUnclickable = true;
-		} else if (isAlreadyBlocked) {
-			tooltipMessage = "Ya tiene un bloqueo activo.";
+		} else if (isPlayerBlocked) {
+			tooltipMessage = "Este jugador ya tiene un bloqueo activo.";
 			isUnclickable = true;
 		} else if (isSabotageUntargetable) {
-			tooltipMessage = "No tiene cartas que descartar.";
+			tooltipMessage = "Este jugador no tiene cartas que descartar.";
 			isUnclickable = true;
 		}
 	}
 
 	const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
-	const isCleanMode = selectedCardType === 12 && isMyTurn;
+	const isCleanMode = selectedCard?.card_id === 12 && isMyTurn;
 	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
 
 	const initials = player.name.substring(0, 2).toUpperCase();
@@ -96,7 +94,7 @@ export function OpponentCard({
 		return (
 			<div
 				key={slot.id}
-				title={canCleanGlobally ? "Clic para anular acreditación" : slot.title}
+				title={canCleanGlobally ? "Descartar pasiva" : slot.title}
 				onClick={(e) => {
 					e.stopPropagation();
 					if (canCleanGlobally) {
@@ -104,9 +102,14 @@ export function OpponentCard({
 					} else if (slot.cardType !== undefined) {
 						setInfoCard({
 							id: slot.id,
-							type: slot.cardType,
+							card_id: 0,
+							type: slot.cardType as any,
+							target: "none",
+							base_name: "Pasiva",
 							name: slot.name ?? slot.title,
 							description: slot.title,
+							lore: "",
+							icons: [],
 						});
 					}
 				}}
@@ -125,7 +128,7 @@ export function OpponentCard({
 		<div
 			onClick={() => {
 				if (isUnclickable) return;
-				if (selectedCardType === 12) return;
+				if (selectedCard?.card_id === 12) return;
 				onAction(player.name, player.is_online);
 			}}
 			className={`
@@ -138,7 +141,6 @@ export function OpponentCard({
             `}
 			title={tooltipMessage || undefined}
 		>
-
 			{/* --- SELLO DORADO DEL JEFE (Fuera de la foto) --- */}
 			{player.role === "boss" && (
 				<div
