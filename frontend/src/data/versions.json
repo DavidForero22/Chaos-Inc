@@ -2,13 +2,29 @@
 	{
 		"id": 1,
 		"version": "0.1.0",
-		"date": "2026-04-7",
+		"date": "07-04-2026",
 		"description": "Base del juego completada y funcional.",
 		"changes": [
-			"Motor de juego base con 15 cartas.",
-			"Sistema de reconexión y gestión de sesiones para invitados.",
-			"Gestión de datos para administradores.",
-			"Historial y estadísticas básicas de jugadores."
+			"Creado motor de juego base con 15 cartas.",
+			"Creado sistema de reconexión y gestión de sesiones para invitados.",
+			"Agregada gestión de datos para administradores.",
+			"Agregado historial y estadísticas básicas de jugadores."
+		]
+	},
+
+	{
+		"id": 2,
+		"version": "0.2.0",
+		"date": "29-04-2026",
+		"description": "Rediseño y optimizaciones.",
+		"changes": [
+			"Agregadas variantes de cartas.",
+			"Agregada guía de iconos de cartas.",
+			"Agregadas imágenes de roles de jugador (2/4).",
+			"Sitio web rediseñado por completo y responsivo para móviles.",
+			"Mejorada jugabilidad e interfaz de usuario.",
+			"Optimizado considerablemente el servidor y al cliente.",
+			"Mejorada la seguridad de sesiones de usuario y del servidor."
 		]
 	}
 ]
