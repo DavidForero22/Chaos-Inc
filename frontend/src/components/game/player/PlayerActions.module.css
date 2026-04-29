@@ -98,11 +98,5 @@
 	.inkStamp {
 		font-size: 0.9rem;
 		padding: 6px 16px;
-		background: transparent; 
-		backdrop-filter: none;
-		box-shadow: none;
-	}
-	.inkStamp:hover:not(.stampDisabled) {
-		background: transparent;
 	}
 }
