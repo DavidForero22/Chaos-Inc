@@ -35,7 +35,6 @@ export function PlayerHand() {
 
     // --- MANEJADOR DE CLIC CENTRALIZADO ---
     const handleCardClick = (card: CardInstance) => {
-        console.log(card)
         if (isActionLocked) return;
 
         if (isDiscardMode) {
