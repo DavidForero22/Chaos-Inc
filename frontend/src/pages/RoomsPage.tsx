@@ -6,6 +6,7 @@ import RoomList from "../components/rooms/RoomList";
 import CreateRoomModal from "../components/rooms/CreateRoomModal";
 import GuestNameModal from "../components/lobby/GuestNameModal";
 import styles from "./RoomsPage.module.css";
+import { useAuthStore } from "../store/useAuthStore";
 
 export default function RoomsPage() {
 	const {
@@ -17,12 +18,13 @@ export default function RoomsPage() {
 		searchQuery,
 		setSearchQuery,
 		handleJoinRoom,
-		user,
 		isLoadingRooms,
 	} = useLobby();
 
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showGuestModal, setShowGuestModal] = useState(false);
+
+	const { user, isGuest } = useAuthStore();
 
 	const onJoinClick = () => {
 		if (user) {
@@ -41,7 +43,7 @@ export default function RoomsPage() {
 		!selectedRoom ||
 		filteredRooms.find((r) => r.room_id === selectedRoom)?.status !== "waiting";
 
-	const canCreate = !!user && !user.startsWith("guest_");
+	const canCreate = !!user && !isGuest;
 	const joinTitle = !selectedRoom ? "No has elegido ninguna sala" : undefined;
 
 	return (

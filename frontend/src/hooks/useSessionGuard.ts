@@ -25,7 +25,7 @@ export function useSessionGuard() {
 					setAuth(
 						me.id,
 						me.username,
-						String(me.username).startsWith("guest_"),
+						me.isGuest,
 						me.role ?? "user",
 					);
 				}

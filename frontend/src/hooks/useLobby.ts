@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
-import { useAuthStore } from "../store/useAuthStore.ts";
 import { useLoadingStore } from "../store/useLoadingStore";
 
 export function useLobby() {
@@ -20,7 +19,6 @@ export function useLobby() {
 	const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
 	const navigate = useNavigate();
-	const { user } = useAuthStore();
 
 	// ESTADO GLOBAL
 	const { startLoading, stopLoading } = useLoadingStore();
@@ -98,7 +96,6 @@ export function useLobby() {
 		searchQuery,
 		setSearchQuery,
 		handleJoinRoom,
-		user,
 		isLoadingRooms,
 	};
 }
