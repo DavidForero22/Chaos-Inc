@@ -40,19 +40,21 @@ interface CardProps {
 
 // Función para mapear el color del borde según el TIPO de carta
 const getTypeBorderClass = (type: string) => {
-    switch (type) {
-        case "attack":
-            return "!border-4 !border-red-600 shadow-[0_0_10px_rgba(220,38,38,0.5)]";
-        case "heal":
-            return "!border-4 !border-green-600 shadow-[0_0_10px_rgba(22,163,74,0.5)]";
-        case "perk":
-            // Amarillo oscuro / Dorado (yellow-600)
-            return "!border-4 !border-yellow-600 shadow-[0_0_10px_rgba(202,138,4,0.5)]";
-        case "default":
-        default:
-            // Gris neutro (gray-500) para las cartas de interacción/normales
-            return "!border-4 !border-gray-500 shadow-[0_0_10px_rgba(107,114,128,0.5)]";
-    }
+	switch (type) {
+		case "attack":
+			// Rojo Carmesí: Alerta y urgencia
+			return "!border-4 !border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]";
+		case "heal":
+			// Verde Esmeralda (ligeramente azulado): Restauración segura
+			return "!border-4 !border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]";
+		case "perk":
+			// Ámbar/Oro: Especialización y valor
+			return "!border-4 !border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]";
+		case "default":
+		default:
+			// Azul Cobalto/Slate: Utilidad burocrática y orden
+			return "!border-4 !border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]";
+	}
 };
 
 export function Card({
