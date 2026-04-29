@@ -5,6 +5,7 @@ namespace App\Services\Game\Status;
 
 use App\Events\RoomStateUpdated;
 use App\Jobs\InheritBossRoleJob;
+use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,7 @@ class DisconnectionService
     public function __construct(
         protected GameFinalizationService $finalizationService,
         protected TurnService $turnService,
+        protected PlayerHandService $handService,
     ) {}
 
     /**
@@ -162,7 +164,7 @@ class DisconnectionService
         }
     }
 
-    public function processInGameDisconnection(string $roomId, string $playerName, string $roomKey): void
+    public function processInGameDisconnection(string $roomId, string $playerName): void
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -228,6 +230,13 @@ class DisconnectionService
         }
 
         $this->finalizationService->checkDisconnectionVictory($roomId);
+
+        // Quitar cartas si se pasa del limite
+        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
+
+        if ($currentTurn === $playerName) {
+            $this->handService->enforceHandLimit($roomId, $playerName);
+        }
 
         $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
         event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
