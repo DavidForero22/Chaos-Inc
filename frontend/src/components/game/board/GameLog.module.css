@@ -32,6 +32,24 @@
 	padding-left: 12px;
 }
 
+/* CHASIS DE LA TABLET (Móvil) */
+.tabletChassis {
+	width: 90vw;
+	max-width: 500px;
+	height: 85vh;
+	max-height: 800px;
+	background-color: #1a1a1a;
+	border-radius: 36px;
+	border: 8px solid #2a2a2a;
+	box-shadow:
+		inset 0 0 10px rgba(0, 0, 0, 0.8),
+		0 20px 40px rgba(0, 0, 0, 0.5);
+	padding: 15px 12px 65px 12px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
 /* =========================================
    DISEÑO ESCRITORIO (>= lg)
 ========================================= */
@@ -50,7 +68,7 @@
 	transform: translateY(-50%) translateX(-10%);
 }
 
-/* CHASIS DEL TELÉFONO */
+/* CHASIS DEL TELÉFONO (Escritorio) */
 .phoneChassis {
 	width: 280px;
 	height: 520px;
@@ -66,7 +84,11 @@
 	flex-direction: column;
 }
 
-/* BOTÓN HOME */
+/* =========================================
+   ELEMENTOS COMUNES (Botón Home)
+========================================= */
+
+/* BOTÓN HOME (Se usa tanto en Teléfono como en Tablet) */
 .homeButton {
 	position: absolute;
 	bottom: 15px;
