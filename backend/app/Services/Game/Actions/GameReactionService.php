@@ -70,14 +70,23 @@ class GameReactionService
     {
         $challengeKey = "room:{$roomId}:luck_challenge:{$playerName}";
 
-        if (!Redis::exists($challengeKey)) {
+        $challengeDataStr = Redis::get($challengeKey);
+
+        if (!$challengeDataStr) {
             throw new \Exception('No hay ningún desafío activo.');
         }
 
-        $correct = Redis::get($challengeKey);
+        // Decodificar el JSON que guardamos en advanceTurn
+        $challengeData = json_decode($challengeDataStr, true);
+
+        // Extraer solo el color correcto
+        $correctColor = $challengeData['correct_color'] ?? null;
+        $isSuccess = ($chosenColor === $correctColor);
+
+        // Si acierta o falla, borra la key para que el Job sepa que el jugador ya respondió
         Redis::del($challengeKey);
 
-        if ($chosenColor === $correct) {
+        if ($chosenColor === $isSuccess) {
             // Acertó
             app(TurnService::class)->resumeTurnTimer($roomId);
             $msg = __('game.luckySuccess', ['player' => $playerName]);

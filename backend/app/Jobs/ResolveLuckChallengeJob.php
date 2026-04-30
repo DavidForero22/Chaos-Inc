@@ -18,23 +18,37 @@ class ResolveLuckChallengeJob implements ShouldQueue
 
     protected $roomId;
     protected $playerName;
+    protected $challengeId;
 
-    public function __construct(string $roomId, string $playerName)
+    public function __construct(string $roomId, string $playerName, string $challengeId)
     {
         $this->roomId = $roomId;
         $this->playerName = $playerName;
+        $this->challengeId = $challengeId;
     }
 
     public function handle(TurnService $turnService): void
     {
         $challengeKey = "room:{$this->roomId}:luck_challenge:{$this->playerName}";
 
-        $deleted = Redis::del($challengeKey);
+        $challengeDataStr = Redis::get($challengeKey);
 
-        if ($deleted === 0) {
-            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$this->playerName} ya respondió.");
+        // Si la key no existe, el jugador ya respondió y el sistema limpió la key.
+        if (!$challengeDataStr) {
+            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$this->playerName} ya respondió o la partida terminó.");
             return;
         }
+
+        $challengeData = json_decode($challengeDataStr, true);
+
+        // Verificar que este Job pertenece a este minijuego exacto
+        if (($challengeData['challenge_id'] ?? '') !== $this->challengeId) {
+            Log::info("ResolveLuckChallengeJob.php - Ignorado: Job obsoleto o fantasma para {$this->playerName}.");
+            return;
+        }
+
+        // Si llega aquí, es el Job legítimo y el jugador no ha respondido a tiempo.
+        Redis::del($challengeKey);
 
         Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$this->playerName} en {$this->roomId}. Saltando turno.");
 

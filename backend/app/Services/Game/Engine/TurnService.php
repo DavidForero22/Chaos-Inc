@@ -88,12 +88,22 @@ class TurnService
                     $colors = ['red', 'blue', 'green', 'yellow'];
                     $correct = $colors[array_rand($colors)];
 
-                    Redis::setex("room:{$roomId}:luck_challenge:{$nextPlayer}", 60, $correct);
+                    // Generar un token único
+                    $challengeId = uniqid('luck_', true);
+
+                    // Guardar en Redis como JSON con el color y el token
+                    $challengeData = json_encode([
+                        'correct_color' => $correct,
+                        'challenge_id'  => $challengeId
+                    ]);
+
+                    Redis::setex("room:{$roomId}:luck_challenge:{$nextPlayer}", 60, $challengeData);
 
                     // Pausa: El turno no debe tener un cronómetro
                     Redis::hset($roomStateKey, 'turn_expires_at', 0);
 
-                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer)->delay(now('UTC')->addSeconds(15));
+                    // Pasar el challengeId al Job
+                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer, $challengeId)->delay(now('UTC')->addSeconds(15));
                 } else {
                     // Turno normal
                     $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
