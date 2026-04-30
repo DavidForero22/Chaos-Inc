@@ -1,10 +1,36 @@
 // frontend/src/components/game/player/PlayerActions.tsx
 
+import { useEffect } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
+
+	// Sincronización del "Auto-Descarte" por timeout
+	useEffect(() => {
+		if (!actionLogic.isReady || !actionLogic.me) return;
+
+		const { me, isDiscardMode, currentCardsCount, clearDiscardSelection } =
+			actionLogic;
+
+		// Si está en modo descarte, pero el servidor ya quitó la obligación
+		// y tampoco se pasó del límite de cartas en mano, limpiar la selección y cerrar
+		if (
+			isDiscardMode &&
+			!me.conditions.must_discard &&
+			currentCardsCount <= me.max_hand_size
+		) {
+			clearDiscardSelection();
+		}
+	}, [
+		actionLogic.isReady,
+		actionLogic.me?.conditions.must_discard,
+		actionLogic.currentCardsCount,
+		actionLogic.me?.max_hand_size,
+		actionLogic.isDiscardMode,
+		actionLogic.clearDiscardSelection,
+	]);
 
 	if (!actionLogic.isReady) return null;
 
@@ -95,7 +121,7 @@ export function PlayerActions() {
 								disabled={isConfirmDisabled}
 								className={`${styles.inkStamp} ${styles.stampRed} ${isConfirmDisabled ? styles.stampDisabled : ""}`}
 							>
-								{isConfirmDisabled ? "DESCARTANDO..." : "CONFIRMAR"}
+								{isGlobalLoading ? "DESCARTANDO..." : "CONFIRMAR"}
 							</button>
 						) : canUseCard ? (
 							<button
