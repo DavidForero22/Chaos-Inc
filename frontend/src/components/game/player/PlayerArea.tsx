@@ -40,7 +40,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	const prevIsDefending = useRef<boolean>(false);
 	const prevIsMyTurn = useRef<boolean>(false);
 
-	// 1. Lógica de Descartes y Sabotajes
+	// Lógica de Descartes y Sabotajes
 	useEffect(() => {
 		if (!me) return;
 
@@ -64,7 +64,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	const isDefending =
 		me?.combat_state.is_defending_single || me?.combat_state.is_defending_multi;
 
-	// 2. Reacciones Automáticas de la Interfaz
+	// Reacciones Automáticas de la Interfaz
 	useEffect(() => {
 		// A) Auto-Minimizar al apuntar
 		if (isTargetingMode && !prevIsTargeting.current) {
@@ -155,7 +155,9 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						onClick={() => handleTabClick("stats")}
 						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""}`}
 					>
-						Expediente
+						<div className="flex items-center gap-1.5">
+							Expediente
+						</div>
 					</button>
 					<button
 						onClick={() => handleTabClick("hand")}
@@ -188,6 +190,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						me={me}
 						turnTimeLeft={turnTimeLeft}
 						isTurnPaused={isTurnPaused}
+						isVisible={activeTab === "stats"}
 					/>
 				</div>
 

@@ -1,5 +1,3 @@
-// src/components/game/player/PlayerStats.tsx
-
 import type { MyData } from "../../../types/live-game";
 import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
 import { useState } from "react";
@@ -13,6 +11,7 @@ interface PlayerStatsProps {
 	me: MyData;
 	turnTimeLeft?: number | null;
 	isTurnPaused?: boolean;
+	isVisible?: boolean;
 }
 
 export function PlayerStats({
@@ -26,16 +25,16 @@ export function PlayerStats({
 
 	return (
 		<div className="relative w-full h-full">
-			{/* Temporizador Escritorio (Se oculta en móvil) */}
+			{/* Temporizador Escritorio */}
 			<PlayerTimer
 				turnTimeLeft={turnTimeLeft}
 				isTurnPaused={isTurnPaused}
 				className="hidden lg:block absolute -top-6 -right-4 z-30"
 			/>
 
-			{/* Documento de RRHH */}
+			{/* Documento de stats */}
 			<div
-				className={`${styles.documentContainer} ${me.is_dead ? "grayscale opacity-80" : ""}`}
+				className={`${styles.documentContainer} overflow-y-auto no-scrollbar ${me.is_dead ? "grayscale opacity-80" : ""}`}
 			>
 				<div className={styles.paperClip}></div>
 
@@ -77,7 +76,7 @@ export function PlayerStats({
 
 				<div className={`${styles.formRow} items-center pb-1 mb-2 border-none`}>
 					<span className={styles.formLabel}>Pasivas</span>
-					<div className="flex gap-1 items-center justify-baseline">
+					<div className="flex gap-3 items-center justify-baseline">
 						{displayPerks.map((perk) =>
 							perk.isEmpty ? (
 								<span
@@ -88,45 +87,64 @@ export function PlayerStats({
 									{perk.icon}
 								</span>
 							) : (
-								<PerkSlot
+								<div
 									key={perk.id}
-									id={perk.id}
-									icon={perk.icon}
-									title={perk.title}
-									cardType={perk.cardType}
-									name={perk.name}
-									isUnderSabotage={me.conditions.must_discard}
-									onInfoClick={(id, type, name, desc) =>
-										setInfoCard({
-											id: id,
-											card_id: 0,
-											type: type as any,
-											target: "none",
-											base_name: "Pasiva",
-											name: name,
-											description: desc,
-											lore: "",
-											icons: [],
-										})
-									}
-								/>
+									className="transform scale-125 lg:scale-100 origin-center"
+								>
+									<PerkSlot
+										id={perk.id}
+										icon={perk.icon}
+										title={perk.title}
+										cardType={perk.cardType}
+										name={perk.name}
+										isUnderSabotage={me.conditions.must_discard}
+										onInfoClick={(id, type, name, desc) =>
+											setInfoCard({
+												id: id,
+												card_id: 0,
+												type: type as any,
+												target: "none",
+												base_name: "Pasiva",
+												name: name,
+												description: desc,
+												lore: "",
+												icons: [],
+											})
+										}
+									/>
+								</div>
 							),
 						)}
 					</div>
 				</div>
 
-				{/* Notas de Estado */}
-				<div className="mt-1">
-					<span className={`${styles.formLabel} block mb-0.5`}>Estado</span>
-					<div className="flex gap-2 text-lg min-h-6 items-center">
+				{/* Notas de Estado  */}
+				<div className="mt-2">
+					<span
+						className={`${styles.formLabel} mb-1.5 flex items-center gap-2`}
+					>
+						Estado
+					</span>
+
+					<div className="flex flex-wrap gap-2 text-lg min-h-6 items-center">
 						{me.conditions.is_blocked && (
 							<span
 								title="Sancionado"
 								className="cursor-help bg-purple-100 border border-purple-300 rounded px-1.5 py-0.5 text-xs font-bold"
 							>
-								🔒 SANCIONADO
+								🔒 BLOQUEADO
 							</span>
 						)}
+
+						{me.conditions.skip_next_turn && (
+							<span
+								title="Penalizado por inactividad"
+								className="cursor-help bg-orange-100 border border-orange-400 text-orange-800 rounded px-1.5 py-0.5 text-xs font-bold"
+							>
+								⏳ PENALIZADO
+							</span>
+						)}
+
 						{me.conditions.acting_boss && (
 							<span
 								title="Jefe en Funciones"
@@ -135,7 +153,8 @@ export function PlayerStats({
 								👑 INTERINO
 							</span>
 						)}
-						{!hasAnyCondition && (
+
+						{!hasAnyCondition && !me.conditions.skip_next_turn && (
 							<span className="text-gray-500 text-xs italic">Sin estados.</span>
 						)}
 					</div>

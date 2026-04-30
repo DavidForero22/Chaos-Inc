@@ -1,5 +1,3 @@
-// src/components/game/player/PlayerBanners.tsx
-
 import { useTimerStore } from "../../../store/useTimerStore.ts";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./PlayerBanners.module.css";
@@ -72,20 +70,6 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 						</div>
 					</div>
 				)}
-
-			{/* Penalización por inactividad */}
-			{me.conditions.skip_next_turn && (
-				<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
-					<div className={`${styles.header} ${styles.headerOrange}`}>
-						PENALIZACIÓN
-					</div>
-					<div className={styles.content}>
-						<span className="text-xs">
-							Has sido sancionado. Perderás tu próximo turno por inactividad.
-						</span>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 }
