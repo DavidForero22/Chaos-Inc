@@ -19,12 +19,14 @@ class ResolveSingleAttackJob implements ShouldQueue
     protected $roomId;
     protected $attackerName;
     protected $targetName;
+    protected $attackToken;
 
-    public function __construct(string $roomId, string $attackerName, string $targetName)
+    public function __construct(string $roomId, string $attackerName, string $targetName, string $attackToken)
     {
         $this->roomId = $roomId;
         $this->attackerName = $attackerName;
         $this->targetName = $targetName;
+        $this->attackToken = $attackToken; 
     }
 
     public function handle(CombatService $combatService): void
@@ -32,8 +34,14 @@ class ResolveSingleAttackJob implements ShouldQueue
         $pendingKey = "room:{$this->roomId}:pending_attack";
         $pendingAttack = Redis::hgetall($pendingKey);
 
-        // Si ya no hay ataque pendiente o es para otro objetivo, no hacemos nada
-        if (empty($pendingAttack) || $pendingAttack['target'] !== $this->targetName) {
+        // Si ya no hay ataque pendiente, no hacer nada
+        if (empty($pendingAttack)) {
+            return;
+        }
+
+        // Comprobar si el token coincide
+        if (($pendingAttack['attack_token'] ?? '') !== $this->attackToken) {
+            Log::info("ResolveSingleAttackJob.php - Ignorado Job zombie en {$this->roomId}. Este ataque individual ya pasó.");
             return;
         }
 

@@ -31,13 +31,17 @@ class CardEffectService
             Redis::hset($targetPerksKey, 'has_shield', 0);
             return 'shield_broken';
         } elseif ($hasDodge) {
+            // Generar ID único para este ataque
+            $attackToken = uniqid('single_attack_', true);
+
             // El objetivo puede esquivar, el ataque queda en pausa
             Redis::hmset("room:{$roomId}:pending_attack", [
-                'attacker' => $playerName,
-                'target'   => $targetName,
+                'attack_token' => $attackToken, 
+                'attacker'     => $playerName,
+                'target'       => $targetName,
             ]);
 
-            ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName)->delay(15);
+            ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName, $attackToken)->delay(15);
             return null;
         } else {
             // Si no hay defensa, el daño entra directo
