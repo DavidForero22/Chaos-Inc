@@ -132,9 +132,13 @@ class CardEffectService
         }
 
         if (!empty($pendingTargets)) {
+            // Generar ID único para este ataque
+            $attackToken = uniqid('multi_attack_', true);
+
             Redis::set(
                 "room:{$roomId}:pending_multi_attack",
                 json_encode([
+                    'attack_token' => $attackToken,
                     'attacker'  => $playerName,
                     'targets'   => $pendingTargets,
                     'dodgers'   => [],
@@ -142,7 +146,7 @@ class CardEffectService
                 ])
             );
 
-            ResolveMultiAttackJob::dispatch($roomId)->delay(18);
+            ResolveMultiAttackJob::dispatch($roomId, $attackToken)->delay(18);
 
             // Emitir evento para que el frontend actualice escudos rotos y muestre temporizadores
             event(new RoomStateUpdated($roomId, __('game.multi_attack_started', ['attacker' => $playerName])));
@@ -182,7 +186,7 @@ class CardEffectService
 
         Redis::hset($turnStateKey, 'must_discard', 1);
         Redis::hset($turnStateKey, 'must_discard_by', $playerName);
-        Redis::hset($turnStateKey, 'sabotage_id', $sabotageId); 
+        Redis::hset($turnStateKey, 'sabotage_id', $sabotageId);
 
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);
 

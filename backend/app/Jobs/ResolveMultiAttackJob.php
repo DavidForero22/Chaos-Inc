@@ -16,15 +16,23 @@ class ResolveMultiAttackJob implements ShouldQueue
 
     public function __construct(
         private readonly string $roomId,
+        private readonly string $attackToken
     ) {}
 
     public function handle(CombatService $combatService, TurnService $turnService): void
     {
-        $pending = json_decode(Redis::get("room:{$this->roomId}:pending_multi_attack") ?? 'null', true);
+        $pendingStr = Redis::get("room:{$this->roomId}:pending_multi_attack");
+        $pending = json_decode($pendingStr ?? 'null', true);
 
         // Si el ataque se resolvió rápido porque todos respondieron antes de los 15s,
         // esto estará vacío y el job termina silenciosamente sin hacer nada.
         if (empty($pending) || empty($pending['targets'])) {
+            return;
+        }
+
+        // Comprobar si es un Job antiguo
+        if (($pending['attack_token'] ?? '') !== $this->attackToken) {
+            Log::info("ResolveMultiAttackJob.php - Ignorado Job zombie en {$this->roomId}. Este ataque ya pasó.");
             return;
         }
 

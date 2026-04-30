@@ -18,9 +18,8 @@ class ResolveSabotageJob implements ShouldQueue
 
     protected $roomId;
     protected $targetName;
-    protected $sabotageId; // NUEVO
+    protected $sabotageId;
 
-    // Recibimos el token en el constructor
     public function __construct(string $roomId, string $targetName, string $sabotageId)
     {
         $this->roomId = $roomId;
