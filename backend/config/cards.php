@@ -5,10 +5,15 @@ return [
     |--------------------------------------------------------------------------
     | Definición de Cartas (Chaos Inc.)
     |--------------------------------------------------------------------------
+    |
+    | Cartas agrupadas por número de variantes:
+    |   - 1 variante:  11 cartas  →  11 variantes totales
+    |   - 2 variantes: 3 cartas  → 6 variantes totales
+    |
     */
 
     'cards' => [
-        // ─── 1. ATACAR (Básica - 3 Variantes) ───────────────────────────────
+        // ─── 1. ATACAR (Básica - 2 Variantes) ───────────────────────────────
         [
             'id'                   => 1,
             'type'                 => 'attack',
@@ -27,16 +32,11 @@ return [
                     'name'  => 'Café Derramado',
                     # 'image' => 'attack_2.webp',
                     'lore'  => 'Un "accidente" fortuito sobre el teclado de tu compañero. Las manchas no salen, y su enfado tampoco.',
-                ],
-                [
-                    'name'  => 'Reunión el Viernes a las 17:00',
-                    # 'image' => 'attack_3.webp',
-                    'lore'  => 'No hay arma de destrucción psicológica más potente en el mundo corporativo.',
                 ]
             ]
         ],
 
-        // ─── 2. CURAR (Básica - 3 Variantes) ────────────────────────────────
+        // ─── 2. CURAR (Básica - 2 Variantes) ────────────────────────────────
         [
             'id'                   => 2,
             'type'                 => 'heal',
@@ -55,16 +55,11 @@ return [
                     'name'  => 'Charla en el Pasillo',
                     # 'image' => 'heal_2.webp',
                     'lore'  => 'Cinco minutos criticando a la gerencia en la máquina de agua hacen maravillas por la salud mental.',
-                ],
-                [
-                    'name'  => 'Terapia de Memes',
-                    # 'image' => 'heal_3.webp',
-                    'lore'  => '25 minutos trabajando, 5 minutos mirando vídeos de gatos. El equilibrio perfecto para evitar el colapso.',
                 ]
             ]
         ],
 
-        // ─── 3. ESQUIVAR (Básica - 3 Variantes) ─────────────────────────────
+        // ─── 3. ESQUIVAR (Básica - 2 Variantes) ─────────────────────────────
         [
             'id'                   => 3,
             'type'                 => 'default',
@@ -83,16 +78,11 @@ return [
                     'name'  => 'Derivar al Becario',
                     # 'image' => 'dodge_2.webp',
                     'lore'  => 'Ese marrón no es de tu departamento. Con un rápido reenvío de correo, el problema desaparece de tu mesa.',
-                ],
-                [
-                    'name'  => '"Me Pillas Reunido"',
-                    # 'image' => 'dodge_3.webp',
-                    'lore'  => 'La frase mágica que desactiva cualquier petición. Nadie cuestiona a un empleado que camina muy rápido mirando unos papeles.',
                 ]
             ]
         ],
 
-        // ─── 4. ROBAR (Compleja - 2 Variantes) ──────────────────────────────
+        // ─── 4. ROBAR (Compleja - 1 Variante) ──────────────────────────────
         [
             'id'                   => 4,
             'type'                 => 'default',
@@ -106,11 +96,6 @@ return [
                     'name'  => 'Espionaje Corporativo',
                     # 'image' => 'steal_1.webp',
                     'lore'  => 'La información es poder. Y las cartas de los demás, también. Una ojeada a su monitor nunca viene mal.',
-                ],
-                [
-                    'name'  => 'Apropiación de Tupper',
-                    # 'image' => 'steal_2.webp',
-                    'lore'  => '¿Tenía tu nombre? No lo vi. Lo que es tuyo es mío cuando hay hambre en la oficina.',
                 ]
             ]
         ],
@@ -133,7 +118,7 @@ return [
             ]
         ],
 
-        // ─── 6. BLOQUEO (Compleja - 2 Variantes) ────────────────────────────
+        // ─── 6. BLOQUEO (Compleja - 1 Variante) ────────────────────────────
         [
             'id'                   => 6,
             'type'                 => 'default',
@@ -147,16 +132,11 @@ return [
                     'name'  => 'Auditoría Sorpresa',
                     # 'image' => 'block_1.webp',
                     'lore'  => 'Una auditoría inesperada puede paralizar a cualquiera. Tu rival tendrá que perder todo su tiempo buscando facturas perdidas.',
-                ],
-                [
-                    'name'  => 'Caída del Servidor',
-                    # 'image' => 'block_2.webp',
-                    'lore'  => '¿Has probado a apagar y encender? El sistema está caído y el departamento de IT no responde. A tu rival le toca mirar a la pared.',
                 ]
             ]
         ],
 
-        // ─── 7. ATAQUE MASIVO (Compleja - 2 Variantes) ──────────────────────
+        // ─── 7. ATAQUE MASIVO (Compleja - 1 Variante) ──────────────────────
         [
             'id'                   => 7,
             'type'                 => 'attack',
@@ -170,16 +150,11 @@ return [
                     'name'  => 'Reunión General',
                     # 'image' => 'multi_attack_1.webp',
                     'lore'  => 'Todos a la sala de reuniones. Nadie sale hasta que esto termine y todos pierden la paciencia por igual.',
-                ],
-                [
-                    'name'  => 'CC: A Todo el Departamento',
-                    # 'image' => 'multi_attack_2.webp',
-                    'lore'  => 'Ese fatídico correo con quejas donde todo el mundo está en copia. El pánico colectivo está garantizado.',
                 ]
             ]
         ],
 
-        // ─── 8. CURACIÓN MASIVA (Compleja - 2 Variantes) ────────────────────
+        // ─── 8. CURACIÓN MASIVA (Compleja - 1 Variante) ────────────────────
         [
             'id'                   => 8,
             'type'                 => 'heal',
@@ -193,19 +168,14 @@ return [
                     'name'  => 'Viernes de Pizza',
                     # 'image' => 'multi_heal_1.webp',
                     'lore'  => 'La empresa invita. Las porciones son pequeñas y están frías, pero milagrosamente todos se sienten un poco mejor.',
-                ],
-                [
-                    'name'  => 'El Jefe Está de Vacaciones',
-                    # 'image' => 'multi_heal_2.webp',
-                    'lore'  => 'Una brisa cálida recorre la oficina. Durante los próximos días, la paz inunda los corazones de toda la plantilla.',
                 ]
             ]
         ],
 
-        // ─── 9. SABOTAJE (Compleja - 2 Variantes) ────────────────────
+        // ─── 9. SABOTAJE (Compleja - 1 Variante) ────────────────────
         [
             'id'                   => 9,
-            'type'                 => 'default', 
+            'type'                 => 'default',
             'target'               => 'opponent',
             'base_name'            => 'Sabotaje',
             'description'          => 'Obliga a un rival a descartar una carta de su mano.',
@@ -216,11 +186,6 @@ return [
                     'name'  => 'Desorganización Estratégica',
                     # 'image' => 'sabotage_1.webp',
                     'lore'  => 'Has movido algunos archivos de sitio. Tu rival no encontrará lo que busca cuando más lo necesite.',
-                ],
-                [
-                    'name'  => 'Borrado Accidental',
-                    # 'image' => 'sabotage_2.webp',
-                    'lore'  => 'Uy, ¿ese informe vital estaba en la papelera de reciclaje? Qué pena, el sistema la acaba de vaciar automáticamente.',
                 ]
             ]
         ],
@@ -246,7 +211,7 @@ return [
         // ─── 11. LEJANÍA (Pasiva - 1 Variante) ──────────────────────────────
         [
             'id'                   => 11,
-            'type'                 => 'perk', 
+            'type'                 => 'perk',
             'target'               => 'self',
             'base_name'            => 'Lejanía',
             'description'          => 'Los jugadores te ven a +1 de distancia.',
@@ -261,7 +226,7 @@ return [
             ]
         ],
 
-        // ─── 12. LIMPIEZA (Compleja - 2 Variantes) ──────────────────────────
+        // ─── 12. LIMPIEZA (Compleja - 1 Variante) ──────────────────────────
         [
             'id'                   => 12,
             'type'                 => 'default',
@@ -275,11 +240,6 @@ return [
                     'name'  => 'Política de Mesa Limpia',
                     # 'image' => 'clean_1.webp',
                     'lore'  => 'Recursos Humanos ha implementado la estricta política de "mesas despejadas". Despídete de ese bonito equipamiento personal.',
-                ],
-                [
-                    'name'  => 'Revisión de Gastos',
-                    # 'image' => 'clean_2.webp',
-                    'lore'  => 'Contabilidad ha denegado la factura de ese equipo extra. Tienes que devolverlo a la empresa inmediatamente.',
                 ]
             ]
         ],
