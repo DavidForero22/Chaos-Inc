@@ -68,7 +68,10 @@ class GameFinalizationService
             'players'            => $playersData,
         ]);
 
-        CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
+        $cleanupToken = uniqid('cleanup_', true);
+        Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
+
+        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
     }
 
     public function cancelAndCleanup(string $roomId): void
@@ -87,9 +90,12 @@ class GameFinalizationService
         // Notificar al frontend
         event(new RoomStateUpdated($roomId));
 
-        // Programar la destrucción total para dentro de 10 segundos
-        CleanupRoomJob::dispatch($roomId)->delay(now()->addSeconds(10));
+        $cleanupToken = uniqid('cleanup_', true);
+        Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
 
+        // Programar la destrucción total para dentro de 10 segundos
+        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
+        
         Log::info("GameFinalizationService.php::cancelAndCleanup - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
     }
 

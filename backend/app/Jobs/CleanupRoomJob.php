@@ -17,14 +17,24 @@ class CleanupRoomJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        protected string $roomId
+        protected string $roomId,
+        protected string $cleanupToken 
     ) {}
 
     public function handle(GameFinalizationService $finalizationService): void
     {
-        // Validamos la existencia antes de actuar
-        if (!Redis::exists("room:{$this->roomId}:state")) {
-            Log::info("CleanupRoomJob: La sala {$this->roomId} ya no existe o ya fue limpiada.");
+        $roomStateKey = "room:{$this->roomId}:state";
+
+        // Validar la existencia antes de actuar
+        if (!Redis::exists($roomStateKey)) {
+            Log::info("CleanupRoomJob.php: La sala {$this->roomId} ya no existe o ya fue limpiada.");
+            return;
+        }
+
+        // Verificar que es el Job autorizado
+        $currentCleanupToken = Redis::hget($roomStateKey, 'cleanup_token');
+        if ($currentCleanupToken !== $this->cleanupToken) {
+            Log::info("CleanupRoomJob.php: Ignorado. Job zombie o token no coincide para la sala {$this->roomId}.");
             return;
         }
 

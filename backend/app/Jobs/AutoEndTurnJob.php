@@ -50,6 +50,7 @@ class AutoEndTurnJob implements ShouldQueue
 
                 Redis::hset($playerTurnStateKey, 'must_discard', 0);
                 Redis::hdel($playerTurnStateKey, 'must_discard_by');
+                Redis::hdel($playerTurnStateKey, 'sabotage_id');
 
                 Redis::del("room:{$this->roomId}:pending_sabotage");
             }
