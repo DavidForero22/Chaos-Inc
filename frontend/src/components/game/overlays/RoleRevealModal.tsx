@@ -94,82 +94,84 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 					</div>
 				</div>
 
-				{/* ── HOJA DE PAPEL (Abajo en móvil, Derecha en PC) ── */}
-				<div
-					className={styles.paperSheet}
-					ref={scrollRef}
-					onScroll={handleScroll}
-				>
-					<div className={styles.redMargin} />
-					{/* Contenido scrolleable */}
-					<div className="relative z-10 px-8 md:pl-20 md:pr-10 py-8 flex flex-col h-full">
-						<div className="shrink-0 mb-4 text-center">
-							<p
-								className={`text-sm md:text-base uppercase font-bold tracking-widest mb-1 inline-block border-b-2 border-dashed border-[#393e42]/30 ${config.isWarning ? "text-red-600 bg-red-200 px-2" : "text-[#393e42]"}`}
-							>
-								{config.titleLabel}
-							</p>
-						</div>
+				{/* ── CONTENEDOR DE LA HOJA */}
+				<div className={styles.paperContainer}>
+					{/* HOJA DE PAPEL */}
+					<div
+						className={styles.paperSheet}
+						ref={scrollRef}
+						onScroll={handleScroll}
+					>
+						<div className={styles.redMargin} />
+						{/* Contenido scrolleable */}
+						<div className="relative z-10 px-8 md:pl-20 md:pr-10 py-8 flex flex-col h-full">
+							<div className="shrink-0 mb-4 text-center">
+								<p
+									className={`text-sm md:text-base uppercase font-bold tracking-widest mb-1 inline-block border-b-2 border-dashed border-[#393e42]/30 ${config.isWarning ? "text-red-600 bg-red-200 px-2" : "text-[#393e42]"}`}
+								>
+									{config.titleLabel}
+								</p>
+							</div>
 
-						{/* La Foto Adjunta */}
-						<div className="shrink-0 w-full mb-6 flex justify-center">
-							<div className="bg-[#f8f9f8] p-2 md:p-4 pb-6 md:pb-12 shadow-lg border border-gray-300 rotate-1 w-full max-w-125 relative">
-								<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-5 md:w-16 md:h-6 bg-white/40 backdrop-blur-sm rotate-3 shadow-sm border border-white/20" />
+							{/* La Foto Adjunta */}
+							<div className="shrink-0 w-full mb-6 flex justify-center">
+								<div className="bg-[#f8f9f8] p-2 md:p-4 pb-6 md:pb-12 shadow-lg border border-gray-300 rotate-1 w-full max-w-125 relative">
+									<div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-5 md:w-16 md:h-6 bg-white/40 backdrop-blur-sm rotate-3 shadow-sm border border-white/20" />
 
-								<div className="aspect-video w-full bg-gray-300 overflow-hidden relative border border-gray-400">
-									<img
-										src={config.image}
-										alt={config.label}
-										className="w-full h-full object-cover"
-										onError={(e) => {
-											e.currentTarget.style.display = "none";
-										}}
-									/>
-									<div className="absolute inset-0 flex items-center justify-center text-xs md:text-sm font-bold text-gray-500 opacity-50 -z-10 uppercase tracking-widest">
-										[FOTO_ADJUNTA.JPG]
+									<div className="aspect-video w-full bg-gray-300 overflow-hidden relative border border-gray-400">
+										<img
+											src={config.image}
+											alt={config.label}
+											className="w-full h-full object-cover"
+											onError={(e) => {
+												e.currentTarget.style.display = "none";
+											}}
+										/>
+										<div className="absolute inset-0 flex items-center justify-center text-xs md:text-sm font-bold text-gray-500 opacity-50 -z-10 uppercase tracking-widest">
+											[FOTO_ADJUNTA.JPG]
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
 
-						{/* Texto del objetivo */}
-						<div className="grow">
-							<p className="text-xs uppercase font-bold mb-1 opacity-70">
-								Directiva Operativa:
-							</p>
-							<p className="text-[#393e42] font-bold text-sm md:text-base lg:text-lg leading-relaxed md:leading-8">
-								{config.objective}
-							</p>
-						</div>
+							{/* Texto del objetivo */}
+							<div className="grow">
+								<p className="text-xs uppercase font-bold mb-1 opacity-70">
+									Directiva Operativa:
+								</p>
+								<p className="text-[#393e42] font-bold text-sm md:text-base lg:text-lg leading-relaxed md:leading-8">
+									{config.objective}
+								</p>
+							</div>
 
-						{/* Botón de acción */}
-						<div className="mt-6 flex justify-center shrink-0">
-							<button
-								onClick={onClose}
-								className="w-full md:max-w-75 px-8 py-3 mb-8 border-[3px] border-[#295c60] text-[#295c60] font-black uppercase tracking-widest hover:bg-[#295c60] hover:text-[#d2d4d1] transition-colors bg-transparent"
-							>
-								Entendido
-							</button>
+							{/* Botón de acción */}
+							<div className="mt-6 flex justify-center shrink-0">
+								<button
+									onClick={onClose}
+									className="w-full md:max-w-75 px-8 py-3 mb-8 border-[3px] border-[#295c60] text-[#295c60] font-black uppercase tracking-widest hover:bg-[#295c60] hover:text-[#d2d4d1] transition-colors bg-transparent"
+								>
+									Entendido
+								</button>
+							</div>
 						</div>
 					</div>
-				</div>
 
-				{/* FLECHA DE GARABATO */}
-				<div
-					className={`${styles.doodleArrow} ${showArrow ? styles.visible : styles.hidden}`}
-				>
-					{/* Flecha parecido a dibujo */}
-					<svg
-						viewBox="0 0 40 100"
-						fill="none"
-						stroke="#1e3a8a"
-						strokeWidth="3"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="w-8 h-20 opacity-60"
+					{/* FLECHA DE GARABATO */}
+					<div
+						className={`${styles.doodleArrow} ${showArrow ? styles.visible : styles.hidden}`}
 					>
-						<path d="M20 10 Q 22 40, 18 80 M 8 65 Q 18 80, 20 85 Q 22 80, 32 65" />
-					</svg>
+						<svg
+							viewBox="0 0 40 100"
+							fill="none"
+							stroke="#1e3a8a"
+							strokeWidth="3"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							className="w-8 h-20 opacity-60"
+						>
+							<path d="M20 10 Q 22 40, 18 80 M 8 65 Q 18 80, 20 85 Q 22 80, 32 65" />
+						</svg>
+					</div>
 				</div>
 			</div>
 		</div>
