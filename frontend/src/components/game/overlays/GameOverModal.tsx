@@ -1,59 +1,11 @@
-// src/components/game/GameOverModal.tsx
-
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
-
-type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
-type PlayerRole = "boss" | "secretary" | "intern" | "union";
-type ConfigKey = "boss" | "union" | "intern" | "canceled";
-
-// Expandimos la configuración para el diseño de Periódico
-const RESULT_CONFIG: Record<
+import { RESULT_CONFIG, ROLE_LABELS } from "../../../data/gameOverConfig.ts";
+import type {
+	WinnerRole,
+	PlayerRole,
 	ConfigKey,
-	{
-		headline: string;
-		image: string;
-		description: string;
-		winners: PlayerRole[];
-	}
-> = {
-	boss: {
-		headline: "¡RUGEN LAS TRIPAS DEL RESTO DE EMPRESAS!",
-		image: "/placeholder_news_boss.jpg",
-		description: "Oswaldo Calzas, el CEO de CHAOS INC.",
-		winners: ["boss", "secretary"],
-	},
-	union: {
-		headline: "¡EL SINDICATO TOMA EL CONTROL!",
-		image: "/placeholder_news_union.jpg",
-		description:
-			"Histórico motín en Chaos Inc. Tras una intensa jornada de sabotajes y papeleo extraviado, el Director General ha sido destituido. Las fuerzas sindicales han tomado las riendas de la compañía prometiendo máquinas de café gratuitas y el fin de las horas extra obligatorias.",
-		winners: ["union"],
-	},
-	intern: {
-		headline: "¡UN BECARIO SE CORONA COMO CEO!",
-		image: "/placeholder_news_intern.jpg",
-		description:
-			"Lo que parecía una jornada de fotocopias rutinaria ha terminado con el ascenso más meteórico de la historia corporativa. Aprovechando el fuego cruzado entre la directiva y los sindicatos, un empleado en prácticas no remunerado ha usurpado el puesto de máxima autoridad.",
-		winners: ["intern"],
-	},
-	canceled: {
-		headline: "¡EMPRESA MIERDOSA EN CABEZA!",
-		image: "/placeholder_news_canceled.jpg",
-		description: `Chaos INC devora al resto de empresas, y su CEO, Oswaldo Calzas, devora un bocata de lomo. Tras las huelgas sindicales motivadas por ciertas 
-			'irregularidades' en la praxis laboral, la firma alcanzó un acuerdo histórico, destinando una gran suma de dinero a su capital humano.
-			Con el objetivo de sanear sus arcas tras el inmenso pago, la dirección reubicó estratégicamente a su plantilla en puestos de venta de limonada y lavado de coches. 
-			En apenas siete horas, la organización ha logrado triplicar su patrimonio neto, consolidándose como el hito comercial más exitoso en la historia de Guarromán, Murcia.`,
-		winners: [],
-	},
-};
-
-const ROLE_LABELS: Record<PlayerRole, string> = {
-	boss: "Jefe",
-	secretary: "Secretariado",
-	intern: "Becario",
-	union: "Sindicalista",
-};
+} from "../../../data/gameOverConfig.ts";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -100,7 +52,7 @@ export function GameOverModal({
 				{/* Titular Principal */}
 				<h2 className={styles.headline}>{config.headline}</h2>
 
-				{/* Gran Imagen Central */}
+				{/* Gran Imagen Central con Subtítulo */}
 				<div className={styles.photoWrapper}>
 					<img
 						src={config.image}
@@ -110,16 +62,13 @@ export function GameOverModal({
 							e.currentTarget.style.display = "none";
 						}}
 					/>
+					{/* El pie de foto estilo periódico */}
+					{config.subtitle && (
+						<p className="text-sm italic text-gray-700 mt-2 mb-4 text-center border-b border-gray-300 pb-2 font-serif">
+							{config.subtitle}
+						</p>
+					)}
 				</div>
-
-				{/* Sello de Resultado Personal (Si no ha sido cancelada) */}
-				{!isCancelled && (
-					<div
-						className={`${styles.resultStamp} ${iWon ? styles.stampWon : styles.stampLost}`}
-					>
-						{iWon ? "ASCENDIDO" : "DESPEDIDO"}
-					</div>
-				)}
 
 				{/* Cuerpo de la Noticia */}
 				<div className={styles.articleBody}>
@@ -141,9 +90,18 @@ export function GameOverModal({
 					)}
 				</div>
 
-				{/* Botón Inferior para volver (Como un anuncio en el periódico) */}
+				{/* Resultado Personal */}
+				{!isCancelled && (
+					<div
+						className={`${styles.finalResult} ${iWon ? styles.textWon : styles.textLost}`}
+					>
+						{iWon ? "¡HAS GANADO!" : "¡HAS PERDIDO!"}
+					</div>
+				)}
+
+				{/* Botón Inferior para volver */}
 				<button onClick={onClose} className={styles.exitButton}>
-					Volver a al Menú Principal
+					Volver al Menú Principal
 				</button>
 			</div>
 		</div>,

@@ -134,36 +134,26 @@
 	}
 }
 
-/* --- SELLO DE RESULTADO --- */
-.resultStamp {
-	position: absolute;
-	top: 250px;
-	left: 50%;
-	transform: translate(-50%, -50%) rotate(-15deg);
+/* --- RESULTADO FINAL --- */
+.finalResult {
 	font-family: "Courier New", Courier, monospace;
-	font-size: 5rem;
+	font-size: 2rem;
 	font-weight: 900;
+	text-align: center;
 	text-transform: uppercase;
-	border: 8px solid;
-	padding: 8px 32px;
-	border-radius: 12px;
-	pointer-events: none;
-	mix-blend-mode: multiply;
-	z-index: 10;
-	box-shadow:
-		inset 0 0 4px currentColor,
-		0 0 4px currentColor;
-	opacity: 0.85;
+	letter-spacing: 2px;
+	margin-top: 16px;
+	margin-bottom: 24px;
+	padding-top: 24px;
+	border-top: 2px dashed #1a1a1a; 
 }
 
-.stampWon {
-	color: #166534; /* Verde oscuro tinta */
-	border-color: #166534;
+.textWon {
+	color: #166534; 
 }
 
-.stampLost {
-	color: #991b1b; /* Rojo oscuro tinta */
-	border-color: #991b1b;
+.textLost {
+	color: #991b1b; 
 }
 
 /* --- BOTÓN DE SALIDA --- */
