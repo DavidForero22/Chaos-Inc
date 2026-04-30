@@ -18,10 +18,9 @@ const RESULT_CONFIG: Record<
 	}
 > = {
 	boss: {
-		headline: "¡LA DIRECCIÓN APLASTA LA REBELIÓN!",
-		image: "/placeholder_news_boss.jpg", // Usa las rutas que tengas preparadas
-		description:
-			"En un giro dramático de los acontecimientos, la cúpula directiva de Chaos Inc. ha logrado desmantelar la célula sindical que operaba en las sombras de la oficina. Se reportan despidos masivos y la instauración de una nueva política de 'cero tolerancia'. El orden corporativo ha sido restaurado.",
+		headline: "¡RUGEN LAS TRIPAS DEL RESTO DE EMPRESAS!",
+		image: "/placeholder_news_boss.jpg",
+		description: "Oswaldo Calzas, el CEO de CHAOS INC.",
 		winners: ["boss", "secretary"],
 	},
 	union: {
@@ -39,19 +38,21 @@ const RESULT_CONFIG: Record<
 		winners: ["intern"],
 	},
 	canceled: {
-		headline: "CIERRE PATRONAL INDEFINIDO",
+		headline: "¡EMPRESA MIERDOSA EN CABEZA!",
 		image: "/placeholder_news_canceled.jpg",
-		description:
-			"Las autoridades han clausurado el edificio. Múltiples abandonos en puestos clave han provocado el colapso organizativo de Chaos Inc. La partida ha sido anulada por incomparecencia de los trabajadores. No hay vencedores, solo papeleo sin rellenar.",
+		description: `Chaos INC devora al resto de empresas, y su CEO, Oswaldo Calzas, devora un bocata de lomo. Tras las huelgas sindicales motivadas por ciertas 
+			'irregularidades' en la praxis laboral, la firma alcanzó un acuerdo histórico, destinando una gran suma de dinero a su capital humano.
+			Con el objetivo de sanear sus arcas tras el inmenso pago, la dirección reubicó estratégicamente a su plantilla en puestos de venta de limonada y lavado de coches. 
+			En apenas siete horas, la organización ha logrado triplicar su patrimonio neto, consolidándose como el hito comercial más exitoso en la historia de Guarromán, Murcia.`,
 		winners: [],
 	},
 };
 
 const ROLE_LABELS: Record<PlayerRole, string> = {
-	boss: "Director General",
+	boss: "Jefe",
 	secretary: "Secretariado",
 	intern: "Becario",
-	union: "Enlace Sindical",
+	union: "Sindicalista",
 };
 
 interface GameOverModalProps {
