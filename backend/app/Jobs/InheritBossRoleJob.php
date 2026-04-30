@@ -17,6 +17,7 @@ class InheritBossRoleJob implements ShouldQueue
 
     public function __construct(
         private readonly string $roomId,
+        private readonly string $graceToken 
     ) {}
 
     public function handle(
@@ -36,17 +37,22 @@ class InheritBossRoleJob implements ShouldQueue
             return;
         }
 
-        $hasBossGrace = Redis::exists("room:{$this->roomId}:boss_grace_period");
-        $hasActingGrace = Redis::exists("room:{$this->roomId}:acting_boss_grace_period");
+        // Leer los tokens actuales
+        $bossToken = Redis::get("room:{$this->roomId}:boss_grace_period");
+        $actingToken = Redis::get("room:{$this->roomId}:acting_boss_grace_period");
 
-        // Si las llaves no existen, es porque el jugador se reconectó
-        if (!$hasBossGrace && !$hasActingGrace) {
-            Log::info("InheritBossRoleJob.php: No hay llaves de gracia (jugador reconectado o ya procesado) en sala $this->roomId, abortando.\n");
+        // Verificar si el token coincide con alguno de los dos
+        if ($this->graceToken !== $bossToken && $this->graceToken !== $actingToken) {
+            Log::info("InheritBossRoleJob.php: Job obsoleto o jugador reconectado en sala $this->roomId, abortando.\n");
             return;
         }
 
-        Redis::del("room:{$this->roomId}:boss_grace_period");
-        Redis::del("room:{$this->roomId}:acting_boss_grace_period");
+        // Limpiamos solo la llave que coincide con el token
+        if ($this->graceToken === $bossToken) {
+            Redis::del("room:{$this->roomId}:boss_grace_period");
+        } else {
+            Redis::del("room:{$this->roomId}:acting_boss_grace_period");
+        }
 
         $players = Redis::smembers("room:{$this->roomId}:players");
         foreach ($players as $name) {

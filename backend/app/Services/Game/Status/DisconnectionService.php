@@ -24,10 +24,11 @@ class DisconnectionService
      */
     public function handleBossDisconnection(string $roomId, string $bossName): void
     {
-        Redis::set("room:{$roomId}:boss_grace_period", $bossName);
+        $graceToken = uniqid('grace_boss_', true);
+        Redis::set("room:{$roomId}:boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
-        InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
+        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now()->addSeconds(10));
     }
 
     /**
@@ -136,10 +137,12 @@ class DisconnectionService
     public function handleActingBossDisconnection(string $roomId, string $actingBossName): void
     {
         Redis::hset("room:{$roomId}:player:{$actingBossName}:info", 'acting_boss', 0);
-        Redis::set("room:{$roomId}:acting_boss_grace_period", $actingBossName);
+
+        $graceToken = uniqid('grace_acting_', true);
+        Redis::set("room:{$roomId}:acting_boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
-        InheritBossRoleJob::dispatch($roomId)->delay(now()->addSeconds(10));
+        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now()->addSeconds(10));
     }
 
     /**
