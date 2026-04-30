@@ -41,7 +41,7 @@ export function GameOverModal({
 			<div className={styles.newspaper}>
 				{/* Cabecera del Periódico */}
 				<div className={styles.masthead}>
-					<h1 className={styles.newspaperName}>The Chaos Chronicle</h1>
+					<h1 className={styles.newspaperName}>LA Agencia Preguntas</h1>
 				</div>
 				<div className={styles.subhead}>
 					<span>Edición Especial de Cierre</span>
@@ -73,7 +73,7 @@ export function GameOverModal({
 				{/* Cuerpo de la Noticia */}
 				<div className={styles.articleBody}>
 					<p>
-						<strong>MADRID —</strong> {config.description}
+						{config.description}
 					</p>
 
 					{!isCancelled && (

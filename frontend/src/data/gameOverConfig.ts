@@ -14,7 +14,7 @@ export const RESULT_CONFIG: Record<
 > = {
 	boss: {
 		headline: "¡EMPRESA APESTOSA EN CABEZA!",
-		image: "/placeholder_news_boss.jpg",
+		image: "/news_boss.jpg",
 		subtitle:
 			"Chaos Inc. devora al resto de empresas, y su CEO, Oswaldo Calzas, devora un bocata de lomo.",
 		description: `Tras las huelgas sindicales motivadas por ciertas 'irregularidades' en la praxis laboral, la firma alcanzó un acuerdo histórico, destinando una gran suma 
@@ -25,7 +25,7 @@ export const RESULT_CONFIG: Record<
 	},
 	union: {
 		headline: "¡CHAOS INC. CIERRA SUS PUERTAS!",
-		image: "/placeholder_news_union.jpg",
+		image: "/news_union.jpg",
 		subtitle:
 			"El abandonado establecimiento fue comprado por una cadena de Labubus.",
 		description: `Tras meses de huelgas y recogida de firmas por abusos laborales, el sindicato de trabajadores ha logrado que Chaos Inc. se declare en bancarrota y cierre 
@@ -36,7 +36,7 @@ export const RESULT_CONFIG: Record<
 	},
 	intern: {
 		headline: "¡RUBIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
-		image: "/placeholder_news_intern.jpg",
+		image: "/news_intern.jpg",
 		subtitle:
 			"¡Pues ahora pienso montar mi propia empresa, con casinos y furcias! Es más, paso de la empresa.",
 		description: `En mitad de las encarnizadas disputas entre la directiva de Chaos Inc. y el sindicato de trabajadores, una joven que se incorporó hace apenas semanas como becaria ha 
@@ -47,8 +47,8 @@ export const RESULT_CONFIG: Record<
 	},
 	canceled: {
 		headline: "¡NUNCA PASA NADA!",
-		image: "/placeholder_news_canceled.jpg",
-		subtitle: "",
+		image: "/news_canceled.jpg",
+		subtitle: "También en la sección del tiempo: Nublado",
 		description: `Tras meses de hostilidades, la directiva de Chaos Inc. y el sindicato han firmado un armisticio por puro agotamiento. La empresa retomará su actividad 
         habitual mientras los sindicalistas ya buscan una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido obsequiados 
         con una porción de pizza y un refresco. En otro orden de cosas, se informa de que el departamento de limpieza explotó repentinamente durante el conflicto, resultando 
