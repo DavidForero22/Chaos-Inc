@@ -25,11 +25,11 @@ export function IconGuide() {
 			const timer = setTimeout(() => {
 				setIsRendered(false);
 				setIsExiting(false);
-			}, 250); 
+			}, 250);
 
 			return () => clearTimeout(timer);
 		}
-	}, [activeModal]); 
+	}, [activeModal]);
 
 	const toggleGuide = () => {
 		setActiveModal(activeModal === "guide" ? "none" : "guide");
@@ -52,9 +52,9 @@ export function IconGuide() {
 		);
 	}
 
-	// Contenido del Post-it (Chuleta rápida)
-	const GuideContent = () => (
-		<div className="flex flex-col h-full max-h-full relative pt-4">
+    // Contenido del Post-it (Chuleta rápida)
+	const guideContent = (
+		<div className="flex flex-col flex-1 min-h-0 w-full relative pt-4">
 			{/* El trozo de celo en la parte superior */}
 			<div className={styles.tape}></div>
 
@@ -76,8 +76,8 @@ export function IconGuide() {
 				</h2>
 			</div>
 
-			{/* Cuadrícula de iconos: 1 columna en móviles muy pequeños, 2 columnas desde 'sm' en adelante */}
-			<div className="p-5 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+			{/* Cuadrícula de iconos */}
+			<div className="p-5 overflow-y-auto flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 no-scrollbar">
 				{GUIDE_ITEMS.map((item, idx) => (
 					<div key={idx} className="flex gap-3 items-start p-1">
 						{/* El icono como si fuera una pegatina o un sello */}
@@ -123,7 +123,7 @@ export function IconGuide() {
 							className={`${styles.postIt} w-full max-w-sm max-h-[85vh]`}
 							onClick={(e) => e.stopPropagation()}
 						>
-							<GuideContent />
+							{guideContent} 
 						</div>
 					</div>
 
@@ -134,9 +134,9 @@ export function IconGuide() {
 						}`}
 					>
 						<div
-							className={`${styles.postIt} w-137.5 max-w-[calc(100vw-120px)] max-h-[75vh]`}
+							className={`${styles.postIt} w-[137.5px] max-w-[calc(100vw-120px)] max-h-[75vh]`}
 						>
-							<GuideContent />
+							{guideContent} {/* SE RENDERIZA LA VARIABLE */}
 						</div>
 					</div>
 				</>,

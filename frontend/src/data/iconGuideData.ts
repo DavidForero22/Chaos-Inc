@@ -34,22 +34,22 @@ export const GUIDE_ITEMS: GuideItem[] = [
 	{
 		icon: IoIosLock,
 		name: "Bloquear",
-		desc: "Impide que un rival juegue cartas.",
+		desc: "Bloquea el siguiente turno del objetivo.",
 	},
 	{
 		icon: IoHandLeftSharp,
 		name: "Robar",
-		desc: "Roba una carta de la mano de un rival.",
+		desc: "Roba una carta de la mano del objetivo.",
 	},
 	{
 		icon: FaTrash,
 		name: "Descartar",
-		desc: "Obliga a tirar cartas o tú las descartas.",
+		desc: "Obliga a descartar cartas.",
 	},
 	{
 		icon: BsBackpack2Fill,
 		name: "Pasiva",
-		desc: "Habilidad continua o de un solo uso.",
+		desc: "Habilidad pasiva.",
 	},
 	{
 		icon: FaUser,
@@ -59,11 +59,11 @@ export const GUIDE_ITEMS: GuideItem[] = [
 	{
 		icon: ImTarget,
 		name: "Objetivo: Rival",
-		desc: "Requiere seleccionar a un empleado.",
+		desc: "Requiere seleccionar a un objetivo.",
 	},
 	{
 		icon: FaUsers,
 		name: "Objetivo: Todos",
-		desc: "Afecta a todos en la oficina.",
+		desc: "Afecta a todos en la partida.",
 	},
 ];

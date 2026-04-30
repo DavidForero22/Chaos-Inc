@@ -14,7 +14,7 @@ return [
             'type'                 => 'attack',
             'target'               => 'opponent',
             'base_name'            => 'Atacar',
-            'description' => 'Inflige 1 punto de estrés a un rival.',
+            'description'          => 'Inflige 1 punto de estrés a un oponente vivo dentro de tu rango de visión.',
             'icons'                => ['opponent', 'attack'],
             'count'                => 22,
             'variants'             => [
@@ -42,7 +42,7 @@ return [
             'type'                 => 'heal',
             'target'               => 'self',
             'base_name'            => 'Curar',
-            'description' => 'Reduce tu propio estrés en 1 punto.',
+            'description'          => 'Reduce tu propio estrés en 1 punto.',
             'icons'                => ['self', 'heal'],
             'count'                => 10,
             'variants'             => [
@@ -70,7 +70,7 @@ return [
             'type'                 => 'default',
             'target'               => 'self',
             'base_name'            => 'Esquivar',
-            'description' => 'Evita un ataque contra ti.',
+            'description'          => 'Evita un ataque contra ti.',
             'icons'                => ['self', 'dodge'],
             'count'                => 16,
             'variants'             => [
@@ -98,7 +98,7 @@ return [
             'type'                 => 'default',
             'target'               => 'opponent',
             'base_name'            => 'Robar',
-            'description' => 'Roba una carta aleatoria de la mano de un rival.',
+            'description'          => 'Roba una carta aleatoria de la mano de un oponente.',
             'icons'                => ['opponent', 'steal'],
             'count'                => 5,
             'variants'             => [
@@ -121,7 +121,7 @@ return [
             'type'                 => 'perk',
             'target'               => 'self',
             'base_name'            => 'Escudo',
-            'description' => 'Bloquea el siguiente ataque que recibas.',
+            'description'          => 'Bloquea el siguiente ataque que recibas.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -139,7 +139,7 @@ return [
             'type'                 => 'default',
             'target'               => 'opponent',
             'base_name'            => 'Bloqueo',
-            'description' => 'Bloquea el siguiente turno de un rival.',
+            'description'          => 'Bloquea el siguiente turno de un rival. El jugador afectado tiene un 25% de probabilidad de evadir el bloqueo en su turno.',
             'icons'                => ['opponent', 'block'],
             'count'                => 4,
             'variants'             => [
@@ -162,7 +162,7 @@ return [
             'type'                 => 'attack',
             'target'               => 'all',
             'base_name'            => 'Ataque Masivo',
-            'description' => 'Ataca a todos los oponentes a la vez.',
+            'description'          => 'Ataca a todos los oponentes vivos a la vez.',
             'icons'                => ['all', 'attack'],
             'count'                => 4,
             'variants'             => [
@@ -185,7 +185,7 @@ return [
             'type'                 => 'heal',
             'target'               => 'all',
             'base_name'            => 'Curación Masiva',
-            'description' => 'Cura a todos los jugadores 1 punto de estrés.',
+            'description'          => 'Cura a todos los jugadores vivos 1 punto de estrés, tú incluido.',
             'icons'                => ['all', 'heal'],
             'count'                => 3,
             'variants'             => [
@@ -208,7 +208,7 @@ return [
             'type'                 => 'default', 
             'target'               => 'opponent',
             'base_name'            => 'Sabotaje',
-            'description' => 'Obliga a un rival a descartar una carta de su mano.',
+            'description'          => 'Obliga a un rival a descartar una carta de su mano.',
             'icons'                => ['opponent', 'discard'],
             'count'                => 6,
             'variants'             => [
@@ -231,7 +231,7 @@ return [
             'type'                 => 'perk',
             'target'               => 'self',
             'base_name'            => 'Visión',
-            'description' => 'Te da +1 punto de rango de visión.',
+            'description'          => 'Te da +1 punto de rango de visión.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -249,7 +249,7 @@ return [
             'type'                 => 'perk', 
             'target'               => 'self',
             'base_name'            => 'Lejanía',
-            'description' => 'Los jugadores te ven a +1 de distancia.',
+            'description'          => 'Los jugadores te ven a +1 de distancia.',
             'icons'                => ['self', 'perk'],
             'count'                => 3,
             'variants'             => [
@@ -267,7 +267,7 @@ return [
             'type'                 => 'default',
             'target'               => 'opponent',
             'base_name'            => 'Limpieza',
-            'description' => 'Destruye un equipamiento activo de cualquier compañero.',
+            'description'          => 'Descarta una pasiva a elegir de cualquier oponente.',
             'icons'                => ['opponent', 'discard'],
             'count'                => 6,
             'variants'             => [
@@ -290,7 +290,7 @@ return [
             'type'                 => 'perk',
             'target'               => 'self',
             'base_name'            => 'Almacén',
-            'description' => 'Aumenta tu límite máximo de cartas en la mano en 1.',
+            'description'          => 'Aumenta tu límite máximo de cartas en la mano en 1.',
             'icons'                => ['self', 'perk'],
             'count'                => 4,
             'variants'             => [
@@ -308,7 +308,7 @@ return [
             'type'                 => 'perk',
             'target'               => 'self',
             'base_name'            => 'Suerte',
-            'description' => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
+            'description'          => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
             'icons'                => ['self', 'perk'],
             'count'                => 3,
             'variants'             => [
