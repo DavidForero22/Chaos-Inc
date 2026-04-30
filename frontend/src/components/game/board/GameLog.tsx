@@ -100,7 +100,7 @@ export function GameLog() {
 
 	return (
 		<>
-			{/* BOTÓN MÓVIL (Izquierda) */}
+			{/* BOTÓN MÓVIL */}
 			<button
 				onClick={toggleLog}
 				className={`lg:hidden ${styles.mobileLogButton}`}
@@ -120,7 +120,7 @@ export function GameLog() {
 					/>
 				</svg>
 				{hasNew && !isOpen && (
-					<span className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse border border-[#1a1a1a]"></span>
+					<span className="absolute top-7 -right-1 w-3 h-3 bg-blue-500 rounded-full animate-pulse border border-[#1a1a1a]"></span>
 				)}
 			</button>
 

@@ -13,6 +13,7 @@ import { GameBanners } from "../components/game/ui/GameBanners.tsx";
 import { GameOverlayManager } from "../components/game/overlays/GameOverlayManager.tsx";
 import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx";
 import { IconGuide } from "../components/game/board/IconGuide.tsx";
+import { LeaveMatch } from "../components/game/board/LeaveMatch.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -67,10 +68,9 @@ export default function GameBoardPage() {
 				isTurnPaused={timers.isTurnPaused}
 			/>
 
-			{/* ── 2. MARCADOR Y MAZO ── */}
-			{/* VERSIÓN MÓVIL: Pestaña pequeña arriba a la derecha */}
-			<div className="absolute top-0 right-4 z-40 lg:hidden flex gap-2">
-				{/* Mazo (Móvil) */}
+			{/* ── 2. MARCADOR Y MAZO (Global para todos los dispositivos) ── */}
+			<div className="absolute top-0 right-4 z-40 flex gap-2">
+				{/* Mazo */}
 				<div className="bg-[#e5e7eb] border-x-2 border-b-2 border-[#9ca3af] px-3 py-1 pb-2 rounded-b-md shadow-md flex flex-col items-center justify-center transform origin-top hover:translate-y-1 transition-transform">
 					<span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">
 						Mazo
@@ -80,7 +80,7 @@ export default function GameBoardPage() {
 					</span>
 				</div>
 
-				{/* Sala y Ronda (Móvil) */}
+				{/* Sala y Ronda */}
 				<div className="bg-[#c19a6b] border-x-2 border-b-2 border-[#a68256] px-4 py-1 pb-2 rounded-b-md shadow-md flex flex-col items-center justify-center relative">
 					{/* Textura de cartón para la pestaña */}
 					<div
@@ -99,37 +99,14 @@ export default function GameBoardPage() {
 				</div>
 			</div>
 
-			{/* VERSIÓN ESCRITORIO (PC): El Teléfono Polycom Central */}
-			<div className="hidden lg:block absolute left-1/2 top-[45%] transform -translate-x-1/2 -translate-y-1/2 z-10">
-				<div className="w-56 h-48 bg-[#2a2a2a] rounded-[40px] border-4 border-[#1a1a1a] shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center relative">
-					<div className="bg-[#4a8fcf] w-3/4 h-20 border-[3px] border-[#111] shadow-inner flex flex-col items-center justify-center text-black">
-						<span className="text-sm font-bold opacity-80">SALA {roomId}</span>
-						<span className="text-2xl font-black">
-							RONDA {board.game.round_number}
-						</span>
-					</div>
-					<div className="mt-4 flex gap-2">
-						<div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-						<div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-						<div className="w-3 h-3 bg-gray-600 rounded-full"></div>
-					</div>
-					<div className="absolute -left-20 top-1/2 transform -translate-y-1/2 bg-gray-300 w-16 h-20 border border-gray-400 shadow-lg flex items-center justify-center rotate-[-10deg]">
-						<span className="text-xs font-bold text-gray-700 text-center leading-tight">
-							MAZO
-							<br />
-							{board.game.deck_count}
-						</span>
-					</div>
-				</div>
+			{/* ── 3. MENÚ SUPERIOR IZQUIERDO (HUD Pegados) ── */}
+			<div className="absolute -top-1 left-10 z-48 flex gap-3 items-start">
+				<LeaveMatch />
+				<GameLog />
+				<IconGuide />
 			</div>
 
-			{/* ── 3. REGISTRO LOG ── */}
-			<GameLog />
-
-			{/* ── 4. GUÍA DE ICONOS ── */}
-			<IconGuide />
-
-			{/* BOTÓN CANCELAR APUNTADO FLOTANTE (Solo sale si esTargetingMode es true) */}
+			{/* BOTÓN CANCELAR APUNTADO FLOTANTE */}
 			<div
 				className={`fixed top-1/2 right-0 -translate-y-1/2 z-100 transition-transform duration-500 ease-in-out ${
 					isTargetingMode ? "translate-x-0" : "translate-x-full"
