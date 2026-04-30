@@ -177,12 +177,17 @@ class CardEffectService
     {
         $turnStateKey = "room:{$roomId}:player:{$targetName}:turn_state";
 
+        // Generar un token único para este sabotaje en concreto
+        $sabotageId = uniqid('sabotage_', true);
+
         Redis::hset($turnStateKey, 'must_discard', 1);
         Redis::hset($turnStateKey, 'must_discard_by', $playerName);
+        Redis::hset($turnStateKey, 'sabotage_id', $sabotageId); 
 
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);
 
-        ResolveSabotageJob::dispatch($roomId, $targetName)->delay(15);
+        // Pasar el token al Job
+        ResolveSabotageJob::dispatch($roomId, $targetName, $sabotageId)->delay(15);
     }
 
     public function applyVision(string $roomId, string $playerName): void

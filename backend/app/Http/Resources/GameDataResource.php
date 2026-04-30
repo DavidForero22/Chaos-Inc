@@ -97,7 +97,6 @@ class GameDataResource extends JsonResource
 
         $turnTimeout = (int) ($roomInfo['turn_timeout'] ?? 30);
         $turnExpiresAt = (int) ($roomState['turn_expires_at'] ?? 0);
-        $turnRemaining = max(0, $turnExpiresAt - now()->timestamp);
 
         return [
             'current_turn'             => $roomState['current_turn_player_id'] ?? null,
