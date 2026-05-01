@@ -33,7 +33,7 @@ const ROLE_CONFIG: Record<
 	},
 	intern: {
 		label: "Becario",
-		image: "/role_placeholder.png",
+		image: "/role_reveal_intern.jpeg",
 		objective:
 			"Tu contrato no está remunerado y estás harto. Sobrevive al caos, elimina a la competencia directa y asciende en la cadena alimenticia hasta convertirte en el nuevo Jefe.",
 		titleLabel: "Tu rol en esta partida",
