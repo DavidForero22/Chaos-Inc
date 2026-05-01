@@ -152,7 +152,7 @@ export function Card({
 
 					{/* Overlay de Descarte (Marca de X roja grande) */}
 					{isMarkedForDiscard && (
-						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-white/40 backdrop-blur-[2px]">
+						<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-white/40">
 							<span className="text-red-600 text-6xl opacity-90 font-black rotate-[-10deg] drop-shadow-lg">
 								✕
 							</span>
