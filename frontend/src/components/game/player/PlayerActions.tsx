@@ -1,33 +1,53 @@
 // frontend/src/components/game/player/PlayerActions.tsx
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
 
-	// Sincronización del "Auto-Descarte" por timeout
+	const prevMustDiscard = useRef(
+		actionLogic.me?.conditions.must_discard || false,
+	);
+	const prevIsOverLimit = useRef(
+		actionLogic.me
+			? actionLogic.currentCardsCount > actionLogic.me.max_hand_size
+			: false,
+	);
+
+	// Sincronización inteligente del "Auto-Descarte"
 	useEffect(() => {
 		if (!actionLogic.isReady || !actionLogic.me) return;
 
-		const { me, isDiscardMode, currentCardsCount, clearDiscardSelection } =
-			actionLogic;
+		const isMustDiscard = actionLogic.me.conditions.must_discard;
+		const isOverLimit =
+			actionLogic.currentCardsCount > actionLogic.me.max_hand_size;
 
-		// Si está en modo descarte, pero el servidor ya quitó la obligación
-		// y tampoco se pasó del límite de cartas en mano, limpiar la selección y cerrar
+		const wasMustDiscard = prevMustDiscard.current;
+		const wasOverLimit = prevIsOverLimit.current;
+
+		// CASO 1: El servidor quita la obligación de descartar
+		const resolvedMustDiscard = wasMustDiscard && !isMustDiscard;
+
+		// CASO 2: Habia exceso de cartas y bajó al límite legal
+		const resolvedOverLimit = wasOverLimit && !isOverLimit;
+
 		if (
-			isDiscardMode &&
-			!me.conditions.must_discard &&
-			currentCardsCount <= me.max_hand_size
+			actionLogic.isDiscardMode &&
+			(resolvedMustDiscard || resolvedOverLimit)
 		) {
-			clearDiscardSelection();
+			actionLogic.clearDiscardSelection();
 		}
+
+		// Actualizar las referencias para el próximo ciclo de React
+		prevMustDiscard.current = isMustDiscard;
+		prevIsOverLimit.current = isOverLimit;
 	}, [
 		actionLogic.isReady,
 		actionLogic.me?.conditions.must_discard,
-		actionLogic.currentCardsCount,
 		actionLogic.me?.max_hand_size,
+		actionLogic.currentCardsCount,
 		actionLogic.isDiscardMode,
 		actionLogic.clearDiscardSelection,
 	]);
