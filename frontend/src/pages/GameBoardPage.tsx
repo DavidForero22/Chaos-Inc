@@ -106,19 +106,19 @@ export default function GameBoardPage() {
 				<IconGuide />
 			</div>
 
-			{/* BOTÓN CANCELAR APUNTADO FLOTANTE */}
+			{/* BOTÓN CANCELAR APUNTADO FLOTANTE (Solo en Móvil) */}
 			<div
-				className={`fixed top-1/2 right-0 -translate-y-1/2 z-100 transition-transform duration-500 ease-in-out ${
+				className={`fixed top-1/2 right-0 -translate-y-1/2 z-100 transition-transform duration-500 ease-in-out lg:hidden ${
 					isTargetingMode ? "translate-x-0" : "translate-x-full"
 				}`}
 			>
 				<button
 					onClick={() => setSelectedCardId(null)}
-					className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 lg:px-4 lg:py-8 rounded-l-xl border-y-4 border-l-4 border-red-800 flex items-center justify-center group"
+					className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 rounded-l-xl border-y-4 border-l-4 border-red-800 flex items-center justify-center group shadow-[-4px_0_15px_rgba(0,0,0,0.5)]"
 					style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
 					title="Cancelar carta seleccionada"
 				>
-					<span className="transform rotate-180 tracking-widest text-base lg:text-lg group-hover:scale-110 transition-transform">
+					<span className="transform rotate-180 tracking-widest text-base group-hover:scale-110 transition-transform">
 						CANCELAR
 					</span>
 				</button>
