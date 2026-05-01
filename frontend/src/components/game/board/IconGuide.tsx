@@ -52,7 +52,7 @@ export function IconGuide() {
 		);
 	}
 
-    // Contenido del Post-it (Chuleta rápida)
+	// Contenido del Post-it (Chuleta rápida)
 	const guideContent = (
 		<div className="flex flex-col flex-1 min-h-0 w-full relative pt-4">
 			{/* El trozo de celo en la parte superior */}
@@ -76,23 +76,27 @@ export function IconGuide() {
 				</h2>
 			</div>
 
-			{/* Cuadrícula de iconos */}
-			<div className="p-5 overflow-y-auto flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 no-scrollbar">
+			{/* Cuadrícula de iconos con scroll personalizado */}
+			<div
+				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 ${styles.customScroll}`}
+			>
 				{GUIDE_ITEMS.map((item, idx) => (
-					<div key={idx} className="flex gap-3 items-start p-1">
+					<div key={idx} className="flex gap-3 items-start p-1 min-w-0">
 						{/* El icono como si fuera una pegatina o un sello */}
 						<div
-							className={`w-7 h-7 rounded-full bg-white/50 shadow-sm flex items-center justify-center shrink-0 border border-black/10 gray-800 transform rotate-${idx % 2 === 0 ? "3" : "[-3]"}`}
+							className={`w-7 h-7 rounded-full bg-white/50 shadow-sm flex items-center justify-center shrink-0 border border-black/10 text-gray-800 transform rotate-${idx % 2 === 0 ? "3" : "[-3]"}`}
 						>
 							<item.icon className="w-4 h-4 drop-shadow-sm" />
 						</div>
-						<div className="mt-0.5">
+						<div className="mt-0.5 min-w-0 flex-1">
 							{/* Título como si estuviera escrito a boli azul oscuro */}
-							<p className="text-sm font-bold text-blue-900 leading-none mb-1">
+							<p className="text-sm font-bold text-blue-900 leading-none mb-1 truncate">
 								{item.name}
 							</p>
 							{/* Descripción a lápiz/boli negro */}
-							<p className="text-xs text-gray-700 leading-tight">{item.desc}</p>
+							<p className="text-xs text-gray-700 leading-tight warp-break-word">
+								{item.desc}
+							</p>
 						</div>
 					</div>
 				))}
@@ -120,10 +124,10 @@ export function IconGuide() {
 						onClick={handleClose}
 					>
 						<div
-							className={`${styles.postIt} w-full max-w-sm max-h-[85vh]`}
+							className={`${styles.postIt} w-[90vw] max-w-sm max-h-[85vh]`}
 							onClick={(e) => e.stopPropagation()}
 						>
-							{guideContent} 
+							{guideContent}
 						</div>
 					</div>
 
@@ -134,9 +138,9 @@ export function IconGuide() {
 						}`}
 					>
 						<div
-							className={`${styles.postIt} w-[137.5px] max-w-[calc(100vw-120px)] max-h-[75vh]`}
+							className={`${styles.postIt} w-90 max-w-[calc(100vw-120px)] max-h-[75vh]`}
 						>
-							{guideContent} {/* SE RENDERIZA LA VARIABLE */}
+							{guideContent}
 						</div>
 					</div>
 				</>,
