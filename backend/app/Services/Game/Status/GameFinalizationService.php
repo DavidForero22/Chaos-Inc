@@ -95,20 +95,24 @@ class GameFinalizationService
 
         // Programar la destrucción total para dentro de 10 segundos
         CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
-        
+
         Log::info("GameFinalizationService.php::cancelAndCleanup - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
     }
 
     public function destroyRoom(string $roomId): void
     {
+
+        // Borrar las relaciones jugador - sala
+        $players = Redis::smembers("room:{$roomId}:players");
+        foreach ($players as $playerName) {
+            Redis::del("player:{$playerName}:room");
+        }
+
         // Buscar todas las llaves de la sala
         $allRoomKeys = Redis::keys("room:{$roomId}*");
 
         if (!empty($allRoomKeys)) {
-            // En Laravel, Redis::del acepta un array de llaves o múltiples argumentos
-            // Como REDIS_PREFIX es "" en el .env, no hay que limpiar nada del string.
             Redis::del($allRoomKeys);
-
             Log::info("GameFinalizationService: Se han borrado " . count($allRoomKeys) . " llaves de la sala {$roomId}.");
         }
 

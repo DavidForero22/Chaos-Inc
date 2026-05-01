@@ -21,12 +21,16 @@ class LiveRoomController extends Controller
 
     public function join(JoinRoomRequest $request, $id)
     {
-        $user = $request->user();
-        $playerName = $user->username;
+        try {
+            $user = $request->user();
+            $playerName = $user->username;
 
-        $result = $this->liveRoomService->joinRoom($id, $playerName, $request->input('password'));
+            $result = $this->liveRoomService->joinRoom($id, $playerName, $request->input('password'));
 
-        return response()->json($result, 200);
+            return response()->json($result, 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
+        }
     }
 
     public function leave(Request $request, $id)

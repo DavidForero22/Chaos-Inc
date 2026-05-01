@@ -30,9 +30,13 @@ class RoomController extends Controller
 
     public function store(StoreRoomRequest $request)
     {
-        $ownerName = $request->user()->username;
-        $roomData = $this->roomService->createRoom($request->validated(), $ownerName);
+        try {
+            $ownerName = $request->user()->username;
+            $roomData = $this->roomService->createRoom($request->validated(), $ownerName);
 
-        return response()->json($roomData, 201);
+            return response()->json($roomData, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
+        }
     }
 }

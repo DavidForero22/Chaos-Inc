@@ -57,7 +57,7 @@ class RoomService
         return $rooms;
     }
 
-    public function getRoom(string $roomId): array 
+    public function getRoom(string $roomId): array
     {
         // Usar un pipeline para pedir todo a Redis de un solo golpe
         $responses = Redis::pipeline(function ($pipe) use ($roomId) {
@@ -87,6 +87,12 @@ class RoomService
 
     public function createRoom(array $data, ?string $ownerName): array
     {
+        // Comprobar si el jugador ya tiene una sala asignada en Redis
+        $currentRoom = Redis::get("player:{$ownerName}:room");
+        if ($currentRoom) {
+            throw new \Exception("Ya tienes una partida en curso en la sala {$currentRoom}.", 400);
+        }
+
         $roomId = Str::upper(Str::random(6));
         $gameToken = (string) Str::uuid();
 
@@ -105,8 +111,8 @@ class RoomService
 
         Redis::hmset("room:{$roomId}:info", $infoData);
         Redis::hmset("room:{$roomId}:state", $stateData);
-
         Redis::sadd("active_rooms", $roomId);
+        Redis::setex("player:{$ownerName}:room", 86400, $roomId);
 
         // Expiraciones
         Redis::expire("room:{$roomId}:info", 86400); // 24h

@@ -34,6 +34,14 @@ export function GameOverlayManager({
 	const luckResult = useGameUIStore((state) => state.luckResult);
 	const handleLuckResult = useGameUIStore((state) => state.handleLuckResult);
 
+	const handleCloseGameOver = () => {
+		// Liberar la sala 
+		useGameStore.getState().setRoomId(null);
+		// Resetear el resto de la tienda de forma segura
+		useGameStore.getState().resetStore();
+		navigate("/");
+	};
+
 	return (
 		<>
 			{isFirstLoad && (
@@ -52,7 +60,7 @@ export function GameOverlayManager({
 				<GameOverModal
 					winnerRole={game.winner_role}
 					myRole={me.role}
-					onClose={() => navigate("/")}
+					onClose={handleCloseGameOver}
 				/>
 			)}
 

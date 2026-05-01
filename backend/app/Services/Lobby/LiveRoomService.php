@@ -26,11 +26,23 @@ class LiveRoomService
 
     public function joinRoom(string $roomId, string $playerName, ?string $password = null): array
     {
+        $currentRoom = Redis::get("player:{$playerName}:room");
+
+        // Si el jugador ya está en otra sala distinta a la que intenta entrar
+        if ($currentRoom && $currentRoom !== $roomId) {
+            throw new \Exception("Ya estás en otra partida en curso (Sala: {$currentRoom}).", 400);
+        }
+
         $roomInfoKey  = "room:{$roomId}:info";
         $roomStateKey = "room:{$roomId}:state";
 
+        // Si la sala a la que intenta entrar ya no existe...
         if (!Redis::exists($roomInfoKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            // Si el servidor creía que el jugador estaba en esta sala fantasma, quitar la relacción
+            if ($currentRoom === $roomId) {
+                Redis::del("player:{$playerName}:room");
+            }
+            throw new \Exception("La sala no existe o la partida ha finalizado.", 404);
         }
 
         $roomInfo  = Redis::hgetall($roomInfoKey);
@@ -44,13 +56,17 @@ class LiveRoomService
             $this->validateNewPlayerEntry($room, $roomId, $playerName, $password);
 
             Redis::sadd("room:{$roomId}:players", $playerName);
+            Redis::setex("player:{$playerName}:room", 86400, $roomId);
+
             event(new RoomListUpdated($roomId));
             event(new RoomStateUpdated($roomId));
         }
+
         // Si ya estaba en la sala y la partida está en curso (Reconexión)...
         else if ($room['status'] === 'in_game') {
             $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}:info");
             $this->reconnectionService->handleReconnection($roomId, $playerName, $playerData);
+            Redis::setex("player:{$playerName}:room", 86400, $roomId);
         }
 
         $gameToken = $this->tokenService->refreshPlayerToken($roomId, $playerName);
@@ -67,6 +83,7 @@ class LiveRoomService
     {
         $roomInfoKey  = "room:{$roomId}:info";
         $roomStateKey = "room:{$roomId}:state";
+        Redis::del("player:{$playerName}:room");
 
         if (!Redis::exists($roomInfoKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room with ID {$roomId} does not exist.", 404);

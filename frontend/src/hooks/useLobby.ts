@@ -6,6 +6,7 @@ import api from "../api/axios";
 import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
 import { useLoadingStore } from "../store/useLoadingStore";
+import { useGameStore } from "../store/useGameStore";
 
 export function useLobby() {
 	const [rooms, setRooms] = useState<RoomData[]>([]);
@@ -19,9 +20,40 @@ export function useLobby() {
 	const [isLoadingRooms, setIsLoadingRooms] = useState(true);
 
 	const navigate = useNavigate();
-
-	// ESTADO GLOBAL
 	const { startLoading, stopLoading } = useLoadingStore();
+
+	// -- ESTADO GLOBAL DE PARTIDA ACTIVA --
+	const activeRoomId = useGameStore((state) => state.roomId);
+	const setRoomId = useGameStore((state) => state.setRoomId);
+
+	// -- VALIDAR SI LA SALA SIGUE ACTIVA --
+	const checkActiveRoom = useCallback(async () => {
+		const currentRoomId = useGameStore.getState().roomId;
+		if (!currentRoomId) return;
+
+		try {
+			const response = await api.get(
+				`/rooms/${encodeURIComponent(currentRoomId)}`,
+				{ hideLoader: true } as any,
+			);
+			const roomData = response.data;
+
+			// Si la sala está marcada como terminada, liberar al jugador
+			if (roomData.status === "finished") {
+				setRoomId(null);
+			}
+		} catch (error: any) {
+			// Si da 404, significa que el backend ya borró la sala de Redis
+			if (error.response?.status === 404) {
+				setRoomId(null);
+			}
+		}
+	}, [setRoomId]);
+
+	// Ejecutar la comprobación la primera vez que carga el Lobby
+	useEffect(() => {
+		checkActiveRoom();
+	}, [checkActiveRoom]);
 
 	const fetchRooms = useCallback(async (showLocalLoader = false) => {
 		// Solo activar el de RoomList
@@ -40,13 +72,16 @@ export function useLobby() {
 		fetchRooms(true);
 
 		const channel = echo.channel("lobby");
-		channel.listen(".RoomListUpdated", () => fetchRooms(false));
+		channel.listen(".RoomListUpdated", () => {
+			fetchRooms(false);
+			checkActiveRoom();
+		});
 
 		return () => {
 			channel.stopListening(".RoomListUpdated");
 			echo.leaveChannel("lobby");
 		};
-	}, [fetchRooms]);
+	}, [fetchRooms, checkActiveRoom]);
 
 	const handleJoinRoom = async () => {
 		if (!selectedRoom) return;
@@ -69,7 +104,7 @@ export function useLobby() {
 		} catch (error: any) {
 			alert(error.response?.data?.error || "Error al unirse a la sala.");
 		} finally {
-			stopLoading(); // Apagamos el que encendimos arriba
+			stopLoading();
 		}
 	};
 
@@ -97,5 +132,6 @@ export function useLobby() {
 		setSearchQuery,
 		handleJoinRoom,
 		isLoadingRooms,
+		activeRoomId,
 	};
 }

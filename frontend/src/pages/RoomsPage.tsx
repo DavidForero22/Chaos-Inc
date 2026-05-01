@@ -5,6 +5,7 @@ import { useLobby } from "../hooks/useLobby";
 import RoomList from "../components/rooms/RoomList";
 import CreateRoomModal from "../components/rooms/CreateRoomModal";
 import GuestNameModal from "../components/lobby/GuestNameModal";
+import ActiveGameWarning from "../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -19,12 +20,16 @@ export default function RoomsPage() {
 		setSearchQuery,
 		handleJoinRoom,
 		isLoadingRooms,
+		activeRoomId,
 	} = useLobby();
 
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
 	const { user, isGuest } = useAuthStore();
+
+	const isAlreadyInRoom = !!activeRoomId;
+	console.log("isAlreadyInRoom: ", isAlreadyInRoom);
 
 	const onJoinClick = () => {
 		if (user) {
@@ -41,10 +46,16 @@ export default function RoomsPage() {
 
 	const isJoinDisabled =
 		!selectedRoom ||
-		filteredRooms.find((r) => r.room_id === selectedRoom)?.status !== "waiting";
+		filteredRooms.find((r) => r.room_id === selectedRoom)?.status !==
+			"waiting" ||
+		isAlreadyInRoom;
 
-	const canCreate = !!user && !isGuest;
-	const joinTitle = !selectedRoom ? "No has elegido ninguna sala" : undefined;
+	const canCreateUser = !!user && !isGuest;
+	const joinTitle = isAlreadyInRoom
+		? "Ya estás en una sala"
+		: !selectedRoom
+			? "No has elegido ninguna sala"
+			: undefined;
 
 	return (
 		<div className="pl-6 pb-10">
@@ -111,7 +122,7 @@ export default function RoomsPage() {
 			{/* ── PIE: CREAR + UNIRSE ── */}
 			<div className={styles.listFooter}>
 				<div>
-					{canCreate ? (
+					{canCreateUser && !isAlreadyInRoom ? (
 						<button
 							onClick={() => setShowCreateModal(true)}
 							className={styles.createBtn}
@@ -120,13 +131,24 @@ export default function RoomsPage() {
 						</button>
 					) : (
 						<div className={styles.createBtnWrapper}>
-							<button disabled className={styles.createBtnLocked}>
+							<button
+								disabled
+								className={styles.createBtnLocked}
+								title={
+									isAlreadyInRoom
+										? "Ya estás en una sala"
+										: "No tienes permisos"
+								}
+								style={isAlreadyInRoom ? { cursor: "not-allowed" } : {}}
+							>
 								+ Crear Sala
 							</button>
 							<p className={styles.lockedNote}>
-								{user
-									? "Los invitados no pueden abrir salas. Regístrese para acceder."
-									: "Inicie sesión con una cuenta para crear salas."}
+								{isAlreadyInRoom
+									? "Abandone su partida actual para crear una nueva."
+									: user
+										? "Los invitados no pueden abrir salas. Regístrese para acceder."
+										: "Inicie sesión con una cuenta para crear salas."}
 							</p>
 						</div>
 					)}
@@ -137,6 +159,7 @@ export default function RoomsPage() {
 					onClick={onJoinClick}
 					title={joinTitle}
 					className={isJoinDisabled ? styles.joinBtnDisabled : styles.joinBtn}
+					style={isAlreadyInRoom ? { cursor: "not-allowed" } : {}}
 				>
 					{!user && !isJoinDisabled
 						? "Entrar como Invitado"
@@ -144,7 +167,7 @@ export default function RoomsPage() {
 				</button>
 			</div>
 
-			{/* ── MODALES ── */}
+			{/* ── MODALES Y AVISOS ── */}
 			{showCreateModal && user && (
 				<CreateRoomModal
 					onClose={() => setShowCreateModal(false)}
@@ -157,6 +180,9 @@ export default function RoomsPage() {
 					onSuccess={handleGuestSuccess}
 				/>
 			)}
+
+			{/* AVISO DE PARTIDA EN CURSO */}
+			{activeRoomId && <ActiveGameWarning roomId={activeRoomId} />}
 		</div>
 	);
 }

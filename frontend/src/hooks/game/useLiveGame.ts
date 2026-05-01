@@ -38,7 +38,15 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 1. INICIALIZAR EL ROOM ID Y LIMPIAR AL SALIR --
 	useEffect(() => {
 		setRoomId(roomId || null);
-		return () => resetStore();
+
+		return () => {
+			// Cuando sale del componente, verificar si el juego ha terminado
+			const isGameOver = useGameStore.getState().gameOver;
+
+			// Si el juego no ha terminado, conservar el Room ID
+			// Si ya terminó, limpiar todo
+			resetStore(!isGameOver);
+		};
 	}, [roomId, setRoomId, resetStore]);
 
 	// --- 1.5 LIMPIEZA DE UI AL CAMBIAR DE TURNO ---

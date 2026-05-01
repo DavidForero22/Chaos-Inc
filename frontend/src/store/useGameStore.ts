@@ -50,11 +50,11 @@ interface GameState {
 	discardCards: (cardIds: string[]) => Promise<void>;
 	discardPerks: (perkIds: string[]) => Promise<void>;
 	resolveSabotage: (cardId: string) => Promise<void>;
-	resetStore: () => void;
+	resetStore: (keepRoomId?: boolean) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
-	roomId: null,
+	roomId: localStorage.getItem("active_room_id"),
 	gameData: null,
 	isConnecting: true,
 	isFirstLoad: true,
@@ -63,7 +63,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 	logs: [],
 	isActionLocked: false,
 
-	setRoomId: (id) => set({ roomId: id }),
+	setRoomId: (id) => {
+		if (id) {
+			localStorage.setItem("active_room_id", id);
+		} else {
+			localStorage.removeItem("active_room_id");
+		}
+		set({ roomId: id });
+	},
 	setGameData: (data) => set({ gameData: data }),
 	setIsConnecting: (isConnecting) => set({ isConnecting }),
 	setIsFirstLoad: (isFirstLoad) => set({ isFirstLoad }),
@@ -84,9 +91,13 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}),
 	clearLogs: () => set({ logs: [] }),
 
-	resetStore: () =>
-		set({
-			roomId: null,
+	resetStore: (keepRoomId = false) => {
+		if (!keepRoomId) {
+			localStorage.removeItem("active_room_id");
+		}
+
+		set((state) => ({
+			roomId: keepRoomId ? state.roomId : null,
 			gameData: null,
 			isConnecting: true,
 			isFirstLoad: true,
@@ -94,7 +105,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 			showActingBossModal: false,
 			logs: [],
 			isActionLocked: false,
-		}),
+		}));
+	},
 
 	applyGameData: (newGameData: GameData) => {
 		const currentData = get().gameData;
@@ -146,11 +158,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/action`, {
-				card_id: cardId,
-				target_name: targetName,
-				...(perkKey && { perk_key: perkKey }),
-			});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/action`,
+				{
+					card_id: cardId,
+					target_name: targetName,
+					...(perkKey && { perk_key: perkKey }),
+				},
+			);
 			applyGameData(res.data);
 			return true;
 		} catch (error: any) {
@@ -187,10 +202,13 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/react-multi`, {
-				reaction,
-				card_id: cardId,
-			});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/react-multi`,
+				{
+					reaction,
+					card_id: cardId,
+				},
+			);
 			applyGameData(res.data);
 			return true;
 		} catch (error: any) {
@@ -211,7 +229,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/end-turn`, {});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/end-turn`,
+				{},
+			);
 			applyGameData(res.data);
 		} catch (error) {
 			set({ isActionLocked: false });
@@ -224,9 +245,12 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/discard`, {
-				card_ids: cardIds,
-			});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/discard`,
+				{
+					card_ids: cardIds,
+				},
+			);
 			applyGameData(res.data);
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -240,9 +264,12 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/discard-perks`, {
-				perk_ids: perkIds,
-			});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/discard-perks`,
+				{
+					perk_ids: perkIds,
+				},
+			);
 			applyGameData(res.data);
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -258,9 +285,12 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		set({ isActionLocked: true });
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/react-discard`, {
-				card_id: cardId,
-			});
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/react-discard`,
+				{
+					card_id: cardId,
+				},
+			);
 			applyGameData(res.data);
 		} catch (error) {
 			set({ isActionLocked: false });
