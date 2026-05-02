@@ -62,7 +62,6 @@
 		transparent 4px
 	);
 	box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.5);
-	z-index: 20;
 }
 
 /* --- HOJA DE PAPEL (Área de contenido) --- */
@@ -73,7 +72,6 @@
 	padding: 2rem 4rem;
 	min-height: 600px;
 	position: relative;
-	z-index: 10; /* Tapa la base de los marcapáginas */
 	overflow: hidden;
 
 	/* Líneas horizontales */
