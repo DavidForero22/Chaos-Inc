@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useRoomStore } from "../../store/useRoomStore";
+import { useAuthStore } from "../../store/useAuthStore";
 // import { logWithTime } from "../../utils/logger";
 
 export function useRoomSession(
@@ -37,11 +38,18 @@ export function useRoomSession(
 		if (myPlayerName) {
 			attemptJoin("", myPlayerName).catch((err) => {
 				const type = err.response?.data?.type;
-				if (type === "ROOM_NOT_FOUND" || err.response?.status === 404)
+				const status = err.response?.status;
+
+				if (type === "ROOM_NOT_FOUND" || status === 404) {
 					navigate("/room-not-found");
-				else if (type === "ROOM_FULL" || type === "GAME_ALREADY_STARTED") {
+				} else if (type === "ROOM_FULL" || type === "GAME_ALREADY_STARTED") {
 					alert(err.response?.data?.error || "Error al entrar");
 					navigate("/");
+				} else if (status === 401 || status === 403) {
+					useAuthStore.getState().logout();
+					alert(
+						"Tu sesión ha expirado. Por favor, vuelve a introducir un nombre.",
+					);
 				}
 			});
 		} else {
