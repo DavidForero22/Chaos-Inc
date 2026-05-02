@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
+import { useGameStore } from "../../store/useGameStore";
 
 interface CreateRoomModalProps {
 	onClose: () => void;
@@ -33,6 +34,7 @@ export default function CreateRoomModal({
 		try {
 			const response = await api.post("/rooms", formData);
 			localStorage.setItem("game_token", response.data.game_token);
+			useGameStore.getState().setRoomId(response.data.room_id);
 
 			onClose();
 			navigate(`/room/${response.data.room_id}`, {

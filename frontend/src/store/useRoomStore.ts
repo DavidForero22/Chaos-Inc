@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import api from "../api/axios";
 import type { RoomData } from "../types/api";
+import { useGameStore } from "./useGameStore";
 // import { logWithTime } from "../utils/logger";
 
 interface RoomState {
@@ -90,6 +91,8 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 				localStorage.setItem("game_token", res.data.game_token);
 				set({ hasToken: true });
 			}
+
+			useGameStore.getState().setRoomId(roomId);
 
 			await fetchRoomData();
 			set({ needsPassword: false, isJoining: false });

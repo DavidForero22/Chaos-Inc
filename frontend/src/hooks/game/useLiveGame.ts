@@ -43,6 +43,11 @@ export function useLiveGame(roomId: string | undefined) {
 			// Cuando sale del componente, verificar si el juego ha terminado
 			const isGameOver = useGameStore.getState().gameOver;
 
+			if (isGameOver) {
+				// Partida terminada: limpiar todo incluyendo el token
+				localStorage.removeItem("game_token");
+			}
+
 			// Si el juego no ha terminado, conservar el Room ID
 			// Si ya terminó, limpiar todo
 			resetStore(!isGameOver);
@@ -145,14 +150,16 @@ export function useLiveGame(roomId: string | undefined) {
 		reconnect();
 	}, [roomId, user, handleSync, navigate, setIsConnecting]);
 
-	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA --
+	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA O CAMBIAR DE URL --
 	useEffect(() => {
-		const handleUnload = () => {
-			if (isKickedRef.current) return;
+		const notifyOffline = () => {
+			// Si ha sido expulsado o la partida ha terminado, no hacer nada
+			if (isKickedRef.current || useGameStore.getState().gameOver) return;
 
 			const gameToken = localStorage.getItem("game_token") || "";
 
 			if (roomId && gameToken) {
+				// keepalive: true garantiza que la petición sale aunque la página muera
 				fetch(`${api.defaults.baseURL}/rooms/${roomId}/mark-offline`, {
 					method: "POST",
 					headers: {
@@ -167,8 +174,14 @@ export function useLiveGame(roomId: string | undefined) {
 			}
 		};
 
-		window.addEventListener("pagehide", handleUnload);
-		return () => window.removeEventListener("pagehide", handleUnload);
+		// 1. Cubre cuando el usuario Cierra la Pestaña, el Navegador o F5
+		window.addEventListener("pagehide", notifyOffline);
+
+		// 2. Cubre cuando el usuario navega a otra URL
+		return () => {
+			window.removeEventListener("pagehide", notifyOffline);
+			notifyOffline();
+		};
 	}, [roomId]);
 
 	// -- 5. ESCUCHA DE SOCKETS --

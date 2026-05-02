@@ -35,9 +35,8 @@ export function GameOverlayManager({
 	const handleLuckResult = useGameUIStore((state) => state.handleLuckResult);
 
 	const handleCloseGameOver = () => {
-		// Liberar la sala 
+		localStorage.removeItem("game_token");
 		useGameStore.getState().setRoomId(null);
-		// Resetear el resto de la tienda de forma segura
 		useGameStore.getState().resetStore();
 		navigate("/");
 	};

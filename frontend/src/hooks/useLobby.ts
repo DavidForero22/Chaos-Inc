@@ -7,6 +7,7 @@ import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
 import { useLoadingStore } from "../store/useLoadingStore";
 import { useGameStore } from "../store/useGameStore";
+import { useAuthStore } from "../store/useAuthStore.ts";
 
 export function useLobby() {
 	const [rooms, setRooms] = useState<RoomData[]>([]);
@@ -60,7 +61,21 @@ export function useLobby() {
 		if (showLocalLoader) setIsLoadingRooms(true);
 		try {
 			const response = await api.get("/rooms", { hideLoader: true } as any);
-			setRooms(response.data);
+			const rooms: RoomData[] = response.data;
+			setRooms(rooms);
+
+			const currentRoomId = useGameStore.getState().roomId;
+			const myName = useAuthStore.getState().user;
+
+			if (myName) {
+				const myRoom = rooms.find((room) => room.players?.includes(myName));
+
+				if (myRoom && myRoom.room_id !== currentRoomId) {
+					useGameStore.getState().setRoomId(myRoom.room_id);
+				} else if (!myRoom && currentRoomId) {
+					useGameStore.getState().setRoomId(null);
+				}
+			}
 		} catch (error) {
 			console.error("Error al cargar las salas:", error);
 		} finally {
