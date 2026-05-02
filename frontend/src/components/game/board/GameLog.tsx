@@ -85,13 +85,18 @@ export function GameLog() {
 				</p>
 			) : (
 				logs.map((entry) => (
-					<div key={entry.id} className="flex gap-3 items-start">
-						<span className="text-blue-500/50 text-[10px] shrink-0 mt-0.5 font-mono w-12 text-right">
-							{entry.timestamp}
-						</span>
-						<p className="text-gray-300 text-xs leading-relaxed font-sans bg-gray-800/50 p-2 rounded-lg rounded-tl-none border border-gray-700/50">
-							{entry.message}
-						</p>
+					<div key={entry.id} className="w-full">
+						<div className="flex flex-col bg-gray-800/50 px-3 py-2 rounded-lg rounded-tl-none border border-gray-700/50">
+							{/* El texto del mensaje */}
+							<p className="text-gray-300 text-xs leading-relaxed font-sans">
+								{entry.message}
+							</p>
+
+							{/* La hora del mensaje, alineada abajo a la derecha */}
+							<span className="text-blue-500/50 text-[10px] font-mono self-end mt-1">
+								{entry.timestamp}
+							</span>
+						</div>
 					</div>
 				))
 			)}
