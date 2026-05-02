@@ -29,7 +29,6 @@ export default function RoomsPage() {
 	const { user, isGuest } = useAuthStore();
 
 	const isAlreadyInRoom = !!activeRoomId;
-	console.log("isAlreadyInRoom: ", isAlreadyInRoom);
 
 	const onJoinClick = () => {
 		if (user) {

@@ -32,7 +32,7 @@ export default function CreateRoomModal({
 		setIsLoading(true);
 		try {
 			const response = await api.post("/rooms", formData);
-			sessionStorage.setItem("game_token", response.data.game_token);
+			localStorage.setItem("game_token", response.data.game_token);
 
 			onClose();
 			navigate(`/room/${response.data.room_id}`, {

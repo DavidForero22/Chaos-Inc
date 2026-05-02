@@ -145,6 +145,17 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 			applyGameData(res.data);
 		} catch (error: any) {
+			// Si el backend dice que el juego no ha empezado, es que está en el Lobby .
+			if (
+				error.response?.status === 400 &&
+				error.response?.data?.type === "GAME_NOT_STARTED"
+			) {
+				console.log(
+					"[syncGame] Sincronización omitida: La partida aún está en fase de preparación.",
+				);
+				return;
+			}
+
 			console.error("ERROR en /sync:", error);
 			throw error;
 		} finally {
