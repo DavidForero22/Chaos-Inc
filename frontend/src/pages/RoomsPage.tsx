@@ -21,6 +21,7 @@ export default function RoomsPage() {
 		handleJoinRoom,
 		isLoadingRooms,
 		activeRoomId,
+		isValidatingRoom,
 	} = useLobby();
 
 	const [showCreateModal, setShowCreateModal] = useState(false);
@@ -29,6 +30,7 @@ export default function RoomsPage() {
 	const { user, isGuest } = useAuthStore();
 
 	const isAlreadyInRoom = !!activeRoomId;
+	const canCreateRoom = !!user && !isGuest;
 
 	const onJoinClick = () => {
 		if (user) {
@@ -49,12 +51,22 @@ export default function RoomsPage() {
 			"waiting" ||
 		isAlreadyInRoom;
 
-	const canCreateUser = !!user && !isGuest;
 	const joinTitle = isAlreadyInRoom
 		? "Ya estás en una sala"
 		: !selectedRoom
 			? "No has elegido ninguna sala"
 			: undefined;
+
+	// Lógica limpia para el mensaje de bloqueo del botón de crear sala
+	let lockedMessage = "";
+	if (!user) {
+		lockedMessage = "Inicie sesión con una cuenta para crear salas.";
+	} else if (isGuest) {
+		lockedMessage =
+			"Los invitados no pueden abrir salas. Regístrese para acceder.";
+	} else if (isAlreadyInRoom) {
+		lockedMessage = "Abandone su partida actual para crear una nueva.";
+	}
 
 	return (
 		<div className="pl-6 pb-10">
@@ -121,7 +133,18 @@ export default function RoomsPage() {
 			{/* ── PIE: CREAR + UNIRSE ── */}
 			<div className={styles.listFooter}>
 				<div>
-					{canCreateUser && !isAlreadyInRoom ? (
+					{/* Si está validando la sala con el servidor, no mostrar el botón activado aún */}
+					{isValidatingRoom ? (
+						<div className={styles.createBtnWrapper}>
+							<button
+								disabled
+								className={styles.createBtnLocked}
+								style={{ opacity: 0.5 }}
+							>
+								+ Crear Sala
+							</button>
+						</div>
+					) : canCreateRoom && !isAlreadyInRoom ? (
 						<button
 							onClick={() => setShowCreateModal(true)}
 							className={styles.createBtn}
@@ -138,17 +161,11 @@ export default function RoomsPage() {
 										? "Ya estás en una sala"
 										: "No tienes permisos"
 								}
-								style={isAlreadyInRoom ? { cursor: "not-allowed" } : {}}
+								style={{ cursor: "not-allowed" }}
 							>
 								+ Crear Sala
 							</button>
-							<p className={styles.lockedNote}>
-								{isAlreadyInRoom
-									? "Abandone su partida actual para crear una nueva."
-									: user
-										? "Los invitados no pueden abrir salas. Regístrese para acceder."
-										: "Inicie sesión con una cuenta para crear salas."}
-							</p>
+							<p className={styles.lockedNote}>{lockedMessage}</p>
 						</div>
 					)}
 				</div>
@@ -180,8 +197,10 @@ export default function RoomsPage() {
 				/>
 			)}
 
-			{/* AVISO DE PARTIDA EN CURSO */}
-			{activeRoomId && <ActiveGameWarning roomId={activeRoomId} />}
+			{/* AVISO DE PARTIDA EN CURSO: Solo se muestra si NO estamos validando y realmente hay sala */}
+			{!isValidatingRoom && activeRoomId && (
+				<ActiveGameWarning roomId={activeRoomId} />
+			)}
 		</div>
 	);
 }

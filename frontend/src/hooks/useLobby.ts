@@ -26,11 +26,17 @@ export function useLobby() {
 	// -- ESTADO GLOBAL DE PARTIDA ACTIVA --
 	const activeRoomId = useGameStore((state) => state.roomId);
 	const setRoomId = useGameStore((state) => state.setRoomId);
+	const [isValidatingRoom, setIsValidatingRoom] = useState(
+		!!useGameStore.getState().roomId,
+	);
 
 	// -- VALIDAR SI LA SALA SIGUE ACTIVA --
 	const checkActiveRoom = useCallback(async () => {
 		const currentRoomId = useGameStore.getState().roomId;
-		if (!currentRoomId) return;
+		if (!currentRoomId) {
+			setIsValidatingRoom(false);
+			return;
+		}
 
 		try {
 			const response = await api.get(
@@ -48,6 +54,8 @@ export function useLobby() {
 			if (error.response?.status === 404) {
 				setRoomId(null);
 			}
+		} finally {
+			setIsValidatingRoom(false);
 		}
 	}, [setRoomId]);
 
@@ -148,5 +156,6 @@ export function useLobby() {
 		handleJoinRoom,
 		isLoadingRooms,
 		activeRoomId,
+		isValidatingRoom,
 	};
 }
