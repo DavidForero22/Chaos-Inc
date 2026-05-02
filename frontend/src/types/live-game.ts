@@ -14,7 +14,6 @@ export interface PlayerConditions {
 	is_blocked: boolean;
 	skip_next_turn: boolean;
 	must_discard: boolean;
-	must_discard_by: string | null;
 }
 
 /**
@@ -39,8 +38,6 @@ export interface CombatState {
 	is_defending_multi: boolean;
 	is_attacking_single: boolean;
 	is_attacking_multi: boolean;
-	attacker_name_single: string | null;
-	attacker_name_multi: string | null;
 }
 
 /**

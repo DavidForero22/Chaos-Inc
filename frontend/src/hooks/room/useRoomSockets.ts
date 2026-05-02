@@ -2,7 +2,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
-import api from "../../api/axios";
 import { useRoomStore } from "../../store/useRoomStore";
 
 interface UseRoomSocketsProps {
@@ -19,10 +18,7 @@ export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 		const channel = echo.join(`room.${roomId}`);
 
 		channel
-			.leaving((user: any) => {
-				api.post(`/rooms/${roomId}/report-lobby-disconnect`, {
-					disconnected_player: user.username,
-				});
+			.leaving(() => {
 				fetchRoomData();
 			})
 			.listen(".RoomStateUpdated", () => fetchRoomData())

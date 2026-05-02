@@ -13,6 +13,7 @@ import { logWithTime } from "../../utils/logger.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
+import { useLeaveOnUnload } from "./useLeaveOnUnload.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
@@ -150,39 +151,10 @@ export function useLiveGame(roomId: string | undefined) {
 		reconnect();
 	}, [roomId, user, handleSync, navigate, setIsConnecting]);
 
-	// -- 4. MARCAR OFFLINE AL CERRAR PESTAÑA O CAMBIAR DE URL --
-	useEffect(() => {
-		const notifyOffline = () => {
-			// Si ha sido expulsado o la partida ha terminado, no hacer nada
-			if (isKickedRef.current || useGameStore.getState().gameOver) return;
-
-			const gameToken = localStorage.getItem("game_token") || "";
-
-			if (roomId && gameToken) {
-				// keepalive: true garantiza que la petición sale aunque la página muera
-				fetch(`${api.defaults.baseURL}/rooms/${roomId}/mark-offline`, {
-					method: "POST",
-					headers: {
-						Accept: "application/json",
-						"Content-Type": "application/json",
-						"X-Game-Token": gameToken,
-					},
-					credentials: "include",
-					keepalive: true,
-					body: JSON.stringify({}),
-				}).catch(() => {});
-			}
-		};
-
-		// 1. Cubre cuando el usuario Cierra la Pestaña, el Navegador o F5
-		window.addEventListener("pagehide", notifyOffline);
-
-		// 2. Cubre cuando el usuario navega a otra URL
-		return () => {
-			window.removeEventListener("pagehide", notifyOffline);
-			notifyOffline();
-		};
-	}, [roomId]);
+	// -- 4. AVISAR AL SERVIDOR AL CERRAR/NAVEGAR FUERA DE LA PARTIDA --
+	useLeaveOnUnload(roomId, () => {
+		return !isKickedRef.current && !useGameStore.getState().gameOver;
+	});
 
 	// -- 5. ESCUCHA DE SOCKETS --
 	useGameSockets({ roomId });

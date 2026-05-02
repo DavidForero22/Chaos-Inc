@@ -56,9 +56,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/rooms/{id}/react-discard', [LiveGameController::class, 'reactDiscard']);
             Route::post('/rooms/{id}/discard', [LiveGameController::class, 'discard']);
 
-            Route::post('/rooms/{id}/mark-offline', [PresenceController::class, 'markOffline']);
-            Route::post('/rooms/{id}/report-disconnect', [PresenceController::class, 'reportDisconnect']);
-            Route::post('/rooms/{id}/report-lobby-disconnect', [PresenceController::class, 'reportLobbyDisconnect']);
+            Route::post('/rooms/{id}/report-disconnect', [LiveRoomController::class, 'reportDisconnect']);
 
             Route::post('/rooms/{id}/luck-challenge', [LiveGameController::class, 'resolveLuckChallenge']);
             Route::post('/rooms/{id}/react-multi', [LiveGameController::class, 'reactMulti']);

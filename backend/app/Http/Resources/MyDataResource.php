@@ -68,7 +68,6 @@ class MyDataResource extends JsonResource
                 'is_blocked'            => CastHelper::toBool($myData['is_blocked'] ?? 0),
                 'skip_next_turn'        => CastHelper::toBool($myData['skip_next_turn'] ?? 0),
                 'must_discard'          => CastHelper::toBool($myData['must_discard'] ?? 0),
-                'must_discard_by'       => $myData['must_discard_by'] ?? null,
             ],
 
             // Cartas pasivas / Buffos
@@ -93,8 +92,6 @@ class MyDataResource extends JsonResource
                 'is_defending_multi'   => $hasPendingMultiAttack,
                 'is_attacking_single'  => $hasPendingAttack,
                 'is_attacking_multi'   => $hasPendingMultiAsAttacker,
-                'attacker_name_single' => $hasIncomingAttack ? ($pendingAttack['attacker'] ?? null) : null,
-                'attacker_name_multi'  => $hasPendingMultiAttack ? ($pendingMultiAttack['attacker'] ?? null) : null,
             ],
 
             // Eventos especiales

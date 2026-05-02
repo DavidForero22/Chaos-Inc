@@ -6,8 +6,11 @@ namespace App\Http\Controllers\Lobby;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\JoinRoomRequest;
 use App\Http\Requests\Room\KickPlayerRequest;
+use App\Jobs\ProcessDisconnectionJob;
 use App\Services\Lobby\LiveRoomService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class LiveRoomController extends Controller
@@ -35,19 +38,38 @@ class LiveRoomController extends Controller
 
     public function leave(Request $request, $id)
     {
-        $user = $request->user();
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
 
-        // Validar el Token de Partida contra el Token de Identidad (Sanctum)
-        $playerNameFromRedis = Redis::get("room:{$id}:token:{$gameToken}");
+        Log::info("BEACON RECIBIDO", [
+            'room' => $id,
+            'game_token_header' => $request->header('X-Game-Token'),
+            'game_token_query' => $request->query('game_token'),
+            'user' => $request->user()?->username,
+            'all' => $request->all(),
+        ]);
 
-        if (!$playerNameFromRedis || $playerNameFromRedis !== $user->username) {
-            return response()->json(['error' => 'Invalid identity or session expired.'], 403);
+        $gameToken = $request->header('X-Game-Token')
+            ?? $request->input('game_token')
+            ?? $request->query('game_token');
+
+        // Identificar al jugador por game_token (cubre sendBeacon sin sesión)
+        $playerNameFromRedis = $gameToken
+            ? Redis::get("room:{$id}:token:{$gameToken}")
+            : null;
+
+        if ($playerNameFromRedis) {
+            // Ruta beacon: identidad verificada por game_token en Redis
+            $playerName = $playerNameFromRedis;
+        } else {
+            // Ruta normal: verificar sesión Sanctum
+            $user = $request->user();
+            if (!$user) {
+                return response()->json(['error' => 'Unauthenticated.'], 401);
+            }
+            $playerName = $user->username;
         }
 
-        $this->liveRoomService->leaveRoom($id, $user->username);
+        $this->liveRoomService->leaveRoom($id, $playerName);
 
-        // Limpieza de token de Redis
         $roomStatus = Redis::hget("room:{$id}:state", "status");
         if ($roomStatus !== 'in_game') {
             Redis::del("room:{$id}:token:{$gameToken}");
@@ -59,7 +81,9 @@ class LiveRoomController extends Controller
     public function kick(KickPlayerRequest $request, $id)
     {
         $user = $request->user();
-        $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
+        $gameToken = $request->header('X-Game-Token')
+            ?? $request->input('game_token')
+            ?? $request->query('game_token');
 
         // Validar que el que intenta echar sea quien dice ser
         $adminNameFromRedis = Redis::get("room:{$id}:token:{$gameToken}");
@@ -74,5 +98,40 @@ class LiveRoomController extends Controller
         $this->liveRoomService->kickPlayer($id, $user->username, $playerToKick);
 
         return response()->json(['message' => 'Player kicked successfully.'], 200);
+    }
+
+    public function reportDisconnect(string $roomId, Request $request)
+    {
+        $targetPlayerId = $request->input('disconnected_player_id');
+        $targetPlayerName = $request->input('disconnected_player_name');
+
+        // Preguntar a Reverb usando el ID real
+        $pusher = Broadcast::driver()->getPusher();
+        $channelName = "presence-room.{$roomId}";
+
+        $isSocketAlive = false;
+        try {
+            $response = $pusher->get_users_info($channelName);
+            $isSocketAlive = collect($response->users ?? [])->contains('id', $targetPlayerId);
+        } catch (\Exception $e) {
+            $isSocketAlive = false;
+        }
+
+        if ($isSocketAlive) {
+            return response()->json(['status' => 'ignored', 'reason' => 'player_still_connected']);
+        }
+
+        // Control de spam en Redis usando el Nombre
+        $disconnectKey = "room:{$roomId}:disconnecting:{$targetPlayerName}";
+
+        if (!Redis::exists($disconnectKey)) {
+            Redis::setex($disconnectKey, 10, 'pending');
+
+            // Pasar ambos datos al Job
+            ProcessDisconnectionJob::dispatch($roomId, $targetPlayerId, $targetPlayerName)
+                ->delay(now()->addSeconds(4));
+        }
+
+        return response()->json(['status' => 'pending_grace_period']);
     }
 }

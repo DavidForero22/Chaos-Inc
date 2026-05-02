@@ -59,7 +59,6 @@ class ResolveSabotageJob implements ShouldQueue
         } else {
             // Caso raro: Si el jugador se quedó con 0 cartas de alguna otra forma, simplemente limpiar el estado
             Redis::hset($turnStateKey, 'must_discard', 0);
-            Redis::hdel($turnStateKey, 'must_discard_by');
             Redis::hdel($turnStateKey, 'sabotage_id'); 
 
             // Limpiar el pending global si coincide

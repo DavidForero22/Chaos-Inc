@@ -3,25 +3,23 @@
 import { useEffect } from "react";
 import echo from "../../echo";
 import { logWithTime } from "../../utils/logger";
-import api from "../../api/axios";
 import { useGameStore } from "../../store/useGameStore.ts";
-
-const DISCONNECT_GRACE_MS = 4000; // Margen para F5 / reconexiones rápidas
+import { useNotificationStore } from "../../store/useNotificationStore.ts";
+import { useGameEventParser } from "./useGameEventParser.ts";
+import api from "../../api/axios.ts";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;
 }
 
 export function useGameSockets({ roomId }: UseGameSocketsProps) {
+	const { parseAndNotify } = useGameEventParser();
+
 	useEffect(() => {
 		if (!roomId) return;
 
 		const roomChannel = echo.join(`room.${roomId}`);
-		const connectedAt = Date.now();
 		let syncTimeout: ReturnType<typeof setTimeout> | null = null;
-
-		// Map para cancelar reportes si el jugador vuelve antes de que expire
-		const pendingDisconnects = new Map<string, ReturnType<typeof setTimeout>>();
 
 		roomChannel
 			.here((users: any[]) => {
@@ -30,86 +28,48 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 				);
 			})
 			.joining((user: any) => {
-				// Si había un reporte pendiente para este usuario, cancelarlo
-				if (pendingDisconnects.has(user.username)) {
-					clearTimeout(pendingDisconnects.get(user.username)!);
-					pendingDisconnects.delete(user.username);
-
-					logWithTime(
-						`useGameSockets.ts - ${user.username} volvió antes de que se enviara el reporte. Cancelado.`,
-					);
-
-					// Notificar al estado que el jugador regresó
-					const state = useGameStore.getState();
-					state.addLog(`${user.username} ha vuelto a la partida.`);
-					if (!state.isConnecting && !state.gameOver) {
-						state.syncGame();
-					}
-					return;
-				}
-
 				logWithTime(
 					`useGameSockets.ts - ${user.username} se ha conectado al socket.`,
 				);
+				// Sincronizar si vuelve alguien (reconexión rápida)
+				const state = useGameStore.getState();
+				if (!state.isConnecting && !state.gameOver) {
+					state.syncGame();
+				}
 			})
 			.leaving((user: any) => {
 				const state = useGameStore.getState();
-
-				if (state.gameOver) {
-					logWithTime(
-						`useGameSockets.ts - Ignorando desconexión de ${user.username} (Game Over).`,
-					);
-					return;
-				}
-
-				const secondsSinceConnect = (Date.now() - connectedAt) / 1000;
-				if (secondsSinceConnect < 2) return;
-
-				// Si ya hay un reporte pendiente para este usuario, no acumular otro
-				if (pendingDisconnects.has(user.username)) return;
+				if (state.gameOver) return;
 
 				logWithTime(
-					`useGameSockets.ts - ${user.username} abandonó el socket. Esperando ${DISCONNECT_GRACE_MS / 1000}s antes de reportar...`,
+					`useGameSockets.ts - Socket cerrado para ${user.username} (ID: ${user.id}). Avisando al servidor INMEDIATAMENTE.`,
 				);
 
-				const timeout = setTimeout(() => {
-					pendingDisconnects.delete(user.username);
-
-					// Re-verificar estado antes de enviar (podría haber terminado la partida durante la espera)
-					const currentState = useGameStore.getState();
-					if (currentState.gameOver) return;
-
-					logWithTime(
-						`useGameSockets.ts - ${user.username} sigue fuera tras ${DISCONNECT_GRACE_MS / 1000}s. Enviando report-disconnect.`,
-					);
-
-					api
-						.post(`/rooms/${roomId}/report-disconnect`, {
-							disconnected_player: user.username,
-						})
-						.then(() => {
-							logWithTime(
-								`useGameSockets.ts - /report-disconnect enviado para ${user.username}`,
-							);
-
-							const latestState = useGameStore.getState();
-							if (!latestState.isConnecting && !latestState.gameOver) {
-								latestState.syncGame();
-							}
-						})
-						.catch(() => {});
-				}, DISCONNECT_GRACE_MS);
-
-				pendingDisconnects.set(user.username, timeout);
+				api
+					.post(`/rooms/${roomId}/report-disconnect`, {
+						disconnected_player_id: user.id,
+						disconnected_player_name: user.username,
+					})
+					.catch(() => {});
 			})
-			.listen(".RoomStateUpdated", (data: { log_message?: string }) => {
+			.listen(".RoomStateUpdated", (data: any) => {
 				const state = useGameStore.getState();
 				if (state.gameOver) return;
 
-				if (data.log_message) {
-					state.addLog(data.log_message);
+				// 1. ¿Es una acción de carta estructurada?
+				if (data.card_action) {
+					parseAndNotify(
+						data.card_action.card_id,
+						data.card_action.source,
+						data.card_action.target,
+					);
+				}
+				// 2. ¿Es un mensaje de sistema antiguo/genérico?
+				else if (data.log_message) {
+					useNotificationStore.getState().addLog(data.log_message);
 				}
 
+				// 3. Sincronizar el estado del tablero (cartas, vida, etc.)
 				if (!state.isConnecting) {
 					if (syncTimeout) clearTimeout(syncTimeout);
 					syncTimeout = setTimeout(() => {
@@ -120,9 +80,6 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 			});
 
 		return () => {
-			// Limpiar todos los timeouts pendientes al desmontar
-			pendingDisconnects.forEach((t) => clearTimeout(t));
-			pendingDisconnects.clear();
 			roomChannel.stopListening(".RoomStateUpdated");
 			echo.leave(`room.${roomId}`);
 		};

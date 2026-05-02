@@ -42,4 +42,5 @@ return [
     // Acciones de partida
     'discarded'             => ':player ha descartado :count cartas.',
     'perks_discarded'       => ':player ha descartado su equipamiento: :perks.',
+    'time_out'              => 'El tiempo de :player se ha agotado.',
 ];

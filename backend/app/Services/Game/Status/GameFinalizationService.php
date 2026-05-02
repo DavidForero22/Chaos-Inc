@@ -10,6 +10,7 @@ use App\Jobs\CleanupRoomJob;
 use App\Models\User;
 use App\Services\Admin\GameService;
 use App\Support\CastHelper;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -20,6 +21,30 @@ class GameFinalizationService
     public function finalize(string $roomId): void
     {
         $roomStateKey = "room:{$roomId}:state";
+
+        // Comprobar que realmente queden jugadores en el canal
+        $pusher = Broadcast::driver()->getPusher();
+        $channelName = "presence-room.{$roomId}";
+        $activeConnectionsCount = 0;
+
+        try {
+            $response = $pusher->get_users_info($channelName);
+            $activeConnectionsCount = count($response->users ?? []);
+        } catch (\Exception $e) {
+            // Si Reverb falla, se puede asumirr que no habian jugadores
+            $activeConnectionsCount = 0;
+        }
+
+        // Si no hay jugadores conectados, borrar la sala al instante y no guardar datos
+        if ($activeConnectionsCount === 0) {
+            $cleanupToken = uniqid('cleanup_', true);
+            Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
+            CleanupRoomJob::dispatch($roomId, $cleanupToken);
+
+            return; 
+        }
+
+        // Logica de victoria normal
         $roomState    = Redis::hgetall($roomStateKey);
         $playerNames  = Redis::smembers("room:{$roomId}:players");
 

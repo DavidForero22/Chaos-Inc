@@ -22,12 +22,11 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 		<div className={styles.bannersContainer}>
 			{/* Ataque simple entrante */}
 			{me.combat_state.is_defending_single &&
-				me.combat_state.attacker_name_single &&
 				singleAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
 						<div className={styles.header}>URGENTE</div>
 						<div className={styles.content}>
-							<span>¡{me.combat_state.attacker_name_single} ataca!</span>
+							<span>¡Ataque entrante!</span>
 							<span className={styles.timerStamp}>
 								{singleAttackSecondsLeft}s
 							</span>
@@ -37,14 +36,11 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 
 			{/* Ataque global entrante */}
 			{me.combat_state.is_defending_multi &&
-				me.combat_state.attacker_name_multi &&
 				multiAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
 						<div className={styles.header}>URGENTE</div>
 						<div className={styles.content}>
-							<span>
-								Ataque masivo de {me.combat_state.attacker_name_multi}:
-							</span>
+							<span>¡Ataque masivo entrante!</span>
 							<span className={styles.timerStamp}>
 								{multiAttackSecondsLeft}s
 							</span>
@@ -53,23 +49,19 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 				)}
 
 			{/* Sabotaje pendiente */}
-			{me.conditions.must_discard &&
-				me.conditions.must_discard_by &&
-				sabotageSecondsLeft !== null && (
-					<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
-						<div className={`${styles.header} ${styles.headerOrange}`}>
-							NOTIFICACIÓN
-						</div>
-						<div className={styles.content}>
-							<span>{me.conditions.must_discard_by} exige un descarte:</span>
-							<span
-								className={`${styles.timerStamp} ${styles.timerStampOrange}`}
-							>
-								{sabotageSecondsLeft}s
-							</span>
-						</div>
+			{me.conditions.must_discard && sabotageSecondsLeft !== null && (
+				<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
+					<div className={`${styles.header} ${styles.headerOrange}`}>
+						NOTIFICACIÓN
 					</div>
-				)}
+					<div className={styles.content}>
+						<span>¡Descarta una carta!</span>
+						<span className={`${styles.timerStamp} ${styles.timerStampOrange}`}>
+							{sabotageSecondsLeft}s
+						</span>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

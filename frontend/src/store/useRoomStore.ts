@@ -4,7 +4,6 @@ import { create } from "zustand";
 import api from "../api/axios";
 import type { RoomData } from "../types/api";
 import { useGameStore } from "./useGameStore";
-// import { logWithTime } from "../utils/logger";
 
 interface RoomState {
 	// --- ESTADOS ---
@@ -83,9 +82,13 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		set({ passwordError: "" });
 
 		try {
-			const res = await api.post(`/rooms/${encodeURIComponent(roomId)}/join`, { password }, {
-				hideLoader: true,
-			} as any);
+			const res = await api.post(
+				`/rooms/${encodeURIComponent(roomId)}/join`,
+				{ password },
+				{
+					hideLoader: true,
+				} as any,
+			);
 
 			if (res.data.game_token) {
 				localStorage.setItem("game_token", res.data.game_token);
@@ -113,15 +116,15 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	},
 
 	leaveRoom: async () => {
-		const { roomId } = get();
+		const roomId = get().roomId ?? useGameStore.getState().roomId;
 		if (!roomId) return;
 		try {
 			await api.post(`/rooms/${encodeURIComponent(roomId)}/leave`);
 		} catch (error: any) {
-			// Ignorar 403 — el token puede haber expirado o el jugador fue kickeado
 			if (error.response?.status !== 403) throw error;
 		} finally {
 			localStorage.removeItem("game_token");
+			useGameStore.getState().setRoomId(null);
 			get().resetRoomStore();
 		}
 	},
@@ -135,6 +138,8 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	kickPlayer: async (playerToKick) => {
 		const { roomId } = get();
 		if (!roomId) return;
-		await api.post(`/rooms/${encodeURIComponent(roomId)}/kick`, { player_to_kick: playerToKick });
+		await api.post(`/rooms/${encodeURIComponent(roomId)}/kick`, {
+			player_to_kick: playerToKick,
+		});
 	},
 }));

@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Redis;
 
 class CardEffectService
 {
-    public function applyAttack(string $roomId, string $playerName, string $targetName): ?string
+    public function applyAttack(string $roomId, string $playerName, string $targetName): void
     {
         $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
         $targetHandKey      = "room:{$roomId}:player:{$targetName}:hand";
@@ -29,24 +29,21 @@ class CardEffectService
         if ($hasShield) {
             // El escudo bloquea el ataque y se rompe
             Redis::hset($targetPerksKey, 'has_shield', 0);
-            return 'shield_broken';
         } elseif ($hasDodge) {
             // Generar ID único para este ataque
             $attackToken = uniqid('single_attack_', true);
 
             // El objetivo puede esquivar, el ataque queda en pausa
             Redis::hmset("room:{$roomId}:pending_attack", [
-                'attack_token' => $attackToken, 
+                'attack_token' => $attackToken,
                 'attacker'     => $playerName,
                 'target'       => $targetName,
             ]);
 
             ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName, $attackToken)->delay(15);
-            return null;
         } else {
             // Si no hay defensa, el daño entra directo
             app(CombatService::class)->applyDamageAndCheck($roomId, $playerName, $targetName);
-            return 'direct_damage';
         }
     }
 
@@ -181,7 +178,7 @@ class CardEffectService
         }
     }
 
-    public function applySabotage(string $roomId, string $playerName, string $targetName): void
+    public function applySabotage(string $roomId, string $targetName): void
     {
         $turnStateKey = "room:{$roomId}:player:{$targetName}:turn_state";
 
@@ -189,7 +186,6 @@ class CardEffectService
         $sabotageId = uniqid('sabotage_', true);
 
         Redis::hset($turnStateKey, 'must_discard', 1);
-        Redis::hset($turnStateKey, 'must_discard_by', $playerName);
         Redis::hset($turnStateKey, 'sabotage_id', $sabotageId);
 
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);

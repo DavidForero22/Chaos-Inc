@@ -1,4 +1,5 @@
 <?php
+// app/Jobs/AutoEndTurnJob.php
 
 namespace App\Jobs;
 
@@ -49,7 +50,6 @@ class AutoEndTurnJob implements ShouldQueue
                 $playerTurnStateKey = "room:{$this->roomId}:player:{$this->playerName}:turn_state";
 
                 Redis::hset($playerTurnStateKey, 'must_discard', 0);
-                Redis::hdel($playerTurnStateKey, 'must_discard_by');
                 Redis::hdel($playerTurnStateKey, 'sabotage_id');
 
                 Redis::del("room:{$this->roomId}:pending_sabotage");
@@ -58,8 +58,9 @@ class AutoEndTurnJob implements ShouldQueue
             $handService->enforceHandLimit($this->roomId, $this->playerName);
             $turnService->advanceTurn($this->roomId);
 
-            Log::info("AutoEndTurnJob.php:: Saltando automáticamente el turno de {$this->playerName} ");
-            $mensaje = "El tiempo de {$this->playerName} se ha agotado.";
+            Log::info("AutoEndTurnJob.php:: Saltando automáticamente el turno de {$this->playerName}");
+            $mensaje = __('game.time_out', ['player' => $this->playerName]);
+
             event(new RoomStateUpdated($this->roomId, $mensaje));
         }
     }

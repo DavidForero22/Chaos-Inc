@@ -76,18 +76,15 @@ class GameReactionService
             throw new \Exception('No hay ningún desafío activo.');
         }
 
-        // Decodificar el JSON que guardamos en advanceTurn
         $challengeData = json_decode($challengeDataStr, true);
 
         // Extraer solo el color correcto
         $correctColor = $challengeData['correct_color'] ?? null;
         $isSuccess = ($chosenColor === $correctColor);
 
-        // Si acierta o falla, borra la key para que el Job sepa que el jugador ya respondió
         Redis::del($challengeKey);
 
-        if ($chosenColor === $isSuccess) {
-            // Acertó
+        if ($isSuccess) {
             app(TurnService::class)->resumeTurnTimer($roomId);
             $msg = __('game.luckySuccess', ['player' => $playerName]);
             event(new RoomStateUpdated($roomId, $msg));
@@ -134,19 +131,19 @@ class GameReactionService
             throw new GameException(GameException::INVALID_ACTION, "Reacción no válida.", 422);
         }
 
-        // Eliminar al jugador de los pendientes
         $pending['targets'] = array_values(array_filter(
             $pending['targets'],
             fn($t) => $t !== $playerName
         ));
 
         if (empty($pending['targets'])) {
-            // Respuesta confirmada — limpiar y emitir log final
             Redis::del($pendingKey);
 
             $allTargets = Redis::smembers("room:{$roomId}:players");
             $attacked = array_filter($allTargets, fn($p) => $p !== $pending['attacker']);
             $targetsStr = implode(', ', $attacked);
+
+            // Narrativa masiva pura
             $logMessage = __('game.attacked_all', ['attacker' => $pending['attacker'], 'targets' => $targetsStr]);
 
             if (!empty($pending['dodgers'])) {
@@ -160,9 +157,8 @@ class GameReactionService
             app(TurnService::class)->resumeTurnTimer($roomId);
             event(new RoomStateUpdated($roomId, $logMessage));
         } else {
-            // Aún quedan jugadores por responder
             Redis::set($pendingKey, json_encode($pending));
-            event(new RoomStateUpdated($roomId, null));
+            event(new RoomStateUpdated($roomId));
         }
     }
 
@@ -179,7 +175,6 @@ class GameReactionService
         $playerTurnStateKey = "room:{$roomId}:player:{$playerName}:turn_state";
 
         Redis::hset($playerTurnStateKey, 'must_discard', 0);
-        Redis::hdel($playerTurnStateKey, 'must_discard_by');
 
         Redis::del("room:{$roomId}:pending_sabotage");
 

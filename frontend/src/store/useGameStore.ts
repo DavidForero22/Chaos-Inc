@@ -18,7 +18,6 @@ interface GameState {
 	isFirstLoad: boolean;
 	gameOver: boolean;
 	showActingBossModal: boolean;
-	logs: LogEntry[];
 	isActionLocked: boolean;
 
 	setRoomId: (id: string | null) => void;
@@ -27,8 +26,6 @@ interface GameState {
 	setIsFirstLoad: (isFirstLoad: boolean) => void;
 	setGameOver: (gameOver: boolean) => void;
 	setShowActingBossModal: (show: boolean) => void;
-	addLog: (message: string) => void;
-	clearLogs: () => void;
 	setIsActionLocked: (locked: boolean) => void;
 
 	applyGameData: (newGameData: GameData) => void;
@@ -60,7 +57,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 	isFirstLoad: true,
 	gameOver: false,
 	showActingBossModal: false,
-	logs: [],
 	isActionLocked: false,
 
 	setRoomId: (id) => {
@@ -78,19 +74,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
 	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
 
-	addLog: (message) =>
-		set((state) => {
-			const now = new Date();
-			const timestamp = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`;
-			const newEntry: LogEntry = {
-				id: crypto.randomUUID(),
-				timestamp,
-				message,
-			};
-			return { logs: [...state.logs, newEntry] };
-		}),
-	clearLogs: () => set({ logs: [] }),
-
 	resetStore: (keepRoomId = false) => {
 		if (!keepRoomId) {
 			localStorage.removeItem("active_room_id");
@@ -103,7 +86,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 			isFirstLoad: true,
 			gameOver: false,
 			showActingBossModal: false,
-			logs: [],
 			isActionLocked: false,
 		}));
 	},

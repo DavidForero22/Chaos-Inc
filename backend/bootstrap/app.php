@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->validateCsrfTokens(except: [
             'broadcasting/auth',
+            'api/v1/rooms/*/leave', // Cubierto por game_token validado en Redis
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

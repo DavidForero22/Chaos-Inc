@@ -1,12 +1,13 @@
 // src/components/game/board/GameLog.tsx
+
 import { useState, useEffect, useRef } from "react";
-import { useGameStore } from "../../../store/useGameStore";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { createPortal } from "react-dom";
 import styles from "./GameLog.module.css";
+import { useNotificationStore } from "../../../store/useNotificationStore";
 
 export function GameLog() {
-	const logs = useGameStore((state) => state.logs);
+	const logs = useNotificationStore((state) => state.logs);
 
 	const activeModal = useGameUIStore((state) => state.activeModal);
 	const setActiveModal = useGameUIStore((state) => state.setActiveModal);

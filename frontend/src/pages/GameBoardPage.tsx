@@ -14,6 +14,7 @@ import { GameOverlayManager } from "../components/game/overlays/GameOverlayManag
 import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx";
 import { IconGuide } from "../components/game/board/IconGuide.tsx";
 import { LeaveMatch } from "../components/game/board/LeaveMatch.tsx";
+import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -61,6 +62,8 @@ export default function GameBoardPage() {
 				playerPendingSabotage={board.game.player_pending_sabotage}
 				{...timers}
 			/>
+
+			<NotificationStack />
 
 			{/* ── 1. OPONENTES ── */}
 			<OpponentsBoard

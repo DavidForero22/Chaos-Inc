@@ -78,7 +78,7 @@ class GameActionService
         };
 
         // Match de efecto
-        $effectResult = match ($cardBaseId) {
+        match ($cardBaseId) {
             1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
             2 => $this->cardEffectService->applyHeal($roomId, $playerName),
             4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
@@ -97,25 +97,12 @@ class GameActionService
 
         $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
 
-        // Match de log
-        $logMessage = match ($cardBaseId) {
-            1 => ($effectResult === 'shield_broken')
-                ? __('game.attack_shield_broken', ['attacker' => $playerName, 'target' => $targetName])
-                : __('game.attacked', ['attacker' => $playerName, 'target' => $targetName]),
-            2 => __('game.healed', ['player' => $playerName]),
-            4 => __('game.stolen', ['player' => $playerName, 'target' => $targetName]),
-            5 => __('game.shielded', ['player' => $playerName]),
-            6 => __('game.blocked', ['player' => $playerName, 'target' => $targetName]),
-            7 => null, // el log se construye en reactToMultiAttack cuando todos responden
-            8 => __('game.healed_all', ['player' => $playerName]),
-            9 => __('game.sabotaged', ['player' => $playerName, 'target' => $targetName]),
-            10 => __('game.vision_equipped', ['player' => $playerName]),
-            11 => __('game.distance_equipped', ['player' => $playerName]),
-            12 => __('game.cleaned', ['player' => $playerName, 'targer' => $targetName, 'perkKey' => $perkKey]),
-            13 => __('game.storaged', ['player' => $playerName]),
-            14 => __('game.lucked', ['player' => $playerName]),
-            default => null,
-        };
+        // Estructurar la acción pura para el frontend
+        $cardAction = [
+            'card_id' => $cardBaseId,
+            'source'  => $playerName,
+            'target'  => $targetName,
+        ];
 
         $newTurnId = uniqid('turn_', true);
         Redis::hset($roomStateKey, 'current_turn_id', $newTurnId);
@@ -142,6 +129,6 @@ class GameActionService
             Redis::hset($roomStateKey, 'current_turn_id', $pausedTurnId);
         }
 
-        event(new RoomStateUpdated($roomId, $logMessage));
+        event(new RoomStateUpdated($roomId, null, $cardAction));
     }
 }
