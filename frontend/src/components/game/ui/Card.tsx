@@ -14,6 +14,7 @@ import { RiSwordFill } from "react-icons/ri";
 import { IoIosLock } from "react-icons/io";
 import { IoHandLeftSharp } from "react-icons/io5";
 import { ImTarget } from "react-icons/im";
+import { HiUsers } from "react-icons/hi";
 
 // Diccionario para renderizar dinámicamente los iconos que manda el servidor
 const ICON_MAP: Record<CardIconType, React.ElementType> = {
@@ -26,6 +27,7 @@ const ICON_MAP: Record<CardIconType, React.ElementType> = {
 	perk: BsBackpack2Fill,
 	self: FaUser,
 	opponent: ImTarget,
+	opponents: HiUsers,
 	all: FaUsers,
 };
 

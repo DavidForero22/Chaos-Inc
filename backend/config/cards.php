@@ -92,12 +92,12 @@ return [
         [
             'id'           => 7,
             'type'         => 'attack',
-            'target'       => 'all',
+            'target'       => 'opponents',
             'base_name'    => 'Ataque Masivo',
             'display_name' => 'Inspección Sorpresa',
             'description'  => 'Ataca a todos los oponentes vivos a la vez.',
             'lore'         => 'Una presencia terrorifica ha entrado en la sala...',
-            'icons'        => ['all', 'attack'],
+            'icons'        => ['opponents', 'attack'],
             'count'        => 4,
         ],
 

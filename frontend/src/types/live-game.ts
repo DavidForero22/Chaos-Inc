@@ -69,6 +69,7 @@ export interface Opponent extends BasePlayer {
 export type CardIconType =
 	| "self"
 	| "opponent"
+	| "opponents"
 	| "all"
 	| "attack"
 	| "heal"
@@ -85,7 +86,7 @@ export interface CardInstance {
 	id: string; // El identificador único de esta instancia (ej: "uuid-1234")
 	card_id: number; // El ID de la base de la carta (ej: 1)
 	type: "attack" | "heal" | "default" | "perk";
-	target: "self" | "opponent" | "all" | "none";
+	target: "self" | "opponent" | "opponents" | "all" | "none";
 	base_name: string; // Nombre mecánico (ej: "Atacar")
 	name: string; // Nombre de la variante (ej: "Café Derramado")
 	description: string;

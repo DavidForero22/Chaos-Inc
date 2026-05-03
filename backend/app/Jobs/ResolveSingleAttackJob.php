@@ -53,6 +53,6 @@ class ResolveSingleAttackJob implements ShouldQueue
         // Limpiamos el estado
         Redis::del($pendingKey);
 
-        event(new RoomStateUpdated($this->roomId, __("game.attack_auto_resolved", ['target' => $this->targetName])));
+        event(new RoomStateUpdated($this->roomId, __("game.attack_auto_resolved", ['player' => $this->targetName])));
     }
 }

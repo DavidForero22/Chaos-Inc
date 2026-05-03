@@ -68,7 +68,7 @@ export function usePlayerActions() {
 	// Detectar si la carta seleccionada es de auto-uso leyendo su target directamente
 	const selectedCard = me.cards.find((c) => c.id === selectedCardId);
 	const isSelfTargetCard = selectedCard
-		? ["self", "all", "none"].includes(selectedCard.target)
+		? ["self", "all", "opponents", "none"].includes(selectedCard.target)
 		: false;
 
 	const canUseCard =
