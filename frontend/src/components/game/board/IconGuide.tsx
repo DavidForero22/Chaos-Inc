@@ -78,7 +78,7 @@ export function IconGuide() {
 
 			{/* Cuadrícula de iconos con scroll personalizado */}
 			<div
-				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-4 ${styles.customScroll}`}
+				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-4 ${styles.customScroll}`}
 			>
 				{GUIDE_ITEMS.map((item, idx) => (
 					<div key={idx} className="flex gap-3 items-start p-1 min-w-0">
@@ -124,7 +124,7 @@ export function IconGuide() {
 						onClick={handleClose}
 					>
 						<div
-							className={`${styles.postIt} w-[90vw] max-w-sm max-h-[85vh]`}
+							className={`${styles.postIt} w-[90vw] h-[45vh] max-w-[70vw] max-h-[85vh]`}
 							onClick={(e) => e.stopPropagation()}
 						>
 							{guideContent}
@@ -138,7 +138,7 @@ export function IconGuide() {
 						}`}
 					>
 						<div
-							className={`${styles.postIt} w-90 max-w-[calc(100vw-120px)] max-h-[75vh]`}
+							className={`${styles.postIt} w-150 h-[45vh] max-h-[75vh]`}
 						>
 							{guideContent}
 						</div>

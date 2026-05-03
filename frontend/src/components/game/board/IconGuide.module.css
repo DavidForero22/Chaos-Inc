@@ -7,7 +7,7 @@
 	color: #a3a3a3;
 	border: 2px solid #404040;
 	border-radius: 6px;
-	height: 40px; 
+	height: 40px;
 	width: 40px;
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -60,6 +60,7 @@
 	left: 56px;
 	top: 15%;
 	z-index: 48;
+	max-width: calc(100vw - 80px);
 }
 
 /* --- ESTILO POST-IT --- */
@@ -99,23 +100,23 @@
 
 /* --- SCROLLBAR PERSONALIZADO --- */
 .customScroll {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
 }
 
 .customScroll::-webkit-scrollbar {
-    width: 6px;
+	width: 6px;
 }
 
 .customScroll::-webkit-scrollbar-track {
-    background: transparent;
+	background: transparent;
 }
 
 .customScroll::-webkit-scrollbar-thumb {
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 10px;
+	background-color: rgba(0, 0, 0, 0.15);
+	border-radius: 10px;
 }
 
 .customScroll::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(0, 0, 0, 0.3);
+	background-color: rgba(0, 0, 0, 0.3);
 }

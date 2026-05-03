@@ -8,6 +8,7 @@ import { IoIosLock } from "react-icons/io";
 import { IoHandLeftSharp } from "react-icons/io5";
 import { BsBackpack2Fill } from "react-icons/bs";
 import { ImTarget } from "react-icons/im";
+import { HiUsers } from "react-icons/hi";
 
 export interface GuideItem {
 	icon: IconType;
@@ -60,6 +61,11 @@ export const GUIDE_ITEMS: GuideItem[] = [
 		icon: ImTarget,
 		name: "Objetivo: Rival",
 		desc: "Requiere seleccionar a un objetivo.",
+	},
+		{
+		icon: HiUsers,
+		name: "Objetivo: Rivales",
+		desc: "Afecta al resto de jugadores.",
 	},
 	{
 		icon: FaUsers,

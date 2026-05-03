@@ -86,7 +86,7 @@ class GameActionService
             6 => $this->cardEffectService->applyBlock($roomId, $targetName),
             7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
             8 => $this->cardEffectService->applyHealAll($roomId),
-            9 => $this->cardEffectService->applySabotage($roomId, $playerName, $targetName),
+            9 => $this->cardEffectService->applySabotage($roomId, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
             12 => $this->cardEffectService->applyClean($roomId, $targetName, $perkKey),
