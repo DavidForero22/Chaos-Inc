@@ -59,14 +59,26 @@ class AuthService
 
     public function login(array $credentials): User
     {
-        $login = trim($credentials['login']);
+        $login    = trim($credentials['login']);
         $password = $credentials['password'];
         $remember = (bool) ($credentials['remember'] ?? false);
 
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
+        // Detectar si la cuenta existe pero es OAuth (sin contraseña propia)
+        $candidate = User::where($field, $login)->first();
+
+        if ($candidate && $candidate->isOAuthUser()) {
+            $providerName = ucfirst($candidate->provider);
+            throw new UserException(
+                UserException::INVALID_DATA,
+                "Esta cuenta usa {$providerName} para iniciar sesión. Usa el botón correspondiente.",
+                401
+            );
+        }
+
         $ok = Auth::guard('web')->attempt([
-            $field => $login,
+            $field    => $login,
             'password' => $password,
         ], $remember);
 
@@ -80,6 +92,7 @@ class AuthService
 
         return Auth::guard('web')->user();
     }
+
 
     public function guestLogin(string $baseName)
     {

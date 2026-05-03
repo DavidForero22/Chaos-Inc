@@ -6,22 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
             $table->string('username')->unique();
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable(); // Nullable: Discord puede no dar email
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();        // Nullable: usuarios OAuth no tienen contraseña
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->boolean('is_guest')->default(false);
-            $table->rememberToken();
 
+            $table->string('provider')->nullable();        // 'google' | 'discord'
+            $table->string('provider_id')->nullable();     // ID único en el proveedor
+            $table->string('avatar')->nullable();          // URL del avatar
+
+            $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
         });

@@ -1,3 +1,9 @@
 {
-    "cSpell.language": "en,es-ES"
+    "cSpell.language": "en,es-ES",
+    "intelephense.environment.includePaths": [
+        "./vendor"
+    ],
+    "intelephense.files.associations": [
+        "*.php"
+    ]
 }

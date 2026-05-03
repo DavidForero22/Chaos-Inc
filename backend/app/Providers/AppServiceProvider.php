@@ -6,7 +6,9 @@ namespace App\Providers;
 use Illuminate\Http\Request;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -42,6 +44,10 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('game-actions', function (Request $request) {
             // Usar el token de la partida para identificar al jugador, o la IP como respaldo
             return Limit::perMinute(300)->by($request->header('X-Game-Token') ?: $request->ip());
+        });
+
+        Event::listen(SocialiteWasCalled::class, function (SocialiteWasCalled $event) {
+            $event->extendSocialite('discord', \SocialiteProviders\Discord\Provider::class);
         });
     }
 }

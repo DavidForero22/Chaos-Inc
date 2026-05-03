@@ -2,11 +2,14 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import ModalLayout from "../ModalLayout";
 import styles from "../ModalLayout.module.css";
+import { GoogleIcon, DiscordIcon } from "./AuthIcons";
 
 interface LoginModalProps {
 	onClose: () => void;
 	onSwitchToRegister?: () => void;
 }
+
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function LoginModal({
 	onClose,
@@ -24,6 +27,12 @@ export default function LoginModal({
 
 		const ok = await login(credentials);
 		if (ok) onClose();
+	};
+
+	const handleSocialLogin = (provider: "google" | "discord") => {
+		// Redireccion directa al backend. Laravel gestiona el OAuth completo
+		// y al terminar redirige al frontend. No hay fetch ni await.
+		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect`;
 	};
 
 	return (
@@ -122,6 +131,33 @@ export default function LoginModal({
 						Mantener sesión iniciada
 					</label>
 				</div>
+			</div>
+
+			{/* Separador OAuth */}
+			<div className={styles.socialDivider}>
+				<div className={styles.socialDividerLine} />
+				<span className={styles.socialDividerText}>o continúa con</span>
+				<div className={styles.socialDividerLine} />
+			</div>
+
+			{/* Botones OAuth */}
+			<div className={styles.socialButtons}>
+				<button
+					type="button"
+					className={`${styles.btnSocial} ${styles.btnGoogle}`}
+					onClick={() => handleSocialLogin("google")}
+				>
+					<GoogleIcon />
+					Google
+				</button>
+				<button
+					type="button"
+					className={`${styles.btnSocial} ${styles.btnDiscord}`}
+					onClick={() => handleSocialLogin("discord")}
+				>
+					<DiscordIcon />
+					Discord
+				</button>
 			</div>
 
 			{error && <p className={styles.error}>⚠ {error}</p>}

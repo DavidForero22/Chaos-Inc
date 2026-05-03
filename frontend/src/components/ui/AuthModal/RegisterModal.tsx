@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import ModalLayout from "../ModalLayout.tsx";
 import styles from "../ModalLayout.module.css";
+import { GoogleIcon, DiscordIcon } from "./AuthIcons";
+
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 interface RegisterModalProps {
 	onClose: () => void;
@@ -36,6 +39,10 @@ export default function RegisterModal({
 
 		// Fallback por si no se pasa callback
 		onClose();
+	};
+
+	const handleSocialLogin = (provider: "google" | "discord") => {
+		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect`;
 	};
 
 	return (
@@ -140,6 +147,33 @@ export default function RegisterModal({
 						}
 					/>
 				</div>
+			</div>
+
+			{/* Separador OAuth */}
+			<div className={styles.socialDivider}>
+				<div className={styles.socialDividerLine} />
+				<span className={styles.socialDividerText}>o regístrate con</span>
+				<div className={styles.socialDividerLine} />
+			</div>
+
+			{/* Botones OAuth */}
+			<div className={styles.socialButtons}>
+				<button
+					type="button"
+					className={`${styles.btnSocial} ${styles.btnGoogle}`}
+					onClick={() => handleSocialLogin("google")}
+				>
+					<GoogleIcon />
+					Google
+				</button>
+				<button
+					type="button"
+					className={`${styles.btnSocial} ${styles.btnDiscord}`}
+					onClick={() => handleSocialLogin("discord")}
+				>
+					<DiscordIcon />
+					Discord
+				</button>
 			</div>
 
 			{error && <p className={styles.error}>⚠ {error}</p>}

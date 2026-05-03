@@ -3,7 +3,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,24 +11,21 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = ['username', 'email', 'password', 'role', 'is_guest'];
+    protected $fillable = [
+        'username',
+        'email',
+        'password',
+        'role',
+        'is_guest',
+        'provider',
+        'provider_id',
+        'avatar',
+    ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
     protected $hidden = ['password', 'remember_token'];
 
-    // Relación: Un usuario participa en muchas partidas (Muchos a Muchos)
     public function games()
     {
         return $this->belongsToMany(Game::class)
@@ -38,10 +34,13 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Indica si el usuario se registró mediante OAuth (no tiene contraseña propia).
      */
+    public function isOAuthUser(): bool
+    {
+        return !is_null($this->provider);
+    }
+
     protected function casts(): array
     {
         return [

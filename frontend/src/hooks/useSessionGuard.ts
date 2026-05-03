@@ -1,44 +1,42 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import api from "../api/axios";
 import { useAuthStore } from "../store/useAuthStore";
 
 export function useSessionGuard() {
-	const user = useAuthStore((s) => s.user);
 	const logout = useAuthStore((s) => s.logout);
 	const setAuth = useAuthStore((s) => s.setAuth);
 
+	// Usar una referencia para asegurar de que la petición a /me
+	// solo se hace una vez al cargar la aplicación.
+	const hasChecked = useRef(false);
+
 	useEffect(() => {
-		let active = true;
+		if (hasChecked.current) return;
+		hasChecked.current = true;
 
 		const verifySession = async () => {
-			if (!user) return;
-
 			try {
+				// Aquí Axios enviará automáticamente la cookie de Discord/Laravel
 				const res = await api.get("/me", { hideLoader: true } as any);
 				const me = res?.data?.user?.data ?? res?.data?.user;
+
 				if (!me?.username) {
 					logout();
 					return;
 				}
 
-				if (active) {
-					setAuth(
-						me.id,
-						me.username,
-						me.isGuest,
-						me.role ?? "user",
-					);
-				}
+				// Usuario encontrado gracias a la cookie
+				setAuth(me.id, me.username, me.isGuest, me.role ?? "user");
 			} catch (err: any) {
 				const status = err?.response?.status;
-				if (status === 401 || status === 419) logout();
+				// Si da 401 o 419, significa que de verdad no hay sesión ni cookie.
+				// Limpiar el localStorage por si había basura.
+				if (status === 401 || status === 419) {
+					logout();
+				}
 			}
 		};
 
 		verifySession();
-
-		return () => {
-			active = false;
-		};
-	}, [user, logout, setAuth]);
+	}, [logout, setAuth]);
 }
