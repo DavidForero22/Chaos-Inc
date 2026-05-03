@@ -7,7 +7,6 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
-use App\Http\Controllers\Lobby\PresenceController;
 use Illuminate\Support\Facades\Route;
 
 /*
