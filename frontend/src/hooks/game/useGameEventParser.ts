@@ -28,12 +28,12 @@ export function useGameEventParser() {
 		(state) => state.addNotification,
 	);
 	const addLog = useNotificationStore((state) => state.addLog);
-	const myPlayerName = useGameStore((state) => state.gameData?.me?.name);
 	const parseAndNotify = (
 		cardId: number,
 		sourceName: string,
 		targetName?: string | null,
 	) => {
+		const myPlayerName = useGameStore.getState().gameData?.me?.name;
 		const cardInfo = CARD_DICT[cardId];
 		if (!cardInfo) return; // Si la carta no existe, ignoramos
 
@@ -84,6 +84,7 @@ export function useGameEventParser() {
 			message: message,
 			iconKey: cardInfo.icon,
 		});
+
 		addLog(message);
 	};
 

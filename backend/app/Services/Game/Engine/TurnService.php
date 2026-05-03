@@ -103,7 +103,7 @@ class TurnService
                     Redis::hset($roomStateKey, 'turn_expires_at', 0);
 
                     // Pasar el challengeId al Job
-                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer, $challengeId)->delay(now('UTC')->addSeconds(15));
+                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayer, $challengeId)->delay(now('UTC')->addSeconds(18));
                 } else {
                     // Turno normal
                     $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
@@ -111,11 +111,12 @@ class TurnService
 
                     Redis::hset($roomStateKey, 'current_turn_id', $turnId);
 
-                    $expireTime = now('UTC')->addSeconds($timeout);
-                    Redis::hset($roomStateKey, 'turn_expires_at', $expireTime->timestamp);
+                    // El frontend ve el tiempo estricto
+                    Redis::hset($roomStateKey, 'turn_expires_at', now('UTC')->addSeconds($timeout)->timestamp);
 
-                    // Despachamos el Job SOLO UNA VEZ
-                    AutoEndTurnJob::dispatch($roomId, $nextPlayer, $turnId)->delay($expireTime);
+                    // El Job espera el tiempo estricto + 3 segundos de gracia por latencia
+                    AutoEndTurnJob::dispatch($roomId, $nextPlayer, $turnId)
+                        ->delay(now('UTC')->addSeconds($timeout + 3));
                 }
 
                 break;

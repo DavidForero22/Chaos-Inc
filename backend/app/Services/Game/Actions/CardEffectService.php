@@ -40,7 +40,7 @@ class CardEffectService
                 'target'       => $targetName,
             ]);
 
-            ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName, $attackToken)->delay(15);
+            ResolveSingleAttackJob::dispatch($roomId, $playerName, $targetName, $attackToken)->delay(18);
         } else {
             // Si no hay defensa, el daño entra directo
             app(CombatService::class)->applyDamageAndCheck($roomId, $playerName, $targetName);
@@ -191,7 +191,7 @@ class CardEffectService
         Redis::set("room:{$roomId}:pending_sabotage", $targetName);
 
         // Pasar el token al Job
-        ResolveSabotageJob::dispatch($roomId, $targetName, $sabotageId)->delay(15);
+        ResolveSabotageJob::dispatch($roomId, $targetName, $sabotageId)->delay(18);
     }
 
     public function applyVision(string $roomId, string $playerName): void

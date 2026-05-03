@@ -7,6 +7,7 @@ use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
+use App\Jobs\ProcessDisconnectionJob;
 use App\Services\Auth\TokenService;
 use App\Services\Game\Status\DisconnectionService;
 use App\Services\Game\Status\GameFinalizationService;
@@ -101,7 +102,17 @@ class LiveRoomService
 
         // Derivar según el estado de la sala
         if ($room['status'] === 'in_game') {
-            $this->disconnectionService->processInGameDisconnection($roomId, $playerName, "room:{$roomId}");
+            // Grace period de 4s para cubrir F5/reconexiones rápidas
+            $disconnectKey = "room:{$roomId}:disconnecting:{$playerName}";
+
+            if (!Redis::exists($disconnectKey)) {
+                Redis::setex($disconnectKey, 10, 'pending');
+
+                $playerId = Redis::hget("room:{$roomId}:player:{$playerName}:info", 'user_id');
+
+                ProcessDisconnectionJob::dispatch($roomId, $playerId, $playerName)
+                    ->delay(now()->addSeconds(4));
+            }
         } else {
             $this->processLobbyLeave($roomId, $playerName, $room);
         }
