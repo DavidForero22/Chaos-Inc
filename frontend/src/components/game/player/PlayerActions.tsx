@@ -1,4 +1,4 @@
-// frontend/src/components/game/player/PlayerActions.tsx
+// src/components/game/player/PlayerActions.tsx
 
 import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
@@ -16,47 +16,10 @@ export function PlayerActions() {
 			: false,
 	);
 
-	// Sincronización inteligente del "Auto-Descarte"
-	useEffect(() => {
-		if (!actionLogic.isReady || !actionLogic.me) return;
-
-		const isMustDiscard = actionLogic.me.conditions.must_discard;
-		const isOverLimit =
-			actionLogic.currentCardsCount > actionLogic.me.max_hand_size;
-
-		const wasMustDiscard = prevMustDiscard.current;
-		const wasOverLimit = prevIsOverLimit.current;
-
-		// CASO 1: El servidor quita la obligación de descartar
-		const resolvedMustDiscard = wasMustDiscard && !isMustDiscard;
-
-		// CASO 2: Habia exceso de cartas y bajó al límite legal
-		const resolvedOverLimit = wasOverLimit && !isOverLimit;
-
-		if (
-			actionLogic.isDiscardMode &&
-			(resolvedMustDiscard || resolvedOverLimit)
-		) {
-			actionLogic.clearDiscardSelection();
-		}
-
-		// Actualizar las referencias para el próximo ciclo de React
-		prevMustDiscard.current = isMustDiscard;
-		prevIsOverLimit.current = isOverLimit;
-	}, [
-		actionLogic.isReady,
-		actionLogic.me?.conditions.must_discard,
-		actionLogic.me?.max_hand_size,
-		actionLogic.currentCardsCount,
-		actionLogic.isDiscardMode,
-		actionLogic.clearDiscardSelection,
-	]);
-
-	if (!actionLogic.isReady) return null;
-
 	const {
 		me,
 		isDiscardMode,
+		isInfoMode,
 		currentCardsCount,
 		projectedCardsCount,
 		willBeOverLimit,
@@ -71,25 +34,59 @@ export function PlayerActions() {
 		reactToMultiAttack,
 		endTurn,
 		setIsDiscardMode,
+		setIsInfoMode,
 		clearDiscardSelection,
 		canUseCard,
 		handleUseCard,
 	} = actionLogic;
 
+	// Sincronización inteligente de limpieza de modos
+	useEffect(() => {
+		if (!actionLogic.isReady || !actionLogic.me) return;
+
+		const isMustDiscard = actionLogic.me.conditions.must_discard;
+		const isOverLimit =
+			actionLogic.currentCardsCount > actionLogic.me.max_hand_size;
+		const isDefending =
+			actionLogic.me.combat_state.is_defending_single ||
+			actionLogic.hasPendingMultiAttack;
+
+		// Si entra un ataque o una obligación de descarte, forzar salida de INFO
+		if (isInfoMode && (isMustDiscard || isOverLimit || isDefending)) {
+			actionLogic.setIsInfoMode?.(false);
+		}
+
+		// Lógica de descarte
+		if (isDiscardMode && !isMustDiscard && !isOverLimit) {
+			actionLogic.clearDiscardSelection?.();
+		}
+
+		// Actualizar las referencias para el próximo ciclo de React
+		prevMustDiscard.current = isMustDiscard;
+		prevIsOverLimit.current = isOverLimit;
+	}, [
+		actionLogic.isReady,
+		actionLogic.me?.conditions.must_discard,
+		actionLogic.me?.combat_state.is_defending_single,
+		actionLogic.hasPendingMultiAttack,
+		actionLogic.currentCardsCount,
+		actionLogic.me?.max_hand_size,
+		isInfoMode,
+		setIsInfoMode,
+		isDiscardMode,
+		clearDiscardSelection,
+	]);
+
+	if (!actionLogic.isReady) return null;
+
+	// ¿Deberían estar deshabilitados los botones por el modo Info?
+	const isInteractionBlockedByInfo = isInfoMode;
+
 	return (
-		/* RESPONSIVE MÁGICO: 
-           - Móvil: fixed, bottom-4, right-4 (Flotante)
-           - PC (lg): static, justify-between, mb-6 (Vuelve a su sitio original dentro de la carpeta)
-        */
 		<div className="fixed bottom-4 right-4 z-60 flex flex-col items-end gap-2 pointer-events-auto lg:static lg:w-full lg:flex-row lg:justify-between lg:items-end lg:mb-6 lg:px-2 lg:z-40">
-			{/* Contador de Cartas (Cinta Dymo) - Solo se ve en PC */}
+			{/* Contador de Cartas - Solo se ve en PC */}
 			<div
-				className={`hidden lg:inline-block ${styles.dymoTape} ${
-					(isDiscardMode ? willBeOverLimit : isOverLimit)
-						? styles.dymoTapeRed
-						: ""
-				}`}
-				title="Documentos en posesión"
+				className={`hidden lg:inline-block ${styles.dymoTape} ${(isDiscardMode ? willBeOverLimit : isOverLimit) ? styles.dymoTapeRed : ""}`}
 			>
 				CARTAS: {isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
 				{me!.max_hand_size}
@@ -99,7 +96,10 @@ export function PlayerActions() {
 			<div className="flex flex-col lg:flex-row gap-2 lg:gap-4 items-end lg:items-center">
 				{me!.combat_state.is_defending_single ? (
 					<button
-						onClick={() => reactToAttack("accept")}
+						onClick={() => {
+							reactToAttack?.("accept");
+							setIsInfoMode?.(false);
+						}}
 						disabled={isGlobalLoading}
 						className={`${styles.inkStamp} ${styles.stampRed}`}
 					>
@@ -107,7 +107,10 @@ export function PlayerActions() {
 					</button>
 				) : hasPendingMultiAttack ? (
 					<button
-						onClick={() => reactToMultiAttack("accept")}
+						onClick={() => {
+							reactToMultiAttack("accept");
+							setIsInfoMode(false);
+						}}
 						disabled={isGlobalLoading}
 						className={`${styles.inkStamp} ${styles.stampRed}`}
 					>
@@ -115,6 +118,15 @@ export function PlayerActions() {
 					</button>
 				) : (
 					<>
+						{/* --- BOTÓN INFO (SOLO MÓVIL) --- */}
+						<button
+							onClick={() => setIsInfoMode?.(!isInfoMode)}
+							disabled={isGlobalLoading || isDiscardMode}
+							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${isDiscardMode ? styles.stampDisabled : ""}`}
+						>
+							{isInfoMode ? "SALIR" : "INFO"}
+						</button>
+
 						{/* Botones Modo Descarte */}
 						{isDiscardMode && !me!.conditions.must_discard ? (
 							<button
@@ -126,9 +138,9 @@ export function PlayerActions() {
 							</button>
 						) : !isDiscardMode ? (
 							<button
-								onClick={() => setIsDiscardMode(true)}
-								disabled={!canDiscard}
-								className={`${styles.inkStamp} ${styles.stampOrange} ${!canDiscard ? styles.stampDisabled : ""}`}
+								onClick={() => setIsDiscardMode?.(true)}
+								disabled={!canDiscard || isInteractionBlockedByInfo}
+								className={`${styles.inkStamp} ${styles.stampOrange} ${!canDiscard || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 							>
 								DESCARTAR
 							</button>
@@ -146,16 +158,16 @@ export function PlayerActions() {
 						) : canUseCard ? (
 							<button
 								onClick={handleUseCard}
-								disabled={!canUseCard}
-								className={`${styles.inkStamp} ${styles.stampBlue}`}
+								disabled={!canUseCard || isInteractionBlockedByInfo}
+								className={`${styles.inkStamp} ${styles.stampBlue} ${!canUseCard || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 							>
 								USAR CARTA
 							</button>
 						) : (
 							<button
 								onClick={endTurn}
-								disabled={!canEndTurn}
-								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn ? styles.stampDisabled : ""}`}
+								disabled={!canEndTurn || isInteractionBlockedByInfo}
+								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 								title={
 									isOverLimit
 										? "Debes descartar cartas antes de terminar tu turno"

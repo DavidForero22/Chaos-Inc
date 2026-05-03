@@ -2,11 +2,12 @@
 
 import { create } from "zustand";
 
-export type ActiveModalType = "none" | "log" | "guide";
+export type ActiveModalType = "none" | "log" | "guide" | "card_detail";
 
 interface GameUIState {
 	selectedCardId: string | null;
 	isDiscardMode: boolean;
+	isInfoMode: boolean; 
 	cardsToDiscard: string[];
 	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
@@ -15,6 +16,7 @@ interface GameUIState {
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
+	setIsInfoMode: (active: boolean) => void; 
 	toggleDiscardCard: (id: string, maxCards?: number) => void;
 	toggleDiscardPerk: (id: string, maxCards?: number) => void;
 	clearDiscardSelection: () => void;
@@ -27,6 +29,7 @@ interface GameUIState {
 export const useGameUIStore = create<GameUIState>((set) => ({
 	selectedCardId: null,
 	isDiscardMode: false,
+	isInfoMode: false, 
 	cardsToDiscard: [],
 	perksToDiscard: [],
 	luckResult: null,
@@ -38,9 +41,19 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	setIsDiscardMode: (active) =>
 		set({
 			isDiscardMode: active,
-			cardsToDiscard: [], // Limpiar al entrar/salir del modo
+			isInfoMode: false, 
+			cardsToDiscard: [],
 			perksToDiscard: [],
-			selectedCardId: null, // Deseleccionar cualquier carta activa
+			selectedCardId: null,
+		}),
+
+	setIsInfoMode: (
+		active, 
+	) =>
+		set({
+			isInfoMode: active,
+			isDiscardMode: false,
+			selectedCardId: null,
 		}),
 
 	toggleDiscardCard: (id, maxCards) =>
@@ -73,18 +86,15 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	clearDiscardSelection: () =>
 		set({
 			isDiscardMode: false,
+			isInfoMode: false, 
 			cardsToDiscard: [],
 			perksToDiscard: [],
-			selectedCardId: null, // Limpiar todo de golpe
+			selectedCardId: null,
 		}),
 
 	handleLuckResult: (success: boolean) => {
 		set({ luckResult: success ? "success" : "fail" });
-
-		// El store se limpia a sí mismo después de 4 segundos
-		setTimeout(() => {
-			set({ luckResult: null });
-		}, 4000);
+		setTimeout(() => set({ luckResult: null }), 4000);
 	},
 
 	toggleFolder: () =>

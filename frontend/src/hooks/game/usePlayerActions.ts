@@ -22,11 +22,13 @@ export function usePlayerActions() {
 
 	const {
 		isDiscardMode,
+		isInfoMode,
 		cardsToDiscard,
 		perksToDiscard,
 		selectedCardId,
 		setSelectedCardId,
 		setIsDiscardMode,
+		setIsInfoMode, 
 		clearDiscardSelection,
 	} = useGameUIStore();
 
@@ -65,7 +67,7 @@ export function usePlayerActions() {
 	const isConfirmDisabled =
 		noSelection || isEvadingSabotage || isSubmitting || isGlobalLoading;
 
-	// Detectar si la carta seleccionada es de auto-uso leyendo su target directamente
+	// Detectar si la carta seleccionada es de auto-uso
 	const selectedCard = me.cards.find((c) => c.id === selectedCardId);
 	const isSelfTargetCard = selectedCard
 		? ["self", "all", "opponents", "none"].includes(selectedCard.target)
@@ -77,6 +79,7 @@ export function usePlayerActions() {
 		isSelfTargetCard &&
 		!isTurnFrozen &&
 		!isAttackerWaiting &&
+		!isInfoMode && 
 		!isGlobalLoading;
 
 	const canEndTurn =
@@ -88,6 +91,7 @@ export function usePlayerActions() {
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
 		!isDiscardMode &&
+		!isInfoMode && 
 		selectedCardId === null &&
 		!isGlobalLoading;
 
@@ -98,6 +102,7 @@ export function usePlayerActions() {
 		!hasPendingAttack &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
+		!isInfoMode && 
 		(currentCardsCount > 0 || hasEquippedPerks) &&
 		!isGlobalLoading;
 
@@ -128,6 +133,7 @@ export function usePlayerActions() {
 		isReady: true as const,
 		me,
 		isDiscardMode,
+		isInfoMode, 
 		currentCardsCount,
 		projectedCardsCount,
 		willBeOverLimit,
@@ -144,6 +150,7 @@ export function usePlayerActions() {
 		reactToMultiAttack,
 		endTurn,
 		setIsDiscardMode,
+		setIsInfoMode,
 		clearDiscardSelection,
 	};
 }

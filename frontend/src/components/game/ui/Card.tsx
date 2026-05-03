@@ -1,7 +1,6 @@
 // src/components/game/ui/Card.tsx
 import { useState } from "react";
 import type { CardInstance, CardIconType } from "../../../types/live-game";
-import { useGameUIStore } from "../../../store/useGameUIStore";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import styles from "./Card.module.css";
 
@@ -15,6 +14,8 @@ import { IoIosLock } from "react-icons/io";
 import { IoHandLeftSharp } from "react-icons/io5";
 import { ImTarget } from "react-icons/im";
 import { HiUsers } from "react-icons/hi";
+
+import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 
 // Diccionario para renderizar dinámicamente los iconos que manda el servidor
 const ICON_MAP: Record<CardIconType, React.ElementType> = {
@@ -67,22 +68,34 @@ export function Card({
 	isMarkedForDiscard = false,
 	onClick,
 }: CardProps) {
-	const isDiscardMode = useGameUIStore((state) => state.isDiscardMode);
 	const [showInfo, setShowInfo] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
+
+	const { isDiscardMode, isInfoMode } = usePlayerActions();
 
 	// Resolver las clases de estado dinámicas
 	let stateClass = "";
 	if (isMarkedForDiscard) stateClass = styles.markedForDiscard;
-	else if (isSelected && !isDiscardMode) stateClass = styles.selected;
-	else if (isHighlighted && !isDiscardMode) stateClass = styles.highlighted;
+	else if (isSelected && !isDiscardMode && !isInfoMode)
+		stateClass = styles.selected;
+	else if (isHighlighted && !isDiscardMode && !isInfoMode)
+		stateClass = styles.highlighted;
 	else if (isDiscardMode && isSelectable) stateClass = styles.discardMode;
+	else if (isInfoMode) stateClass = styles.infoMode;
 
-	const interactableClass = isSelectable
-		? styles.interactable
-		: styles.notInteractable;
+	// En modo Info, todas las cartas deben poder pulsarse para leerse
+	const interactableClass =
+		isSelectable || isInfoMode ? styles.interactable : styles.notInteractable;
 
 	const typeBorderClass = getTypeBorderClass(card.type);
+
+	const handleCardClick = () => {
+		if (isInfoMode) {
+			setShowInfo(true);
+		} else if (isSelectable && onClick) {
+			onClick();
+		}
+	};
 
 	return (
 		<>
@@ -94,17 +107,17 @@ export function Card({
 				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
 				<div
 					className={`${styles.cardBody} ${typeBorderClass} transition-colors duration-300 relative overflow-hidden flex flex-col`}
-					onClick={isSelectable ? onClick : undefined}
+					onClick={isSelectable || isInfoMode ? handleCardClick : undefined}
 					title={card.description}
 				>
-					{/* Botón "?" visible en hover o seleccionada */}
-					{(isHovered || isSelected) && (
+					{/* Botón "?" visible en hover o seleccionada (OCULTO EN MÓVILES) */}
+					{(isHovered || isSelected) && !isInfoMode && (
 						<button
 							onClick={(e) => {
 								e.stopPropagation();
 								setShowInfo(true);
 							}}
-							className="absolute top-1 left-1 w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-full flex items-center justify-center z-50 transition cursor-help hover:scale-110 shadow-md border border-blue-800"
+							className="hidden lg:flex absolute top-1 left-1 w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-full items-center justify-center z-50 transition cursor-help hover:scale-110 shadow-md border border-blue-800"
 							title="Ver detalles del documento"
 						>
 							?
@@ -118,8 +131,7 @@ export function Card({
 						</div>
 					</div>
 
-					{/* 2. MEDIO: Imagen (Ahora Rectangular y más baja) */}
-					{/* h-[80px] hace la imagen rectangular y reduce la altura total */}
+					{/* 2. MEDIO: Imagen */}
 					<div className="w-full h-20 relative shrink-0 bg-gray-900 border-y-2 border-gray-800/10 flex items-center justify-center overflow-hidden">
 						{card.image ? (
 							<img
@@ -134,7 +146,7 @@ export function Card({
 						)}
 					</div>
 
-					{/* 3. PIE: Iconos (Abajo, sin círculo) */}
+					{/* 3. PIE: Iconos */}
 					<div className="w-full h-6 shrink-0 flex justify-center items-center gap-1 z-10 ">
 						{card.icons?.map((iconKey, index) => {
 							const IconComponent = ICON_MAP[iconKey];
