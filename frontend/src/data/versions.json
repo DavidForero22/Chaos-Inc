@@ -5,10 +5,10 @@
 		"date": "07-04-2026",
 		"description": "Base del juego completada y funcional.",
 		"changes": [
-			"Creado motor de juego base con 15 cartas.",
-			"Creado sistema de reconexión y gestión de sesiones para invitados.",
-			"Agregada gestión de datos para administradores.",
-			"Agregado historial y estadísticas básicas de jugadores."
+			"Desarrollo del motor de juego base con las primeras 15 cartas.",
+			"Implementado sistema de reconexión y gestión de sesiones para invitados.",
+			"Añadido modo de gestión de datos para administradores.",
+			"Añadido sistema de historial y estadísticas básicas de jugadores."
 		]
 	},
 
@@ -18,13 +18,13 @@
 		"date": "29-04-2026",
 		"description": "Rediseño y optimizaciones.",
 		"changes": [
-			"Agregadas variantes de cartas.",
-			"Agregada guía de iconos de cartas.",
-			"Agregadas imágenes de roles de jugador (2/4).",
-			"Sitio web rediseñado por completo y responsivo para móviles.",
-			"Mejorada jugabilidad e interfaz de usuario.",
-			"Optimizado considerablemente el servidor y al cliente.",
-			"Mejorada la seguridad de sesiones de usuario y del servidor."
+			"Añadidas variantes de cartas para mayor diversidad.",
+			"Implementada guía de iconos de cartas en la interfaz.",
+			"Añadidas ilustraciones de roles de jugador (Progreso: 2/4).",
+			"Rediseño integral del sitio web con soporte para móviles.",
+			"Mejoras en la experiencia de juego e interfaz de usuario.",
+			"Optimización considerable del rendimiento en cliente y servidor.",
+			"Refuerzo de la seguridad en sesiones de usuario y llamadas del servidor."
 		]
 	},
 
@@ -35,8 +35,8 @@
 		"description": "Tematización y mejoras de interfaz.",
 		"changes": [
 			"Añadido botón para salir de la sala.",
-			"Añadida pantalla de fin de juego (Victoria de los sindicalistas).",
-			"Añadida imagen de rol de jugador (Becario).",
+			"Añadida pantalla de fin de juego (Progreso: 1/5).",
+			"Añadida ilustración de rol de jugador (Progreso: 3/4).",
 			"Implementados avisos de acciones durante la partida.",
 			"Añadido modo 'Info' para pantallas pequeñas.",
 			"Implementado inicio de sesión con Google y Discord.",
