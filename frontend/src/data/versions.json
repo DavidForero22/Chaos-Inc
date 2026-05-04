@@ -4,6 +4,10 @@
 		"version": "0.1.0",
 		"date": "07-04-2026",
 		"description": "Base del juego completada y funcional.",
+		"notes": [
+			"Empecé a desarrollar la documentación del proyecto a mediados de enero. Hasta febrero estuve investigando qué tecnologías usar y cómo estructurar las bases de datos.",
+			"Esta primera versión fue con diferencia la que más tiempo del desarrollo total se llevó. Principalmente fue el sistema de desconexión lo que más guerra me dio. El hecho de diseñar el flujo de desconexión y reconexión en una partida ya fue complicado de entender, pero adaptarlo a código ha sido una batalla con la que tengo pesadillas todavía. No sería hasta la versión 0.3 que logré tener un sistema de desconexiones realmente eficaz."
+		],
 		"changes": [
 			"Desarrollo del motor de juego base con las primeras 15 cartas.",
 			"Implementado sistema de reconexión y gestión de sesiones para invitados.",
@@ -17,6 +21,12 @@
 		"version": "0.2.0",
 		"date": "29-04-2026",
 		"description": "Rediseño y optimizaciones.",
+		"notes": [
+			"Tras terminar la parte más difícil del desarrollo, comencé a preparar el diseño final del sitio web y su versión móvil. Tuve una crisis artística al no saber cómo tematizar el sitio web, hasta que a base de dibujar bocetos en Paint comencé a hacerme una idea de qué quería realmente.",
+			"En un principio, las páginas principales iban a tener de cuerpo una carpeta de pinza y el fondo sería una pared; de hecho, saqué una foto de la pared de mi propia habitación. No me terminó de convencer, hasta que se me ocurrió que el cuerpo fuese una libreta, los enlaces fuesen marcapáginas y el fondo una mesa de madera.",
+			"Mientras revisaba el código, me di cuenta de graves errores de optimización que había cometido en la versión anterior. En un cambio brusco de planes, empecé a trabajar intensamente en la optimización del servidor. El tiempo invertido no fue en vano, ya que los resultados finales fueron muy notables.",
+			"El amigo al que encargué las ilustraciones para los roles de la partida me presentó las dos primeras imágenes. Me gustaron tanto que decidí que en un futuro crearía ilustraciones de fin de partida basándome en sus diseños. Cuando acabe el proyecto tendré que regalarle un juego o algo porque se lo merece."
+		],
 		"changes": [
 			"Añadidas variantes de cartas para mayor diversidad.",
 			"Implementada guía de iconos de cartas en la interfaz.",
@@ -33,6 +43,13 @@
 		"version": "0.3.0",
 		"date": "04-05-2026",
 		"description": "Tematización y mejoras de interfaz.",
+		"notes": [
+			"Con la web finalizada y el servidor optimizado, pude avanzar en las funcionalidades que realmente quería desarrollar.",
+			"Mientras corregía errores, anotaba constantemente fallos o ideas que se me ocurrían para implementarlas más adelante.",
+			"Junto con unos amigos, tematizamos todas las cartas durante una llamada. Queríamos que el 'lore' de las cartas estuviese formado por referencias, chistes, dobles sentidos, etc. Fue más complicado de lo que pensaba en verdad; no queríamos que pareciesen frases sacadas de un post de LinkedIn.",
+			"Al intentar implementar el inicio de sesión con Google y Discord, me cargué el servidor por accidente; me llevó casi 4 horas reparar el desastre que había hecho.",
+			"Lo más divertido de esta versión con diferencia fue realizar la imagen de fin de juego. Espero no llevarme una denuncia de derechos de autor por usar un póster de Mortadelo y Filemón de base (?."
+		],
 		"changes": [
 			"Añadido botón para salir de la sala.",
 			"Añadida pantalla de fin de juego (Progreso: 1/5).",
@@ -42,7 +59,7 @@
 			"Implementado inicio de sesión con Google y Discord.",
 			"Cartas y pantallas de fin de juego tematizadas.",
 			"Interfaz optimizada para dispositivos móviles y tablets.",
-			"Añadidas variantes para cartas descartadas.",
+			"Descartadas variantes de cartas.",
 			"Correcciones de errores en el cliente y en el servidor."
 		]
 	}
