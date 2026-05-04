@@ -26,5 +26,24 @@
 			"Optimizado considerablemente el servidor y al cliente.",
 			"Mejorada la seguridad de sesiones de usuario y del servidor."
 		]
+	},
+
+	{
+		"id": 3,
+		"version": "0.3.0",
+		"date": "04-05-2026",
+		"description": "Tematización y mejoras de interfaz.",
+		"changes": [
+			"Añadido botón para salir de la sala.",
+			"Añadida pantalla de fin de juego (Victoria de los sindicalistas).",
+			"Añadida imagen de rol de jugador (Becario).",
+			"Implementados avisos de acciones durante la partida.",
+			"Añadido modo 'Info' para pantallas pequeñas.",
+			"Implementado inicio de sesión con Google y Discord.",
+			"Cartas y pantallas de fin de juego tematizadas.",
+			"Interfaz optimizada para dispositivos móviles y tablets.",
+			"Añadidas variantes para cartas descartadas.",
+			"Correcciones de errores en el cliente y en el servidor."
+		]
 	}
 ]
