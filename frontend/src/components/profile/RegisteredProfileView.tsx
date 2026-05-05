@@ -10,13 +10,8 @@ import styles from "./RegisteredProfileView.module.css";
 import sharedStyles from "./Profile.module.css";
 
 import GraphsProfile from "./GraphsProfile.tsx";
+import GameHistory from "./GameHistory.tsx";
 
-const GAME_ROLE_LABELS: Record<string, string> = {
-	boss: "👑 Jefe",
-	secretary: "📋 Secretario",
-	intern: "🎓 Becario",
-	union: "✊ Sindicalista",
-};
 
 const ACCOUNT_ROLE_CONFIG: Record<
 	string,
@@ -168,50 +163,7 @@ export default function RegisteredProfileView({
 			<GraphsProfile games={games} user={user} />
 
 			{/* ── HISTORIAL ── */}
-			<div className={styles.section}>
-				<p className={styles.sectionLabel}>Historial de Partidas</p>
-
-				{games.length === 0 ? (
-					<p className={styles.emptyHistory}>
-						[ Sin partidas registradas en el archivo corporativo ]
-					</p>
-				) : (
-					<div className={styles.gameList}>
-						{games.map((game) => {
-							const me = game.players.find((p) => p.displayName === user);
-							if (!me) return null;
-							const won = me.stats.hasWon;
-							return (
-								<div
-									key={game.id}
-									className={`${styles.gameRow} ${won ? styles.gameRowWin : styles.gameRowLoss}`}
-								>
-									<div>
-										<p
-											className={`${styles.gameResult} ${won ? styles.gameResultWin : styles.gameResultLoss}`}
-										>
-											{won ? "Victoria" : "Derrota"}
-										</p>
-										<p className={styles.gameRole}>
-											{GAME_ROLE_LABELS[me.stats.role] ?? me.stats.role}
-										</p>
-										<p className={styles.gameMeta}>
-											{new Date(game.playedAt).toLocaleDateString("es-ES")}
-											{" · "}
-											{game.totalRounds} rondas
-										</p>
-									</div>
-									<div className={styles.gameStats}>
-										<p>⚔ {me.stats.damageDealt} daño</p>
-										<p>🃏 {me.stats.cardsPlayed} cartas</p>
-										<p>💀 {me.stats.eliminations} elim.</p>
-									</div>
-								</div>
-							);
-						})}
-					</div>
-				)}
-			</div>
+			<GameHistory games={games} user={user} />
 
 			{/* ── ACCIONES ── */}
 			<div className={styles.section}>
