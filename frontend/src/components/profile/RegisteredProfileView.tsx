@@ -7,11 +7,10 @@ import { useAuth } from "../../hooks/useAuth";
 import type { GameRecord } from "../../types/api";
 
 import styles from "./RegisteredProfileView.module.css";
-import sharedStyles from "./Profile.module.css";
 
 import GraphsProfile from "./GraphsProfile.tsx";
 import GameHistory from "./GameHistory.tsx";
-
+import ProfileActions from "./ProfileActions.tsx";
 
 const ACCOUNT_ROLE_CONFIG: Record<
 	string,
@@ -45,10 +44,8 @@ export default function RegisteredProfileView({
 	onDeleteAccount,
 }: RegisteredProfileViewProps) {
 	const { user, role, avatar, provider, providerAvatar } = useAuthStore();
-	const { uploadAvatar, syncProviderAvatar } = useAuth();
-	const [confirmDelete, setConfirmDelete] = useState(false);
+	const { uploadAvatar } = useAuth();
 	const [isUploading, setIsUploading] = useState(false);
-	const [isSyncing, setIsSyncing] = useState(false);
 
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[role ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
@@ -70,12 +67,6 @@ export default function RegisteredProfileView({
 
 		// Reseteamos el input por si quiere volver a subir la misma foto
 		if (e.target) e.target.value = "";
-	};
-
-	const handleSyncProviderAvatar = async () => {
-		setIsSyncing(true);
-		await syncProviderAvatar();
-		setIsSyncing(false);
 	};
 
 	// Obtener iniciales (ej: "Usuario123" -> "US")
@@ -166,60 +157,7 @@ export default function RegisteredProfileView({
 			<GameHistory games={games} user={user} />
 
 			{/* ── ACCIONES ── */}
-			<div className={styles.section}>
-				<p className={styles.sectionLabel}>Gestión de Cuenta</p>
-
-				{/* BOTÓN DE SINCRONIZACIÓN */}
-				{/* Solo se muestra si inició sesión con un provider Y además tiene subido un avatar manual */}
-				{provider && (
-					<button
-						className={`${styles.actionBtn} ${styles.actionBtnSync}`}
-						onClick={handleSyncProviderAvatar}
-						disabled={isSyncing}
-					>
-						{isSyncing
-							? "⏳ Sincronizando..."
-							: `🔄 Usar avatar de ${provider === "discord" ? "Discord" : "Google"}`}
-					</button>
-				)}
-
-				<button
-					className={`${styles.actionBtn} ${sharedStyles.actionBtnLogout}`}
-					onClick={onLogout}
-				>
-					Cerrar sesión
-				</button>
-
-				{!confirmDelete ? (
-					<button
-						className={`${styles.actionBtn} ${styles.actionBtnDelete}`}
-						onClick={() => setConfirmDelete(true)}
-					>
-						Borrar Cuenta
-					</button>
-				) : (
-					<div className={styles.deleteConfirm}>
-						<p className={styles.deleteConfirmText}>
-							Esta acción es irreversible. La cuenta será eliminada
-							permanentemente.
-						</p>
-						<div className={styles.deleteConfirmBtns}>
-							<button
-								className={styles.confirmCancel}
-								onClick={() => setConfirmDelete(false)}
-							>
-								Cancelar
-							</button>
-							<button
-								className={styles.confirmDelete}
-								onClick={onDeleteAccount}
-							>
-								Confirmar
-							</button>
-						</div>
-					</div>
-				)}
-			</div>
+			<ProfileActions onLogout={onLogout} onDeleteAccount={onDeleteAccount} />
 		</div>
 	);
 }
