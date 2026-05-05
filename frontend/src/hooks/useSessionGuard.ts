@@ -33,6 +33,7 @@ export function useSessionGuard() {
 					Boolean(me.is_guest ?? me.isGuest),
 					me.role ?? "user",
 					me.provider,
+					me.providerAvatar,
 				);
 			} catch (err: any) {
 				const status = err?.response?.status;

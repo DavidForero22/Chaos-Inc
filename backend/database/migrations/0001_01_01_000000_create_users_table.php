@@ -20,7 +20,8 @@ return new class extends Migration
 
             $table->string('provider')->nullable();        // 'google' | 'discord'
             $table->string('provider_id')->nullable();     // ID único en el proveedor
-            $table->string('avatar')->nullable();          // URL del avatar
+            $table->string('avatar')->nullable();          // URL del avatar subido manualmente
+            $table->string('provider_avatar')->nullable(); // URL del avatar de la red social
 
             $table->rememberToken();
             $table->softDeletes();

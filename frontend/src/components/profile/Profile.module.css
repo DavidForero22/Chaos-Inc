@@ -529,3 +529,19 @@
 		opacity: 0.4;
 	}
 }
+
+.actionBtnSync {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    margin-bottom: 0.5rem; /* Para separarlo de los otros botones */
+}
+
+.actionBtnSync:hover:not(:disabled) {
+    background-color: #e2e8f0;
+}
+
+.actionBtnSync:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

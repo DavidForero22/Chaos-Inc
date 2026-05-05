@@ -23,8 +23,8 @@ class SocialAuthService
             ->first();
 
         if ($user) {
-            // Actualizar el avatar por si cambió en el proveedor
-            $user->update(['avatar' => $socialUser->getAvatar()]);
+            // Guardar en provider_avatar respetando el avatar manual
+            $user->update(['provider_avatar' => $socialUser->getAvatar()]);
             return $user;
         }
 
@@ -34,9 +34,9 @@ class SocialAuthService
 
             if ($existingUser) {
                 $existingUser->update([
-                    'provider'    => $provider,
-                    'provider_id' => $socialUser->getId(),
-                    'avatar'      => $socialUser->getAvatar(),
+                    'provider'        => $provider,
+                    'provider_id'     => $socialUser->getId(),
+                    'provider_avatar' => $socialUser->getAvatar(),
                 ]);
                 return $existingUser;
             }
@@ -59,14 +59,15 @@ class SocialAuthService
             ?? "{$provider}_{$socialUser->getId()}@oauth.noemail";
 
         return User::create([
-            'username'    => $username,
-            'email'       => $email,
-            'password'    => null,
-            'role'        => 'user',
-            'is_guest'    => false,
-            'provider'    => $provider,
-            'provider_id' => $socialUser->getId(),
-            'avatar'      => $socialUser->getAvatar(),
+            'username'        => $username,
+            'email'           => $email,
+            'password'        => null,
+            'role'            => 'user',
+            'is_guest'        => false,
+            'provider'        => $provider,
+            'provider_id'     => $socialUser->getId(),
+            'avatar'          => null,
+            'provider_avatar' => $socialUser->getAvatar(),
         ]);
     }
 

@@ -22,6 +22,7 @@ class UpdateUserRequest extends FormRequest
             'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|in:admin,user',
             'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'sync_avatar' => 'sometimes|string|in:true,false',
         ];
     }
 
@@ -36,6 +37,7 @@ class UpdateUserRequest extends FormRequest
             'avatar.image' => 'El avatar debe ser un archivo de imagen.',
             'avatar.mimes' => 'Solo se admiten formatos JPEG, PNG, JPG y WEBP.',
             'avatar.max' => 'El avatar no puede superar los 2MB.',
+            'sync_avatar.in' => 'El valor de sincronización de avatar no es válido.',
         ];
     }
 }

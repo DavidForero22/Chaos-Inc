@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
 
 class UserService
@@ -63,22 +64,29 @@ class UserService
             $data['password'] = Hash::make($data['password']);
         }
 
-        // ─── PROCESAMIENTO DEL AVATAR ───
+        // ─── LÓGICA DE SINCRONIZACIÓN DE AVATAR ───
+        // Si el frontend pide sincronizar, borrar el avatar manual
+        if (isset($data['sync_avatar']) && $data['sync_avatar'] === 'true') {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $data['avatar'] = null; // Poner a null para que el frontend use el provider_avatar
+        }
+
+        // ─── PROCESAMIENTO DE SUBIDA DE AVATAR ───
         if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
 
-            // Borrar el avatar antiguo si existe y es local (no borrar URLs de Discord/Google)
+            // Borrar el avatar antiguo si existe y es local
             if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
                 Storage::disk('public')->delete($user->avatar);
             }
 
             // Inicializar Intervention
-            /** @var \Intervention\Image\ImageManager $manager */
-            $manager = new ImageManager(new Driver());
+            $manager = ImageManager::usingDriver(Driver::class);
 
             // Leer, recortar a cuadrado perfecto (200x200) y convertir a WebP
-            /** @disregard P1013 */
-            $image = $manager->read($data['avatar']);
-            $encodedImage = $image->cover(200, 200)->toWebp(80); // 80% de calidad
+            $image = $manager->decodeSplFileInfo($data['avatar']);
+            $encodedImage = $image->cover(200, 200)->encode(new WebpEncoder(quality: 80));
 
             // Generar nombre único y guardar en storage/app/public/avatars
             $filename = 'avatars/' . $user->id . '_' . time() . '.webp';

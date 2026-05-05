@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'role' => $this->role,
             'isGuest' => $this->is_guest,
             'avatar' => $this->avatar,
+            'providerAvatar' => $this->provider_avatar,
             'provider' => $this->provider,
             'joinedAt' => $this->created_at->toIso8601String(),
             'games' => GameResource::collection($this->whenLoaded('games')),

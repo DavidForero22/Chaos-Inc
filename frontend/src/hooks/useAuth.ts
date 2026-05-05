@@ -18,7 +18,18 @@ type LoginInput = {
 };
 
 export function useAuth() {
-	const { id, user, avatar, isGuest, role, setAuth, logout } = useAuthStore();
+	// Extraemos también provider y providerAvatar del store
+	const {
+		id,
+		user,
+		avatar,
+		providerAvatar,
+		provider,
+		isGuest,
+		role,
+		setAuth,
+		logout,
+	} = useAuthStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -62,12 +73,14 @@ export function useAuth() {
 			const res = await api.post("/login", input);
 
 			setAuth(
-                res.data.user.id,
-                res.data.user.username,
-                res.data.user.avatar, 
-                false,               
-                res.data.user.role,   
-            );
+				res.data.user.id,
+				res.data.user.username,
+				res.data.user.avatar,
+				false,
+				res.data.user.role,
+				res.data.user.provider,
+				res.data.user.providerAvatar,
+			);
 			return true;
 		} catch (err: any) {
 			setError(err.response?.data?.message || "Credenciales incorrectas.");
@@ -87,7 +100,6 @@ export function useAuth() {
 			await getCsrfCookie();
 
 			const formData = new FormData();
-			// Enviar como POST, pero decirle que lo trate como PUT
 			formData.append("_method", "PUT");
 			formData.append("avatar", file);
 
@@ -108,10 +120,43 @@ export function useAuth() {
 		}
 	};
 
+	// Sincronizar Avatar con el Provider
+	const syncProviderAvatar = async () => {
+		if (!id) return false;
+
+		clearError();
+		setIsLoading(true);
+
+		try {
+			await getCsrfCookie();
+
+			const formData = new FormData();
+			formData.append("_method", "PUT");
+			formData.append("sync_avatar", "true");
+
+			await api.post(`/users/${id}`, formData);
+
+			// Al borrar el manual, actualizamos el store a null.
+			// La UI automáticamente pasará a mostrar el providerAvatar.
+			useAuthStore.getState().setAvatar?.(null);
+
+			return true;
+		} catch (err: any) {
+			setError(
+				err.response?.data?.message || "Error al sincronizar el avatar.",
+			);
+			return false;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return {
 		id,
 		user,
 		avatar,
+		providerAvatar,
+		provider,
 		isGuest,
 		role,
 		isAuthenticated: !!user,
@@ -122,5 +167,6 @@ export function useAuth() {
 		register,
 		logout,
 		uploadAvatar,
+		syncProviderAvatar, 
 	};
 }

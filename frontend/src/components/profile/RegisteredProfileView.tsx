@@ -45,10 +45,12 @@ export default function RegisteredProfileView({
 	onLogout,
 	onDeleteAccount,
 }: RegisteredProfileViewProps) {
-	const { user, role, avatar, provider } = useAuthStore();
-	const { uploadAvatar } = useAuth();
+	const { user, role, avatar, provider, providerAvatar } = useAuthStore();
+	const { uploadAvatar, syncProviderAvatar } = useAuth();
 	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [isUploading, setIsUploading] = useState(false);
+	const [isSyncing, setIsSyncing] = useState(false);
+
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[role ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
 
@@ -71,17 +73,23 @@ export default function RegisteredProfileView({
 		if (e.target) e.target.value = "";
 	};
 
+	const handleSyncProviderAvatar = async () => {
+		setIsSyncing(true);
+		await syncProviderAvatar();
+		setIsSyncing(false);
+	};
+
 	// Obtener iniciales (ej: "Usuario123" -> "US")
 	const initials = user ? user.substring(0, 2).toUpperCase() : "??";
+	const displayAvatar = avatar || providerAvatar;
 
 	// Procesar la URL del avatar (si es de Discord/Google empieza por http, si es local añadimos la URL del backend)
 	const avatarUrl = useMemo(() => {
-		if (!avatar) return null;
-		if (avatar.startsWith("http")) return avatar;
-		// Reemplaza esto con tu variable de entorno real para el backend
+		if (!displayAvatar) return null;
+		if (displayAvatar.startsWith("http")) return displayAvatar;
 		const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-		return `${backendUrl}/storage/${avatar}`;
-	}, [avatar]);
+		return `${backendUrl}/storage/${displayAvatar}`;
+	}, [displayAvatar]);
 
 	const stats = useMemo(() => {
 		return games.reduce(
@@ -135,27 +143,31 @@ export default function RegisteredProfileView({
 					/>
 
 					{/* Textos de la cabecera */}
-                    <div className={styles.headerText}>
-                        <div className={styles.nameRow}>
-                            <h1 className={styles.employeeName}>{user}</h1>
-                            
-                            {/* 2. ETIQUETA CONDICIONAL DEL PROVIDER */}
-                            {provider === "discord" && (
-                                <span className={`${styles.providerBadge} ${styles.badgeDiscord}`}>
-                                    Discord
-                                </span>
-                            )}
-                            {provider === "google" && (
-                                <span className={`${styles.providerBadge} ${styles.badgeGoogle}`}>
-                                    Google
-                                </span>
-                            )}
-                        </div>
-                        
-                        <p className={styles.headerMeta}>
-                            {games.length} partidas en el registro
-                        </p>
-                    </div>
+					<div className={styles.headerText}>
+						<div className={styles.nameRow}>
+							<h1 className={styles.employeeName}>{user}</h1>
+
+							{/* 2. ETIQUETA CONDICIONAL DEL PROVIDER */}
+							{provider === "discord" && (
+								<span
+									className={`${styles.providerBadge} ${styles.badgeDiscord}`}
+								>
+									Discord
+								</span>
+							)}
+							{provider === "google" && (
+								<span
+									className={`${styles.providerBadge} ${styles.badgeGoogle}`}
+								>
+									Google
+								</span>
+							)}
+						</div>
+
+						<p className={styles.headerMeta}>
+							{games.length} partidas en el registro
+						</p>
+					</div>
 				</div>
 
 				{/* Badge de rol de cuenta */}
@@ -251,6 +263,20 @@ export default function RegisteredProfileView({
 			{/* ── ACCIONES ── */}
 			<div className={styles.section}>
 				<p className={styles.sectionLabel}>Gestión de Cuenta</p>
+
+				{/* BOTÓN DE SINCRONIZACIÓN */}
+				{/* Solo se muestra si inició sesión con un provider Y además tiene subido un avatar manual */}
+				{provider && (
+					<button
+						className={`${styles.actionBtn} ${styles.actionBtnSync}`}
+						onClick={handleSyncProviderAvatar}
+						disabled={isSyncing}
+					>
+						{isSyncing
+							? "⏳ Sincronizando..."
+							: `🔄 Usar avatar de ${provider === "discord" ? "Discord" : "Google"}`}
+					</button>
+				)}
 
 				<button
 					className={`${styles.actionBtn} ${styles.actionBtnLogout}`}

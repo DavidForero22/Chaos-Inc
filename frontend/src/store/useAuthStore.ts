@@ -6,6 +6,7 @@ interface AuthState {
 	id: number | null;
 	user: string | null;
 	avatar: string | null;
+	providerAvatar: string | null;
 	isGuest: boolean;
 	role: string | null;
 	provider: string | null;
@@ -16,6 +17,7 @@ interface AuthState {
 		isGuest?: boolean,
 		role?: string,
 		provider?: string | null,
+		providerAvatar?: string | null, 
 	) => void;
 	setAvatar: (avatar: string | null) => void;
 	logout: () => void;
@@ -33,6 +35,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 	id: Number(getSafeStorage("userId")) || null,
 	user: getSafeStorage("user"),
 	avatar: getSafeStorage("avatar"),
+	providerAvatar: getSafeStorage("providerAvatar"),
 	isGuest: getSafeStorage("isGuest") === "true",
 	role: getSafeStorage("role"),
 	provider: getSafeStorage("provider"),
@@ -44,12 +47,18 @@ export const useAuthStore = create<AuthState>((set) => ({
 		isGuest = false,
 		role = "user",
 		provider = null,
+		providerAvatar = null,
 	) => {
 		if (typeof window !== "undefined") {
 			localStorage.setItem("userId", String(id));
 			localStorage.setItem("user", user);
+
 			if (avatar) localStorage.setItem("avatar", avatar);
 			else localStorage.removeItem("avatar");
+
+			if (providerAvatar)
+				localStorage.setItem("providerAvatar", providerAvatar);
+			else localStorage.removeItem("providerAvatar");
 
 			localStorage.setItem("isGuest", String(isGuest));
 			localStorage.setItem("role", role ?? "user");
@@ -57,7 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			if (provider) localStorage.setItem("provider", provider);
 			else localStorage.removeItem("provider");
 		}
-		set({ id, user, avatar, isGuest, role, provider });
+		set({ id, user, avatar, providerAvatar, isGuest, role, provider });
 	},
 
 	setAvatar: (avatar) => {
@@ -73,6 +82,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			localStorage.removeItem("userId");
 			localStorage.removeItem("user");
 			localStorage.removeItem("avatar");
+			localStorage.removeItem("providerAvatar");
 			localStorage.removeItem("isGuest");
 			localStorage.removeItem("role");
 			localStorage.removeItem("provider");
@@ -81,6 +91,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			id: null,
 			user: null,
 			avatar: null,
+			providerAvatar: null,
 			isGuest: false,
 			role: null,
 			provider: null,
@@ -95,12 +106,15 @@ if (typeof window !== "undefined") {
 		if (
 			event.key === "user" ||
 			event.key === "avatar" ||
+			event.key === "providerAvatar" || 
 			event.key === "isGuest" ||
-			event.key === "role"
+			event.key === "role" ||
+			event.key === "provider"
 		) {
 			useAuthStore.setState({
 				user: getSafeStorage("user"),
 				avatar: getSafeStorage("avatar"),
+				providerAvatar: getSafeStorage("providerAvatar"),
 				isGuest: getSafeStorage("isGuest") === "true",
 				role: getSafeStorage("role"),
 				provider: getSafeStorage("provider"),
