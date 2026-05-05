@@ -18,7 +18,7 @@ type LoginInput = {
 };
 
 export function useAuth() {
-	const { user, isGuest, role, setAuth, logout } = useAuthStore();
+	const { id, user, avatar, isGuest, role, setAuth, logout } = useAuthStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -62,11 +62,12 @@ export function useAuth() {
 			const res = await api.post("/login", input);
 
 			setAuth(
-				res.data.user.id,
-				res.data.user.username,
-				false, // isGuest
-				res.data.user.role,
-			);
+                res.data.user.id,
+                res.data.user.username,
+                res.data.user.avatar, 
+                false,               
+                res.data.user.role,   
+            );
 			return true;
 		} catch (err: any) {
 			setError(err.response?.data?.message || "Credenciales incorrectas.");
@@ -76,8 +77,41 @@ export function useAuth() {
 		}
 	};
 
+	const uploadAvatar = async (file: File) => {
+		if (!id) return false;
+
+		clearError();
+		setIsLoading(true);
+
+		try {
+			await getCsrfCookie();
+
+			const formData = new FormData();
+			// Enviar como POST, pero decirle que lo trate como PUT
+			formData.append("_method", "PUT");
+			formData.append("avatar", file);
+
+			const res = await api.post(`/users/${id}`, formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
+				},
+			});
+
+			useAuthStore.getState().setAvatar?.(res.data.user.avatar);
+
+			return true;
+		} catch (err: any) {
+			setError(err.response?.data?.message || "Error al subir el archivo.");
+			return false;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return {
+		id,
 		user,
+		avatar,
 		isGuest,
 		role,
 		isAuthenticated: !!user,
@@ -87,5 +121,6 @@ export function useAuth() {
 		login,
 		register,
 		logout,
+		uploadAvatar,
 	};
 }

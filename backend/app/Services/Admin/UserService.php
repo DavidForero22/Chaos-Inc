@@ -5,6 +5,9 @@ namespace App\Services\Admin;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class UserService
 {
@@ -58,6 +61,31 @@ class UserService
 
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
+        }
+
+        // ─── PROCESAMIENTO DEL AVATAR ───
+        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+
+            // Borrar el avatar antiguo si existe y es local (no borrar URLs de Discord/Google)
+            if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Inicializar Intervention
+            /** @var \Intervention\Image\ImageManager $manager */
+            $manager = new ImageManager(new Driver());
+
+            // Leer, recortar a cuadrado perfecto (200x200) y convertir a WebP
+            /** @disregard P1013 */
+            $image = $manager->read($data['avatar']);
+            $encodedImage = $image->cover(200, 200)->toWebp(80); // 80% de calidad
+
+            // Generar nombre único y guardar en storage/app/public/avatars
+            $filename = 'avatars/' . $user->id . '_' . time() . '.webp';
+            Storage::disk('public')->put($filename, (string) $encodedImage);
+
+            // Asignar la ruta relativa a los datos que se guardarán en la BD
+            $data['avatar'] = $filename;
         }
 
         $user->update($data);

@@ -21,17 +21,21 @@ class UpdateUserRequest extends FormRequest
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $userId,
             'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|in:admin,user',
+            'avatar' => 'sometimes|image|mimes:jpeg,png,jpg,webp|max:2048',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'username.unique' => 'This username is already taken by another player.',
-            'email.email' => 'Please provide a valid email address.',
-            'email.unique' => 'This email is already linked to another account.',
-            'password.min' => 'The password must be at least 8 characters long.',
-            'role.in' => 'The selected role is invalid.',
+            'username.unique' => 'Este nombre de usuario ya está en uso por otro jugador.',
+            'email.email' => 'Por favor, proporciona una dirección de correo electrónico válida.',
+            'email.unique' => 'Este correo electrónico ya está vinculado a otra cuenta.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'role.in' => 'El rol seleccionado no es válido.',
+            'avatar.image' => 'El avatar debe ser un archivo de imagen.',
+            'avatar.mimes' => 'Solo se admiten formatos JPEG, PNG, JPG y WEBP.',
+            'avatar.max' => 'El avatar no puede superar los 2MB.',
         ];
     }
 }

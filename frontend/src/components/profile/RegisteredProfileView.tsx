@@ -1,7 +1,9 @@
 // src/components/profile/RegisteredProfileView.tsx
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import type { ChangeEvent } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useAuth } from "../../hooks/useAuth";
 import type { GameRecord } from "../../types/api";
 import styles from "./Profile.module.css";
 
@@ -26,7 +28,7 @@ const ACCOUNT_ROLE_CONFIG: Record<
 		dotClass: styles.roleAdminDot,
 	},
 	user: {
-		label: "Empleado",
+		label: "Usuario",
 		badgeClass: styles.roleUser,
 		dotClass: styles.roleUserDot,
 	},
@@ -43,11 +45,43 @@ export default function RegisteredProfileView({
 	onLogout,
 	onDeleteAccount,
 }: RegisteredProfileViewProps) {
-	const { user, role } = useAuthStore();
+	const { user, role, avatar, provider } = useAuthStore();
+	const { uploadAvatar } = useAuth();
 	const [confirmDelete, setConfirmDelete] = useState(false);
-
+	const [isUploading, setIsUploading] = useState(false);
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[role ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
+
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// --- Lógica del Avatar ---
+	const handleAvatarClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+
+		setIsUploading(true);
+		await uploadAvatar(file);
+		setIsUploading(false);
+
+		// Reseteamos el input por si quiere volver a subir la misma foto
+		if (e.target) e.target.value = "";
+	};
+
+	// Obtener iniciales (ej: "Usuario123" -> "US")
+	const initials = user ? user.substring(0, 2).toUpperCase() : "??";
+
+	// Procesar la URL del avatar (si es de Discord/Google empieza por http, si es local añadimos la URL del backend)
+	const avatarUrl = useMemo(() => {
+		if (!avatar) return null;
+		if (avatar.startsWith("http")) return avatar;
+		// Reemplaza esto con tu variable de entorno real para el backend
+		const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+		return `${backendUrl}/storage/${avatar}`;
+	}, [avatar]);
 
 	const stats = useMemo(() => {
 		return games.reduce(
@@ -71,10 +105,57 @@ export default function RegisteredProfileView({
 			{/* ── CABECERA ── */}
 			<div className={styles.header}>
 				<div className={styles.headerLeft}>
-					<h1 className={styles.employeeName}>{user}</h1>
-					<p className={styles.headerMeta}>
-						{games.length} partidas en el registro
-					</p>
+					{/* Contenedor del Avatar */}
+					<div
+						className={styles.avatarContainer}
+						onClick={handleAvatarClick}
+						title="Cambiar fotografía"
+					>
+						{isUploading ? (
+							<div className={styles.avatarFallback}>⏳</div>
+						) : avatarUrl ? (
+							<img
+								src={avatarUrl}
+								alt={`Avatar de ${user}`}
+								className={styles.avatarImage}
+							/>
+						) : (
+							<div className={styles.avatarFallback}>{initials}</div>
+						)}
+						<div className={styles.avatarOverlay}>📷</div>
+					</div>
+
+					{/* Input oculto */}
+					<input
+						type="file"
+						ref={fileInputRef}
+						style={{ display: "none" }}
+						accept="image/jpeg, image/png, image/webp"
+						onChange={handleFileChange}
+					/>
+
+					{/* Textos de la cabecera */}
+                    <div className={styles.headerText}>
+                        <div className={styles.nameRow}>
+                            <h1 className={styles.employeeName}>{user}</h1>
+                            
+                            {/* 2. ETIQUETA CONDICIONAL DEL PROVIDER */}
+                            {provider === "discord" && (
+                                <span className={`${styles.providerBadge} ${styles.badgeDiscord}`}>
+                                    Discord
+                                </span>
+                            )}
+                            {provider === "google" && (
+                                <span className={`${styles.providerBadge} ${styles.badgeGoogle}`}>
+                                    Google
+                                </span>
+                            )}
+                        </div>
+                        
+                        <p className={styles.headerMeta}>
+                            {games.length} partidas en el registro
+                        </p>
+                    </div>
 				</div>
 
 				{/* Badge de rol de cuenta */}

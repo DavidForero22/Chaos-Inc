@@ -26,7 +26,14 @@ export function useSessionGuard() {
 				}
 
 				// Usuario encontrado gracias a la cookie
-				setAuth(me.id, me.username, me.isGuest, me.role ?? "user");
+				setAuth(
+					me.id,
+					me.username,
+					me.avatar,
+					Boolean(me.is_guest ?? me.isGuest),
+					me.role ?? "user",
+					me.provider,
+				);
 			} catch (err: any) {
 				const status = err?.response?.status;
 				// Si da 401 o 419, significa que de verdad no hay sesión ni cookie.

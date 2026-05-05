@@ -21,9 +21,9 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'role' => $this->role,
             'isGuest' => $this->is_guest,
+            'avatar' => $this->avatar,
+            'provider' => $this->provider,
             'joinedAt' => $this->created_at->toIso8601String(),
-
-            // Si en algún momento pedimos el usuario con sus partidas, las mostramos:
             'games' => GameResource::collection($this->whenLoaded('games')),
         ];
     }

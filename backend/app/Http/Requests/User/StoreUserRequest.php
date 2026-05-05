@@ -24,14 +24,14 @@ class StoreUserRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'username.required' => 'A username is required.',
-            'username.unique' => 'This username is already taken. Please choose another one.',
-            'email.required' => 'An email address is required.',
-            'email.email' => 'Please provide a valid email address.',
-            'email.unique' => 'This email is already registered in our system.',
-            'password.required' => 'A password is required.',
-            'password.min' => 'The password must be at least 8 characters long.',
-            'role.in' => 'The selected role is invalid.',
+            'username.required' => 'Se requiere un nombre de usuario.',
+            'username.unique' => 'Este nombre de usuario ya está en uso. Por favor, elige otro.',
+            'email.required' => 'Se requiere una dirección de correo electrónico.',
+            'email.email' => 'Por favor, proporciona una dirección de correo electrónico válida.',
+            'email.unique' => 'Este correo electrónico ya está registrado en nuestro sistema.',
+            'password.required' => 'Se requiere una contraseña.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'role.in' => 'El rol seleccionado no es válido.',
         ];
     }
 }

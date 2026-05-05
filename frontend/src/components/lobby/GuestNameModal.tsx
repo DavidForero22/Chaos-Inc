@@ -32,7 +32,13 @@ export default function GuestNameModal({
 			const res = await api.post("/guest-login", { username });
 
 			// setAuth(user, isGuest?, role?)
-			setAuth(res.data.user.username, true, res.data.user.role ?? "guest");
+			setAuth(
+				res.data.user.id,
+				res.data.user.username,
+				res.data.user.avatar,
+				true,
+				res.data.user.role,
+			);
 
 			onSuccess();
 		} catch (err) {
