@@ -100,6 +100,7 @@ export function useAuth() {
 			await getCsrfCookie();
 
 			const formData = new FormData();
+			// Enviar como POST, pero decirle que lo trate como PUT
 			formData.append("_method", "PUT");
 			formData.append("avatar", file);
 

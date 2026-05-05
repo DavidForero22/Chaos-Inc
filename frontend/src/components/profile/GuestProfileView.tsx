@@ -1,7 +1,9 @@
 // src/components/profile/GuestProfileView.tsx
 
 import { useAuthStore } from "../../store/useAuthStore";
-import styles from "./Profile.module.css";
+import styles from "./GuestProfileView.module.css";
+import sharedStyles from "./Profile.module.css";
+
 
 interface GuestProfileViewProps {
 	onLogout: () => void;
@@ -40,7 +42,7 @@ export default function GuestProfileView({ onLogout }: GuestProfileViewProps) {
 
 			{/* Acción */}
 			<div className={styles.guestActions}>
-				<button className={styles.actionBtnLogout} onClick={onLogout}>
+				<button className={sharedStyles.actionBtnLogout} onClick={onLogout}>
 					Cerrar sesión
 				</button>
 			</div>
