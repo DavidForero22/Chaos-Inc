@@ -10,6 +10,7 @@ interface AuthState {
 	isGuest: boolean;
 	role: string | null;
 	provider: string | null;
+	joinedAt: string | null; 
 	setAuth: (
 		id: number | null,
 		user: string,
@@ -17,7 +18,8 @@ interface AuthState {
 		isGuest?: boolean,
 		role?: string,
 		provider?: string | null,
-		providerAvatar?: string | null, 
+		providerAvatar?: string | null,
+		joinedAt?: string | null, 
 	) => void;
 	setAvatar: (avatar: string | null) => void;
 	logout: () => void;
@@ -39,6 +41,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 	isGuest: getSafeStorage("isGuest") === "true",
 	role: getSafeStorage("role"),
 	provider: getSafeStorage("provider"),
+	joinedAt: getSafeStorage("joinedAt"), 
 
 	setAuth: (
 		id,
@@ -48,6 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 		role = "user",
 		provider = null,
 		providerAvatar = null,
+		joinedAt = null, 
 	) => {
 		if (typeof window !== "undefined") {
 			localStorage.setItem("userId", String(id));
@@ -65,8 +69,20 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 			if (provider) localStorage.setItem("provider", provider);
 			else localStorage.removeItem("provider");
+
+			if (joinedAt) localStorage.setItem("joinedAt", joinedAt);
+			else localStorage.removeItem("joinedAt");
 		}
-		set({ id, user, avatar, providerAvatar, isGuest, role, provider });
+		set({
+			id,
+			user,
+			avatar,
+			providerAvatar,
+			isGuest,
+			role,
+			provider,
+			joinedAt,
+		});
 	},
 
 	setAvatar: (avatar) => {
@@ -86,6 +102,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			localStorage.removeItem("isGuest");
 			localStorage.removeItem("role");
 			localStorage.removeItem("provider");
+			localStorage.removeItem("joinedAt"); 
 		}
 		set({
 			id: null,
@@ -95,6 +112,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			isGuest: false,
 			role: null,
 			provider: null,
+			joinedAt: null,
 		});
 	},
 }));
@@ -106,10 +124,11 @@ if (typeof window !== "undefined") {
 		if (
 			event.key === "user" ||
 			event.key === "avatar" ||
-			event.key === "providerAvatar" || 
+			event.key === "providerAvatar" ||
 			event.key === "isGuest" ||
 			event.key === "role" ||
-			event.key === "provider"
+			event.key === "provider" ||
+			event.key === "joinedAt" 
 		) {
 			useAuthStore.setState({
 				user: getSafeStorage("user"),
@@ -118,6 +137,7 @@ if (typeof window !== "undefined") {
 				isGuest: getSafeStorage("isGuest") === "true",
 				role: getSafeStorage("role"),
 				provider: getSafeStorage("provider"),
+				joinedAt: getSafeStorage("joinedAt"),
 			});
 		}
 	});

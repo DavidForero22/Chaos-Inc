@@ -14,6 +14,7 @@ import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 import MainMenuPage from "./pages/MainMenuPage.tsx";
 import NotebookLayout from "./layouts/NotebookLayout.tsx";
 import { useSessionGuard } from "./hooks/useSessionGuard.ts";
+import PublicProfilePage from "./pages/PublicProfilePage.tsx";
 
 function App() {
 	useSessionGuard();
@@ -26,6 +27,7 @@ function App() {
 					<Route path="/" element={<MainMenuPage />} />
 					<Route path="/rooms" element={<RoomsPage />} />
 					<Route path="/profile" element={<ProfilePage />} />
+					<Route path="/profile/:userId" element={<PublicProfilePage />} />
 					<Route path="/how-to-play" element={<HowToPlayPage />} />
 					<Route path="/know-more" element={<KnowMorePage />} />
 					<Route path="/admin" element={<AdminPage />} />

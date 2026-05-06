@@ -1,163 +1,104 @@
 // src/components/profile/RegisteredProfileView.tsx
 
-import { useState, useMemo, useRef } from "react";
-import type { ChangeEvent } from "react";
+import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
-import { useAuth } from "../../hooks/useAuth";
-import type { GameRecord } from "../../types/api";
+import type { GameRecord, UserRecord } from "../../types/api";
 
 import styles from "./RegisteredProfileView.module.css";
 
-import GraphsProfile from "./GraphsProfile.tsx";
-import GameHistory from "./GameHistory.tsx";
-import ProfileActions from "./ProfileActions.tsx";
-
-const ACCOUNT_ROLE_CONFIG: Record<
-	string,
-	{
-		label: string;
-		badgeClass: string;
-		dotClass: string;
-	}
-> = {
-	admin: {
-		label: "Administrador",
-		badgeClass: styles.roleAdmin,
-		dotClass: styles.roleAdminDot,
-	},
-	user: {
-		label: "Usuario",
-		badgeClass: styles.roleUser,
-		dotClass: styles.roleUserDot,
-	},
-};
+import UserInfo from "./UserInfo";
+import GraphsProfile from "./GraphsProfile";
+import GameHistory from "./GameHistory";
 
 interface RegisteredProfileViewProps {
 	games: GameRecord[];
-	onLogout: () => void;
-	onDeleteAccount: () => void;
+	onLogout?: () => void;
+	onDeleteAccount?: () => void;
+	notMyProfile?: boolean;
+	publicProfile?: UserRecord | null;
 }
 
 export default function RegisteredProfileView({
 	games,
 	onLogout,
 	onDeleteAccount,
+	notMyProfile = false,
+	publicProfile = null,
 }: RegisteredProfileViewProps) {
-	const { user, role, avatar, provider, providerAvatar } = useAuthStore();
-	const { uploadAvatar } = useAuth();
-	const [isUploading, setIsUploading] = useState(false);
+	const { id, user, role, avatar, provider, providerAvatar, joinedAt } =
+		useAuthStore();
 
-	const roleConfig =
-		ACCOUNT_ROLE_CONFIG[role ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
+	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
+		"info",
+	);
 
-	const fileInputRef = useRef<HTMLInputElement>(null);
-
-	// --- Lógica del Avatar ---
-	const handleAvatarClick = () => {
-		fileInputRef.current?.click();
-	};
-
-	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-
-		setIsUploading(true);
-		await uploadAvatar(file);
-		setIsUploading(false);
-
-		// Reseteamos el input por si quiere volver a subir la misma foto
-		if (e.target) e.target.value = "";
-	};
-
-	// Obtener iniciales (ej: "Usuario123" -> "US")
-	const initials = user ? user.substring(0, 2).toUpperCase() : "??";
-	const displayAvatar = avatar || providerAvatar;
-
-	// Procesar la URL del avatar (si es de Discord/Google empieza por http, si es local añadimos la URL del backend)
-	const avatarUrl = useMemo(() => {
-		if (!displayAvatar) return null;
-		if (displayAvatar.startsWith("http")) return displayAvatar;
-		const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-		return `${backendUrl}/storage/${displayAvatar}`;
-	}, [displayAvatar]);
+	const displayId = notMyProfile ? publicProfile?.id : id;
+	const displayUser = notMyProfile ? publicProfile?.username : user;
+	const displayRole = notMyProfile ? publicProfile?.role : role;
+	const displayJoinedAt = notMyProfile ? publicProfile?.joinedAt : joinedAt;
 
 	return (
-		<div className={styles.dossier}>
-			{/* ── CABECERA ── */}
-			<div className={styles.header}>
-				<div className={styles.headerLeft}>
-					{/* Contenedor del Avatar */}
-					<div
-						className={styles.avatarContainer}
-						onClick={handleAvatarClick}
-						title="Cambiar fotografía"
-					>
-						{isUploading ? (
-							<div className={styles.avatarFallback}>⏳</div>
-						) : avatarUrl ? (
-							<img
-								src={avatarUrl}
-								alt={`Avatar de ${user}`}
-								className={styles.avatarImage}
-							/>
-						) : (
-							<div className={styles.avatarFallback}>{initials}</div>
-						)}
-						<div className={styles.avatarOverlay}>📷</div>
-					</div>
+		<div className={styles.dossierContainer}>
+			<div className={styles.dossier}>
+				<div className={`${styles.tape} ${styles.tapeTopLeft}`} />
+				<div className={`${styles.tape} ${styles.tapeTopRight}`} />
+				<div className={`${styles.tape} ${styles.tapeBottomLeft}`} />
+				<div className={`${styles.tape} ${styles.tapeBottomRight}`} />
 
-					{/* Input oculto */}
-					<input
-						type="file"
-						ref={fileInputRef}
-						style={{ display: "none" }}
-						accept="image/jpeg, image/png, image/webp"
-						onChange={handleFileChange}
-					/>
-
-					{/* Textos de la cabecera */}
-					<div className={styles.headerText}>
-						<div className={styles.nameRow}>
-							<h1 className={styles.employeeName}>{user}</h1>
-
-							{/* 2. ETIQUETA CONDICIONAL DEL PROVIDER */}
-							{provider === "discord" && (
-								<span
-									className={`${styles.providerBadge} ${styles.badgeDiscord}`}
-								>
-									Discord
-								</span>
-							)}
-							{provider === "google" && (
-								<span
-									className={`${styles.providerBadge} ${styles.badgeGoogle}`}
-								>
-									Google
-								</span>
-							)}
-						</div>
-
-						<p className={styles.headerMeta}>
-							{games.length} partidas en el registro
-						</p>
-					</div>
+				<div className={styles.topSecretHeader}>
+					<span>CHAOS INC. // DPTO. RECURSOS HUMANOS</span>
+					<span className={styles.expedientNumber}>
+						EXP. #{displayId?.toString().padStart(4, "0") || "0000"}
+					</span>
 				</div>
 
-				{/* Badge de rol de cuenta */}
-				<div className={`${styles.roleBadge} ${roleConfig.badgeClass}`}>
-					<span className={`${styles.roleDot} ${roleConfig.dotClass}`} />
-					{roleConfig.label}
+				<div className={styles.navMenu}>
+					<button
+						className={`${styles.navBtn} ${activeTab === "info" ? styles.navBtnActive : ""}`}
+						onClick={() => setActiveTab("info")}
+					>
+						[INFORMACIÓN]
+					</button>
+					<button
+						className={`${styles.navBtn} ${activeTab === "stats" ? styles.navBtnActive : ""}`}
+						onClick={() => setActiveTab("stats")}
+					>
+						[ESTADÍSTICAS]
+					</button>
+					<button
+						className={`${styles.navBtn} ${activeTab === "history" ? styles.navBtnActive : ""}`}
+						onClick={() => setActiveTab("history")}
+					>
+						[HISTORIAL]
+					</button>
+				</div>
+
+				<div className={styles.divider} />
+
+				<div className={styles.sectionsWrapper}>
+					{activeTab === "info" && (
+						<UserInfo
+							notMyProfile={notMyProfile}
+							displayUser={displayUser}
+							displayRole={displayRole}
+							displayJoinedAt={displayJoinedAt}
+							avatar={avatar}
+							providerAvatar={providerAvatar}
+							provider={provider}
+							onLogout={onLogout}
+							onDeleteAccount={onDeleteAccount}
+						/>
+					)}
+
+					{activeTab === "stats" && (
+						<GraphsProfile games={games} user={displayUser} />
+					)}
+
+					{activeTab === "history" && (
+						<GameHistory games={games} user={displayUser} />
+					)}
 				</div>
 			</div>
-
-			{/* ── ESTADÍSTICAS GLOBALES ── */}
-			<GraphsProfile games={games} user={user} />
-
-			{/* ── HISTORIAL ── */}
-			<GameHistory games={games} user={user} />
-
-			{/* ── ACCIONES ── */}
-			<ProfileActions onLogout={onLogout} onDeleteAccount={onDeleteAccount} />
 		</div>
 	);
 }

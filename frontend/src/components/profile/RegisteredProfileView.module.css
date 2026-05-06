@@ -1,182 +1,325 @@
-/* Estilos de pagina de perfil registrado */
+/* src/components/profile/RegisteredProfileView.module.css */
 
+.dossierContainer {
+	padding: 1rem;
+	margin: 0 auto;
+	font-family: "Courier New", Courier, monospace;
+	position: relative;
+	max-width: 800px;
+}
+
+/* El cuerpo del documento (Hoja de papel pegada) */
 .dossier {
-    padding-left: 1rem;
-    padding-top: 0.5rem;
-    max-width: 680px;
-    font-family: "Courier New", Courier, monospace;
-    color: #393e42;
-}
-
-/* --- SECCIONES --- */
-.section {
-    padding: 1.25rem 0;
-    border-bottom: 1px solid rgba(143, 158, 155, 0.35);
-}
-
-.section:last-child {
-    border-bottom: none;
-    padding-bottom: 0.5rem;
-}
-
-.sectionLabel {
-    font-size: 0.6rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #989083;
-    margin: 0 0 8px 0;
-    line-height: 1;
+	background-color: #e2ddd2; /* Color papel más claro, para contrastar con la carpeta */
+	border: 1px solid #d1cbbd;
+	color: #2b2b2b;
+	position: relative;
+	/* Sombra sutil para dar la impresión de ser una hoja encima de otra superficie */
+	box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
+	padding: 2.5rem;
+	border-radius: 2px;
 }
 
 /* ========================================
-   CABECERA
+   CINTA ADHESIVA (CELO)
+   ======================================== */
+.tape {
+	position: absolute;
+	width: 100px;
+	height: 25px;
+	background-color: rgba(255, 255, 255, 0.4);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	backdrop-filter: blur(2px); /* Da el efecto de plástico translúcido */
+	z-index: 10;
+	/* Bordes irregulares simulando el corte del celo */
+	border-left: 2px dashed rgba(255, 255, 255, 0.5);
+	border-right: 2px dashed rgba(255, 255, 255, 0.5);
+}
+
+.tapeTopLeft {
+	top: 10px;
+	left: -35px;
+	transform: rotate(-45deg);
+}
+
+.tapeTopRight {
+	top: 10px;
+	right: -35px;
+	transform: rotate(45deg);
+}
+
+.tapeBottomLeft {
+	bottom: 5px;
+	left: -35px;
+	transform: rotate(45deg);
+}
+
+.tapeBottomRight {
+	bottom: 5px;
+	right: -30px;
+	transform: rotate(-45deg);
+}
+
+/* Cabecera del ministerio/departamento */
+.topSecretHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	border-bottom: 3px double #2b2b2b;
+	padding-bottom: 0.5rem;
+	margin-bottom: 2rem;
+	font-size: 0.75rem;
+	font-weight: 900;
+	letter-spacing: 1px;
+	position: relative;
+	z-index: 1;
+}
+
+.expedientNumber {
+	text-align: right;
+	line-height: 1.4;
+}
+
+/* ========================================
+   SECCIÓN: FOTO Y DATOS (GRID)
    ======================================== */
 .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 0.75rem 0 1.25rem 0;
-    border-bottom: 2px solid rgba(57, 62, 66, 0.2);
+	display: flex;
+	gap: 2rem;
+	align-items: flex-start;
+	position: relative;
+	z-index: 1;
 }
 
-.headerText {
-    display: flex;
-    flex-direction: column;
+/* --- FOTO TIPO POLAROID --- */
+.photoAttachment {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
-.headerLeft {
-    display: flex;
-    flex-direction: column;
+.clip {
+	position: absolute;
+	top: -15px;
+	left: 40%;
+	width: 15px;
+	height: 40px;
+	border: 3px solid #8e9496;
+	border-radius: 10px;
+	background: transparent;
+	z-index: 2;
+	transform: rotate(15deg);
+	box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
-.employeeName {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: #393e42;
-    margin: 0;
-    line-height: 64px;
-    letter-spacing: -0.5px;
-}
-
-.headerMeta {
-    font-size: 0.72rem;
-    color: #8f9e9b;
-    line-height: 1;
-    margin-top: 2px;
-}
-
-/* Estilo base de la etiqueta */
-.providerBadge {
-    font-size: 0.70rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    padding: 0.3rem 0.8rem;
-    border-radius: 4px;
-    color: #ffffff;
-    letter-spacing: 0.5px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-}
-
-/* Color corporativo de Discord (Blurple) */
-.badgeDiscord {
-    background-color: #5865F2;
-}
-
-/* Color corporativo de Google (Rojo/Carmesí) */
-.badgeGoogle {
-    background-color: #DB4437;
-}
-
-/* ── AVATAR ── */
 .avatarContainer {
-    position: relative;
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    background-color: #e2e8f0;
-    border: 1px solid #cbd5e1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: border-color 0.2s ease;
+	width: 140px;
+	height: 140px;
+	background-color: #d1c8b8;
+	border: 4px solid #fff;
+	box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.2);
+	position: relative;
+	cursor: pointer;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform: rotate(-2deg);
+	transition: transform 0.2s ease;
 }
 
 .avatarContainer:hover {
-    border-color: #64748b;
+	transform: rotate(0deg) scale(1.02);
 }
 
 .avatarImage {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	filter: contrast(1.1) sepia(0.2);
 }
 
 .avatarFallback {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #475569;
-    letter-spacing: 1px;
+	font-size: 2rem;
+	font-weight: 900;
+	color: #555;
+	letter-spacing: 2px;
 }
 
 .avatarOverlay {
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+	position: absolute;
+	inset: 0;
+	background-color: rgba(0, 0, 0, 0.7);
+	color: white;
+	font-weight: bold;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	font-size: 0.8rem;
+	letter-spacing: 1px;
 }
 
 .avatarContainer:hover .avatarOverlay {
-    opacity: 1;
+	opacity: 1;
 }
 
-/* --- BADGE DE ROL (solo usuarios registrados) --- */
+/* --- FORMULARIO DE DATOS --- */
+.employeeData {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 1.25rem;
+}
+
+.formGroup {
+	display: flex;
+	flex-direction: column;
+}
+
+.formGroup label {
+	font-size: 0.65rem;
+	font-weight: 900;
+	color: #555;
+	margin-bottom: 4px;
+}
+
+.formRow {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+}
+
+.formValue {
+	border-bottom: 2px dotted #2b2b2b;
+	padding-bottom: 4px;
+	font-weight: bold;
+	min-height: 24px;
+	display: flex;
+	align-items: flex-end;
+}
+
+.employeeName {
+	font-size: 1.8rem;
+	font-weight: 900;
+	color: #1a1a1a;
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+/* --- SELLOS Y BADGES --- */
 .roleBadge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 2px;
-    font-size: 0.65rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    border: 2px solid;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-top: 10px;
+	display: inline-block;
+	padding: 4px 8px;
+	font-size: 0.75rem;
+	font-weight: 900;
+	border: 2px solid;
+	text-align: center;
+	transform: rotate(-1deg);
 }
 
-.roleDot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
-/* Admin — amarillo */
 .roleAdmin {
-    background-color: rgba(203, 190, 52, 0.12);
-    border-color: #cbbe34;
-    color: #7a6f1a;
-}
-.roleAdminDot {
-    background-color: #cbbe34;
+	color: #d32f2f;
+	border-color: #d32f2f;
+	background-color: rgba(211, 47, 47, 0.05);
 }
 
-/* User — teal */
 .roleUser {
-    background-color: rgba(41, 92, 96, 0.1);
-    border-color: #295c60;
-    color: #1e4548;
+	color: #1e3a8a;
+	border-color: #1e3a8a;
+	background-color: rgba(30, 58, 138, 0.05);
 }
-.roleUserDot {
-    background-color: #295c60;
+
+.providerContainer {
+	display: flex;
+	align-items: flex-end;
+	height: 100%;
+}
+
+.providerBadge {
+	font-size: 0.7rem;
+	font-weight: 900;
+	padding: 4px 8px;
+	color: #fff;
+	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+}
+
+.badgeDiscord {
+	background-color: #5865f2;
+	border: 1px solid #4752c4;
+}
+
+.badgeGoogle {
+	background-color: #db4437;
+	border: 1px solid #b0362c;
+}
+
+.badgeInternal {
+	background-color: #2b2b2b;
+	border: 1px solid #000;
+}
+
+/* ========================================
+   SECCIONES INFERIORES
+   ======================================== */
+.divider {
+	height: 2px;
+	background: repeating-linear-gradient(
+		90deg,
+		#2b2b2b,
+		#2b2b2b 10px,
+		transparent 10px,
+		transparent 20px
+	);
+	margin: 2rem 0;
+	position: relative;
+	z-index: 1;
+}
+
+.sectionsWrapper {
+	position: relative;
+	z-index: 1;
+}
+
+/* ========================================
+   ÍNDICE DE NAVEGACIÓN (TABS)
+   ======================================== */
+.navMenu {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap; /* Por si estamos en móvil */
+}
+
+.navBtn {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #2b2b2b;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 1px;
+}
+
+.navBtn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-bottom-color: #2b2b2b;
+}
+
+/* El efecto "Rotulador Fosforito" para la pestaña activa */
+.navBtnActive {
+    background-color: #fff065; /* Amarillo rotulador */
+    color: #000;
+    border-bottom-color: #000;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
 }

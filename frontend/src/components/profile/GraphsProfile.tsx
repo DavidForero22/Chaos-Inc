@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+// src/components/profile/GraphsProfile.tsx
+
+import { useState, useMemo } from "react";
 import type { GameRecord } from "../../types/api";
 import styles from "./GraphsProfile.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
@@ -9,6 +11,8 @@ interface GraphsProfileProps {
 }
 
 export default function GraphsProfile({ games, user }: GraphsProfileProps) {
+	const [isExpanded, setIsExpanded] = useState(false);
+
 	const stats = useMemo(() => {
 		if (!user) {
 			return { wins: 0, damage: 0, received: 0, cards: 0, eliminations: 0 };
@@ -32,33 +36,70 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 
 	return (
 		<div className={viewStyles.section}>
-			<p className={viewStyles.sectionLabel}>Estadísticas Globales</p>
+			{/* ── ESTADÍSTICAS BÁSICAS (Siempre Visibles) ── */}
 			<div className={styles.statsGrid}>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Victorias</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>PARTIDAS EVALUADAS:</span>
+					<span className={styles.statValue}>{games.length}</span>
+				</div>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>VICTORIAS REGISTRADAS:</span>
 					<span className={`${styles.statValue} ${styles.statValueHighlight}`}>
 						{stats.wins}
 					</span>
 				</div>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Derrotas</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>ÍNDICE DE DERROTAS:</span>
 					<span className={styles.statValue}>{games.length - stats.wins}</span>
 				</div>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Eliminaciones</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>SUJETOS ELIMINADOS:</span>
 					<span className={styles.statValue}>{stats.eliminations}</span>
 				</div>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Daño infligido</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>DAÑO INFLIGIDO (TOTAL):</span>
 					<span className={styles.statValue}>{stats.damage}</span>
 				</div>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Daño recibido</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>DAÑO RECIBIDO (TOTAL):</span>
 					<span className={styles.statValue}>{stats.received}</span>
 				</div>
-				<div className={styles.statCell}>
-					<span className={styles.statLabel}>Cartas jugadas</span>
+				<div className={styles.statRow}>
+					<span className={styles.statLabel}>PRODUCTIVIDAD (CARTAS):</span>
 					<span className={styles.statValue}>{stats.cards}</span>
+				</div>
+			</div>
+
+			{/* ── BOTÓN PARA DESPLEGAR ── */}
+			<button
+				className={styles.expandBtn}
+				onClick={() => setIsExpanded(!isExpanded)}
+			>
+				{isExpanded
+					? "[-] CERRAR EXPEDIENTE VISUAL"
+					: "[+] ABRIR EXPEDIENTE VISUAL (ECHARTS)"}
+			</button>
+
+			{/* ── CONTENEDOR EXPANDIBLE (Futuro ECharts) ── */}
+			<div
+				className={`${styles.expandableWrapper} ${isExpanded ? styles.open : ""}`}
+			>
+				<div className={styles.expandedContentInner}>
+					<div className={styles.expandedContent}>
+						<div className={styles.classifiedStamp}>CLASIFICADO</div>
+						<p className={styles.placeholderTitle}>
+							EXPEDIENTE VISUAL DE RENDIMIENTO
+						</p>
+						<p className={styles.placeholderDesc}>
+							[ ESPACIO RESERVADO PARA LA INSERCIÓN DE GRÁFICOS DEL DEPARTAMENTO
+							DE ANÁLISIS ECHARTS ]
+						</p>
+
+						<div className={styles.placeholderGraphs}>
+							<div className={styles.graphBox}>RADAR DE PERFIL</div>
+							<div className={styles.graphBox}>HISTÓRICO DE PRODUCTIVIDAD</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>

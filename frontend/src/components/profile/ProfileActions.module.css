@@ -1,123 +1,168 @@
-.section {
-	padding: 1.25rem 0;
-	border-bottom: 1px solid rgba(143, 158, 155, 0.35);
-}
+/* src/components/profile/ProfileActions.module.css */
 
-.section:last-child {
-	border-bottom: none;
-	padding-bottom: 0.5rem;
+.section {
+	padding-top: 1rem;
 }
 
 .sectionLabel {
-	font-size: 0.6rem;
-	font-weight: 900;
-	text-transform: uppercase;
-	letter-spacing: 2px;
-	color: #989083;
-	margin: 0 0 8px 0;
-	line-height: 1;
-}
-
-.actionBtn {
-	display: block;
-	width: 100%;
-	padding: 10px 0;
-	font-family: "Courier New", Courier, monospace;
 	font-size: 0.75rem;
 	font-weight: 900;
 	text-transform: uppercase;
-	letter-spacing: 1.5px;
-	border-radius: 2px;
-	cursor: pointer;
-	transition: all 0.15s;
-	text-align: center;
+	letter-spacing: 2px;
+	color: #2b2b2b;
+	margin: 0 0 1rem 0;
+	border-bottom: 2px solid #2b2b2b;
+	padding-bottom: 4px;
+	display: inline-block;
 }
 
-.actionBtnDelete {
-	background: transparent;
-	border: 1.5px dashed rgba(139, 44, 44, 0.4);
-	color: #8b2c2c;
-	margin-top: 8px;
-}
-
-.actionBtnDelete:hover {
-	background-color: rgba(139, 44, 44, 0.06);
-	border-style: solid;
-}
-
-.deleteConfirm {
-	margin-top: 8px;
-	border: 1.5px solid rgba(139, 44, 44, 0.35);
-	border-radius: 2px;
-	padding: 14px;
-	background-color: rgba(139, 44, 44, 0.04);
-}
-
-.deleteConfirmText {
-	font-size: 0.72rem;
-	color: #8b2c2c;
-	text-align: center;
-	margin: 0 0 12px 0;
-	line-height: 1.5;
-}
-
-.deleteConfirmBtns {
+.actionsGrid {
 	display: flex;
-	gap: 8px;
+	flex-direction: column;
+	gap: 0.8rem;
 }
 
-.confirmCancel {
-	flex: 1;
-	padding: 8px 0;
+/* --- ESTILO BASE DE BOTONES --- */
+.actionBtn {
+	display: block;
+	width: 100%;
+	padding: 12px;
 	font-family: "Courier New", Courier, monospace;
-	font-size: 0.7rem;
+	font-size: 0.8rem;
 	font-weight: 900;
 	text-transform: uppercase;
 	letter-spacing: 1px;
-	border: 1.5px solid rgba(57, 62, 66, 0.35);
-	border-radius: 2px;
 	background: transparent;
-	color: #393e42;
+	border: 2px solid #2b2b2b;
+	color: #2b2b2b;
 	cursor: pointer;
-	transition: background-color 0.15s;
+	transition:
+		transform 0.1s ease,
+		box-shadow 0.1s ease;
+	text-align: center;
+	box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
 }
 
-.confirmCancel:hover {
-	background-color: rgba(57, 62, 66, 0.07);
+.actionBtn:active {
+	transform: translate(2px, 2px);
+	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
 }
 
-.confirmDelete {
-	flex: 1;
-	padding: 8px 0;
-	font-family: "Courier New", Courier, monospace;
-	font-size: 0.7rem;
-	font-weight: 900;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	border: 1.5px solid #8b2c2c;
-	border-radius: 2px;
-	background-color: #8b2c2c;
-	color: #d2d4d1;
-	cursor: pointer;
-	transition: opacity 0.15s;
+/* --- VARIANTES DE BOTÓN --- */
+
+/* Cerrar sesión: Tinta negra estándar */
+.actionBtnLogout {
+	background-color: #d1c8b8;
 }
 
-.confirmDelete:hover {
-	opacity: 0.85;
+.actionBtnLogout:hover {
+	background-color: #c0b5a3;
 }
 
+/* Sincronización: Líneas discontinuas de formulario */
 .actionBtnSync {
-	background-color: #f1f5f9;
-	color: #334155;
-	border: 1px solid #cbd5e1;
-	margin-bottom: 0.5rem;
+	border-style: dashed;
+	background-color: #eaddc5;
 }
 
 .actionBtnSync:hover:not(:disabled) {
-	background-color: #e2e8f0;
+	background-color: #d8c7a9;
+	border-style: solid;
 }
 
 .actionBtnSync:disabled {
 	opacity: 0.6;
 	cursor: not-allowed;
+	transform: none;
+	box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* Borrar Cuenta: Tinta Roja de Urgencia */
+.actionBtnDelete {
+	border-color: #d32f2f;
+	color: #d32f2f;
+	background-color: rgba(211, 47, 47, 0.05);
+}
+
+.actionBtnDelete:hover {
+	background-color: #d32f2f;
+	color: #fff;
+}
+
+/* --- CAJAS DE ADVERTENCIA (FORMULARIOS ANEXOS) --- */
+.warningBox {
+	border: 2px solid #2b2b2b;
+	background-color: #eaddc5;
+	padding: 1rem;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+	margin-bottom: 0.2rem;
+}
+
+/* Variante crítica para borrado de cuenta */
+.criticalWarning {
+	border-color: #d32f2f;
+	background-color: rgba(211, 47, 47, 0.1);
+}
+
+.criticalWarning .warningText {
+	color: #b71c1c;
+}
+
+.warningText {
+	font-size: 0.75rem;
+	font-weight: bold;
+	color: #2b2b2b;
+	margin: 0 0 1rem 0;
+	line-height: 1.4;
+	text-align: justify;
+}
+
+/* --- BOTONES DENTRO DE LOS AVISOS --- */
+.confirmBtns {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.btnCancel,
+.btnConfirmSync,
+.btnConfirmDelete {
+	flex: 1;
+	padding: 8px 0;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.75rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	border: 2px solid #2b2b2b;
+	cursor: pointer;
+	transition: background-color 0.15s;
+}
+
+.btnCancel {
+	background: transparent;
+	color: #2b2b2b;
+}
+
+.btnCancel:hover {
+	background-color: #d1c8b8;
+}
+
+/* Confirmar Sincronización */
+.btnConfirmSync {
+	background-color: #2b2b2b;
+	color: #fff;
+}
+
+.btnConfirmSync:hover {
+	background-color: #000;
+}
+
+/* Confirmar Purga */
+.btnConfirmDelete {
+	border-color: #d32f2f;
+	background-color: #d32f2f;
+	color: #fff;
+}
+
+.btnConfirmDelete:hover {
+	background-color: #b71c1c;
 }

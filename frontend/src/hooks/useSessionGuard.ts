@@ -34,6 +34,7 @@ export function useSessionGuard() {
 					me.role ?? "user",
 					me.provider,
 					me.providerAvatar,
+					me.joinedAt,
 				);
 			} catch (err: any) {
 				const status = err?.response?.status;

@@ -1,46 +1,166 @@
-/* Estilos de estadísticas */
+/* src/components/profile/GraphsProfile.module.css */
 
+/* --- TABLA DE DATOS BÁSICOS --- */
 .statsGrid {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
-	border: 1.5px solid rgba(143, 158, 155, 0.4);
-	border-radius: 3px;
-	overflow: hidden;
+	grid-template-columns: repeat(2, 1fr);
+	column-gap: 3rem;
+	row-gap: 0.8rem;
+	margin-bottom: 1.5rem;
+	padding: 1.5rem 0;
+	border-top: 2px solid #2b2b2b;
+	border-bottom: 2px solid #2b2b2b;
 }
 
-.statCell {
-	padding: 12px 14px;
-	border-right: 1px solid rgba(143, 158, 155, 0.3);
-	border-bottom: 1px solid rgba(143, 158, 155, 0.3);
+.statRow {
 	display: flex;
-	flex-direction: column;
-	gap: 3px;
-}
-
-.statCell:nth-child(3n) {
-	border-right: none;
-}
-
-.statCell:nth-last-child(-n + 3) {
-	border-bottom: none;
+	align-items: baseline;
+	justify-content: flex-start;
+	gap: 0.5rem; /* Junta el nombre y el número */
+	border-bottom: 1px dotted rgba(43, 43, 43, 0.3);
+	padding-bottom: 4px;
 }
 
 .statLabel {
-	font-size: 0.6rem;
+	font-size: 0.75rem;
 	font-weight: 900;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	color: #989083;
-	line-height: 1;
+	color: #555;
 }
 
 .statValue {
-	font-size: 1.4rem;
+	font-size: 1.2rem;
 	font-weight: 900;
-	color: #393e42;
-	line-height: 1.2;
+	color: #2b2b2b;
+	font-family: "Courier New", Courier, monospace;
 }
 
 .statValueHighlight {
-	color: #295c60;
+	color: #1e3a8a; 
+}
+
+/* --- BOTÓN DE EXPANSIÓN --- */
+.expandBtn {
+	width: 100%;
+	background-color: transparent;
+	border: 2px dashed #2b2b2b;
+	padding: 0.75rem;
+	font-family: "Courier New", Courier, monospace;
+	font-weight: 900;
+	font-size: 0.8rem;
+	color: #2b2b2b;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-align: center;
+	background-image: repeating-linear-gradient(
+		45deg,
+		rgba(0, 0, 0, 0.02) 0px,
+		rgba(0, 0, 0, 0.02) 10px,
+		transparent 10px,
+		transparent 20px
+	);
+}
+
+.expandBtn:hover {
+	background-color: #2b2b2b;
+	color: #f4ece1;
+}
+
+/* ========================================
+   CONTENEDOR DESPLEGABLE CON ANIMACIÓN FLUIDA
+   ======================================== */
+.expandableWrapper {
+	display: grid;
+	grid-template-rows: 0fr;
+	transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expandableWrapper.open {
+	grid-template-rows: 1fr;
+}
+
+.expandedContentInner {
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.expandableWrapper.open .expandedContentInner {
+	opacity: 1;
+}
+
+.expandedContent {
+	margin-top: 1rem;
+	border: 2px dashed #2b2b2b;
+	padding: 2rem 1rem;
+	background-color: rgba(0, 0, 0, 0.03);
+	position: relative;
+}
+
+/* Sellos y decoraciones */
+.classifiedStamp {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) rotate(-15deg);
+	font-size: 4rem;
+	font-weight: 900;
+	color: #d32f2f;
+	border: 6px solid #d32f2f;
+	padding: 0 1rem;
+	opacity: 0.15;
+	pointer-events: none;
+	letter-spacing: 5px;
+}
+
+.placeholderTitle {
+	font-size: 0.9rem;
+	font-weight: 900;
+	text-align: center;
+	margin: 0 0 0.5rem 0;
+	color: #2b2b2b;
+}
+
+.placeholderDesc {
+	font-size: 0.7rem;
+	text-align: center;
+	color: #666;
+	margin-bottom: 2rem;
+}
+
+.placeholderGraphs {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	position: relative;
+	z-index: 1;
+}
+
+.graphBox {
+	height: 150px;
+	border: 1px solid #2b2b2b;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: bold;
+	color: #555;
+	background: repeating-linear-gradient(
+		-45deg,
+		rgba(0, 0, 0, 0.05) 0px,
+		rgba(0, 0, 0, 0.05) 2px,
+		transparent 2px,
+		transparent 8px
+	);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+	.statsGrid {
+		grid-template-columns: 1fr; /* Pasa a 1 columna en pantallas pequeñas */
+		column-gap: 0;
+	}
+
+	.placeholderGraphs {
+		grid-template-columns: 1fr;
+	}
 }

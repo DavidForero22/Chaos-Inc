@@ -1,94 +1,289 @@
-/* Estilos de historial de partidas */
+/* src/components/profile/GameHistory.module.css */
 
 .historySection {
-	padding: 1.25rem 0;
-	border-bottom: 1px solid rgba(143, 158, 155, 0.35);
+	padding-top: 1rem;
+	font-family: "Courier New", Courier, monospace;
+	color: #2b2b2b;
 }
 
 .historyLabel {
-	font-size: 0.6rem;
+	font-size: 0.75rem;
 	font-weight: 900;
 	text-transform: uppercase;
 	letter-spacing: 2px;
-	color: #989083;
-	margin: 0 0 8px 0;
-	line-height: 1;
-}
-
-.gameList {
-	display: flex;
-	flex-direction: column;
-	gap: 0;
-}
-
-.gameRow {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 10px 12px;
-	border: 1.5px solid rgba(143, 158, 155, 0.35);
-	border-top: none;
-	transition: background-color 0.12s;
-}
-
-.gameRow:first-child {
-	border-top: 1.5px solid rgba(143, 158, 155, 0.35);
-	border-radius: 3px 3px 0 0;
-}
-
-.gameRow:last-child {
-	border-radius: 0 0 3px 3px;
-}
-
-.gameRow:hover {
-	background-color: rgba(41, 92, 96, 0.04);
-}
-
-.gameRowWin {
-	border-left: 3px solid #295c60;
-}
-.gameRowLoss {
-	border-left: 3px solid #989083;
-}
-
-.gameResult {
-	font-size: 0.78rem;
-	font-weight: 900;
-	color: #393e42;
-	line-height: 1.4;
-}
-
-.gameResultWin {
-	color: #295c60;
-}
-.gameResultLoss {
-	color: #989083;
-}
-
-.gameRole {
-	font-size: 0.7rem;
-	color: #393e42;
-	margin-top: 1px;
-	line-height: 1.4;
-}
-
-.gameMeta {
-	font-size: 0.65rem;
-	color: #989083;
-	margin-top: 2px;
-	line-height: 1.4;
-}
-
-.gameStats {
-	text-align: right;
-	font-size: 0.68rem;
-	color: #8f9e9b;
-	line-height: 1.8;
+	color: #2b2b2b;
+	margin: 0 0 1rem 0;
+	border-bottom: 2px solid #2b2b2b;
+	padding-bottom: 4px;
+	display: inline-block;
 }
 
 .emptyHistory {
-	font-size: 0.82rem;
-	color: #989083;
-	font-style: italic;
-	line-height: 32px;
+	font-size: 0.85rem;
+	font-weight: bold;
+	color: #555;
+	text-align: center;
+	padding: 2rem;
+	border: 2px dashed #2b2b2b;
+	background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* ========================================
+   TABLA PRINCIPAL
+   ======================================== */
+.gameList {
+	border: 2px solid #2b2b2b;
+	background-color: rgba(255, 255, 255, 0.3);
+}
+
+.tableHeader {
+	display: grid;
+	grid-template-columns: 1.5fr 1.5fr 2fr 1fr 1fr;
+	padding: 10px 15px;
+	font-size: 0.7rem;
+	font-weight: 900;
+	background-color: #2b2b2b;
+	color: #fcf9f2;
+	letter-spacing: 1px;
+}
+
+.gameRecord {
+	border-bottom: 1px solid #2b2b2b;
+}
+.gameRecord:last-child {
+	border-bottom: none;
+}
+
+/* Fila principal colapsada */
+.gameRow {
+	display: grid;
+	grid-template-columns: 1.5fr 1.5fr 2fr 1fr 1fr;
+	padding: 12px 15px;
+	align-items: center;
+	cursor: pointer;
+	font-size: 0.8rem;
+	font-weight: bold;
+	transition: background-color 0.15s;
+}
+
+.gameRow:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.gameRowWin {
+	border-left: 4px solid #1e3a8a; 
+}
+.gameRowLoss {
+	border-left: 4px solid #d32f2f; 
+}
+
+.gameDate {
+	color: #555;
+}
+.gameRole {
+	color: #2b2b2b;
+}
+.gameMeta {
+	color: #555;
+}
+.expandIcon {
+	font-weight: 900;
+}
+
+.resultWin {
+	color: #1e3a8a;
+	font-weight: 900;
+}
+.resultLoss {
+	color: #d32f2f;
+	font-weight: 900;
+}
+
+.textRight {
+	text-align: right;
+}
+.textCenter {
+	text-align: center;
+}
+
+/* ========================================
+   CONTENIDO EXPANDIDO (REPORTE) CON ANIMACIÓN
+   ======================================== */
+
+/* Contenedor Grid para animar alturas automáticas */
+.expandableWrapper {
+	display: grid;
+	grid-template-rows: 0fr; 
+	transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.expandableWrapper.open {
+	grid-template-rows: 1fr; 
+}
+
+/* Ocultar el sobrante cuando está colapsado y animar opacidad */
+.expandedContentInner {
+	overflow: hidden;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.expandableWrapper.open .expandedContentInner {
+	opacity: 1;
+}
+
+/* El diseño de la caja en sí */
+.expandedContent {
+	background-color: rgba(0, 0, 0, 0.03);
+	border-top: 1px dashed #2b2b2b;
+	padding: 1.5rem;
+	box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.02);
+}
+
+.expandedTitle {
+	font-size: 0.8rem;
+	font-weight: 900;
+	text-decoration: underline;
+	margin: 0 0 1rem 0;
+}
+
+.myStatsBar {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	padding: 10px;
+	background-color: rgba(255, 255, 255, 0.5);
+	border: 1px solid #2b2b2b;
+	font-size: 0.75rem;
+	font-weight: bold;
+	margin-bottom: 1.5rem;
+}
+
+.playersLabel {
+	font-size: 0.7rem;
+	font-weight: 900;
+	margin: 0 0 0.5rem 0;
+	color: #555;
+}
+
+/* Tabla de jugadores interna */
+.playersTable {
+	border-left: 2px solid #2b2b2b;
+	padding-left: 1rem;
+}
+
+.playerHeader {
+	display: grid;
+	grid-template-columns: 3fr 2fr 1fr 1fr;
+	font-size: 0.65rem;
+	font-weight: 900;
+	color: #777;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 4px;
+	margin-bottom: 6px;
+}
+
+.playerRow {
+	display: grid;
+	grid-template-columns: 3fr 2fr 1fr 1fr;
+	font-size: 0.75rem;
+	padding: 4px 0;
+	border-bottom: 1px dotted #ccc;
+	font-weight: normal;
+}
+
+.playerRow:last-child {
+	border-bottom: none;
+}
+
+.playerWon {
+	font-weight: bold;
+	color: #1e3a8a;
+}
+
+.playerName {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-right: 10px;
+}
+
+.profileLink {
+	color: #2b2b2b;
+	text-decoration: none;
+	border-bottom: 1px dashed #2b2b2b;
+	transition: all 0.2s;
+}
+
+.profileLink:hover {
+	background-color: #ffeb3b; 
+	border-bottom-style: solid;
+}
+
+/* ========================================
+   PAGINACIÓN
+   ======================================== */
+.pagination {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 2px dotted #2b2b2b;
+}
+
+.pageBtn {
+	background: transparent;
+	border: none;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	font-weight: 900;
+	color: #2b2b2b;
+	cursor: pointer;
+	transition: color 0.2s;
+}
+
+.pageBtn:hover:not(:disabled) {
+	color: #1e3a8a;
+	text-decoration: underline;
+}
+
+.pageBtn:disabled {
+	color: #aaa;
+	cursor: not-allowed;
+}
+
+.pageInfo {
+	font-size: 0.7rem;
+	font-weight: bold;
+	color: #555;
+}
+
+@media (max-width: 600px) {
+	.tableHeader,
+	.gameRow {
+		grid-template-columns: 1fr 1fr 1fr; /* Ocultar rondas y resultado en móvil */
+	}
+	.tableHeader span:nth-child(2),
+	.gameRow span:nth-child(2),
+	.tableHeader span:nth-child(4),
+	.gameRow span:nth-child(4) {
+		display: none;
+	}
+
+	.playerHeader,
+	.playerRow {
+		grid-template-columns: 1fr 1fr; /* Ocultar daño y bajas en móvil */
+	}
+	.playerHeader span:nth-child(3),
+	.playerRow span:nth-child(3),
+	.playerHeader span:nth-child(4),
+	.playerRow span:nth-child(4) {
+		display: none;
+	}
+
+	.pagination {
+		flex-direction: column;
+		gap: 1rem;
+	}
 }
