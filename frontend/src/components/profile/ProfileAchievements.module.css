@@ -19,14 +19,15 @@
 	flex-wrap: wrap;
 	gap: 1.5rem;
 	padding: 1.5rem;
-	background-color: rgba(0, 0, 0, 0.02); /* Fondo ligeramente oscuro */
+	background-color: rgba(0, 0, 0, 0.02);
 	border: 1px dashed #2b2b2b;
 	border-radius: 2px;
 	min-height: 100px;
+    justify-content: center;
 }
 
 /* ========================================
-   EFECTO PEGATINA (STICKER MAGICO)
+   EFECTO PEGATINA DESBLOQUEADA
    ======================================== */
 .logroStickerContainer {
 	position: relative;
@@ -34,58 +35,121 @@
 	cursor: pointer;
 	width: 64px;
 	height: 64px;
+	overflow: hidden;
+	border-radius: 4px;
+
 	transition:
 		transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
 		z-index 0s;
 	z-index: 1;
 }
 
+.logroStickerContainer::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: -100%;
+	width: 50%;
+	height: 100%;
+
+	background: linear-gradient(
+		to right,
+		rgba(255, 255, 255, 0) 0%,
+		rgba(255, 255, 255, 0.4) 50%,
+		rgba(255, 255, 255, 0) 100%
+	);
+
+	transform: skewX(-25deg);
+	z-index: 2;
+	pointer-events: none;
+}
+
 .logroStickerContainer:hover {
-	transform: rotate(0deg) scale(1.15) !important; /* Se endereza y agranda */
+	transform: rotate(0deg) scale(1.15) !important;
 	z-index: 10;
+}
+
+.logroStickerContainer:hover::before {
+	left: 150%;
+	transition: left 0.4s ease-out;
 }
 
 .logroSticker {
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
-	image-rendering: pixelated; /* CRUCIAL: Evita que el pixel art se vea borroso */
-
-	/* 1. EL TROQUELADO: 4 sombras duras sin desenfoque hacen un borde perfecto */
 	filter: drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white)
 		drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
 }
 
-/* 2. LA SOMBRA EN EL PAPEL */
 .logroStickerContainer::after {
 	content: "";
 	position: absolute;
-	inset: -2px; /* Ligeramente más grande que la imagen */
+	inset: -2px;
 	background: transparent;
 	border-radius: 4px;
 	z-index: -1;
-	/* Sombra proyectada en la carpeta */
 	filter: drop-shadow(3px 4px 3px rgba(0, 0, 0, 0.3));
 }
 
 /* ========================================
-   HUECOS VACÍOS
+   EFECTO PEGATINA BLOQUEADA
    ======================================== */
-.emptySlot {
+.lockedStickerContainer {
+	position: relative;
+	display: inline-block;
+	cursor: help;
 	width: 64px;
 	height: 64px;
-	border: 2px dotted rgba(43, 43, 43, 0.3);
+	overflow: hidden;
 	border-radius: 4px;
-	background-color: rgba(255, 255, 255, 0.3);
+	z-index: 1;
+}
+
+.lockedSticker {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	filter: grayscale(100%) opacity(0.1) drop-shadow(2px 0 0 white)
+		drop-shadow(-2px 0 0 white) drop-shadow(0 2px 0 white)
+		drop-shadow(0 -2px 0 white);
+	transition: opacity 0.2s ease;
+}
+
+.lockedStickerContainer::after {
+	content: "";
+	position: absolute;
+	inset: -2px;
+	background: transparent;
+	border-radius: 4px;
+	z-index: -1;
+	filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.15));
+}
+
+/* Overlay de la Interrogación */
+.lockedOverlay {
+	position: absolute;
+	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transform: rotate(1deg); /* Ligeramente torcido también */
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
 }
 
-.emptyQuestion {
+.lockedOverlay span {
 	font-family: "Courier New", Courier, monospace;
-	font-size: 1.5rem;
+	font-size: 2.5rem;
 	font-weight: 900;
-	color: rgba(43, 43, 43, 0.2);
+	color: #2b2b2b;
+}
+
+/* Animaciones en Hover para Logros Bloqueados */
+.lockedStickerContainer:hover .lockedOverlay {
+	opacity: 1;
+}
+
+.lockedStickerContainer:hover .lockedSticker {
+	opacity: 0.6;
 }
