@@ -1,0 +1,91 @@
+/* src/components/profile/ProfileAchievements.module.css */
+
+.achievementsSection {
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
+}
+
+.sectionLabel {
+	font-size: 0.65rem;
+	font-weight: 900;
+	color: #555;
+	margin-bottom: 1rem;
+	letter-spacing: 1px;
+}
+
+/* El álbum de pegatinas */
+.stickersGrid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1.5rem;
+	padding: 1.5rem;
+	background-color: rgba(0, 0, 0, 0.02); /* Fondo ligeramente oscuro */
+	border: 1px dashed #2b2b2b;
+	border-radius: 2px;
+	min-height: 100px;
+}
+
+/* ========================================
+   EFECTO PEGATINA (STICKER MAGICO)
+   ======================================== */
+.logroStickerContainer {
+	position: relative;
+	display: inline-block;
+	cursor: pointer;
+	width: 64px;
+	height: 64px;
+	transition:
+		transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+		z-index 0s;
+	z-index: 1;
+}
+
+.logroStickerContainer:hover {
+	transform: rotate(0deg) scale(1.15) !important; /* Se endereza y agranda */
+	z-index: 10;
+}
+
+.logroSticker {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	image-rendering: pixelated; /* CRUCIAL: Evita que el pixel art se vea borroso */
+
+	/* 1. EL TROQUELADO: 4 sombras duras sin desenfoque hacen un borde perfecto */
+	filter: drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white)
+		drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white);
+}
+
+/* 2. LA SOMBRA EN EL PAPEL */
+.logroStickerContainer::after {
+	content: "";
+	position: absolute;
+	inset: -2px; /* Ligeramente más grande que la imagen */
+	background: transparent;
+	border-radius: 4px;
+	z-index: -1;
+	/* Sombra proyectada en la carpeta */
+	filter: drop-shadow(3px 4px 3px rgba(0, 0, 0, 0.3));
+}
+
+/* ========================================
+   HUECOS VACÍOS
+   ======================================== */
+.emptySlot {
+	width: 64px;
+	height: 64px;
+	border: 2px dotted rgba(43, 43, 43, 0.3);
+	border-radius: 4px;
+	background-color: rgba(255, 255, 255, 0.3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform: rotate(1deg); /* Ligeramente torcido también */
+}
+
+.emptyQuestion {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 1.5rem;
+	font-weight: 900;
+	color: rgba(43, 43, 43, 0.2);
+}

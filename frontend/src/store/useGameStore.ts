@@ -132,9 +132,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 				error.response?.status === 400 &&
 				error.response?.data?.type === "GAME_NOT_STARTED"
 			) {
-				console.log(
-					"[syncGame] Sincronización omitida: La partida aún está en fase de preparación.",
-				);
 				return;
 			}
 

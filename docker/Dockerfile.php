@@ -18,8 +18,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Copiar el contenido del backend
+# Copiar solo los archivos de dependencias
+COPY ./backend/composer.json ./backend/composer.lock /var/www/html/
+
+# Instalar sin scripts ni autoloader (para que no falle al no tener el código aún)
+RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
+
 COPY ./backend /var/www/html
+
+# Generar el autoloader optimizado
+RUN composer dump-autoload --optimize
 
 # Permisos para Laravel (Evita errores de escritura en logs y caché)
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

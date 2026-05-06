@@ -23,6 +23,7 @@ services:
       dockerfile: ./docker/Dockerfile.php
     volumes:
       - ./backend:/var/www/html
+      - /var/www/html/vendor
       - ./docker/Caddyfile:/etc/caddy/Caddyfile
     ports:
       - "8000:8000"
@@ -31,11 +32,10 @@ services:
     environment:
       SERVER_NAME: ":8000"
     command: >
-      sh -c "composer install --no-interaction --prefer-dist &&
-            php artisan config:clear &&
-            php artisan cache:clear &&
-            php artisan migrate --force &&
-            frankenphp run --config /etc/caddy/Caddyfile"
+      sh -c "php artisan config:clear && 
+             php artisan cache:clear && 
+             php artisan migrate --force && 
+             frankenphp run --config /etc/caddy/Caddyfile"
     depends_on:
       - mysql
       - redis

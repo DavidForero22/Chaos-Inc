@@ -4,6 +4,7 @@ import { useState, useMemo, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import ProfileActions from "./ProfileActions";
+import ProfileAchievements from "./ProfileAchievements";
 import styles from "./UserInfo.module.css";
 
 const ACCOUNT_ROLE_CONFIG: Record<
@@ -161,7 +162,7 @@ export default function UserInfo({
 						<strong>
 							{displayJoinedAt
 								? new Date(displayJoinedAt).toLocaleDateString("es-ES")
-								: "REGISTRO EXTRAVIADO"}
+								: "REGISTRO DESCONOCIDO"}
 						</strong>
 					</div>
 				</div>
@@ -177,6 +178,11 @@ export default function UserInfo({
 				)}
 			</div>
 
+			{/* ── SECCIÓN DE LOGROS ── */}
+			<div className={styles.divider} />
+			<ProfileAchievements />
+
+			{/* ── ACCIONES DEL PERFIL PROPIO ── */}
 			{!notMyProfile && onLogout && onDeleteAccount && (
 				<>
 					<div className={styles.divider} />
