@@ -33,7 +33,9 @@ export default function ProfileAchievements() {
 			<div className={styles.stickersGrid}>
 				{ACHIEVEMENTS.map((ach) => {
 					const isUnlocked = unlockedAchievementIds.includes(ach.id);
-					const displayImage = ach.image;
+					const displayImage = ach.image.startsWith("/")
+						? ach.image
+						: `/${ach.image}`;
 
 					if (isUnlocked) {
 						return (

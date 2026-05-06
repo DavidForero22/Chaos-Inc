@@ -36,6 +36,11 @@ export default function RegisteredProfileView({
 	const displayUser = notMyProfile ? publicProfile?.username : user;
 	const displayRole = notMyProfile ? publicProfile?.role : role;
 	const displayJoinedAt = notMyProfile ? publicProfile?.joinedAt : joinedAt;
+	const displayAvatar = notMyProfile ? publicProfile?.avatar : avatar;
+	const displayProviderAvatar = notMyProfile
+		? publicProfile?.providerAvatar
+		: providerAvatar;
+	const displayProvider = notMyProfile ? publicProfile?.provider : provider;
 
 	return (
 		<div className={styles.dossierContainer}>
@@ -82,9 +87,9 @@ export default function RegisteredProfileView({
 							displayUser={displayUser}
 							displayRole={displayRole}
 							displayJoinedAt={displayJoinedAt}
-							avatar={avatar}
-							providerAvatar={providerAvatar}
-							provider={provider}
+							avatar={displayAvatar}
+							providerAvatar={displayProviderAvatar}
+							provider={displayProvider}
 							onLogout={onLogout}
 							onDeleteAccount={onDeleteAccount}
 						/>

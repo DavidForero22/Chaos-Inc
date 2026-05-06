@@ -22,7 +22,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		id: "ach_win_secretary",
 		title: "Lamebotas Profesional",
 		technicalDescription: "Gana una partida siendo Secretario.",
-		lore: "Ser la mascota del profesor no te hacía mejor estudiante en la escuela, no digo mas.",
+		lore: "Ser la mascota del profesor no te hacía mejor estudiante en la escuela, que lo sepas.",
 		image: "achievement_placeholder.png",
 		rotation: 1,
 	},
@@ -53,10 +53,10 @@ export const ACHIEVEMENTS: Achievement[] = [
 	},
 	{
 		id: "ach_inherited_boss",
-		title: "En la Cima",
+		title: "Heredero del Poder",
 		technicalDescription:
 			"Gana una partida habiendo sido ascendido a Jefe Heredado.",
-		lore: "Finalmente podrás enchufar a tus primos en la empresa, la tía Juana ya estaba empezando a insistirte demasiado.",
+		lore: "Finalmente podrás enchufar a tus primos en la empresa, la tía Juana ya estaba empezando a insistir demasiado.",
 		image: "achievement_placeholder.png",
 		rotation: 1.2,
 	},

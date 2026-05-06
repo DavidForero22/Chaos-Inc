@@ -68,7 +68,7 @@ export default function UserInfo({
 	const initials = displayUser
 		? displayUser.substring(0, 2).toUpperCase()
 		: "??";
-	const rawAvatar = notMyProfile ? null : avatar || providerAvatar;
+	const rawAvatar = avatar || providerAvatar;
 
 	const avatarUrl = useMemo(() => {
 		if (!rawAvatar) return null;
@@ -98,6 +98,7 @@ export default function UserInfo({
 								src={avatarUrl}
 								alt={`Foto de ${displayUser}`}
 								className={styles.avatarImage}
+								referrerPolicy="no-referrer"
 							/>
 						) : (
 							<div className={styles.avatarFallback}>{initials}</div>

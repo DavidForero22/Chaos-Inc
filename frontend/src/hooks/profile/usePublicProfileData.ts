@@ -1,3 +1,5 @@
+// src/hooks/profile/usePublicProfileData.ts
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.ts";
@@ -16,6 +18,7 @@ export function usePublicProfileData(userId: string | undefined) {
 		}
 
 		const fetchData = async () => {
+			setLoading(true); // Resetear el loader al cambiar de usuario
 			try {
 				const [userRes, gamesRes] = await Promise.all([
 					api.get(`/users/${userId}`, { hideLoader: true } as any),
@@ -31,7 +34,7 @@ export function usePublicProfileData(userId: string | undefined) {
 		};
 
 		fetchData();
-	}, [userId]);
+	}, [userId, navigate]);
 
 	return { games, profileUser, loading };
 }

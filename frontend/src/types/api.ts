@@ -42,6 +42,9 @@ export interface UserRecord {
 	username: string;
 	email: string;
 	role: string;
+	avatar: string;
+	providerAvatar: string;
+	provider: string;
 	isGuest: boolean;
 	joinedAt: string;
 }
