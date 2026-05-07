@@ -18,22 +18,25 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('game_id')->constrained()->onDelete('cascade');
 
-            // Atributos de la partida para gráficos
             $table->boolean('has_won');
-            // Añadir ->index() por si luego se filtran estadísticas por rol
             $table->enum('role', ['boss', 'secretary', 'intern', 'union'])->index();
-            $table->integer('damage_dealt');
-            $table->integer('damage_received');
-            $table->integer('cards_played');
-            $table->integer('eliminations');
+
+            // Estadísticas de Combate y Soporte
+            $table->integer('damage_dealt')->default(0);
+            $table->integer('damage_received')->default(0);
+            $table->integer('healing_done')->default(0);
+
+            // Estadísticas de Inventario/Estrategia
+            $table->integer('cards_played')->default(0);
+            $table->integer('passives_played')->default(0);
+
+            // Rendimiento letal
+            $table->integer('eliminations')->default(0);
 
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('game_user');
