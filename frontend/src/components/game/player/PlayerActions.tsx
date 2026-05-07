@@ -51,14 +51,9 @@ export function PlayerActions() {
 			actionLogic.me.combat_state.is_defending_single ||
 			actionLogic.hasPendingMultiAttack;
 
-		// Si entra un ataque o una obligación de descarte, forzar salida de INFO
-		if (isInfoMode && (isMustDiscard || isOverLimit || isDefending)) {
+		// Si entra un ataque
+		if (isInfoMode && isDefending) {
 			actionLogic.setIsInfoMode?.(false);
-		}
-
-		// Lógica de descarte
-		if (isDiscardMode && !isMustDiscard && !isOverLimit) {
-			actionLogic.clearDiscardSelection?.();
 		}
 
 		// Actualizar las referencias para el próximo ciclo de React
