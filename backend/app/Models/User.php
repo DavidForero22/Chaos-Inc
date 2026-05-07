@@ -30,8 +30,22 @@ class User extends Authenticatable
     public function games()
     {
         return $this->belongsToMany(Game::class)
-            ->withPivot('has_won', 'role', 'damage_dealt', 'damage_received', 'cards_played', 'eliminations')
+            ->withPivot('is_guest', 'display_name', 'has_won', 'role', 'is_dead', 'damage_dealt', 'damage_received', 'healing_done', 'cards_played', 'passives_played', 'eliminations')
             ->withTimestamps();
+    }
+
+    // Relación con los logros 
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'achievement_user')
+            ->withPivot('unlocked_at')
+            ->withTimestamps();
+    }
+
+    // Relación directa con el uso de cartas
+    public function cardUsages()
+    {
+        return $this->hasMany(GameCardUsage::class);
     }
 
     /**

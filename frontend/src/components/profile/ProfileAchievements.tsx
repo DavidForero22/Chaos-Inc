@@ -2,29 +2,41 @@
 
 import { useEffect, useState } from "react";
 import { ACHIEVEMENTS, type Achievement } from "../../data/achievements.ts";
+import type { UserAchievement } from "../../types/api.ts";
 import styles from "./ProfileAchievements.module.css";
 
-// ── SIMULACIÓN DE BACKEND ──
-const unlockedAchievementIds = [
-	"ach_win_unionist",
-	"ach_play_10",
-	"ach_one_hp_clutch",
-];
+interface ProfileAchievementsProps {
+	userAchievements?: UserAchievement[];
+}
 
-// Fechas ficticias para los logros desbloqueados
-const mockUnlockDates: Record<string, string> = {
-	ach_win_unionist: "04/05/2026 - 16:30",
-	ach_play_10: "12/05/2026 - 09:15",
-	ach_one_hp_clutch: "01/06/2026 - 23:59",
-};
-
-export default function ProfileAchievements() {
+export default function ProfileAchievements({
+	userAchievements = [],
+}: ProfileAchievementsProps) {
 	// Estado para controlar el modal
 	const [selectedAchievement, setSelectedAchievement] =
 		useState<Achievement | null>(null);
 
 	const getImagePath = (path: string) =>
 		path.startsWith("/") ? path : `/${path}`;
+
+	const unlockedMap = new Map<string, string>();
+	userAchievements.forEach((ach) => {
+		unlockedMap.set(ach.id, ach.unlockedAt);
+	});
+
+	const isAchievementUnlocked = (id: string) => unlockedMap.has(id);
+
+	const formatUnlockDate = (dateString?: string) => {
+		if (!dateString) return "FECHA DESCONOCIDA";
+		const d = new Date(dateString);
+		return d.toLocaleString("es-ES", {
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		});
+	};
 
 	useEffect(() => {
 		if (selectedAchievement) {
@@ -47,17 +59,15 @@ export default function ProfileAchievements() {
 
 			<div className={styles.stickersGrid}>
 				{ACHIEVEMENTS.map((ach) => {
-					const isUnlocked = unlockedAchievementIds.includes(ach.id);
-					const displayImage = ach.image.startsWith("/")
-						? ach.image
-						: `/${ach.image}`;
+					const isUnlocked = isAchievementUnlocked(ach.id);
+					const displayImage = getImagePath(ach.image);
 
 					if (isUnlocked) {
 						return (
 							/* ── PEGATINA DESBLOQUEADA ── */
 							<div
 								key={ach.id}
-								className={styles.logroStickerContainer}
+								className={styles.achStickerContainer}
 								title={ach.technicalDescription}
 								style={{ transform: `rotate(${ach.rotation || 0}deg)` }}
 								onClick={() => setSelectedAchievement(ach)}
@@ -65,7 +75,7 @@ export default function ProfileAchievements() {
 								<img
 									src={getImagePath(ach.image)}
 									alt={ach.title}
-									className={styles.logroSticker}
+									className={styles.achSticker}
 								/>
 							</div>
 						);
@@ -77,6 +87,7 @@ export default function ProfileAchievements() {
 								className={styles.lockedStickerContainer}
 								title={ach.technicalDescription}
 								style={{ transform: `rotate(${ach.rotation || 0}deg)` }}
+								onClick={() => setSelectedAchievement(ach)}
 							>
 								<img
 									src={displayImage}
@@ -109,7 +120,11 @@ export default function ProfileAchievements() {
 								<img
 									src={getImagePath(selectedAchievement.image)}
 									alt={selectedAchievement.title}
-									className={styles.modalIcon}
+									className={`${styles.modalIconLocked} ${
+										isAchievementUnlocked(selectedAchievement.id)
+											? ""
+											: styles.lockedSticker
+									}`}
 								/>
 							</div>
 							<div className={styles.modalTextInfo}>
@@ -126,7 +141,9 @@ export default function ProfileAchievements() {
 							<p className={styles.modalLore}>"{selectedAchievement.lore}"</p>
 							<p className={styles.modalDate}>
 								REGISTRADO:{" "}
-								{mockUnlockDates[selectedAchievement.id] || "FECHA DESCONOCIDA"}
+								{isAchievementUnlocked(selectedAchievement.id)
+									? formatUnlockDate(unlockedMap.get(selectedAchievement.id))
+									: "Sin desbloquear"}
 							</p>
 						</div>
 					</div>

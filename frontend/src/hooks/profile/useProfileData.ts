@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
-import type { GameRecord } from "../../types/api.ts";
+import type { GameRecord, UserRecord } from "../../types/api.ts";
 
 export function useProfileData() {
 	const { user, isGuest, logout, id } = useAuthStore();
 	const navigate = useNavigate();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
+	const [profileUser, setProfileUser] = useState<UserRecord | null>(null);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -25,11 +26,13 @@ export function useProfileData() {
 
 		const fetchData = async () => {
 			try {
-				const gamesRes = await api.get("/me/games", {
-					hideLoader: true,
-				} as any);
-				setGames(gamesRes.data.data ?? gamesRes.data);
+				const [userRes, gamesRes] = await Promise.all([
+					api.get(`/users/${id}`, { hideLoader: true } as any),
+					api.get("/me/games", { hideLoader: true } as any),
+				]);
 
+				setProfileUser(userRes.data.data ?? userRes.data);
+				setGames(gamesRes.data.data ?? gamesRes.data);
 			} catch {
 				navigate("/");
 			} finally {
@@ -61,6 +64,7 @@ export function useProfileData() {
 
 	return {
 		games,
+		profileUser,
 		loading,
 		handleLogout,
 		handleDeleteAccount,

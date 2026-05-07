@@ -3,14 +3,13 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { useProfileData } from "../hooks/profile/useProfileData";
 import GuestProfileView from "../components/profile/GuestProfileView";
+import api from "../api/axios"; 
 import styles from "../components/profile/Profile.module.css";
 
 export default function ProfilePage() {
-	const { isGuest, id } = useAuthStore();
+	const { isGuest, id, logout } = useAuthStore();
 	const navigate = useNavigate();
-	const { handleLogout } = useProfileData();
 
 	// Si es un usuario registrado, mandar a su URL única
 	useEffect(() => {
@@ -19,9 +18,18 @@ export default function ProfilePage() {
 		}
 	}, [isGuest, id, navigate]);
 
+	// Función de logout ligera exclusiva para invitados
+	const handleGuestLogout = async () => {
+		try {
+			await api.post("/logout");
+		} catch {}
+		logout();
+		navigate("/");
+	};
+
 	// Los invitados se quedan en /profile porque no tienen un ID real persistente
 	if (isGuest) {
-		return <GuestProfileView onLogout={handleLogout} />;
+		return <GuestProfileView onLogout={handleGuestLogout} />;
 	}
 
 	// Mientras calcula si es invitado o hace el redirect

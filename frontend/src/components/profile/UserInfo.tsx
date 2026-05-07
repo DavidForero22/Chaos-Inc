@@ -5,6 +5,7 @@ import type { ChangeEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
+import type { UserAchievement } from "../../types/api";
 import styles from "./UserInfo.module.css";
 
 const ACCOUNT_ROLE_CONFIG: Record<
@@ -29,6 +30,7 @@ interface UserInfoProps {
 	avatar?: string | null;
 	providerAvatar?: string | null;
 	provider?: string | null;
+	achievements?: UserAchievement[];
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
 }
@@ -41,6 +43,7 @@ export default function UserInfo({
 	avatar,
 	providerAvatar,
 	provider,
+	achievements,
 	onLogout,
 	onDeleteAccount,
 }: UserInfoProps) {
@@ -181,8 +184,8 @@ export default function UserInfo({
 
 			{/* ── SECCIÓN DE LOGROS ── */}
 			<div className={styles.divider} />
-			<ProfileAchievements />
-
+			<ProfileAchievements userAchievements={achievements} />
+			
 			{/* ── ACCIONES DEL PERFIL PROPIO ── */}
 			{!notMyProfile && onLogout && onDeleteAccount && (
 				<>

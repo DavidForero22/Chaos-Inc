@@ -16,6 +16,7 @@ interface RegisteredProfileViewProps {
 	onDeleteAccount?: () => void;
 	notMyProfile?: boolean;
 	publicProfile?: UserRecord | null;
+	myProfile?: UserRecord | null;
 }
 
 export default function RegisteredProfileView({
@@ -24,6 +25,7 @@ export default function RegisteredProfileView({
 	onDeleteAccount,
 	notMyProfile = false,
 	publicProfile = null,
+	myProfile = null,
 }: RegisteredProfileViewProps) {
 	const { id, user, role, avatar, provider, providerAvatar, joinedAt } =
 		useAuthStore();
@@ -41,6 +43,9 @@ export default function RegisteredProfileView({
 		? publicProfile?.providerAvatar
 		: providerAvatar;
 	const displayProvider = notMyProfile ? publicProfile?.provider : provider;
+	const displayAchievements = notMyProfile
+		? publicProfile?.achievements
+		: myProfile?.achievements;
 
 	return (
 		<div className={styles.dossierContainer}>
@@ -90,6 +95,7 @@ export default function RegisteredProfileView({
 							avatar={displayAvatar}
 							providerAvatar={displayProviderAvatar}
 							provider={displayProvider}
+							achievements={displayAchievements}
 							onLogout={onLogout}
 							onDeleteAccount={onDeleteAccount}
 						/>

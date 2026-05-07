@@ -16,9 +16,12 @@ class GameUser extends Model
         'display_name',
         'has_won',
         'role',
+        'is_dead',        
         'damage_dealt',
         'damage_received',
+        'healing_done',    
         'cards_played',
+        'passives_played', 
         'eliminations',
     ];
 

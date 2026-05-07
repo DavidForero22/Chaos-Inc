@@ -9,6 +9,7 @@ use App\Jobs\CheckVictoryJob;
 use App\Jobs\CleanupRoomJob;
 use App\Models\User;
 use App\Services\Admin\GameService;
+use App\Services\Game\AchievementService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Redis;
 
 class GameFinalizationService
 {
-    public function __construct(protected GameService $gameService) {}
+    public function __construct(protected GameService $gameService, protected AchievementService $achievementService) {}
 
     public function finalize(string $roomId): void
     {
@@ -75,6 +76,7 @@ class GameFinalizationService
             $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
             $isDead = (isset($pInfo['is_dead']) && $pInfo['is_dead'] == '1');
+            $isActingBoss = (isset($pInfo['acting_boss']) && $pInfo['acting_boss'] == '1');
 
             $user = User::where('username', $name)->first();
             $isGuest = !$user || $user->is_guest;
@@ -86,6 +88,7 @@ class GameFinalizationService
                 'has_won'         => in_array($role, $winningRoles),
                 'role'            => $role,
                 'is_dead'         => $isDead,
+                'acting_boss'     => $isActingBoss,
                 'damage_dealt'    => (int) ($pStats['damage_dealt'] ?? 0),
                 'damage_received' => (int) ($pStats['damage_received'] ?? 0),
                 'healing_done'    => (int) ($pStats['healing_done'] ?? 0),
@@ -95,6 +98,10 @@ class GameFinalizationService
                 'card_details'    => $cardUsage,
             ];
         }
+
+        // EVALUAR LOGROS
+        $totalPlayers = count($playerNames);
+        $this->achievementService->evaluateEndGameAchievements($playersData, $totalPlayers);
 
         // Guardar siempre — aunque todos sean invitados
         $this->gameService->createGame([

@@ -26,6 +26,14 @@ class UserResource extends JsonResource
             'provider' => $this->provider,
             'joinedAt' => $this->created_at->toIso8601String(),
             'games' => GameResource::collection($this->whenLoaded('games')),
+            'achievements' => $this->whenLoaded('achievements', function () {
+                return $this->achievements->map(function ($ach) {
+                    return [
+                        'id' => $ach->id,
+                        'unlockedAt' => $ach->pivot->unlocked_at,
+                    ];
+                });
+            }),
         ];
     }
 }

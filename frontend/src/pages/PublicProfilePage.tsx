@@ -49,7 +49,8 @@ export default function PublicProfilePage() {
 	return (
 		<RegisteredProfileView
 			games={games}
-			publicProfile={profileUser}
+			publicProfile={!isMe ? profileUser : null}
+			myProfile={isMe ? profileUser : null}
 			notMyProfile={!isMe}
 			onLogout={isMe ? handleLogout : undefined}
 			onDeleteAccount={isMe ? handleDeleteAccount : undefined}
