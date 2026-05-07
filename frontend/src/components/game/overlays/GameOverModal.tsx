@@ -6,6 +6,8 @@ import type {
 	PlayerRole,
 	ConfigKey,
 } from "../../../data/gameResults.ts";
+import { useGameStore } from "../../../store/useGameStore.ts";
+import { ACHIEVEMENTS } from "../../../data/achievements.ts";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -26,6 +28,12 @@ export function GameOverModal({
 	// Calcular estados
 	const iWon = config.winners.includes(myRole);
 	const isCancelled = configKey === "canceled";
+
+	// Logros desbloqueados en esta partida (solo del jugador)
+	const matchAchievements = useGameStore((s) => s.matchAchievements);
+	const achievementItems = matchAchievements
+		.map((id) => ACHIEVEMENTS.find((a) => a.id === id))
+		.filter(Boolean);
 
 	// Obtener la fecha actual para el periódico
 	const today = new Date().toLocaleDateString("es-ES", {
@@ -72,9 +80,7 @@ export function GameOverModal({
 
 				{/* Cuerpo de la Noticia */}
 				<div className={styles.articleBody}>
-					<p>
-						{config.description}
-					</p>
+					<p>{config.description}</p>
 
 					{!isCancelled && (
 						<div className="mt-6 border-t-2 border-black pt-4">
@@ -89,6 +95,32 @@ export function GameOverModal({
 						</div>
 					)}
 				</div>
+
+				{/* Logros obtenidos en la partida (se muestran siempre si existen) */}
+				{achievementItems.length > 0 && (
+					<div className={styles.achievementsSection}>
+						<h3 className={styles.achievementsTitle}>Logros obtenidos</h3>
+						<div className={styles.achievementsGrid}>
+							{achievementItems.map((ach) => (
+								<div key={ach!.id} className={styles.medalCard}>
+									<div className={styles.medalRing}>
+										<img
+											src={ach!.image}
+											alt={ach!.title}
+											className={styles.medalImage}
+										/>
+									</div>
+									<div className={styles.medalText}>
+										<p className={styles.medalTitle}>{ach!.title}</p>
+										<p className={styles.medalDesc}>
+											{ach!.technicalDescription}
+										</p>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
 
 				{/* Resultado Personal */}
 				{!isCancelled && (

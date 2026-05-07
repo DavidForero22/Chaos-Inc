@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNotificationStore } from "../../../store/useNotificationStore";
 import type { GameNotification } from "../../../store/useNotificationStore";
 import { RiSwordFill } from "react-icons/ri";
-import { GiHealthNormal } from "react-icons/gi";
+import { GiTrophyCup,GiHealthNormal } from "react-icons/gi";
 import { BsBackpack2Fill } from "react-icons/bs";
 import { FaRunning, FaTrash, FaUsers } from "react-icons/fa";
 import { IoIosLock } from "react-icons/io";
@@ -19,7 +19,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 	steal: IoHandLeftSharp,
 	block: IoIosLock,
 	discard: FaTrash,
-	all: FaUsers,
+	all: FaUsers,achievement: GiTrophyCup ,
 };
 
 const STYLE_MAP: Record<string, string> = {

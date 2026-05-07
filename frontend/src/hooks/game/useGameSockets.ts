@@ -6,11 +6,19 @@ import { logWithTime } from "../../utils/logger";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useNotificationStore } from "../../store/useNotificationStore.ts";
 import { useGameEventParser } from "./useGameEventParser.ts";
+import { ACHIEVEMENTS } from "../../data/achievements.ts";
+import { useAchievementNotificationStore } from "../../store/useAchievementNotificationStore.ts";
+
 import api from "../../api/axios.ts";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;
 }
+
+type AchievementNotificationPayload = {
+	playerId: string | number;
+	achievementId: string;
+};
 
 export function useGameSockets({ roomId }: UseGameSocketsProps) {
 	const { parseAndNotify } = useGameEventParser();
@@ -54,6 +62,52 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 			})
 			.listen(".RoomStateUpdated", (data: any) => {
 				const state = useGameStore.getState();
+
+				if (
+					Array.isArray(data.achievement_notifications) &&
+					data.achievement_notifications.length > 0
+				) {
+					const me = state.gameData?.me as any;
+					const myPlayerName =
+						me?.name ?? me?.username ?? me?.display_name ?? null;
+					const myUserId = me?.id ?? me?.userId ?? me?.user_id ?? null;
+
+					data.achievement_notifications.forEach(
+						(notif: AchievementNotificationPayload) => {
+							const playerId = notif?.playerId;
+							const achievementId = notif?.achievementId;
+
+							if (!achievementId || playerId == null) return;
+
+							const isMe =
+								(myUserId != null &&
+									playerId?.toString?.() === myUserId.toString()) ||
+								(!!myPlayerName && playerId === myPlayerName);
+
+							if (isMe) {
+								useAchievementNotificationStore
+									.getState()
+									.addAchievementNotification(achievementId);
+								useGameStore.getState().addMatchAchievement(achievementId);
+							} else {
+								const achievement = ACHIEVEMENTS.find(
+									(a) => a.id === achievementId,
+								);
+								const achievementTitle = achievement?.title ?? achievementId;
+								const message = `${playerId} ha desbloqueado el logro "${achievementTitle}"`;
+
+								const notifStore = useNotificationStore.getState();
+								notifStore.addNotification({
+									type: "achievement",
+									message,
+									iconKey: "achievement",
+								});
+								notifStore.addLog(message);
+							}
+						},
+					);
+				}
+
 				if (state.gameOver) return;
 
 				// 1. ¿Es una acción de carta estructurada?

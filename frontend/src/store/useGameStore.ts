@@ -19,6 +19,7 @@ interface GameState {
 	gameOver: boolean;
 	showActingBossModal: boolean;
 	isActionLocked: boolean;
+	matchAchievements: string[];
 
 	setRoomId: (id: string | null) => void;
 	setGameData: (data: GameData | null) => void;
@@ -27,6 +28,8 @@ interface GameState {
 	setGameOver: (gameOver: boolean) => void;
 	setShowActingBossModal: (show: boolean) => void;
 	setIsActionLocked: (locked: boolean) => void;
+	addMatchAchievement: (achievementId: string) => void;
+	clearMatchAchievements: () => void;
 
 	applyGameData: (newGameData: GameData) => void;
 	syncGame: () => Promise<void>;
@@ -58,6 +61,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 	gameOver: false,
 	showActingBossModal: false,
 	isActionLocked: false,
+	matchAchievements: [],
 
 	setRoomId: (id) => {
 		if (id) {
@@ -73,6 +77,13 @@ export const useGameStore = create<GameState>((set, get) => ({
 	setGameOver: (gameOver) => set({ gameOver }),
 	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
 	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
+	addMatchAchievement: (achievementId) =>
+		set((state) => ({
+			matchAchievements: state.matchAchievements.includes(achievementId)
+				? state.matchAchievements
+				: [...state.matchAchievements, achievementId],
+		})),
+	clearMatchAchievements: () => set({ matchAchievements: [] }),
 
 	resetStore: (keepRoomId = false) => {
 		if (!keepRoomId) {
@@ -87,6 +98,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			gameOver: false,
 			showActingBossModal: false,
 			isActionLocked: false,
+			matchAchievements: [],
 		}));
 	},
 

@@ -11,8 +11,10 @@ class AchievementService
     /**
      * Evalúa los logros de final de partida para todos los jugadores.
      */
-    public function evaluateEndGameAchievements(array $playersData, int $totalPlayers): void
+    public function evaluateEndGameAchievements(array $playersData, int $totalPlayers): array
     {
+        $achievementsUnlocked = [];
+
         // Contar cuántos sindicalistas vivos quedaron para el logro "Solo ante el Peligro"
         $aliveUnionistsCount = 0;
         foreach ($playersData as $p) {
@@ -68,15 +70,30 @@ class AchievementService
                 }
             }
 
-            // Desbloquear los logros en SQL (ignora los que ya tenga)
+            // Desbloquear los logros en SQL (solo los nuevos)
             if (!empty($achievementsToUnlock)) {
-                $syncData = [];
-                foreach ($achievementsToUnlock as $achId) {
-                    $syncData[$achId] = ['unlocked_at' => now()];
-                }
+                $alreadyUnlocked = $user->achievements()
+                    ->whereIn('achievements.id', $achievementsToUnlock)
+                    ->pluck('achievements.id')
+                    ->all();
 
-                $user->achievements()->syncWithoutDetaching($syncData);
+                $newUnlocks = array_values(array_diff($achievementsToUnlock, $alreadyUnlocked));
+
+                if (!empty($newUnlocks)) {
+                    $syncData = [];
+                    foreach ($newUnlocks as $achId) {
+                        $syncData[$achId] = ['unlocked_at' => now()];
+                        $achievementsUnlocked[] = [
+                            'playerId' => $player['display_name'] ?? ($user->username ?? (string) $user->id),
+                            'achievementId' => $achId,
+                        ];
+                    }
+
+                    $user->achievements()->syncWithoutDetaching($syncData);
+                }
             }
         }
+
+        return $achievementsUnlocked;
     }
 }

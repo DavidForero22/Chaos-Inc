@@ -15,6 +15,7 @@ import MainMenuPage from "./pages/MainMenuPage.tsx";
 import NotebookLayout from "./layouts/NotebookLayout.tsx";
 import { useSessionGuard } from "./hooks/useSessionGuard.ts";
 import PublicProfilePage from "./pages/PublicProfilePage.tsx";
+import { AchievementNotification } from "./components/ui/AchievementNotification.tsx";
 
 function App() {
 	useSessionGuard();
@@ -40,6 +41,7 @@ function App() {
 			</Routes>
 
 			<GlobalLoader />
+			 <AchievementNotification />
 		</Router>
 	);
 }

@@ -101,7 +101,7 @@ class GameFinalizationService
 
         // EVALUAR LOGROS
         $totalPlayers = count($playerNames);
-        $this->achievementService->evaluateEndGameAchievements($playersData, $totalPlayers);
+        $achievementsUnlocked = $this->achievementService->evaluateEndGameAchievements($playersData, $totalPlayers);
 
         // Guardar siempre — aunque todos sean invitados
         $this->gameService->createGame([
@@ -110,6 +110,8 @@ class GameFinalizationService
             'total_eliminations' => $totalEliminations,
             'players'            => $playersData,
         ]);
+
+        event(new RoomStateUpdated($roomId, null, null, $achievementsUnlocked));
 
         $cleanupToken = uniqid('cleanup_', true);
         Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);

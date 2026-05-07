@@ -16,14 +16,18 @@ class RoomStateUpdated implements ShouldBroadcastNow
     public string $roomId;
     public ?string $logMessage;
     public ?array $cardAction;
-    public ?array $achievement;
+    public ?array $achievementsUnlocked;
 
-    public function __construct(string $roomId, ?string $logMessage = null, ?array $cardAction = null, ?array $achievement = null)
-    {
+    public function __construct(
+        string $roomId,
+        ?string $logMessage = null,
+        ?array $cardAction = null,
+        ?array $achievementsUnlocked = null
+    ) {
         $this->roomId = $roomId;
         $this->logMessage = $logMessage;
         $this->cardAction = $cardAction;
-        $this->achievement = $achievement;
+        $this->achievementsUnlocked = $achievementsUnlocked;
     }
 
     public function broadcastWith(): array
@@ -32,7 +36,7 @@ class RoomStateUpdated implements ShouldBroadcastNow
             'roomId'      => $this->roomId,
             'log_message' => $this->logMessage, // Para avisos del sistema (conexiones, etc)
             'card_action' => $this->cardAction, // [ 'card_id' => 1, 'source' => 'Pepe', 'target' => 'Juan' ]
-            'achievement' => $this->achievement,
+            'achievement_notifications' => $this->achievementsUnlocked,
         ];
     }
 
