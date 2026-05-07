@@ -40,6 +40,7 @@ export function OpponentCard({
 }: OpponentCardProps) {
 	const opponentPerks = useOpponentPerks(player);
 	const [infoCard, setInfoCard] = useState<CardInstance | null>(null);
+	const [avatarError, setAvatarError] = useState(false);
 
 	const currentTurn = useGameStore(
 		(state) => state.gameData?.game?.current_turn,
@@ -54,11 +55,12 @@ export function OpponentCard({
 	// Validaciones específicas basadas en la mecánica de la carta (card_id)
 	const isOutOfRange = selectedCard?.card_id === 1 && !player.is_in_range;
 	const isUnstealable = selectedCard?.card_id === 4 && player.cards_count === 0;
-	const isPlayerBlocked =
-		selectedCard?.card_id === 6 &&
-		(player.conditions?.is_blocked ?? (player as any).is_blocked);
+	const isCurrentlyBlocked =
+		player.conditions?.is_blocked ?? (player as any).is_blocked ?? false;
 	const isSabotageUntargetable =
 		selectedCard?.card_id === 9 && player.cards_count === 0;
+
+	const isPlayerBlocked = selectedCard?.card_id === 6 && isCurrentlyBlocked;
 
 	let tooltipMessage = "";
 	let isUnclickable = false;
@@ -96,6 +98,7 @@ export function OpponentCard({
 	const isCleanMode = selectedCard?.card_id === 12 && isMyTurn;
 	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
 
+	const showAvatar = !!player.avatar && !avatarError;
 	const initials = player.name.substring(0, 2).toUpperCase();
 
 	const renderPerkSlot = (slot: OpponentPerkSlot) => {
@@ -114,7 +117,9 @@ export function OpponentCard({
 		return (
 			<div
 				key={slot.id}
-				title={canCleanGlobally ? "Descartar pasiva" : slot.title}
+				title={
+					canCleanGlobally ? `[Click para descartar] ${slot.title}` : slot.title
+				}
 				onClick={(e) => {
 					e.stopPropagation();
 					if (canCleanGlobally) {
@@ -197,9 +202,9 @@ export function OpponentCard({
 				</div>
 			)}
 
-			{isPlayerBlocked && (
+			{isCurrentlyBlocked && (
 				<div
-					className="absolute top-3 right-2 text-[14px] drop-shadow-md z-50"
+					className="absolute top-10 right-0 text-[20px] drop-shadow-md z-50"
 					title="Bloqueo temporal activo"
 				>
 					🔒
@@ -208,19 +213,24 @@ export function OpponentCard({
 
 			{/* --- FOTO DE EMPLEADO --- */}
 			<div className={styles.photoBox}>
-				<span className="text-3xl font-black text-gray-400 opacity-50">
-					{initials}
-				</span>
+				{showAvatar ? (
+					<img
+						src={player.avatar!}
+						alt={`Avatar de ${player.name}`}
+						className={styles.photoImage}
+						onError={() => setAvatarError(true)}
+					/>
+				) : (
+					<span className="text-3xl font-black text-gray-400 opacity-50">
+						{initials}
+					</span>
+				)}
 			</div>
 
 			{/* --- INFORMACIÓN DEL EMPLEADO --- */}
-			<h3 className="font-black text-[#393e42] text-sm truncate w-full uppercase mb-0.5">
+			<h3 className="font-black text-[#393e42] text-sm truncate w-full uppercase mb-4">
 				{player.name}
 			</h3>
-
-			<p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest border-b border-gray-300 pb-2 mb-2 w-full">
-				ID: {Math.floor(Math.random() * 9000) + 1000}
-			</p>
 
 			{/* --- MÉTRICAS IMPORTANTES --- */}
 			<div className="flex w-full justify-between items-center mb-3 px-1">

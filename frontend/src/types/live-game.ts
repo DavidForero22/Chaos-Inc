@@ -45,6 +45,7 @@ export interface CombatState {
  */
 export interface BasePlayer {
 	name: string;
+	avatar?: string | null;
 	stress: number;
 	max_stress: number;
 	is_dead: boolean;

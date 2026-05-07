@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Redis;
 use App\Support\CastHelper;
+use App\Models\User;
 
 class GameDataResource extends JsonResource
 {
@@ -54,6 +55,8 @@ class GameDataResource extends JsonResource
 
             $opponents[] = [
                 'name'        => $pName,
+                'avatar'      => self::resolveAvatar($pInfo),
+
                 // :info
                 'stress'      => (int) ($pInfo['stress'] ?? 0),
                 'is_dead'     => CastHelper::toBool($pInfo['is_dead'] ?? 0),
@@ -122,6 +125,30 @@ class GameDataResource extends JsonResource
             'turn_expires_at'              => $turnExpiresAt,
             'turn_remaining' => max(0, $turnExpiresAt - now('UTC')->timestamp),
         ];
+    }
+
+    private static function resolveAvatar(array $pInfo): ?string
+    {
+        $avatar = $pInfo['avatar'] ?? null;
+        if (!empty($avatar)) return $avatar;
+
+        $provider = $pInfo['provider_avatar'] ?? $pInfo['providerAvatar'] ?? null;
+        if (!empty($provider)) return $provider;
+
+        $userId = $pInfo['user_id'] ?? null;
+        if ($userId) {
+            static $cache = [];
+            if (array_key_exists($userId, $cache)) {
+                return $cache[$userId];
+            }
+
+            $user = User::select('avatar', 'provider_avatar')->find($userId);
+            $cache[$userId] = $user ? ($user->avatar ?: $user->provider_avatar) : null;
+
+            return $cache[$userId];
+        }
+
+        return null;
     }
 
     private static function getPlayerPendingSabotage(string $roomId): ?string
