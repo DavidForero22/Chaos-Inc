@@ -1,10 +1,9 @@
 <?php
 // app/Services/Game/AchievementService.php
 
-namespace App\Services\Game;
+namespace App\Services\Game\Engine;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Log;
 
 class AchievementService
 {
