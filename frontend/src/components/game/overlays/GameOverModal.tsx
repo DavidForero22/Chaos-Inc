@@ -1,11 +1,11 @@
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
-import { RESULT_CONFIG, ROLE_LABELS } from "../../../data/gameOverConfig.ts";
+import { RESULT_CONFIG, ROLE_LABELS } from "../../../data/gameResults.ts";
 import type {
 	WinnerRole,
 	PlayerRole,
 	ConfigKey,
-} from "../../../data/gameOverConfig.ts";
+} from "../../../data/gameResults.ts";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;

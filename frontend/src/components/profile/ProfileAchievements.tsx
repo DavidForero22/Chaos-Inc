@@ -1,7 +1,7 @@
 // src/components/profile/ProfileAchievements.tsx
 
 import { useEffect, useState } from "react";
-import { ACHIEVEMENTS, type Achievement } from "../../data/achievementData.ts";
+import { ACHIEVEMENTS, type Achievement } from "../../data/achievements.ts";
 import styles from "./ProfileAchievements.module.css";
 
 // ── SIMULACIÓN DE BACKEND ──

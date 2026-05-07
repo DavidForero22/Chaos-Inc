@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { FaQuestion } from "react-icons/fa";
-import { GUIDE_ITEMS } from "../../../data/iconGuideData";
+import { GUIDE_ITEMS } from "../../../data/iconGuide";
 import styles from "./IconGuide.module.css";
 
 export function IconGuide() {
