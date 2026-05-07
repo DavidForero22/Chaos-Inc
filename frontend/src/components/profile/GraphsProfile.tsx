@@ -370,7 +370,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 	// ── Render ───────────────────────────────────────────────────────────────
 	return (
 		<>
-			<h1 className={viewStyles.sectionLabel}>ESTADÍSTICAS DEL JUGADOR</h1>
+			<h1 className={viewStyles.sectionTitle}>ESTADÍSTICAS DEL JUGADOR</h1>
 			<div className={viewStyles.section}>
 				{/* ── KPIs ── */}
 				<div className={styles.statsGrid}>

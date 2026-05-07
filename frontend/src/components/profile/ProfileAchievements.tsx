@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ACHIEVEMENTS, type Achievement } from "../../data/achievements.ts";
 import type { UserAchievement } from "../../types/api.ts";
 import styles from "./ProfileAchievements.module.css";
+import viewStyles from "./RegisteredProfileView.module.css";
 
 interface ProfileAchievementsProps {
 	userAchievements?: UserAchievement[];
@@ -54,99 +55,100 @@ export default function ProfileAchievements({
 	const closeModal = () => setSelectedAchievement(null);
 
 	return (
-		<div className={styles.achievementsSection}>
-			<p className={styles.sectionLabel}>LOGROS</p>
+		<>
+			<h1 className={viewStyles.sectionLabel}>LOGROS</h1>
+			<div className={styles.achievementsSection}>
+				<div className={styles.stickersGrid}>
+					{ACHIEVEMENTS.map((ach) => {
+						const isUnlocked = isAchievementUnlocked(ach.id);
+						const displayImage = getImagePath(ach.image);
 
-			<div className={styles.stickersGrid}>
-				{ACHIEVEMENTS.map((ach) => {
-					const isUnlocked = isAchievementUnlocked(ach.id);
-					const displayImage = getImagePath(ach.image);
+						if (isUnlocked) {
+							return (
+								/* ── PEGATINA DESBLOQUEADA ── */
+								<div
+									key={ach.id}
+									className={styles.achStickerContainer}
+									title={ach.technicalDescription}
+									onClick={() => setSelectedAchievement(ach)}
+								>
+									<img
+										src={getImagePath(ach.image)}
+										alt={ach.title}
+										className={styles.achSticker}
+									/>
+								</div>
+							);
+						} else {
+							return (
+								/* ── PEGATINA BLOQUEADA ── */
+								<div
+									key={`locked-${ach.id}`}
+									className={styles.lockedStickerContainer}
+									title={ach.technicalDescription}
+									onClick={() => setSelectedAchievement(ach)}
+								>
+									<img
+										src={displayImage}
+										alt="Bloqueado"
+										className={styles.lockedSticker}
+									/>
+									<div className={styles.lockedOverlay}>
+										<span>?</span>
+									</div>
+								</div>
+							);
+						}
+					})}
+				</div>
 
-					if (isUnlocked) {
-						return (
-							/* ── PEGATINA DESBLOQUEADA ── */
-							<div
-								key={ach.id}
-								className={styles.achStickerContainer}
-								title={ach.technicalDescription}
-								onClick={() => setSelectedAchievement(ach)}
-							>
-								<img
-									src={getImagePath(ach.image)}
-									alt={ach.title}
-									className={styles.achSticker}
-								/>
-							</div>
-						);
-					} else {
-						return (
-							/* ── PEGATINA BLOQUEADA ── */
-							<div
-								key={`locked-${ach.id}`}
-								className={styles.lockedStickerContainer}
-								title={ach.technicalDescription}
-								onClick={() => setSelectedAchievement(ach)}
-							>
-								<img
-									src={displayImage}
-									alt="Bloqueado"
-									className={styles.lockedSticker}
-								/>
-								<div className={styles.lockedOverlay}>
-									<span>?</span>
+				{/* ── MODAL DE DETALLES DEL LOGRO ── */}
+				{selectedAchievement && (
+					<div className={styles.modalOverlay} onClick={closeModal}>
+						{/* e.stopPropagation() evita que al hacer clic dentro del modal, este se cierre */}
+						<div
+							className={styles.modalContent}
+							onClick={(e) => e.stopPropagation()}
+						>
+							<button className={styles.closeButton} onClick={closeModal}>
+								✖
+							</button>
+
+							<div className={styles.modalHeader}>
+								<div className={styles.modalIconWrapper}>
+									<img
+										src={getImagePath(selectedAchievement.image)}
+										alt={selectedAchievement.title}
+										className={
+											isAchievementUnlocked(selectedAchievement.id)
+												? styles.modalIcon
+												: `${styles.modalIcon} ${styles.lockedSticker}`
+										}
+									/>
+								</div>
+								<div className={styles.modalTextInfo}>
+									<h3 className={styles.modalTitle}>
+										{selectedAchievement.title}
+									</h3>
+									<p className={styles.modalDescription}>
+										{selectedAchievement.technicalDescription}
+									</p>
 								</div>
 							</div>
-						);
-					}
-				})}
-			</div>
 
-			{/* ── MODAL DE DETALLES DEL LOGRO ── */}
-			{selectedAchievement && (
-				<div className={styles.modalOverlay} onClick={closeModal}>
-					{/* e.stopPropagation() evita que al hacer clic dentro del modal, este se cierre */}
-					<div
-						className={styles.modalContent}
-						onClick={(e) => e.stopPropagation()}
-					>
-						<button className={styles.closeButton} onClick={closeModal}>
-							✖
-						</button>
-
-						<div className={styles.modalHeader}>
-							<div className={styles.modalIconWrapper}>
-								<img
-									src={getImagePath(selectedAchievement.image)}
-									alt={selectedAchievement.title}
-									className={
-										isAchievementUnlocked(selectedAchievement.id)
-											? styles.modalIcon
-											: `${styles.modalIcon} ${styles.lockedSticker}`
-									}
-								/>
-							</div>
-							<div className={styles.modalTextInfo}>
-								<h3 className={styles.modalTitle}>
-									{selectedAchievement.title}
-								</h3>
-								<p className={styles.modalDescription}>
-									{selectedAchievement.technicalDescription}
+							<div className={styles.modalBody}>
+								<p className={styles.modalLore}>"{selectedAchievement.lore}"</p>
+								<p className={styles.modalDate}>
+									REGISTRADO:{" "}
+									{isAchievementUnlocked(selectedAchievement.id)
+										? formatUnlockDate(unlockedMap.get(selectedAchievement.id))
+										: "Sin desbloquear"}
 								</p>
 							</div>
 						</div>
-
-						<div className={styles.modalBody}>
-							<p className={styles.modalLore}>"{selectedAchievement.lore}"</p>
-							<p className={styles.modalDate}>
-								REGISTRADO:{" "}
-								{isAchievementUnlocked(selectedAchievement.id)
-									? formatUnlockDate(unlockedMap.get(selectedAchievement.id))
-									: "Sin desbloquear"}
-							</p>
-						</div>
 					</div>
-				</div>
-			)}
-		</div>
+				)}
+			</div>
+		</>
 	);
 }

@@ -50,7 +50,7 @@ export default function GameHistory({ games, user }: GameHistoryProps) {
 
 	return (
 		<>
-			<h1 className={viewStyles.sectionLabel}>HISTORIAL DE PARTIDAS</h1>
+			<h1 className={viewStyles.sectionTitle}>HISTORIAL DE PARTIDAS</h1>
 			<div className={styles.historySection} ref={historyTopRef}>
 				{games.length === 0 ? (
 					<p className={styles.emptyHistory}>[ SIN REGISTROS DE ACTIVIDAD ]</p>

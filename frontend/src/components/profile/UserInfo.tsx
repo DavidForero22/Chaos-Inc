@@ -83,7 +83,7 @@ export default function UserInfo({
 
 	return (
 		<>
-			<h1 className={viewStyles.sectionLabel}>INFORMACIÓN DEL USUARIO</h1>
+			<h1 className={viewStyles.sectionTitle}>INFORMACIÓN DEL USUARIO</h1>
 			<div className={styles.header}>
 				{/* ── FOTO TIPO POLAROID ── */}
 				<div className={styles.photoAttachment}>

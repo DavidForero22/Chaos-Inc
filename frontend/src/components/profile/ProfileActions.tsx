@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useAuth } from "../../hooks/useAuth";
 import styles from "./ProfileActions.module.css";
+import viewStyles from "./RegisteredProfileView.module.css";
 
 interface ProfileActionsProps {
 	onLogout: () => void;
@@ -35,9 +36,9 @@ export default function ProfileActions({
 
 	return (
 		<div className={styles.section}>
-			<p className={styles.sectionLabel}>
+			<h2 className={viewStyles.sectionLabel}>
 				ACCIONES DISPONIBLES
-			</p>
+			</h2>
 
 			<div className={styles.actionsGrid}>
 				{/* ── BOTÓN DE SINCRONIZACIÓN / REASIGNACIÓN ── */}
