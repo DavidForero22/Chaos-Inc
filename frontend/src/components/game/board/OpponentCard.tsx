@@ -18,6 +18,18 @@ interface OpponentCardProps {
 	isTurnPaused?: boolean;
 }
 
+type NonOpponentTarget = Exclude<CardInstance["target"], "opponent">;
+
+const isOpponentTargetCard = (
+	card: CardInstance | null,
+): card is CardInstance & { target: "opponent" } =>
+	!!card && card.target === "opponent";
+
+const isNonOpponentTargetCard = (
+	card: CardInstance | null,
+): card is CardInstance & { target: NonOpponentTarget } =>
+	!!card && card.target !== "opponent";
+
 export function OpponentCard({
 	player,
 	isMyTurn,
@@ -36,7 +48,8 @@ export function OpponentCard({
 
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCard !== null;
-	const isTargetingCard = selectedCard?.target === "opponent";
+	const isTargetingCard = isOpponentTargetCard(selectedCard);
+	const isNonOpponentTarget = isNonOpponentTargetCard(selectedCard);
 
 	// Validaciones específicas basadas en la mecánica de la carta (card_id)
 	const isOutOfRange = selectedCard?.card_id === 1 && !player.is_in_range;
@@ -56,9 +69,16 @@ export function OpponentCard({
 	} else if (!player.is_online) {
 		tooltipMessage = "Este jugador está desconectado.";
 		isUnclickable = true;
+	} else if (isCardActive && isNonOpponentTarget) {
+		tooltipMessage =
+			selectedCard?.target === "self"
+				? "Esta carta es de auto-uso."
+				: "Esta carta no se usa sobre oponentes.";
+		isUnclickable = true;
 	} else if (isCardActive && isTargetingCard) {
 		if (isOutOfRange) {
-			tooltipMessage = "Este jugador está demasiado lejos para tu rango actual.";
+			tooltipMessage =
+				"Este jugador está demasiado lejos para tu rango actual.";
 			isUnclickable = true;
 		} else if (isUnstealable) {
 			tooltipMessage = "Este jugador no tiene cartas que robar.";
@@ -128,6 +148,7 @@ export function OpponentCard({
 		<div
 			onClick={() => {
 				if (isUnclickable) return;
+				if (isNonOpponentTarget) return;
 				if (selectedCard?.card_id === 12) return;
 				onAction(player.name, player.is_online);
 			}}
