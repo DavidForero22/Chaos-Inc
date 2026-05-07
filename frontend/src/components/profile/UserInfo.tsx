@@ -7,6 +7,7 @@ import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
 import type { UserAchievement } from "../../types/api";
 import styles from "./UserInfo.module.css";
+import viewStyles from "./RegisteredProfileView.module.css";
 
 const ACCOUNT_ROLE_CONFIG: Record<
 	string,
@@ -82,6 +83,7 @@ export default function UserInfo({
 
 	return (
 		<>
+			<h1 className={viewStyles.sectionLabel}>INFORMACIÓN DEL USUARIO</h1>
 			<div className={styles.header}>
 				{/* ── FOTO TIPO POLAROID ── */}
 				<div className={styles.photoAttachment}>
@@ -185,7 +187,7 @@ export default function UserInfo({
 			{/* ── SECCIÓN DE LOGROS ── */}
 			<div className={styles.divider} />
 			<ProfileAchievements userAchievements={achievements} />
-			
+
 			{/* ── ACCIONES DEL PERFIL PROPIO ── */}
 			{!notMyProfile && onLogout && onDeleteAccount && (
 				<>

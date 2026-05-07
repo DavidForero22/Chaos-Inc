@@ -33,7 +33,7 @@ export default function RegisteredProfileView({
 	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
 		"info",
 	);
-
+	
 	const displayId = notMyProfile ? publicProfile?.id : id;
 	const displayUser = notMyProfile ? publicProfile?.username : user;
 	const displayRole = notMyProfile ? publicProfile?.role : role;

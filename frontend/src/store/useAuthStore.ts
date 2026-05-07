@@ -1,6 +1,7 @@
 // src/store/useAuthStore.ts
 
 import { create } from "zustand";
+import type { UserAchievement } from "../types/api";
 
 interface AuthState {
 	id: number | null;
@@ -10,7 +11,8 @@ interface AuthState {
 	isGuest: boolean;
 	role: string | null;
 	provider: string | null;
-	joinedAt: string | null; 
+	joinedAt: string | null;
+	achievements: UserAchievement[] | null;
 	setAuth: (
 		id: number | null,
 		user: string,
@@ -19,7 +21,8 @@ interface AuthState {
 		role?: string,
 		provider?: string | null,
 		providerAvatar?: string | null,
-		joinedAt?: string | null, 
+		joinedAt?: string | null,
+		achievements?: UserAchievement[] | null,
 	) => void;
 	setAvatar: (avatar: string | null) => void;
 	logout: () => void;
@@ -33,6 +36,15 @@ const getSafeStorage = (key: string): string | null => {
 	return null;
 };
 
+const getSafeJSON = <T>(key: string): T | null => {
+	try {
+		const raw = getSafeStorage(key);
+		return raw ? (JSON.parse(raw) as T) : null;
+	} catch {
+		return null;
+	}
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
 	id: Number(getSafeStorage("userId")) || null,
 	user: getSafeStorage("user"),
@@ -41,7 +53,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 	isGuest: getSafeStorage("isGuest") === "true",
 	role: getSafeStorage("role"),
 	provider: getSafeStorage("provider"),
-	joinedAt: getSafeStorage("joinedAt"), 
+	joinedAt: getSafeStorage("joinedAt"),
+	achievements: getSafeJSON<UserAchievement[]>("achievements"),
 
 	setAuth: (
 		id,
@@ -51,7 +64,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 		role = "user",
 		provider = null,
 		providerAvatar = null,
-		joinedAt = null, 
+		joinedAt = null,
+		achievements = null,
 	) => {
 		if (typeof window !== "undefined") {
 			localStorage.setItem("userId", String(id));
@@ -72,6 +86,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
 			if (joinedAt) localStorage.setItem("joinedAt", joinedAt);
 			else localStorage.removeItem("joinedAt");
+
+			if (achievements)
+				localStorage.setItem("achievements", JSON.stringify(achievements));
+			else localStorage.removeItem("achievements");
 		}
 		set({
 			id,
@@ -82,6 +100,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			role,
 			provider,
 			joinedAt,
+			achievements,
 		});
 	},
 
@@ -102,7 +121,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 			localStorage.removeItem("isGuest");
 			localStorage.removeItem("role");
 			localStorage.removeItem("provider");
-			localStorage.removeItem("joinedAt"); 
+			localStorage.removeItem("joinedAt");
+			localStorage.removeItem("achievements");
 		}
 		set({
 			id: null,
@@ -113,6 +133,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 			role: null,
 			provider: null,
 			joinedAt: null,
+			achievements: null,
 		});
 	},
 }));
@@ -128,7 +149,8 @@ if (typeof window !== "undefined") {
 			event.key === "isGuest" ||
 			event.key === "role" ||
 			event.key === "provider" ||
-			event.key === "joinedAt" 
+			event.key === "joinedAt" ||
+			event.key === "achievements"
 		) {
 			useAuthStore.setState({
 				user: getSafeStorage("user"),
@@ -138,6 +160,7 @@ if (typeof window !== "undefined") {
 				role: getSafeStorage("role"),
 				provider: getSafeStorage("provider"),
 				joinedAt: getSafeStorage("joinedAt"),
+				achievements: getSafeJSON<UserAchievement[]>("achievements"), 
 			});
 		}
 	});

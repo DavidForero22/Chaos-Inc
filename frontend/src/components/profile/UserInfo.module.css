@@ -205,3 +205,84 @@
 	);
 	margin: 2rem 0;
 }
+
+/* ---------------------------------------------------
+   MEDIA QUERIES (RESPONSIVE DESIGN)
+--------------------------------------------------- */
+
+/* Tablets y móviles grandes (hasta 768px) */
+@media (max-width: 768px) {
+    /* Apilamos la foto de perfil y los datos del empleado */
+    .header {
+        flex-direction: column;
+        align-items: center; /* Centramos la foto y el texto principal */
+        gap: 1.5rem;
+    }
+
+    /* La Polaroid se hace ligeramente más pequeña y se centra */
+    .avatarContainer {
+        width: 120px;
+        height: 120px;
+        transform: rotate(0deg); /* Quitamos la rotación extrema en móvil para ganar espacio */
+    }
+
+    .clip {
+        left: 45%; /* Reajustamos el clip al nuevo centro */
+    }
+
+    /* Los datos del empleado ahora ocupan todo el ancho disponible */
+    .employeeData {
+        width: 100%;
+        text-align: center; /* Centramos el nombre en móvil */
+    }
+
+    /* Modificamos el contenedor del nombre para que se vea bien centrado */
+    .formValue {
+        justify-content: center;
+        border-bottom: none; /* Quitamos la línea de puntos en móvil porque queda rara centrada */
+        background-color: rgba(0,0,0,0.03); /* Le damos un leve fondo para destacar */
+        border-radius: 4px;
+        padding: 8px 0;
+        margin-top: 4px;
+    }
+
+    /* Achicamos un poco el nombre para que no rompa en pantallas muy pequeñas */
+    .employeeName {
+        font-size: 1.5rem;
+    }
+
+    /* La fila de Nivel y Origen pasa a ser una columna */
+    .formRow {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    /* Centramos los labels y los badges */
+    .formGroup {
+        align-items: center;
+    }
+
+    /* La fecha de registro también la centramos */
+    .formGroupInline {
+        justify-content: center;
+        flex-direction: column;
+        gap: 0.2rem;
+        margin-top: 1rem;
+        background-color: #f0ebe1;
+        padding: 10px;
+        border: 1px dashed #ccc;
+    }
+}
+
+/* Teléfonos muy pequeños (hasta 480px) */
+@media (max-width: 480px) {
+    .employeeName {
+        font-size: 1.25rem;
+    }
+
+    .roleBadge {
+        font-size: 0.65rem;
+        padding: 4px;
+    }
+}

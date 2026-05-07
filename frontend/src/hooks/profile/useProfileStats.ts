@@ -27,7 +27,7 @@ export interface CardEntry {
 
 export interface ProfileStats {
 	basicStats: BasicStats;
-	radarData: number[]; // [Agresividad, Supervivencia, Productividad, Eliminaciones, Planificación]
+	radarData: number[]; // [DañoInfligido, DañoRecibido, CuraciónRealizada, Eliminaciones, Pasivas]
 	roleDistribution: RoleEntry[];
 	winrateByRole: WinrateEntry[];
 	topCards: CardEntry[];
@@ -57,7 +57,7 @@ const EMPTY: ProfileStats = {
 const RADAR_MAX = {
 	damage: 10, // damageDealt promedio/partida
 	received: 10, // damageReceived (invertido: menos = mejor)
-	cards: 15, // cardsPlayed promedio/partida
+	healing: 10, // healingDone promedio/partida
 	eliminations: 3, // eliminations promedio/partida
 	passives: 5, // passivesPlayed promedio/partida
 };
@@ -103,11 +103,13 @@ export function useProfileStats(
 		);
 
 		// ── Radar (promedios por partida → 0-100) ─────────────────────
+		// Índices: [0] damage · [1] received · [2] healing · [3] eliminations · [4] passives
+		// Todos directos: mayor valor = más actividad en esa métrica
 		const avg = (total: number) => total / n;
 		const radarData = [
 			clamp((avg(basicStats.damage) / RADAR_MAX.damage) * 100),
-			clamp((1 - avg(basicStats.received) / RADAR_MAX.received) * 100), // invertido
-			clamp((avg(basicStats.cards) / RADAR_MAX.cards) * 100),
+			clamp((avg(basicStats.received) / RADAR_MAX.received) * 100), // sin inversión
+			clamp((avg(basicStats.healing) / RADAR_MAX.healing) * 100),
 			clamp((avg(basicStats.eliminations) / RADAR_MAX.eliminations) * 100),
 			clamp((avg(basicStats.passives) / RADAR_MAX.passives) * 100),
 		];

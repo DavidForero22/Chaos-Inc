@@ -21,10 +21,10 @@ export default function ProfileAchievements({
 
 	const unlockedMap = new Map<string, string>();
 	userAchievements.forEach((ach) => {
-		unlockedMap.set(ach.id, ach.unlockedAt);
+		unlockedMap.set(String(ach.id), ach.unlockedAt);
 	});
 
-	const isAchievementUnlocked = (id: string) => unlockedMap.has(id);
+	const isAchievementUnlocked = (id: string) => unlockedMap.has(String(id));
 
 	const formatUnlockDate = (dateString?: string) => {
 		if (!dateString) return "FECHA DESCONOCIDA";
@@ -69,7 +69,6 @@ export default function ProfileAchievements({
 								key={ach.id}
 								className={styles.achStickerContainer}
 								title={ach.technicalDescription}
-								style={{ transform: `rotate(${ach.rotation || 0}deg)` }}
 								onClick={() => setSelectedAchievement(ach)}
 							>
 								<img
@@ -86,7 +85,6 @@ export default function ProfileAchievements({
 								key={`locked-${ach.id}`}
 								className={styles.lockedStickerContainer}
 								title={ach.technicalDescription}
-								style={{ transform: `rotate(${ach.rotation || 0}deg)` }}
 								onClick={() => setSelectedAchievement(ach)}
 							>
 								<img
@@ -120,11 +118,11 @@ export default function ProfileAchievements({
 								<img
 									src={getImagePath(selectedAchievement.image)}
 									alt={selectedAchievement.title}
-									className={`${styles.modalIconLocked} ${
+									className={
 										isAchievementUnlocked(selectedAchievement.id)
-											? ""
-											: styles.lockedSticker
-									}`}
+											? styles.modalIcon
+											: `${styles.modalIcon} ${styles.lockedSticker}`
+									}
 								/>
 							</div>
 							<div className={styles.modalTextInfo}>

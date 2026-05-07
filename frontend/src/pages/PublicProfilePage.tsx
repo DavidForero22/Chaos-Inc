@@ -2,7 +2,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { usePublicProfileData } from "../hooks/profile/usePublicProfileData";
+import { useUserProfileData } from "../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../components/profile/RegisteredProfileView";
 import styles from "../components/profile/Profile.module.css";
 import api from "../api/axios";
@@ -14,8 +14,7 @@ export default function PublicProfilePage() {
 
 	// ¿Es mi perfil o el de otro?
 	const isMe = String(myId) === userId;
-
-	const { games, profileUser, loading } = usePublicProfileData(userId);
+	const { games, profileUser, loading } = useUserProfileData(userId);
 
 	// Acciones manuales para no tener que llamar a useProfileData y duplicar peticiones
 	const handleLogout = async () => {

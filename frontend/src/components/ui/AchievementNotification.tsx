@@ -58,7 +58,7 @@ export function AchievementNotification() {
 	);
 
 	return (
-		<div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-3 pointer-events-none">
+		<div className="fixed bottom-4 right-4 z-101 flex flex-col items-end gap-3 pointer-events-none">
 			{notifications.map((notif) => (
 				<AchievementNotificationItem
 					key={notif.id}

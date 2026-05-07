@@ -80,6 +80,7 @@ export function useAuth() {
 				res.data.user.role,
 				res.data.user.provider,
 				res.data.user.providerAvatar,
+				res.data.user.achievements,
 			);
 			return true;
 		} catch (err: any) {
@@ -168,6 +169,6 @@ export function useAuth() {
 		register,
 		logout,
 		uploadAvatar,
-		syncProviderAvatar, 
+		syncProviderAvatar,
 	};
 }
