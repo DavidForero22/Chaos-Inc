@@ -1,0 +1,16 @@
+export const CARD_MAP: Record<number, string> = {
+	1: "Ataque",
+	2: "Té",
+	3: "Evasión",
+	4: "Robo",
+	5: "Escudo",
+	6: "Laxante",
+	7: "Inspección Sorpresa",
+	8: "Viernes de Cañas",
+	9: "Sabotaje",
+	10: "Catalejo",
+	11: "Teletrabajo",
+	12: "Recorte",
+	13: "Riñonera",
+	14: "Buenaventura Gitana",
+};

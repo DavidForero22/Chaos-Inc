@@ -14,6 +14,14 @@ export interface RoomData {
 	is_private?: string;
 }
 
+/**
+ * Tipado para el uso de cartas
+ */
+export interface CardUsage {
+	cardId: number;
+	timesPlayed: number;
+}
+
 export interface GameParticipant {
 	userId: number | null;
 	isGuest: boolean;
@@ -21,11 +29,15 @@ export interface GameParticipant {
 	stats: {
 		hasWon: boolean;
 		role: string;
+		isDead: boolean;
 		damageDealt: number;
 		damageReceived: number;
+		healingDone: number;
 		cardsPlayed: number;
+		passivesPlayed: number;
 		eliminations: number;
 	};
+	cardUsages?: CardUsage[];
 }
 
 export interface GameRecord {

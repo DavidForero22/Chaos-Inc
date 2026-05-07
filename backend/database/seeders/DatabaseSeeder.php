@@ -19,5 +19,10 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make($adminPassword),
             'role' => 'admin',
         ]);
+
+        $this->call([
+            AchievementSeeder::class,
+            // Aquí puedes dejar los otros seeders de prueba de usuarios que tuvieras
+        ]);
     }
 }
