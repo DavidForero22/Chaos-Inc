@@ -31,11 +31,25 @@ class GameResource extends JsonResource
                         'stats'       => [
                             'hasWon'          => (bool) $participant->has_won,
                             'role'            => $participant->role,
+                            'isDead'          => (bool) $participant->is_dead,
                             'damageDealt'     => $participant->damage_dealt,
                             'damageReceived'  => $participant->damage_received,
+                            'healingDone'     => $participant->healing_done,
                             'cardsPlayed'     => $participant->cards_played,
+                            'passivesPlayed'  => $participant->passives_played,
                             'eliminations'    => $participant->eliminations,
                         ],
+                        // Desglose de cartas de ese jugador
+                        'cardUsages'  => $this->whenLoaded('cardUsages', function () use ($participant) {
+                            return $this->cardUsages
+                                ->where('user_id', $participant->user_id)
+                                ->map(function ($usage) {
+                                    return [
+                                        'cardId'      => $usage->card_id,
+                                        'timesPlayed' => $usage->times_played,
+                                    ];
+                                })->values();
+                        }),
                     ];
                 });
             }),

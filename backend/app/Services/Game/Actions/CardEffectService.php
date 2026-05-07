@@ -54,6 +54,7 @@ class CardEffectService
 
         if ($currentStress > 0) {
             Redis::hincrby($playerInfoKey, 'stress', -1);
+            Redis::hincrby("room:{$roomId}:player:{$playerName}:stats", 'healing_done', 1);
         }
     }
 
@@ -161,9 +162,10 @@ class CardEffectService
         }
     }
 
-    public function applyHealAll(string $roomId): void
+    public function applyHealAll(string $roomId, string $playerName): void
     {
         $players = Redis::smembers("room:{$roomId}:players");
+        $casterStatsKey = "room:{$roomId}:player:{$playerName}:stats";
 
         foreach ($players as $target) {
             $targetInfoKey = "room:{$roomId}:player:{$target}:info";
@@ -174,6 +176,7 @@ class CardEffectService
 
             if (!$isDead && $currentStress > 0) {
                 Redis::hincrby($targetInfoKey, 'stress', -1);
+                Redis::hincrby($casterStatsKey, 'healing_done', 1);
             }
         }
     }

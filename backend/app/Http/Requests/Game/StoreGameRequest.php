@@ -1,4 +1,5 @@
 <?php
+// app/Http/Requests/Game/StoreGameRequest.php
 
 namespace App\Http\Requests\Game;
 
@@ -20,16 +21,23 @@ class StoreGameRequest extends FormRequest
             'total_eliminations' => 'required|integer|min:0',
 
             // Validación del array de jugadores para la tabla pivote 'game_user'
-            'players'                        => 'required|array|min:3|max:3',
+            'players'                        => 'required|array|min:2|max:6',
             'players.*.user_id'              => 'nullable|exists:users,id',
             'players.*.is_guest'             => 'required|boolean',
             'players.*.display_name'         => 'required|string|max:20',
             'players.*.has_won'              => 'required|boolean',
             'players.*.role'                 => 'required|in:boss,secretary,intern,union',
+            'players.*.is_dead'              => 'required|boolean',
             'players.*.damage_dealt'         => 'required|integer|min:0',
             'players.*.damage_received'      => 'required|integer|min:0',
+            'players.*.healing_done'         => 'required|integer|min:0',
             'players.*.cards_played'         => 'required|integer|min:0',
+            'players.*.passives_played'      => 'required|integer|min:0',
             'players.*.eliminations'         => 'required|integer|min:0',
+
+            // Validación del uso de cartas
+            'players.*.card_details'         => 'nullable|array',
+            'players.*.card_details.*'       => 'integer|min:1',
         ];
     }
 
@@ -44,12 +52,15 @@ class StoreGameRequest extends FormRequest
 
             'players.required' => 'Game data must include the players.',
             'players.min' => 'A game requires at least 2 players.',
+            'players.max' => 'A game cannot have more than 6 players.',
 
             'players.*.user_id.exists' => 'The provided player ID does not exist in the system.',
             'players.*.role.in' => 'One or more players have an invalid role assigned.',
             'players.*.damage_dealt.min' => 'Damage dealt cannot be a negative number.',
             'players.*.damage_received.min' => 'Damage received cannot be a negative number.',
+            'players.*.healing_done.min' => 'Healing done cannot be a negative number.',
             'players.*.cards_played.min' => 'Cards played cannot be a negative number.',
+            'players.*.passives_played.min' => 'Passives played cannot be a negative number.',
             'players.*.eliminations.min' => 'Eliminations cannot be a negative number.',
         ];
     }

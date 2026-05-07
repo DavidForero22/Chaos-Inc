@@ -85,7 +85,7 @@ class GameActionService
             5 => $this->cardEffectService->applyShield($roomId, $playerName),
             6 => $this->cardEffectService->applyBlock($roomId, $targetName),
             7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
-            8 => $this->cardEffectService->applyHealAll($roomId),
+            8 => $this->cardEffectService->applyHealAll($roomId, $playerName),
             9 => $this->cardEffectService->applySabotage($roomId, $targetName),
             10 => $this->cardEffectService->applyVision($roomId, $playerName),
             11 => $this->cardEffectService->applyDistance($roomId, $playerName),
@@ -96,6 +96,21 @@ class GameActionService
         };
 
         $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
+
+        // ── REGISTRO DE ESTADÍSTICAS ──
+        $statsKey     = "room:{$roomId}:player:{$playerName}:stats";
+        $cardUsageKey = "room:{$roomId}:player:{$playerName}:card_usage";
+
+        //  Contador global de cartas jugadas
+        Redis::hincrby($statsKey, 'cards_played', 1);
+
+        // Contador específico por ID de carta (Top 5)
+        Redis::hincrby($cardUsageKey, "card_{$cardBaseId}", 1);
+
+        // Verificar si es una Pasiva usando estrictamente su tipado
+        if (isset($card['type']) && $card['type'] === 'perk') {
+            Redis::hincrby($statsKey, 'passives_played', 1);
+        }
 
         // Estructurar la acción pura para el frontend
         $cardAction = [

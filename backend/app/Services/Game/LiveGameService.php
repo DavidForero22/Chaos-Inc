@@ -162,7 +162,9 @@ class LiveGameService
             Redis::hmset("{$baseKey}:stats", [
                 'damage_dealt'    => 0,
                 'damage_received' => 0,
+                'healing_done'    => 0,
                 'cards_played'    => 0,
+                'passives_played' => 0,
                 'eliminations'    => 0,
             ]);
 
@@ -183,12 +185,14 @@ class LiveGameService
             ]);
 
             Redis::set("{$baseKey}:hand", json_encode($playerCards));
+            Redis::hmset("{$baseKey}:card_usage", ['initialized' => 1]);
 
             Redis::expire("{$baseKey}:info", 86400);
             Redis::expire("{$baseKey}:stats", 86400);
             Redis::expire("{$baseKey}:turn_state", 86400);
             Redis::expire("{$baseKey}:perks", 86400);
             Redis::expire("{$baseKey}:hand", 86400);
+            Redis::expire("{$baseKey}:card_usage", 86400);
         }
 
         return $bossPlayerName;

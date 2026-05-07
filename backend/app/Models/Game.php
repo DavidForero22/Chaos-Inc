@@ -1,5 +1,5 @@
 <?php
-// app/Models/Model.php
+// app/Models/Game.php
 
 namespace App\Models;
 
@@ -13,7 +13,7 @@ class Game extends Model
     public function users()
     {
         return $this->belongsToMany(User::class)
-            ->withPivot('is_guest', 'display_name', 'has_won', 'role', 'damage_dealt', 'damage_received', 'cards_played', 'eliminations')
+            ->withPivot('is_guest', 'display_name', 'has_won', 'role', 'is_dead', 'damage_dealt', 'damage_received', 'healing_done', 'cards_played', 'passives_played', 'eliminations')
             ->withTimestamps();
     }
 
@@ -21,5 +21,10 @@ class Game extends Model
     public function participants()
     {
         return $this->hasMany(GameUser::class);
+    }
+
+    public function cardUsages()
+    {
+        return $this->hasMany(GameCardUsage::class);
     }
 }

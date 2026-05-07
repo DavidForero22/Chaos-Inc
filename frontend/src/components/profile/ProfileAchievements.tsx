@@ -1,6 +1,6 @@
 // src/components/profile/ProfileAchievements.tsx
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ACHIEVEMENTS, type Achievement } from "../../data/achievementData.ts";
 import styles from "./ProfileAchievements.module.css";
 
@@ -22,6 +22,21 @@ export default function ProfileAchievements() {
 	// Estado para controlar el modal
 	const [selectedAchievement, setSelectedAchievement] =
 		useState<Achievement | null>(null);
+
+	const getImagePath = (path: string) =>
+		path.startsWith("/") ? path : `/${path}`;
+
+	useEffect(() => {
+		if (selectedAchievement) {
+			document.body.style.overflow = "hidden";
+		} else {
+			document.body.style.overflow = "auto";
+		}
+
+		return () => {
+			document.body.style.overflow = "auto";
+		};
+	}, [selectedAchievement]);
 
 	// Función para cerrar el modal
 	const closeModal = () => setSelectedAchievement(null);
@@ -48,7 +63,7 @@ export default function ProfileAchievements() {
 								onClick={() => setSelectedAchievement(ach)}
 							>
 								<img
-									src={displayImage}
+									src={getImagePath(ach.image)}
 									alt={ach.title}
 									className={styles.logroSticker}
 								/>
@@ -92,7 +107,7 @@ export default function ProfileAchievements() {
 						<div className={styles.modalHeader}>
 							<div className={styles.modalIconWrapper}>
 								<img
-									src={selectedAchievement.image}
+									src={getImagePath(selectedAchievement.image)}
 									alt={selectedAchievement.title}
 									className={styles.modalIcon}
 								/>

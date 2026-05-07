@@ -38,6 +38,8 @@ class UserController extends Controller
     public function show($id)
     {
         $user = $this->userService->getUserById($id);
+        $user->load(['games.participants', 'games.cardUsages']);
+        
         return new UserResource($user);
     }
 

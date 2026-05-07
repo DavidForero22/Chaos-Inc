@@ -41,7 +41,7 @@ class GameFinalizationService
             Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
             CleanupRoomJob::dispatch($roomId, $cleanupToken);
 
-            return; 
+            return;
         }
 
         // Logica de victoria normal
@@ -64,10 +64,17 @@ class GameFinalizationService
         foreach ($playerNames as $name) {
             $pInfo  = Redis::hgetall("room:{$roomId}:player:{$name}:info");
             $pStats = Redis::hgetall("room:{$roomId}:player:{$name}:stats");
+            $cardUsage = Redis::hgetall("room:{$roomId}:player:{$name}:card_usage");
+
+            // Limpiar el flag de inicialización que pusimos antes
+            if (isset($cardUsage['initialized'])) {
+                unset($cardUsage['initialized']);
+            }
 
             $role  = $pInfo['role'] ?? 'intern';
             $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
+            $isDead = (isset($pInfo['is_dead']) && $pInfo['is_dead'] == '1');
 
             $user = User::where('username', $name)->first();
             $isGuest = !$user || $user->is_guest;
@@ -78,10 +85,14 @@ class GameFinalizationService
                 'display_name'    => $name,
                 'has_won'         => in_array($role, $winningRoles),
                 'role'            => $role,
-                'damage_dealt'    => (int) ($pStats['damage_dealt']    ?? 0),
+                'is_dead'         => $isDead,
+                'damage_dealt'    => (int) ($pStats['damage_dealt'] ?? 0),
                 'damage_received' => (int) ($pStats['damage_received'] ?? 0),
-                'cards_played'    => (int) ($pStats['cards_played']    ?? 0),
+                'healing_done'    => (int) ($pStats['healing_done'] ?? 0),
+                'cards_played'    => (int) ($pStats['cards_played'] ?? 0),
+                'passives_played' => (int) ($pStats['passives_played'] ?? 0),
                 'eliminations'    => $elims,
+                'card_details'    => $cardUsage,
             ];
         }
 

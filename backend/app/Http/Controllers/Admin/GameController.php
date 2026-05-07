@@ -45,13 +45,13 @@ class GameController extends Controller
     public function myGames(Request $request)
     {
         $user = $request->user();
-        $games = $user->games()->with('participants')->latest()->get();
+        $games = $user->games()->with(['participants', 'cardUsages'])->latest()->get();
         return GameResource::collection($games);
     }
 
     public function userGames(Request $request, User $user)
     {
-        $games = $user->games()->with('participants')->latest()->get();
+        $games = $user->games()->with(['participants', 'cardUsages'])->latest()->get();
         return GameResource::collection($games);
     }
 }
