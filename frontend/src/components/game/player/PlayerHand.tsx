@@ -70,9 +70,9 @@ export function PlayerHand() {
             {/* El contenedor escrolleable y oscuro del bolsillo */}
             <div className={styles.cardsScrollArea}>
                 {me.cards.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#8a6845] rounded-lg text-[#8a6845] opacity-60 h-30">
-                        <p className="italic text-sm font-bold uppercase tracking-widest">
-                            Bolsillo vacío
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#3b2f24] rounded-lg text-[#3b2f24] opacity-60 h-auto m-7">
+                        <p className="italic text-xl font-bold uppercase tracking-widest">
+                            Sin Cartas
                         </p>
                     </div>
                 ) : (

@@ -61,6 +61,7 @@ export function PlayerActions() {
 		prevIsOverLimit.current = isOverLimit;
 	}, [
 		actionLogic.isReady,
+		actionLogic.me?.is_dead,
 		actionLogic.me?.conditions.must_discard,
 		actionLogic.me?.combat_state.is_defending_single,
 		actionLogic.hasPendingMultiAttack,
@@ -72,10 +73,11 @@ export function PlayerActions() {
 		clearDiscardSelection,
 	]);
 
+	const isDead = me?.is_dead || false;
 	if (!actionLogic.isReady) return null;
 
 	// ¿Deberían estar deshabilitados los botones por el modo Info?
-	const isInteractionBlockedByInfo = isInfoMode;
+	const isInteractionBlockedByInfo = isInfoMode || isDead;
 
 	return (
 		<div className="fixed bottom-4 right-4 z-60 flex flex-col items-end gap-2 pointer-events-auto lg:static lg:w-full lg:flex-row lg:justify-between lg:items-end lg:mb-6 lg:px-2 lg:z-40">
@@ -116,7 +118,7 @@ export function PlayerActions() {
 						{/* --- BOTÓN INFO (SOLO MÓVIL) --- */}
 						<button
 							onClick={() => setIsInfoMode?.(!isInfoMode)}
-							disabled={isGlobalLoading || isDiscardMode}
+							disabled={isGlobalLoading || isDead || isDiscardMode}
 							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${isDiscardMode ? styles.stampDisabled : ""}`}
 						>
 							{isInfoMode ? "SALIR" : "INFO"}
