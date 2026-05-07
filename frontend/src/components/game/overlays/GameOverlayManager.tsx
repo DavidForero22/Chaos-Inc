@@ -5,6 +5,7 @@ import { GameOverModal } from "./GameOverModal.tsx";
 import { LuckChallengeModal } from "./LuckChallengeModal.tsx";
 import type { MyData, GameData } from "../../../types/live-game.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { ActingBossModal } from "./ActingBossModal.tsx";
 
 interface GameOverlayManagerProps {
 	roomId: string;
@@ -48,11 +49,7 @@ export function GameOverlayManager({
 			)}
 
 			{showActingBossModal && (
-				<RoleRevealModal
-					role={me.role}
-					isActingBoss={true}
-					onClose={() => setShowActingBossModal(false)}
-				/>
+				<ActingBossModal onClose={() => setShowActingBossModal(false)} />
 			)}
 
 			{gameOver && (
