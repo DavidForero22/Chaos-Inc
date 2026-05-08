@@ -1,13 +1,11 @@
 // src/hooks/profile/useUserProfileData.ts
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
 import type { GameRecord, UserRecord } from "../../types/api.ts";
 
 export function useUserProfileData(userId: string | undefined) {
-	const navigate = useNavigate();
 	const { id: myId, isGuest } = useAuthStore();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
@@ -15,16 +13,15 @@ export function useUserProfileData(userId: string | undefined) {
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// Si no hay ID o el usuario actual es un invitado puro navegando, cortamos
-		if (!userId || isGuest) {
+		// Si no hay ID de perfil o no hay sesión activa, no pedir datos
+		if (!userId || (!myId && !isGuest)) {
 			setLoading(false);
 			return;
 		}
 
 		const fetchData = async () => {
-			setLoading(true); // Resetear el loader al cambiar de usuario
+			setLoading(true);
 			try {
-				// Si visitamos nuestro propio ID, usamos /me/games. Si no, usamos el endpoint público.
 				const gamesEndpoint =
 					String(myId) === userId ? "/me/games" : `/users/${userId}/games`;
 
@@ -36,14 +33,14 @@ export function useUserProfileData(userId: string | undefined) {
 				setProfileUser(userRes.data.data ?? userRes.data);
 				setGames(gamesRes.data.data ?? gamesRes.data);
 			} catch {
-				navigate("/"); // Si el usuario no existe, sacarlo de ahí
+				// no-op
 			} finally {
 				setLoading(false);
 			}
 		};
 
 		fetchData();
-	}, [userId, myId, isGuest, navigate]);
+	}, [userId, myId, isGuest]);
 
 	return { games, profileUser, loading };
 }

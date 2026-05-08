@@ -67,7 +67,7 @@ export interface SocialAccountInfo {
 export interface UserRecord {
 	id: number;
 	username: string;
-	email: string;
+	email?: string
 	role: string;
 	avatar: string | null;
 	socialAccounts?: SocialAccountInfo[];
