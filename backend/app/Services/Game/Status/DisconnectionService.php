@@ -22,9 +22,10 @@ class DisconnectionService
     /**
      * El jefe real se desconecta — abre ventana de gracia de 10s.
      */
-    public function handleBossDisconnection(string $roomId, string $bossName): void
+    public function handleBossDisconnection(string $roomId): void
     {
         $graceToken = uniqid('grace_boss_', true);
+
         Redis::set("room:{$roomId}:boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
@@ -58,9 +59,10 @@ class DisconnectionService
         $bossIsOffline    = false;
         $actingBossExists = false;
 
-        foreach ($players as $name) {
-            $pInfoKey = "room:{$roomId}:player:{$name}:info";
-            $pData = Redis::hgetall($pInfoKey);
+        foreach ($players as $playerId) {
+            $pInfoKey = "room:{$roomId}:player:{$playerId}:info";
+            $pData    = Redis::hgetall($pInfoKey);
+
             $isDead = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             // Si el jefe o jefe en funciones está muerto, no tenerlo en cuenta para herencias
@@ -69,6 +71,7 @@ class DisconnectionService
             if (($pData['role'] ?? '') === 'boss' && ($pData['is_online'] ?? '1') === '0') {
                 $bossIsOffline = true;
             }
+
             if (($pData['acting_boss'] ?? '0') === '1') {
                 $actingBossExists = true;
             }
@@ -88,27 +91,33 @@ class DisconnectionService
      */
     public function inheritBossRole(string $roomId): void
     {
-        $players   = Redis::smembers("room:{$roomId}:players");
-        $secretary = null;
-        $intern    = null;
-        $onlineCount = 0;
+        $players      = Redis::smembers("room:{$roomId}:players");
+        $secretaryId  = null;
+        $internId     = null;
+        $onlineCount  = 0;
 
-        foreach ($players as $name) {
-            $pInfoKey = "room:{$roomId}:player:{$name}:info";
+        foreach ($players as $playerId) {
+            $pInfoKey = "room:{$roomId}:player:{$playerId}:info";
             $pData    = Redis::hgetall($pInfoKey);
 
-            $role     = $pData['role'] ?? '';
-            $isOnline = ($pData['is_online'] ?? '1') !== '0';
-            $isDead   = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $role      = $pData['role'] ?? '';
+            $isOnline  = ($pData['is_online'] ?? '1') !== '0';
+            $isDead    = filter_var($pData['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $username  = $pData['username'] ?? "Player {$playerId}";
 
             if ($isOnline && !$isDead) {
-                $onlineCount++; // Sumamos un superviviente
+                $onlineCount++;
 
-                if ($role === 'secretary' && $secretary === null) $secretary = $name;
-                if ($role === 'intern'    && $intern    === null) $intern    = $name;
+                if ($role === 'secretary' && $secretaryId === null) {
+                    $secretaryId = $playerId;
+                }
+
+                if ($role === 'intern' && $internId === null) {
+                    $internId = $playerId;
+                }
             }
 
-            Log::info("DEBUG: Jugador {$name} tiene status de online = [{$isOnline}]");
+            Log::info("DEBUG: Jugador {$username} ({$playerId}) tiene status de online = [{$isOnline}]");
         }
 
         // --- LA BARRERA ANTI-MODALS ---
@@ -116,14 +125,21 @@ class DisconnectionService
         // NO ascendemos a nadie, simplemente disparamos el final del juego.
         if ($onlineCount <= 1) {
             Log::info("DisconnectionService.php - Solo queda 1 jugador. Ignorando herencia y forzando fin de partida.");
+
             $this->finalizationService->checkDisconnectionVictory($roomId);
+
             return;
         }
 
-        $newActingBoss = $secretary ?? $intern ?? null;
+        $newActingBossId = $secretaryId ?? $internId ?? null;
 
-        if ($newActingBoss !== null) {
-            Redis::hset("room:{$roomId}:player:{$newActingBoss}:info", 'acting_boss', 1);
+        if ($newActingBossId !== null) {
+            Redis::hset(
+                "room:{$roomId}:player:{$newActingBossId}:info",
+                'acting_boss',
+                1
+            );
+
             event(new RoomStateUpdated($roomId));
         } else {
             $this->resolveNoInheritance($roomId);
@@ -134,11 +150,16 @@ class DisconnectionService
      * El jefe heredado se desconecta.
      * Si era secretario, intenta ceder al becario. Si era becario, no hay más candidatos.
      */
-    public function handleActingBossDisconnection(string $roomId, string $actingBossName): void
+    public function handleActingBossDisconnection(string $roomId, int $actingBossId): void
     {
-        Redis::hset("room:{$roomId}:player:{$actingBossName}:info", 'acting_boss', 0);
+        Redis::hset(
+            "room:{$roomId}:player:{$actingBossId}:info",
+            'acting_boss',
+            0
+        );
 
         $graceToken = uniqid('grace_acting_', true);
+
         Redis::set("room:{$roomId}:acting_boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
@@ -152,22 +173,25 @@ class DisconnectionService
     public function resolveNoInheritance(string $roomId): void
     {
         $roomStateKey = "room:{$roomId}:state";
-        $roundNumber = (int) Redis::hget($roomStateKey, 'round_number');
+        $roundNumber  = (int) Redis::hget($roomStateKey, 'round_number');
 
         if ($roundNumber >= 2) {
             // Partida válida — victoria para el sindicato
             Redis::hset($roomStateKey, 'game_over', 1);
             Redis::hset($roomStateKey, 'winner_role', 'union');
+
             event(new RoomStateUpdated($roomId));
+
             $this->finalizationService->finalize($roomId);
         } else {
             // Partida cancelada — limpiar sin registrar resultado
             event(new RoomStateUpdated($roomId));
+
             $this->finalizationService->cancelAndCleanup($roomId);
         }
     }
 
-    public function processInGameDisconnection(string $roomId, string $playerName): void
+    public function processInGameDisconnection(string $roomId, int $playerId): void
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -176,36 +200,44 @@ class DisconnectionService
             return;
         }
 
-        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
+        $playerInfoKey = "room:{$roomId}:player:{$playerId}:info";
 
         Redis::hset($playerInfoKey, 'is_online', 0);
         Redis::hset($playerInfoKey, 'disconnected_at', time());
 
         $playerData = Redis::hgetall($playerInfoKey);
-        $isDead = CastHelper::toBool($playerData['is_dead'] ?? 0);
 
-        Log::info("DisconnectionService.php::processInGameDisconnection - $playerName abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}");
+        $isDead    = CastHelper::toBool($playerData['is_dead'] ?? 0);
+        $username  = $playerData['username'] ?? "Player {$playerId}";
+
+        Log::info(
+            "DisconnectionService.php::processInGameDisconnection - {$username} ({$playerId}) abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}"
+        );
 
         // Contar cuántos quedan vivos y online
         $onlineAndAliveCount = 0;
-        foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
-            $pInfoKey = "room:{$roomId}:player:{$pName}:info";
-            $pData = Redis::hgetall($pInfoKey);
+
+        foreach (Redis::smembers("room:{$roomId}:players") as $pId) {
+            $pInfoKey = "room:{$roomId}:player:{$pId}:info";
+            $pData    = Redis::hgetall($pInfoKey);
 
             $pIsOnline = ($pData['is_online'] ?? '0') === '1';
-            $pIsDead = CastHelper::toBool($pData['is_dead'] ?? 0);
+            $pIsDead   = CastHelper::toBool($pData['is_dead'] ?? 0);
+            $pUsername = $pData['username'] ?? "Player {$pId}";
 
             if ($pIsOnline && !$pIsDead) {
                 $onlineAndAliveCount++;
             }
 
-            Log::info("DEBUG: Jugador {$pName} tiene status de online = [{$pIsOnline}]");
+            Log::info("DEBUG: Jugador {$pUsername} ({$pId}) tiene status de online = [{$pIsOnline}]");
         }
 
         // Si no queda nadie vivo y conectado, destruir la sala al instante
         if ($onlineAndAliveCount === 0) {
             Log::info("DisconnectionService.php - No quedan jugadores vivos/online en la sala {$roomId}. Destrucción instantánea.");
+
             $this->finalizationService->destroyRoom($roomId);
+
             return;
         }
 
@@ -215,10 +247,14 @@ class DisconnectionService
         }
 
         // --- EXCEPCIÓN DE MUERTOS ---
-        // Si el jugador ya estaba muerto, simplemente avisar al frontend de que se ha ido 
+        // Si el jugador ya estaba muerto, simplemente avisar al frontend de que se ha ido
         // y parar la ejecución. No comprobar herencias, ni turnos, ni victorias.
         if ($isDead) {
-            event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
+            event(new RoomStateUpdated(
+                $roomId,
+                __('game.disconnected', ['player' => $username])
+            ));
+
             return;
         }
 
@@ -227,21 +263,25 @@ class DisconnectionService
 
         // Dar prioridad a manejar la herencia del cargo antes de la victoria
         if ($isRealBoss) {
-            $this->handleBossDisconnection($roomId, $playerName);
+            $this->handleBossDisconnection($roomId);
         } elseif ($isActingBoss) {
-            $this->handleActingBossDisconnection($roomId, $playerName);
+            $this->handleActingBossDisconnection($roomId, $playerId);
         }
 
         $this->finalizationService->checkDisconnectionVictory($roomId);
 
         // Quitar cartas si se pasa del limite
-        $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
+        $currentTurnPlayerId = Redis::hget($roomStateKey, 'current_turn_player_id');
 
-        if ($currentTurn === $playerName) {
-            $this->handService->enforceHandLimit($roomId, $playerName);
+        if ((string) $currentTurnPlayerId === (string) $playerId) {
+            $this->handService->enforceHandLimit($roomId, $playerId);
         }
 
-        $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerName);
-        event(new RoomStateUpdated($roomId, __('game.disconnected', ['player' => $playerName])));
+        $this->turnService->checkAndAdvanceTurnOnDisconnect($roomId, $playerId);
+
+        event(new RoomStateUpdated(
+            $roomId,
+            __('game.disconnected', ['player' => $username])
+        ));
     }
 }

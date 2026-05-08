@@ -19,7 +19,7 @@ class GameActionService
         protected CardValidationService $cardValidationService,
     ) {}
 
-    public function playAction(string $roomId, string $playerName, string $cardId, string $targetName, ?string $perkKey = null): void
+    public function playAction(string $roomId, string $playerId, string $cardId, string $targetId, ?string $perkKey = null): void
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -28,7 +28,7 @@ class GameActionService
         }
 
         $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');
-        if ($currentTurn !== $playerName) {
+        if ($currentTurn !== $playerId) {
             throw new GameException(GameException::NOT_YOUR_TURN, "No es tu turno.", 403);
         }
 
@@ -41,15 +41,15 @@ class GameActionService
         }
 
         $pendingMulti = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
-        if (!empty($pendingMulti) && ($pendingMulti['attacker'] ?? null) === $playerName) {
+        if (!empty($pendingMulti) && ($pendingMulti['attacker'] ?? null) === $playerId) {
             throw new GameException(GameException::INVALID_ACTION, "Hay un ataque masivo pendiente de resolver.", 422);
         }
 
-        if (!Redis::sismember("room:{$roomId}:players", $targetName)) {
+        if (!Redis::sismember("room:{$roomId}:players", $targetId)) {
             throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está en la sala.", 404);
         }
 
-        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+        $handKey = "room:{$roomId}:player:{$playerId}:hand";
         $cards = collect(json_decode(Redis::get($handKey) ?: '[]', true));
 
         $card = $cards->firstWhere('id', $cardId);
@@ -61,47 +61,47 @@ class GameActionService
 
         // Match de validación
         match ($cardBaseId) {
-            1 => $this->cardValidationService->validateAttack($roomId, $playerName, $targetName),
-            2 => $this->cardValidationService->validateHeal($roomId, $playerName),
-            4 => $this->cardValidationService->validateSteal($roomId, $playerName, $targetName),
-            5 => $this->cardValidationService->validateShield($roomId, $playerName, $targetName),
-            6 => $this->cardValidationService->validateBlock($roomId, $playerName, $targetName),
-            7 => $this->cardValidationService->validateAttackAll($roomId, $playerName),
+            1 => $this->cardValidationService->validateAttack($roomId, $playerId, $targetId),
+            2 => $this->cardValidationService->validateHeal($roomId, $playerId),
+            4 => $this->cardValidationService->validateSteal($roomId, $playerId, $targetId),
+            5 => $this->cardValidationService->validateShield($roomId, $playerId, $targetId),
+            6 => $this->cardValidationService->validateBlock($roomId, $playerId, $targetId),
+            7 => $this->cardValidationService->validateAttackAll($roomId, $playerId),
             8 => $this->cardValidationService->validateHealAll($roomId),
-            9 => $this->cardValidationService->validateSabotage($roomId, $playerName, $targetName),
-            10 => $this->cardValidationService->validateVision($roomId, $playerName),
-            11 => $this->cardValidationService->validateDistance($roomId, $playerName, $targetName),
-            12 => $this->cardValidationService->validateClean($roomId, $playerName, $targetName, $perkKey),
-            13 => $this->cardValidationService->validateStorage($roomId, $playerName),
-            14 => $this->cardValidationService->validateLuck($roomId, $playerName),
+            9 => $this->cardValidationService->validateSabotage($roomId, $playerId, $targetId),
+            10 => $this->cardValidationService->validateVision($roomId, $playerId),
+            11 => $this->cardValidationService->validateDistance($roomId, $playerId, $targetId),
+            12 => $this->cardValidationService->validateClean($roomId, $playerId, $targetId, $perkKey),
+            13 => $this->cardValidationService->validateStorage($roomId, $playerId),
+            14 => $this->cardValidationService->validateLuck($roomId, $playerId),
             default => null,
         };
 
         // Match de efecto
         match ($cardBaseId) {
-            1 => $this->cardEffectService->applyAttack($roomId, $playerName, $targetName),
-            2 => $this->cardEffectService->applyHeal($roomId, $playerName),
-            4 => $this->cardEffectService->applySteal($roomId, $playerName, $targetName),
-            5 => $this->cardEffectService->applyShield($roomId, $playerName),
-            6 => $this->cardEffectService->applyBlock($roomId, $targetName),
-            7 => $this->cardEffectService->applyAttackAll($roomId, $playerName),
-            8 => $this->cardEffectService->applyHealAll($roomId, $playerName),
-            9 => $this->cardEffectService->applySabotage($roomId, $targetName),
-            10 => $this->cardEffectService->applyVision($roomId, $playerName),
-            11 => $this->cardEffectService->applyDistance($roomId, $playerName),
-            12 => $this->cardEffectService->applyClean($roomId, $targetName, $perkKey),
-            13 => $this->cardEffectService->applyStorage($roomId, $playerName),
-            14 => $this->cardEffectService->applyLuck($roomId, $playerName),
+            1 => $this->cardEffectService->applyAttack($roomId, $playerId, $targetId),
+            2 => $this->cardEffectService->applyHeal($roomId, $playerId),
+            4 => $this->cardEffectService->applySteal($roomId, $playerId, $targetId),
+            5 => $this->cardEffectService->applyShield($roomId, $playerId),
+            6 => $this->cardEffectService->applyBlock($roomId, $targetId),
+            7 => $this->cardEffectService->applyAttackAll($roomId, $playerId),
+            8 => $this->cardEffectService->applyHealAll($roomId, $playerId),
+            9 => $this->cardEffectService->applySabotage($roomId, $targetId),
+            10 => $this->cardEffectService->applyVision($roomId, $playerId),
+            11 => $this->cardEffectService->applyDistance($roomId, $playerId),
+            12 => $this->cardEffectService->applyClean($roomId, $targetId, $perkKey),
+            13 => $this->cardEffectService->applyStorage($roomId, $playerId),
+            14 => $this->cardEffectService->applyLuck($roomId, $playerId),
             default => null,
         };
 
-        $this->handService->findAndRemoveCard($roomId, $playerName, $cardId);
+        $this->handService->findAndRemoveCard($roomId, $playerId, $cardId);
 
         // ── REGISTRO DE ESTADÍSTICAS ──
-        $statsKey     = "room:{$roomId}:player:{$playerName}:stats";
-        $cardUsageKey = "room:{$roomId}:player:{$playerName}:card_usage";
+        $statsKey     = "room:{$roomId}:player:{$playerId}:stats";
+        $cardUsageKey = "room:{$roomId}:player:{$playerId}:card_usage";
 
-        //  Contador global de cartas jugadas
+        // Contador global de cartas jugadas
         Redis::hincrby($statsKey, 'cards_played', 1);
 
         // Contador específico por ID de carta (Top 5)
@@ -115,8 +115,8 @@ class GameActionService
         // Estructurar la acción pura para el frontend
         $cardAction = [
             'card_id' => $cardBaseId,
-            'source'  => $playerName,
-            'target'  => $targetName,
+            'source'  => $playerId,
+            'target'  => $targetId,
         ];
 
         $newTurnId = uniqid('turn_', true);

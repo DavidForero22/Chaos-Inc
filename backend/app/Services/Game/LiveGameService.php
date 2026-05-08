@@ -49,18 +49,31 @@ class LiveGameService
             throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
         }
 
-        // Obtener IDs de la BD indexados por username
-        $playerIds = User::whereIn('username', $players)
-            ->pluck('id', 'username')
-            ->toArray();
+        // Obtener usuarios indexados por username
+        $users = User::whereIn('username', $players)
+            ->get()
+            ->keyBy('username');
 
-        $this->initializeRoomState($roomId, $players);
+        // Convertir usernames → userIds
+        $playerIds = [];
+        foreach ($players as $playerName) {
+            $playerIds[] = (string) ($users[$playerName]->id ?? 0);
+        }
+
+        $this->initializeRoomState($roomId, $playerIds);
 
         $roles = LiveGameHelper::generateRolesDistribution($playersCount);
         $deck = $this->deckService->buildDeck();
-        $bossPlayerName = $this->assignRolesAndCards($roomId, $players, $roles, $deck, $playerIds);
 
-        $this->finalizeGameSetup($roomId, $bossPlayerName, $deck, $players);
+        $bossPlayerId = $this->assignRolesAndCards(
+            $roomId,
+            $playerIds,
+            $roles,
+            $deck,
+            $users
+        );
+
+        $this->finalizeGameSetup($roomId, $bossPlayerId, $deck, $playerIds);
 
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
@@ -81,7 +94,15 @@ class LiveGameService
             throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
         }
 
-        $playerInfoKey = "room:{$roomId}:player:{$playerName}:info";
+        $user = User::where('username', $playerName)->first();
+
+        if (!$user) {
+            throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player not found.", 404);
+        }
+
+        $playerId = (string) $user->id;
+
+        $playerInfoKey = "room:{$roomId}:player:{$playerId}:info";
 
         if (!Redis::exists($playerInfoKey)) {
             throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
@@ -90,16 +111,23 @@ class LiveGameService
         $this->disconnectionService->checkBossGracePeriod($roomId);
 
         $myDataInfo  = Redis::hgetall($playerInfoKey);
-        $myDataStats = Redis::hgetall("room:{$roomId}:player:{$playerName}:stats");
-        $myDataTurn  = Redis::hgetall("room:{$roomId}:player:{$playerName}:turn_state");
-        $myDataPerks = Redis::hgetall("room:{$roomId}:player:{$playerName}:perks");
-        $myDataHand  = Redis::get("room:{$roomId}:player:{$playerName}:hand") ?: '[]';
+        $myDataStats = Redis::hgetall("room:{$roomId}:player:{$playerId}:stats");
+        $myDataTurn  = Redis::hgetall("room:{$roomId}:player:{$playerId}:turn_state");
+        $myDataPerks = Redis::hgetall("room:{$roomId}:player:{$playerId}:perks");
+        $myDataHand  = Redis::get("room:{$roomId}:player:{$playerId}:hand") ?: '[]';
 
         $myData = array_merge($myDataInfo, $myDataStats, $myDataTurn, $myDataPerks);
+
+        // Mantener username para frontend/logs
+        $myData['username'] = $playerName;
+        $myData['user_id'] = $playerId;
         $myData['cards'] = $myDataHand;
 
         $pendingAttack = Redis::hgetall("room:{$roomId}:pending_attack");
-        $pendingMultiAttack = json_decode(Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null', true);
+        $pendingMultiAttack = json_decode(
+            Redis::get("room:{$roomId}:pending_multi_attack") ?? 'null',
+            true
+        );
 
         return [
             'me'   => new MyDataResource([
@@ -120,7 +148,7 @@ class LiveGameService
     // MÉTODOS PRIVADOS
     // =========================================================================
 
-    private function initializeRoomState(string $roomId, array &$players): void
+    private function initializeRoomState(string $roomId, array &$playerIds): void
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -129,34 +157,42 @@ class LiveGameService
         Redis::hset($roomStateKey, 'winner_role', '');
         Redis::hset($roomStateKey, 'round_number', 1);
 
-        shuffle($players);
+        shuffle($playerIds);
     }
 
     private function assignRolesAndCards(
         string $roomId,
-        array $players,
+        array $playerIds,
         array $roles,
         array &$deck,
-        array $playerIds
+        $users
     ): string {
 
-        $bossPlayerName = '';
+        $bossPlayerId = '';
 
-        foreach ($players as $index => $playerName) {
+        foreach ($playerIds as $index => $playerId) {
+
+            $user = $users->firstWhere('id', (int) $playerId);
+
             $playerRole = $roles[$index];
-            if ($playerRole === 'boss') $bossPlayerName = $playerName;
+
+            if ($playerRole === 'boss') {
+                $bossPlayerId = $playerId;
+            }
 
             $playerCards = array_splice($deck, 0, 3);
 
-            $baseKey = "room:{$roomId}:player:{$playerName}";
+            $baseKey = "room:{$roomId}:player:{$playerId}";
 
             Redis::hmset("{$baseKey}:info", [
-                'user_id'         => $playerIds[$playerName] ?? 0,
+                'user_id'         => $playerId,
+                'username'        => $user?->username ?? '',
                 'role'            => $playerRole,
                 'stress'          => 0,
                 'acting_boss'     => 0,
                 'is_online'       => 1,
                 'is_dead'         => 0,
+                'is_guest'        => $user ? ($user->is_guest ? 1 : 0) : 1,
             ]);
 
             Redis::hmset("{$baseKey}:stats", [
@@ -171,7 +207,7 @@ class LiveGameService
             ]);
 
             Redis::hmset("{$baseKey}:turn_state", [
-                'skip_next_turn'               => 0,
+                'skip_next_turn'                => 0,
                 'single_attack_used_this_turn' => 0,
                 'multi_attack_used_this_turn'  => 0,
                 'must_discard'                 => 0,
@@ -197,31 +233,52 @@ class LiveGameService
             Redis::expire("{$baseKey}:card_usage", 86400);
         }
 
-        return $bossPlayerName;
+        return $bossPlayerId;
     }
 
-    private function finalizeGameSetup(string $roomId, string $bossPlayerName, array $deck, array $players): void
-    {
+    private function finalizeGameSetup(
+        string $roomId,
+        string $bossPlayerId,
+        array $deck,
+        array $playerIds
+    ): void {
         $roomInfoKey  = "room:{$roomId}:info";
         $roomStateKey = "room:{$roomId}:state";
 
         $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
         $turnId  = uniqid('turn_', true);
 
-        Redis::hset($roomStateKey, 'current_turn_player_id', $bossPlayerName);
+        Redis::hset($roomStateKey, 'current_turn_player_id', $bossPlayerId);
         Redis::hset($roomStateKey, 'current_turn_id', $turnId);
 
         // El frontend ve el tiempo estricto
-        Redis::hset($roomStateKey, 'turn_expires_at', now()->addSeconds($timeout)->timestamp);
+        Redis::hset(
+            $roomStateKey,
+            'turn_expires_at',
+            now()->addSeconds($timeout)->timestamp
+        );
 
-        Redis::setex("room:{$roomId}:turn_order", 86400, json_encode($players));
-        Redis::setex("room:{$roomId}:deck", 86400, json_encode($deck));
+        Redis::setex(
+            "room:{$roomId}:turn_order",
+            86400,
+            json_encode($playerIds)
+        );
+
+        Redis::setex(
+            "room:{$roomId}:deck",
+            86400,
+            json_encode($deck)
+        );
 
         // El Job le da 3 segundos de gracia para tolerar latencia
-        AutoEndTurnJob::dispatch($roomId, $bossPlayerName, $turnId)->delay(now()->addSeconds($timeout + 3));
+        AutoEndTurnJob::dispatch(
+            $roomId,
+            $bossPlayerId,
+            $turnId
+        )->delay(now()->addSeconds($timeout + 3));
 
-        if ($bossPlayerName !== '') {
-            $this->deckService->drawCardsForPlayer($roomId, $bossPlayerName, 2);
+        if ($bossPlayerId !== '') {
+            $this->deckService->drawCardsForPlayer($roomId, $bossPlayerId, 2);
         }
     }
 }

@@ -37,7 +37,7 @@ class DeckService
         return $deck;
     }
 
-    public function drawCardsForPlayer(string $roomId, string $playerName, int $amount): void
+    public function drawCardsForPlayer(string $roomId, string $playerId, int $amount): void
     {
         if ($amount <= 0) return;
 
@@ -58,7 +58,7 @@ class DeckService
 
         if (empty($drawn)) return;
 
-        $handKey = "room:{$roomId}:player:{$playerName}:hand";
+        $handKey = "room:{$roomId}:player:{$playerId}:hand";
 
         $currentCards = json_decode(Redis::get($handKey) ?: '[]', true);
         if (!is_array($currentCards)) $currentCards = [];
