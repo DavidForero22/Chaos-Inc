@@ -17,17 +17,20 @@ class RoomStateUpdated implements ShouldBroadcastNow
     public ?string $logMessage;
     public ?array $cardAction;
     public ?array $achievementsUnlocked;
+    public bool $playerDrewExtraCard;
 
     public function __construct(
         string $roomId,
         ?string $logMessage = null,
         ?array $cardAction = null,
-        ?array $achievementsUnlocked = null
+        ?array $achievementsUnlocked = null,
+        bool $playerDrewExtraCard = false
     ) {
         $this->roomId = $roomId;
         $this->logMessage = $logMessage;
         $this->cardAction = $cardAction;
         $this->achievementsUnlocked = $achievementsUnlocked;
+        $this->playerDrewExtraCard = $playerDrewExtraCard;
     }
 
     public function broadcastWith(): array
@@ -37,6 +40,7 @@ class RoomStateUpdated implements ShouldBroadcastNow
             'log_message' => $this->logMessage, // Para avisos del sistema (conexiones, etc)
             'card_action' => $this->cardAction, // [ 'card_id' => 1, 'source' => 'Pepe', 'target' => 'Juan' ]
             'achievement_notifications' => $this->achievementsUnlocked,
+            'player_drew_extra_card'    => $this->playerDrewExtraCard,
         ];
     }
 

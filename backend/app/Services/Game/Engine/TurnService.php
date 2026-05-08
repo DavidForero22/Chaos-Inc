@@ -10,6 +10,7 @@ use App\Jobs\AutoEndTurnJob;
 use App\Jobs\ResolveLuckChallengeJob;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class TurnService
@@ -62,19 +63,25 @@ class TurnService
                 // --- ROBO DE CARTAS E INERCIA ---
                 $cardsToDraw = 2;
                 $hasInertia = CastHelper::toBool(Redis::hget($pPerksKey, 'has_luck') ?? 0);
+                $drewExtra = false;
+                $logMessage = null;
 
                 if ($hasInertia) {
                     // Tirar los dados: 50% de probabilidad
                     if (rand(1, 100) <= 50) {
                         $cardsToDraw = 3;
-
+                        $drewExtra = true;
                         $logMessage = __('game.lucked_sucess', ['player' => $nextPlayer]);
-                        event(new RoomStateUpdated($roomId, $logMessage));
+                        Log::info("TurnService.php::advanceTurn - El jugador {$nextPlayer} ha robado una carta extra.");
                     }
                 }
 
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayer, $cardsToDraw);
 
+                if ($drewExtra) {
+                    event(new RoomStateUpdated($roomId, $logMessage, null, null, $drewExtra));
+                }
+                
                 if ($hasWrapped) {
                     Redis::hincrby($roomStateKey, 'round_number', 1);
                 }

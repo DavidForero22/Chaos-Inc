@@ -2,13 +2,19 @@
 
 import { create } from "zustand";
 
-export type NotificationType = "attack" | "heal" | "perk" | "achievement" | "default"; 
+export type NotificationType =
+	| "attack"
+	| "heal"
+	| "perk"
+	| "achievement"
+	| "luck"
+	| "default";
 
 export interface GameNotification {
-    id: string;
-    type: NotificationType;
-    message: string;
-    iconKey: string;
+	id: string;
+	type: NotificationType;
+	message: string;
+	iconKey: string;
 }
 
 // Interfaz para los registros persistentes
