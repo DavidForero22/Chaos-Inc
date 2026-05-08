@@ -53,11 +53,18 @@ interface GameState {
 	resetStore: (keepRoomId?: boolean) => void;
 }
 
+const getRoleRevealKey = (roomId: string) => `role_reveal_shown:${roomId}`;
+
+const initialRoomId = localStorage.getItem("active_room_id");
+const initialIsFirstLoad = initialRoomId
+	? !localStorage.getItem(getRoleRevealKey(initialRoomId))
+	: true;
+
 export const useGameStore = create<GameState>((set, get) => ({
-	roomId: localStorage.getItem("active_room_id"),
+	roomId: initialRoomId,
 	gameData: null,
 	isConnecting: true,
-	isFirstLoad: true,
+	isFirstLoad: initialIsFirstLoad,
 	gameOver: false,
 	showActingBossModal: false,
 	isActionLocked: false,
@@ -69,11 +76,20 @@ export const useGameStore = create<GameState>((set, get) => ({
 		} else {
 			localStorage.removeItem("active_room_id");
 		}
-		set({ roomId: id });
+
+		const isFirstLoad = id ? !localStorage.getItem(getRoleRevealKey(id)) : true;
+
+		set({ roomId: id, isFirstLoad });
 	},
 	setGameData: (data) => set({ gameData: data }),
 	setIsConnecting: (isConnecting) => set({ isConnecting }),
-	setIsFirstLoad: (isFirstLoad) => set({ isFirstLoad }),
+	setIsFirstLoad: (isFirstLoad) => {
+		const roomId = get().roomId;
+		if (!isFirstLoad && roomId) {
+			localStorage.setItem(getRoleRevealKey(roomId), "1");
+		}
+		set({ isFirstLoad });
+	},
 	setGameOver: (gameOver) => set({ gameOver }),
 	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
 	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
@@ -90,16 +106,23 @@ export const useGameStore = create<GameState>((set, get) => ({
 			localStorage.removeItem("active_room_id");
 		}
 
-		set((state) => ({
-			roomId: keepRoomId ? state.roomId : null,
-			gameData: null,
-			isConnecting: true,
-			isFirstLoad: true,
-			gameOver: false,
-			showActingBossModal: false,
-			isActionLocked: false,
-			matchAchievements: [],
-		}));
+		set((state) => {
+			const nextRoomId = keepRoomId ? state.roomId : null;
+			const nextIsFirstLoad = nextRoomId
+				? !localStorage.getItem(getRoleRevealKey(nextRoomId))
+				: true;
+
+			return {
+				roomId: nextRoomId,
+				gameData: null,
+				isConnecting: true,
+				isFirstLoad: nextIsFirstLoad,
+				gameOver: false,
+				showActingBossModal: false,
+				isActionLocked: false,
+				matchAchievements: [],
+			};
+		});
 	},
 
 	applyGameData: (newGameData: GameData) => {
@@ -109,7 +132,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 		const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
 
 		if (isNowActingBoss && !wasActingBoss) {
-			logWithTime("Cambio detectado: ¡Eres el nuevo Jefe Heredado!");
+			logWithTime("Eres el nuevo Jefe Heredado");
 			set({ showActingBossModal: true });
 		}
 
@@ -118,6 +141,11 @@ export const useGameStore = create<GameState>((set, get) => ({
 		if (newGameData.game?.game_over) {
 			set({ gameOver: true });
 			localStorage.removeItem("game_token");
+
+			const roomId = get().roomId;
+			if (roomId) {
+				localStorage.removeItem(getRoleRevealKey(roomId));
+			}
 		}
 	},
 
