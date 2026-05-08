@@ -219,6 +219,7 @@ export function OpponentCard({
 						alt={`Avatar de ${player.name}`}
 						className={styles.photoImage}
 						onError={() => setAvatarError(true)}
+						referrerPolicy="no-referrer"
 					/>
 				) : (
 					<span className="text-3xl font-black text-gray-400 opacity-50">

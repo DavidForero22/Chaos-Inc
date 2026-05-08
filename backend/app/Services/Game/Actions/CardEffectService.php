@@ -81,6 +81,7 @@ class CardEffectService
 
         $myCards[] = $stolenCard;
         Redis::set($playerHandKey, json_encode($myCards));
+        Redis::hincrby("room:{$roomId}:player:{$playerName}:stats", 'cards_stolen', 1);
     }
 
     public function applyShield(string $roomId, string $playerName): void

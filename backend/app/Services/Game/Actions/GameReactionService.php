@@ -42,6 +42,7 @@ class GameReactionService
             }
 
             Redis::del($pendingKey);
+            Redis::hincrby("room:{$roomId}:player:{$playerName}:stats", 'dodged_attacks', 1);
         } elseif ($reaction === 'accept') {
             app(CombatService::class)->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
             Redis::del($pendingKey);
@@ -125,6 +126,7 @@ class GameReactionService
             }
 
             $pending['dodgers'][] = $playerName;
+            Redis::hincrby("room:{$roomId}:player:{$playerName}:stats", 'dodged_attacks', 1);
         } elseif ($reaction === 'accept') {
             $this->combatService->applyDamageAndCheck($roomId, $pending['attacker'], $playerName);
         } else {

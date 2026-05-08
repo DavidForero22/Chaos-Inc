@@ -34,14 +34,12 @@ const ROLE_MAP: Record<string, string> = {
 const tr = (role: string) => ROLE_MAP[role.toLowerCase()] ?? role.toUpperCase();
 
 // ── Etiquetas del radar ───────────────────────────────────────────────────────
-// El orden coincide con radarData del hook:
-// [0] damageDealt · [1] damageReceived (inv.) · [2] cardsPlayed · [3] eliminations · [4] passivesPlayed
 const RADAR_LABELS = [
 	"DAÑO\nINFLIGIDO",
-	"DAÑO\nRECIBIDO",
-	"CURACIÓN\nREALIZADA",
-	"JUGADORES\nELIMINADOS",
 	"PASIVAS\nEQUIPADAS",
+	"CARTAS\nROBADAS",
+	"CURACIÓN\nREALIZADA",
+	"ATAQUES\nESQUIVADOS",
 ];
 
 const ECHARTS_BASE: Partial<EChartsOption> = {
@@ -96,14 +94,14 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 			...TOOLTIP_BASE,
 			// En series radar, trigger "item" recibe params como objeto único
 			trigger: "item",
+			// Tooltip del radar — mostrar valores reales
 			formatter: () => {
-				// Mostramos los totales reales de basicStats, no los valores normalizados
-				const rows: [string, string | number][] = [
+				const rows: [string, number][] = [
 					["DAÑO INFLIGIDO", basicStats.damage],
-					["DAÑO RECIBIDO", basicStats.received],
-					["CURACIÓN REALIZADA", basicStats.healing],
-					["JUGADORES ELIMINADOS", basicStats.eliminations],
 					["PASIVAS EQUIPADAS", basicStats.passives],
+					["CARTAS ROBADAS", basicStats.cardsStolen],
+					["CURACIÓN REALIZADA", basicStats.healing],
+					["ATAQUES ESQUIVADOS", basicStats.dodgedAttacks],
 				];
 				return rows
 					.map(([label, val]) => `${label}: <b>${val}</b>`)
@@ -429,87 +427,96 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 					className={`${styles.expandableWrapper} ${isExpanded ? styles.open : ""}`}
 				>
 					<div className={styles.expandedContentInner}>
-						<div className={styles.chartsContainer}>
-							{totalGames === 0 ? (
-								<div className={styles.noData}>
-									<span className={styles.noDataStamp}>SIN DATOS</span>
-									<p className={styles.noDataText}>
-										HISTORIAL VACÍO. NO SE HAN REGISTRADO PARTIDAS PARA GENERAR
-										UN ANÁLISIS.
-									</p>
-									<p className={styles.noDataSub}>
-										[ JUEGA AL MENOS UNA PARTIDA PARA PODER VISUALIZAR GRÁFICOS
-										]
-									</p>
-								</div>
-							) : (
-								<>
-									{/* Fila 1: Radar + Doughnut */}
-									<div className={styles.chartsRow}>
-										<div className={styles.chartBlock}>
-											<p className={styles.chartTitle}>— PERFIL DE AGENTE —</p>
-											<ReactECharts
-												option={radarOption}
-												style={{ height: 260 }}
-												opts={{ renderer: "svg" }}
-											/>
-										</div>
-										<div className={styles.chartBlock}>
-											<p className={styles.chartTitle}>
-												— DEPARTAMENTO HABITUAL —
-											</p>
-											<ReactECharts
-												option={doughnutOption}
-												style={{ height: 260 }}
-												opts={{ renderer: "svg" }}
-											/>
-										</div>
+						{isExpanded && (
+							<div className={styles.chartsContainer}>
+								{totalGames === 0 ? (
+									<div className={styles.noData}>
+										<span className={styles.noDataStamp}>SIN DATOS</span>
+										<p className={styles.noDataText}>
+											HISTORIAL VACÍO. NO SE HAN REGISTRADO PARTIDAS PARA
+											GENERAR UN ANÁLISIS.
+										</p>
+										<p className={styles.noDataSub}>
+											[ JUEGA AL MENOS UNA PARTIDA PARA PODER VISUALIZAR
+											GRÁFICOS ]
+										</p>
 									</div>
+								) : (
+									<>
+										{/* Fila 1: Radar + Doughnut */}
+										<div className={styles.chartsRow}>
+											<div className={styles.chartBlock}>
+												<p className={styles.chartTitle}>
+													— PERFIL DE AGENTE —
+												</p>
+												<ReactECharts
+													option={radarOption}
+													style={{ height: 260 }}
+													opts={{ renderer: "svg" }}
+												/>
+											</div>
+											<div className={styles.chartBlock}>
+												<p className={styles.chartTitle}>
+													— DEPARTAMENTO HABITUAL —
+												</p>
+												<ReactECharts
+													option={doughnutOption}
+													style={{ height: 260 }}
+													opts={{ renderer: "svg" }}
+												/>
+											</div>
+										</div>
 
-									{/* Fila 2: Winrate por rol + Vivo/Muerto */}
-									<div className={styles.chartsRow}>
-										<div className={styles.chartBlock}>
-											<p className={styles.chartTitle}>
-												— EFICACIA POR DEPARTAMENTO —
-											</p>
-											<ReactECharts
-												option={winrateOption}
-												style={{
-													height: Math.max(180, winrateByRole.length * 38 + 60),
-												}}
-												opts={{ renderer: "svg" }}
-											/>
+										{/* Fila 2: Winrate por rol + Vivo/Muerto */}
+										<div className={styles.chartsRow}>
+											<div className={styles.chartBlock}>
+												<p className={styles.chartTitle}>
+													— EFICACIA POR DEPARTAMENTO —
+												</p>
+												<ReactECharts
+													option={winrateOption}
+													style={{
+														height: Math.max(
+															180,
+															winrateByRole.length * 38 + 60,
+														),
+													}}
+													opts={{ renderer: "svg" }}
+												/>
+											</div>
+											<div className={styles.chartBlock}>
+												<p className={styles.chartTitle}>
+													— TASA DE SUPERVIVENCIA —
+												</p>
+												<ReactECharts
+													option={aliveDeadOption}
+													style={{ height: 220 }}
+													opts={{ renderer: "svg" }}
+												/>
+											</div>
 										</div>
-										<div className={styles.chartBlock}>
-											<p className={styles.chartTitle}>
-												— TASA DE SUPERVIVENCIA —
-											</p>
-											<ReactECharts
-												option={aliveDeadOption}
-												style={{ height: 220 }}
-												opts={{ renderer: "svg" }}
-											/>
-										</div>
-									</div>
 
-									{/* Fila 3: Top 5 cartas (ancho completo) */}
-									{topCards.length > 0 && (
-										<div className={`${styles.chartBlock} ${styles.chartFull}`}>
-											<p className={styles.chartTitle}>
-												— HERRAMIENTAS DE CONFIANZA (TOP 5) —
-											</p>
-											<ReactECharts
-												option={topCardsOption}
-												style={{
-													height: Math.max(200, topCards.length * 42 + 60),
-												}}
-												opts={{ renderer: "svg" }}
-											/>
-										</div>
-									)}
-								</>
-							)}
-						</div>
+										{/* Fila 3: Top 5 cartas (ancho completo) */}
+										{topCards.length > 0 && (
+											<div
+												className={`${styles.chartBlock} ${styles.chartFull}`}
+											>
+												<p className={styles.chartTitle}>
+													— HERRAMIENTAS DE CONFIANZA (TOP 5) —
+												</p>
+												<ReactECharts
+													option={topCardsOption}
+													style={{
+														height: Math.max(200, topCards.length * 42 + 60),
+													}}
+													opts={{ renderer: "svg" }}
+												/>
+											</div>
+										)}
+									</>
+								)}
+							</div>
+						)}
 					</div>
 				</div>
 			</div>

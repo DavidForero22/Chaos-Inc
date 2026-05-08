@@ -38,6 +38,9 @@ class GameResource extends JsonResource
                             'cardsPlayed'     => $participant->cards_played,
                             'passivesPlayed'  => $participant->passives_played,
                             'eliminations'    => $participant->eliminations,
+                            'dodgedAttacks'  => $participant->dodged_attacks,
+                            'cardsStolen'    => $participant->cards_stolen,
+
                         ],
                         // Desglose de cartas de ese jugador
                         'cardUsages'  => $this->whenLoaded('cardUsages', function () use ($participant) {

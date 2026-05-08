@@ -94,6 +94,8 @@ class GameFinalizationService
                 'cards_played'    => (int) ($pStats['cards_played'] ?? 0),
                 'passives_played' => (int) ($pStats['passives_played'] ?? 0),
                 'eliminations'    => $elims,
+                'dodged_attacks'  => (int) ($pStats['dodged_attacks'] ?? 0),
+                'cards_stolen'    => (int) ($pStats['cards_stolen']   ?? 0),
                 'card_details'    => $cardUsage,
             ];
         }

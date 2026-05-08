@@ -9,6 +9,8 @@ export interface BasicStats {
 	cards: number;
 	passives: number;
 	eliminations: number;
+	dodgedAttacks: number;
+	cardsStolen: number;
 }
 
 export interface RoleEntry {
@@ -44,6 +46,8 @@ const EMPTY: ProfileStats = {
 		cards: 0,
 		passives: 0,
 		eliminations: 0,
+		dodgedAttacks: 0,
+		cardsStolen: 0,
 	},
 	radarData: [0, 0, 0, 0, 0],
 	roleDistribution: [],
@@ -51,15 +55,6 @@ const EMPTY: ProfileStats = {
 	topCards: [],
 	aliveDeadData: { alive: 0, dead: 0 },
 	totalGames: 0,
-};
-
-// Umbrales razonables por partida para normalizar a 0-100
-const RADAR_MAX = {
-	damage: 10, // damageDealt promedio/partida
-	received: 10, // damageReceived (invertido: menos = mejor)
-	healing: 10, // healingDone promedio/partida
-	eliminations: 3, // eliminations promedio/partida
-	passives: 5, // passivesPlayed promedio/partida
 };
 
 const clamp = (v: number) => Math.min(100, Math.max(0, Math.round(v)));
@@ -90,6 +85,8 @@ export function useProfileStats(
 				cards: acc.cards + me.stats.cardsPlayed,
 				passives: acc.passives + me.stats.passivesPlayed,
 				eliminations: acc.eliminations + me.stats.eliminations,
+				dodgedAttacks: acc.dodgedAttacks + (me.stats.dodgedAttacks ?? 0),
+				cardsStolen: acc.cardsStolen + (me.stats.cardsStolen ?? 0),
 			}),
 			{
 				wins: 0,
@@ -99,20 +96,22 @@ export function useProfileStats(
 				cards: 0,
 				passives: 0,
 				eliminations: 0,
+				dodgedAttacks: 0,
+				cardsStolen: 0,
 			},
 		);
 
-		// ── Radar (promedios por partida → 0-100) ─────────────────────
-		// Índices: [0] damage · [1] received · [2] healing · [3] eliminations · [4] passives
-		// Todos directos: mayor valor = más actividad en esa métrica
-		const avg = (total: number) => total / n;
-		const radarData = [
-			clamp((avg(basicStats.damage) / RADAR_MAX.damage) * 100),
-			clamp((avg(basicStats.received) / RADAR_MAX.received) * 100), // sin inversión
-			clamp((avg(basicStats.healing) / RADAR_MAX.healing) * 100),
-			clamp((avg(basicStats.eliminations) / RADAR_MAX.eliminations) * 100),
-			clamp((avg(basicStats.passives) / RADAR_MAX.passives) * 100),
+		// ── Radar  ──────────────────
+		const radarRaw = [
+			basicStats.damage,
+			basicStats.passives,
+			basicStats.cardsStolen,
+			basicStats.healing,
+			basicStats.dodgedAttacks,
 		];
+
+		const maxVal = Math.max(...radarRaw, 1);
+		const radarData = radarRaw.map((v) => clamp((v / maxVal) * 100));
 
 		// ── Distribución de roles ─────────────────────────────────────
 		const roleCounts: Record<string, number> = {};

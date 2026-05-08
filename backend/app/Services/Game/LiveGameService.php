@@ -166,6 +166,8 @@ class LiveGameService
                 'cards_played'    => 0,
                 'passives_played' => 0,
                 'eliminations'    => 0,
+                'dodged_attacks'  => 0,
+                'cards_stolen'    => 0,
             ]);
 
             Redis::hmset("{$baseKey}:turn_state", [

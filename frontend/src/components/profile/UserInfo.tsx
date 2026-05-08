@@ -101,7 +101,7 @@ export default function UserInfo({
 						) : avatarUrl ? (
 							<img
 								src={avatarUrl}
-								alt={`Foto de ${displayUser}`}
+								alt={`Avatar de ${displayUser}`}
 								className={styles.avatarImage}
 								referrerPolicy="no-referrer"
 							/>

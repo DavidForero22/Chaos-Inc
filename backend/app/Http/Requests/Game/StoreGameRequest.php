@@ -34,6 +34,9 @@ class StoreGameRequest extends FormRequest
             'players.*.cards_played'         => 'required|integer|min:0',
             'players.*.passives_played'      => 'required|integer|min:0',
             'players.*.eliminations'         => 'required|integer|min:0',
+            'players.*.dodged_attacks'  => 'required|integer|min:0',
+            'players.*.cards_stolen'    => 'required|integer|min:0',
+
 
             // Validación del uso de cartas
             'players.*.card_details'         => 'nullable|array',

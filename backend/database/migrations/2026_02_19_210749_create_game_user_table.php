@@ -24,19 +24,21 @@ return new class extends Migration
             // Datos del resultado
             $table->boolean('has_won');
             $table->enum('role', ['boss', 'secretary', 'intern', 'union'])->index();
-            $table->boolean('is_dead')->default(false); 
+            $table->boolean('is_dead')->default(false);
 
             // Estadísticas de Combate y Soporte
             $table->integer('damage_dealt')->default(0);
             $table->integer('damage_received')->default(0);
-            $table->integer('healing_done')->default(0); 
+            $table->integer('healing_done')->default(0);
 
             // Estadísticas de Inventario/Estrategia
             $table->integer('cards_played')->default(0);
-            $table->integer('passives_played')->default(0); 
+            $table->integer('passives_played')->default(0);
 
-            // Rendimiento letal
+            // Rendimiento letal y habilidades tácticas
             $table->integer('eliminations')->default(0);
+            $table->integer('dodged_attacks')->default(0); 
+            $table->integer('cards_stolen')->default(0);   
 
             $table->timestamps();
         });

@@ -36,6 +36,8 @@ export interface GameParticipant {
 		cardsPlayed: number;
 		passivesPlayed: number;
 		eliminations: number;
+		dodgedAttacks: number;
+		cardsStolen: number;
 	};
 	cardUsages?: CardUsage[];
 }

@@ -71,6 +71,7 @@
 	display: grid;
 	grid-template-rows: 0fr;
 	transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	overflow: hidden;
 }
 
 .expandableWrapper.open {
@@ -173,55 +174,52 @@
 
 /* ── RESPONSIVE ── */
 
-/* Tabletas: columnas más estrechas, ajustamos padding */
-@media (max-width: 768px) {
+/* Pantallas medianas y Tablets en horizontal (hasta 1050px) */
+@media (max-width: 1050px) {
 	.statsGrid {
 		column-gap: 1.5rem;
 	}
 
 	.chartsRow {
-		grid-template-columns: 1fr 1fr;
-		gap: 0.75rem;
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+	}
+
+	.chartFull {
+		grid-column: 1 / -1;
 	}
 
 	.chartBlock {
-		padding: 0.75rem 0.5rem 0.5rem;
+		padding: 1rem 0.5rem 0.75rem;
 	}
 
 	.chartTitle {
-		font-size: 0.62rem;
+		font-size: 0.65rem;
 		letter-spacing: 1px;
 	}
 }
 
-/* Móvil: todo en una sola columna */
+/* Teléfonos y Tablets en vertical (hasta 600px) */
 @media (max-width: 600px) {
 	.statsGrid {
 		grid-template-columns: 1fr;
 		column-gap: 0;
-	}
-
-	.chartsRow {
-		/* Cada gráfico ocupa su propia fila para que tenga espacio suficiente */
-		grid-template-columns: 1fr;
-	}
-
-	.chartFull {
-		/* Ya hereda 1fr, pero lo dejamos explícito */
-		grid-column: 1 / -1;
+		row-gap: 1rem;
+		padding: 1rem 0;
 	}
 
 	.chartBlock {
 		padding: 0.85rem 0.5rem 0.75rem;
 	}
 
-	.chartTitle {
-		font-size: 0.65rem;
-	}
-
 	.expandBtn {
 		font-size: 0.75rem;
 		padding: 0.75rem 0.5rem;
+	}
+
+	/* Ajustes para el estado vacío */
+	.noData {
+		padding: 2rem 1rem;
 	}
 
 	.noDataStamp {
