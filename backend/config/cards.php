@@ -20,7 +20,7 @@ return [
             'description'  => 'Inflige 1 punto de estrés a un oponente vivo dentro de tu rango de visión.',
             'lore'         => 'Al contable le cayó una grapadora mientras caminaba por el pasillo.',
             'icons'        => ['opponent', 'attack'],
-            'count'        => 22,
+            'count'        => 28,
         ],
 
         // ─── 2. CURAR  ────────────────────────────────
@@ -33,7 +33,7 @@ return [
             'description'  => 'Reduce tu propio estrés en 1 punto.',
             'lore'         => 'Tomas una taza de té y te lo bebes tranquilamente entre todo el caós de la oficina. Te sientes tan británico que podrias robar artefactos egipcios.',
             'icons'        => ['self', 'heal'],
-            'count'        => 10,
+            'count'        => 7,
         ],
 
         // ─── 3. ESQUIVAR  ─────────────────────────────
@@ -46,7 +46,7 @@ return [
             'description'  => 'Evita un ataque contra ti.',
             'lore'         => 'Si lo piensas bien, los impuestos son un ataque contra tu persona.',
             'icons'        => ['self', 'dodge'],
-            'count'        => 16,
+            'count'        => 11,
         ],
 
         // ─── 4. ROBAR  ──────────────────────────────
@@ -98,7 +98,7 @@ return [
             'description'  => 'Ataca a todos los oponentes vivos a la vez.',
             'lore'         => 'Una presencia terrorifica ha entrado en la sala...',
             'icons'        => ['opponents', 'attack'],
-            'count'        => 4,
+            'count'        => 6,
         ],
 
         // ─── 8. CURACIÓN MASIVA  ────────────────────
@@ -137,7 +137,7 @@ return [
             'description'  => 'Te da +1 punto de rango de visión.',
             'lore'         => 'Ahh, por eso les llaman piratas informáticos...',
             'icons'        => ['self', 'perk'],
-            'count'        => 4,
+            'count'        => 3,
         ],
 
         // ─── 11. LEJANÍA  ──────────────────────────────
@@ -163,7 +163,7 @@ return [
             'description'  => 'Descarta una pasiva a elegir de cualquier oponente.',
             'lore'         => 'Te han recortado hasta la ropa... Esto si que es un corte de manga.',
             'icons'        => ['opponent', 'discard'],
-            'count'        => 6,
+            'count'        => 8,
         ],
 
         // ─── 13. ALMACÉN  ──────────────────────────────
@@ -176,7 +176,7 @@ return [
             'description'  => 'Aumenta tu límite máximo de cartas en la mano en 1.',
             'lore'         => '"¡Mirad que pedazo riñonera me he traido! Son las bragas de mi mujer."',
             'icons'        => ['self', 'perk'],
-            'count'        => 4,
+            'count'        => 3,
         ],
 
         // ─── 14. SUERTE  ───────────────────────────────
