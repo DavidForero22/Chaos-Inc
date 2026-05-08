@@ -1,13 +1,14 @@
 // src/components/lobby/BoardPlayerList.tsx
 
+import type { RoomPlayer } from "../../types/api";
 import styles from "./BoardPlayerList.module.css";
 
 interface BoardPlayerListProps {
-	players: string[];
+	players: RoomPlayer[];
 	maxPlayers: number;
 	ownerName: string;
 	user: string | null;
-	onKickClick: (player: string) => void;
+	onKickClick: (playerId: string) => void;
 }
 
 export default function BoardPlayerList({
@@ -20,25 +21,25 @@ export default function BoardPlayerList({
 	return (
 		<div className={styles.playerList}>
 			{players.map((player) => (
-				<div key={player} className={styles.playerRow}>
+				<div key={player.id} className={styles.playerRow}>
+					{" "}
 					<div className={`flex items-center ${styles.markerBlack}`}>
 						<span className={`${styles.magnet} ${styles.magnetGreen}`}></span>
-						{player}
-						{player === user && (
+						{player.name}
+						{player.name === user && (
 							<span className={`${styles.markerBlue} text-sm ml-3 italic`}>
 								(Tú)
 							</span>
 						)}
-						{player === ownerName && (
+						{player.name === ownerName && (
 							<span className="text-sm ml-3">⭐ Líder</span>
 						)}
 					</div>
-
-					{ownerName === user && player !== user && (
+					{ownerName === user && player.name !== user && (
 						<button
-							onClick={() => onKickClick(player)}
+							onClick={() => onKickClick(player.id)}
 							className={styles.btnErase}
-							title={"Expulsar a " + player}
+							title={"Expulsar a " + player.name}
 						>
 							Expulsar
 						</button>

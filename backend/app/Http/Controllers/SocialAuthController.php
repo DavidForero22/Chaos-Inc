@@ -43,13 +43,13 @@ class SocialAuthController extends Controller
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
             // El usuario canceló o hubo un error en el proveedor
-            return redirect("{$frontendUrl}/login?error=oauth_cancelled");
+            return redirect("{$frontendUrl}/social-error?error=oauth_failed");
         }
 
         try {
             $user = $socialAuthService->findOrCreateUser($socialUser, $provider);
         } catch (\Exception $e) {
-            return redirect("{$frontendUrl}/login?error=oauth_failed");
+            return redirect("{$frontendUrl}/social-error?error=oauth_failed");
         }
 
         Auth::guard('web')->login($user, remember: true);

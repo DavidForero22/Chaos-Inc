@@ -26,8 +26,9 @@ class GameResource extends JsonResource
                 return $this->participants->map(function ($participant) {
                     return [
                         'userId'      => $participant->user_id,
-                        'isGuest'     => (bool) $participant->is_guest,
                         'displayName' => $participant->display_name,
+                        'isGuest'     => (bool) $participant->is_guest,
+
                         'stats'       => [
                             'hasWon'          => (bool) $participant->has_won,
                             'role'            => $participant->role,
@@ -38,12 +39,12 @@ class GameResource extends JsonResource
                             'cardsPlayed'     => $participant->cards_played,
                             'passivesPlayed'  => $participant->passives_played,
                             'eliminations'    => $participant->eliminations,
-                            'dodgedAttacks'  => $participant->dodged_attacks,
-                            'cardsStolen'    => $participant->cards_stolen,
-
+                            'dodgedAttacks'   => $participant->dodged_attacks,
+                            'cardsStolen'     => $participant->cards_stolen,
                         ],
-                        // Desglose de cartas de ese jugador
-                        'cardUsages'  => $this->whenLoaded('cardUsages', function () use ($participant) {
+
+                        // Desglose de cartas del jugador
+                        'cardUsages' => $this->whenLoaded('cardUsages', function () use ($participant) {
                             return $this->cardUsages
                                 ->where('user_id', $participant->user_id)
                                 ->map(function ($usage) {
@@ -51,7 +52,8 @@ class GameResource extends JsonResource
                                         'cardId'      => $usage->card_id,
                                         'timesPlayed' => $usage->times_played,
                                     ];
-                                })->values();
+                                })
+                                ->values();
                         }),
                     ];
                 });

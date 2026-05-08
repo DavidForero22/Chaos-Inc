@@ -73,10 +73,13 @@ export function useLobby() {
 			setRooms(rooms);
 
 			const currentRoomId = useGameStore.getState().roomId;
-			const myName = useAuthStore.getState().user;
 
-			if (myName) {
-				const myRoom = rooms.find((room) => room.players?.includes(myName));
+			const myId = useAuthStore.getState().id;
+
+			if (myId) {
+				const myRoom = rooms.find((room) =>
+					room.players?.some((player) => String(player.id) === String(myId)),
+				);
 
 				if (myRoom && myRoom.room_id !== currentRoomId) {
 					useGameStore.getState().setRoomId(myRoom.room_id);

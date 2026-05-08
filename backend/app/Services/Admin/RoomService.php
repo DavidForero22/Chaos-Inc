@@ -59,24 +59,42 @@ class RoomService
 
     public function getRoom(string $roomId): array
     {
-        // Usar un pipeline para pedir todo a Redis de un solo golpe
+        // Usar un pipeline para pedir info general y la lista de IDs de un solo golpe
         $responses = Redis::pipeline(function ($pipe) use ($roomId) {
             $pipe->hgetall("room:{$roomId}:info");
             $pipe->hgetall("room:{$roomId}:state");
             $pipe->smembers("room:{$roomId}:players");
         });
 
-        [$infoData, $stateData, $players] = $responses;
+        [$infoData, $stateData, $playerIds] = $responses;
 
         // Si infoData está vacío, la sala no existe
         if (empty($infoData)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
-        // Construir el resultado
+        // Transformar los IDs en objetos [{id, name}]
+        $formattedPlayers = [];
+        if (!empty($playerIds)) {
+            $namesResponse = Redis::pipeline(function ($pipe) use ($roomId, $playerIds) {
+                foreach ($playerIds as $pid) {
+                    $pipe->hget("room:{$roomId}:player:{$pid}:info", 'username');
+                }
+            });
+
+            foreach ($playerIds as $index => $pid) {
+                $name = $namesResponse[$index];
+                $formattedPlayers[] = [
+                    'id'   => $pid,
+                    'name' => $name ?: "ID_{$pid}"
+                ];
+            }
+        }
+
+        // 3. Construir el resultado
         $room = array_merge($infoData, $stateData);
         $room['room_id'] = $roomId;
-        $room['players'] = $players;
+        $room['players'] = $formattedPlayers;
 
         if (isset($room['is_private'])) {
             $room['is_private'] = CastHelper::toBool($room['is_private']);
@@ -85,10 +103,10 @@ class RoomService
         return $room;
     }
 
-    public function createRoom(array $data, ?string $ownerName): array
+    public function createRoom(array $data, string $ownerId, string $ownerName): array
     {
-        // Comprobar si el jugador ya tiene una sala asignada en Redis
-        $currentRoom = Redis::get("player:{$ownerName}:room");
+        // Usar el ID para comprobar si el jugador ya está en una sala
+        $currentRoom = Redis::get("player:{$ownerId}:room");
         if ($currentRoom) {
             throw new \Exception("Ya tienes una partida en curso en la sala {$currentRoom}.", 400);
         }
@@ -98,6 +116,7 @@ class RoomService
 
         $infoData = [
             'name' => $data['name'],
+            'owner_id' => $ownerId,
             'owner_name' => $ownerName,
             'is_private' => $data['is_private'] ? '1' : '0',
             'password' => $data['is_private'] ? Hash::make($data['password']) : '',
@@ -112,24 +131,29 @@ class RoomService
         Redis::hmset("room:{$roomId}:info", $infoData);
         Redis::hmset("room:{$roomId}:state", $stateData);
         Redis::sadd("active_rooms", $roomId);
-        Redis::setex("player:{$ownerName}:room", 86400, $roomId);
+
+        Redis::setex("player:{$ownerId}:room", 86400, $roomId);
+        Redis::hset("room:{$roomId}:player:{$ownerId}:info", 'username', $ownerName);
 
         // Expiraciones
-        Redis::expire("room:{$roomId}:info", 86400); // 24h
+        Redis::expire("room:{$roomId}:info", 86400);
         Redis::expire("room:{$roomId}:state", 86400);
 
-        // Añadir jugadores y tokens
-        Redis::sadd("room:{$roomId}:players", $ownerName);
-        Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $ownerName);
+        Redis::sadd("room:{$roomId}:players", $ownerId);
+        Redis::setex("room:{$roomId}:token:{$gameToken}", 86400, $ownerId);
         Redis::expire("room:{$roomId}:players", 86400);
 
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
 
-        // Preparar la respuesta fusionando los datos y limpiando info sensible
         $roomDataResponse = array_merge($infoData, $stateData);
         $roomDataResponse['room_id'] = $roomId;
-        $roomDataResponse['players'] = [$ownerName];
+        $roomDataResponse['players'] = [
+            [
+                'id' => $ownerId,
+                'name' => $ownerName
+            ]
+        ];
         $roomDataResponse['game_token'] = $gameToken;
         unset($roomDataResponse['password']);
 

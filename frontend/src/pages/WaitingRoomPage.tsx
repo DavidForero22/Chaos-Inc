@@ -52,10 +52,13 @@ export default function WaitingRoomPage() {
 		}
 	};
 
-	const onKickClick = async (playerToKick: string) => {
-		startLoading(`Expulsando a ${playerToKick}...`);
+	const onKickClick = async (playerIdToKick: string) => {
+		const playerObj = room?.players.find((p) => p.id === playerIdToKick);
+		const playerName = playerObj;
+
+		startLoading(`Expulsando a ${playerName}...`);
 		try {
-			await kickPlayer(playerToKick);
+			await kickPlayer(playerIdToKick);
 		} finally {
 			stopLoading();
 		}

@@ -16,7 +16,7 @@ class GameDataResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roomId       = $this['roomId'];
-        $myPlayerName = $this['myPlayerName'];
+        $myPlayerId   = $this['myPlayerName'];
 
         $roomInfo  = Redis::hgetall("room:{$roomId}:info");
         $roomState = Redis::hgetall("room:{$roomId}:state");
@@ -28,33 +28,37 @@ class GameDataResource extends JsonResource
         $finalizationService = app(GameFinalizationService::class);
         $combatService       = app(CombatService::class);
 
-        $isEffectivelyOver   = $finalizationService->isGameEffectivelyOver($roomId);
-        $myRange = $combatService->getPlayerRange($roomId, $myPlayerName);
+        $isEffectivelyOver = $finalizationService->isGameEffectivelyOver($roomId);
+        $myRange = $combatService->getPlayerRange($roomId, $myPlayerId);
 
-        foreach (Redis::smembers("room:{$roomId}:players") as $pName) {
+        foreach (Redis::smembers("room:{$roomId}:players") as $playerId) {
 
-            // Datos del jugador
-            $pInfo  = Redis::hgetall("room:{$roomId}:player:{$pName}:info");
-            $pPerks = Redis::hgetall("room:{$roomId}:player:{$pName}:perks");
+            $pInfoKey  = "room:{$roomId}:player:{$playerId}:info";
+            $pPerksKey = "room:{$roomId}:player:{$playerId}:perks";
+            $pHandKey  = "room:{$roomId}:player:{$playerId}:hand";
 
-            $pHandJson = Redis::get("room:{$roomId}:player:{$pName}:hand");
+            $pInfo  = Redis::hgetall($pInfoKey);
+            $pPerks = Redis::hgetall($pPerksKey);
+
+            $pHandJson = Redis::get($pHandKey);
             $pHand = $pHandJson ? json_decode($pHandJson, true) : [];
 
             if (CastHelper::toBool($pInfo['acting_boss'] ?? 0)) {
                 $hasActingBoss = true;
             }
 
-            // Detectar si este jugador está en un reto de suerte
-            if (Redis::exists("room:{$roomId}:luck_challenge:{$pName}")) {
-                $playerInLuckChallenge = $pName;
+            // Reto de suerte ahora por ID
+            if (Redis::exists("room:{$roomId}:luck_challenge:{$playerId}")) {
+                $playerInLuckChallenge = $playerId;
             }
 
-            if ($pName === $myPlayerName) continue;
+            if ($playerId === $myPlayerId) continue;
 
-            $distance = $combatService->getDistance($roomId, $myPlayerName, $pName);
+            $distance = $combatService->getDistance($roomId, $myPlayerId, $playerId);
 
             $opponents[] = [
-                'name'        => $pName,
+                'id'          => $playerId,
+                'name'        => $pInfo['username'],
                 'avatar'      => self::resolveAvatar($pInfo),
 
                 // :info
@@ -77,7 +81,7 @@ class GameDataResource extends JsonResource
                 // :perks
                 'perks'       => [
                     'has_shield'   => CastHelper::toBool($pPerks['has_shield'] ?? 0),
-                    'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $pName),
+                    'vision_range' => $combatService->getPlayerRange($roomId, $playerId),
                     'vision_bonus' => (int) ($pPerks['vision_bonus'] ?? 0),
                     'has_distance' => CastHelper::toBool($pPerks['has_distance'] ?? 0) ? 1 : 0,
                     'has_storage'  => CastHelper::toBool($pPerks['has_storage'] ?? 0),
@@ -86,7 +90,7 @@ class GameDataResource extends JsonResource
             ];
         }
 
-        // Obtener datos de ataques pendientes
+        // Ataques pendientes
         $pendingAttackTarget = null;
         if (Redis::exists("room:{$roomId}:pending_attack")) {
             $pendingAttackTarget = Redis::hget("room:{$roomId}:pending_attack", 'target');
@@ -102,7 +106,7 @@ class GameDataResource extends JsonResource
         $turnExpiresAt = (int) ($roomState['turn_expires_at'] ?? 0);
 
         return [
-            'current_turn'             => $roomState['current_turn_player_id'] ?? null,
+            'current_turn'              => $roomState['current_turn_player_id'] ?? null,
             'opponents'                => $opponents,
             'game_over'                => CastHelper::toBool($roomState['game_over'] ?? 0),
             'winner_role'              => $roomState['winner_role'] ?? null,
@@ -117,13 +121,13 @@ class GameDataResource extends JsonResource
             'effectively_over'         => $isEffectivelyOver,
 
             'pending_single_attack_target' => $pendingAttackTarget,
-            'pending_multi_attack_targets' => $pendingMultiAttackTargets,
-            'player_in_luck_challenge'     => $playerInLuckChallenge,
-            'player_pending_sabotage'      => $this->getPlayerPendingSabotage($roomId),
+            'pending_multi_attack_targets'  => $pendingMultiAttackTargets,
+            'player_in_luck_challenge'      => $playerInLuckChallenge,
+            'player_pending_sabotage'       => $this->getPlayerPendingSabotage($roomId),
 
-            'turn_timeout'                 => $turnTimeout,
-            'turn_expires_at'              => $turnExpiresAt,
-            'turn_remaining' => max(0, $turnExpiresAt - now('UTC')->timestamp),
+            'turn_timeout'             => $turnTimeout,
+            'turn_expires_at'          => $turnExpiresAt,
+            'turn_remaining'           => max(0, $turnExpiresAt - now('UTC')->timestamp),
         ];
     }
 
@@ -136,8 +140,10 @@ class GameDataResource extends JsonResource
         if (!empty($provider)) return $provider;
 
         $userId = $pInfo['user_id'] ?? null;
+
         if ($userId) {
             static $cache = [];
+
             if (array_key_exists($userId, $cache)) {
                 return $cache[$userId];
             }

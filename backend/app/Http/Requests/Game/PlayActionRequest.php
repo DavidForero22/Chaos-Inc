@@ -16,7 +16,7 @@ class PlayActionRequest extends FormRequest
         return [
             // Identificador de instancia de carta (string único generado en el servidor)
             'card_id' => 'required|string',
-            'target_name' => 'required|string',
+            'target_id' => 'required|integer',
             'perk_key'    => 'nullable|string|in:has_shield,vision_bonus,has_distance,has_storage,has_luck',
         ];
     }
@@ -30,8 +30,8 @@ class PlayActionRequest extends FormRequest
             'card_id.required'     => 'Es necesario identificar la carta para realizar la acción.',
             'card_id.string'       => 'El identificador de la carta no es válido.',
 
-            'target_name.required' => 'Debes seleccionar a un empleado objetivo.',
-            'target_name.string'   => 'El nombre del objetivo debe ser una cadena de texto válida.',
+            'target_id.required' => 'Debes seleccionar a un empleado objetivo.',
+            'target_id.integer'   => 'El id del objetivo debe ser una número válido.',
 
             'perk_key.string'      => 'El identificador del perk no es válido.',
             'perk_key.in'          => 'El perk seleccionada no existe o no puede ser anulada.',

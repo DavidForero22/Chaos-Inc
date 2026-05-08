@@ -17,19 +17,19 @@ class ResolveSabotageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $roomId;
-    protected $targetName;
+    protected $targetId;
     protected $sabotageId;
 
-    public function __construct(string $roomId, string $targetName, string $sabotageId)
+    public function __construct(string $roomId, string $targetId, string $sabotageId)
     {
         $this->roomId = $roomId;
-        $this->targetName = $targetName;
+        $this->targetId = $targetId;
         $this->sabotageId = $sabotageId;
     }
 
     public function handle(GameReactionService $reactionService): void
     {
-        $turnStateKey = "room:{$this->roomId}:player:{$this->targetName}:turn_state";
+        $turnStateKey = "room:{$this->roomId}:player:{$this->targetId}:turn_state";
 
         // Verificar que el jugador sigue teniendo obligación de descartar
         $mustDiscard = Redis::hget($turnStateKey, 'must_discard');
@@ -37,33 +37,46 @@ class ResolveSabotageJob implements ShouldQueue
             return; // Ya descartó manualmente o se limpió
         }
 
+        $playerName = Redis::hget(
+            "room:{$this->roomId}:player:{$this->targetId}:info",
+            'username'
+        );
+
         // Verificar que este es el Job correcto
         $currentSabotageId = Redis::hget($turnStateKey, 'sabotage_id');
         if ($currentSabotageId !== $this->sabotageId) {
-            Log::info("ResolveSabotageJob.php - Ignorando sabotaje fantasma/obsoleto para {$this->targetName}");
-            return; // Es un Job viejo de un ataque anterior
+            Log::info("ResolveSabotageJob.php - Ignorando sabotaje fantasma/obsoleto para {$playerName}");
+            return;
         }
 
-        $handKey = "room:{$this->roomId}:player:{$this->targetName}:hand";
+        $handKey = "room:{$this->roomId}:player:{$this->targetId}:hand";
         $cards = json_decode(Redis::get($handKey) ?: '[]', true);
 
         if (!empty($cards)) {
+
             // Seleccionar una carta al azar
             $randomCard = $cards[array_rand($cards)];
 
-            // Usar el servicio para resolver el sabotaje automáticamente
-            $reactionService->resolveSabotage($this->roomId, $this->targetName, $randomCard['id'] ?? null);
+            // Resolver sabotaje automático usando ID
+            $reactionService->resolveSabotage(
+                $this->roomId,
+                $this->targetId,
+                $randomCard['id'] ?? null
+            );
 
-            Log::info("ResolveSabotageJob.php - Descarte automático realizado en {$this->roomId} para {$this->targetName}");
+            Log::info("ResolveSabotageJob.php - Descarte automático realizado en {$this->roomId} para {$playerName}");
+
             event(new RoomStateUpdated($this->roomId));
         } else {
-            // Caso raro: Si el jugador se quedó con 0 cartas de alguna otra forma, simplemente limpiar el estado
-            Redis::hset($turnStateKey, 'must_discard', 0);
-            Redis::hdel($turnStateKey, 'sabotage_id'); 
 
-            // Limpiar el pending global si coincide
+            // Caso raro: sin cartas
+            Redis::hset($turnStateKey, 'must_discard', 0);
+            Redis::hdel($turnStateKey, 'sabotage_id');
+
+            // Limpiar pending global si coincide
             $pendingSabotageTarget = Redis::get("room:{$this->roomId}:pending_sabotage");
-            if ($pendingSabotageTarget === $this->targetName) {
+
+            if ($pendingSabotageTarget === $this->targetId) {
                 Redis::del("room:{$this->roomId}:pending_sabotage");
             }
         }

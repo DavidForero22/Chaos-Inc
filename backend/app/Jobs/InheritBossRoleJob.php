@@ -17,7 +17,7 @@ class InheritBossRoleJob implements ShouldQueue
 
     public function __construct(
         private readonly string $roomId,
-        private readonly string $graceToken 
+        private readonly string $graceToken
     ) {}
 
     public function handle(
@@ -55,9 +55,18 @@ class InheritBossRoleJob implements ShouldQueue
         }
 
         $players = Redis::smembers("room:{$this->roomId}:players");
-        foreach ($players as $name) {
-            if (Redis::hget("room:{$this->roomId}:player:{$name}:info", 'acting_boss') === '1') {
-                Log::info("InheritBossRoleJob.php: acting_boss ya existe en {$name} en sala $this->roomId, comprobando victoria.\n");
+
+        foreach ($players as $playerId) {
+
+            $infoKey = "room:{$this->roomId}:player:{$playerId}:info";
+
+            if (Redis::hget($infoKey, 'acting_boss') === '1') {
+                $playerName = Redis::hget(
+                    "room:{$this->roomId}:player:{$playerId}:info",
+                    'username'
+                );
+
+                Log::info("InheritBossRoleJob.php: acting_boss ya existe en {$playerName} en sala $this->roomId, comprobando victoria.\n");
                 $finalizationService->checkDisconnectionVictory($this->roomId);
                 return;
             }

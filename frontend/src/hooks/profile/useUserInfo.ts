@@ -29,9 +29,6 @@ export function useUserInfo({
 	const storeAvatar = useAuthStore((state) => state.avatar);
 	const storeSocialAccounts = useAuthStore((state) => state.socialAccounts);
 
-	console.log("socialAccounts: ", propSocialAccounts);
-	console.log("storeSocialAccounts: ", storeSocialAccounts);
-
 	// ─── FUENTE DE LA VERDAD ───
 	// Si es perfil propio, la fuente de la verdad absoluta es el Store (así reacciona al instante).
 	// pero si acaba de recargar la página y el store está vacío, caer en las props que trajo useUserProfileData.

@@ -23,28 +23,33 @@ class ProcessDisconnectionJob implements ShouldQueue
 
     public function handle(DisconnectionService $disconnectionService): void
     {
-        $disconnectKey = "room:{$this->roomId}:disconnecting:{$this->playerName}";
+        $disconnectKey = "room:{$this->roomId}:disconnecting:{$this->playerId}";
 
-        // Preguntar a Reverb con el ID
+        // Canal de presencia 
         $pusher = Broadcast::driver()->getPusher();
         $channelName = "presence-room.{$this->roomId}";
 
         $isSocketAlive = false;
+
         try {
             $response = $pusher->get_users_info($channelName);
-            $isSocketAlive = collect($response->users ?? [])->contains('id', $this->playerId);
+
+            $isSocketAlive = collect($response->users ?? [])
+                ->contains('id', $this->playerId);
         } catch (\Exception $e) {
             $isSocketAlive = false;
         }
 
         if ($isSocketAlive) {
-            // Falsa alarma, gue un F5 rápido. 
+            // Falsa alarma (F5 rápido o reconexión inmediata)
             Redis::del($disconnectKey);
             return;
         }
 
-        // Si sigue muerto, desconexión real usando el Nombre
-        $disconnectionService->processInGameDisconnection($this->roomId, $this->playerName);
+        // Desconexión real
+        // OJO: la lógica interna todavía usa playerName porque el resto del sistema aún depende de ello
+        $disconnectionService->processInGameDisconnection($this->roomId, $this->playerId);
+
         Redis::del($disconnectKey);
     }
 }

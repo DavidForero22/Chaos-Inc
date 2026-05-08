@@ -131,6 +131,7 @@ class LiveGameService
 
         return [
             'me'   => new MyDataResource([
+                'playerId'           => $playerId,
                 'playerName'         => $playerName,
                 'myData'             => $myData,
                 'pendingAttack'      => $pendingAttack,

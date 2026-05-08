@@ -134,9 +134,6 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 							.then(() => {
 								// Una vez sincronizado, verificar la suerte
 								if (data.player_drew_extra_card) {
-									console.log(
-										"Reconoce que ha entrado en el if (data.player_drew_extra_card)",
-									);
 									const latestState = useGameStore.getState();
 									const currentTurnPlayer =
 										latestState.gameData?.game?.current_turn;

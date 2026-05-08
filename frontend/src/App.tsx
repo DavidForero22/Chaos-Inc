@@ -9,6 +9,7 @@ import AdminPage from "./pages/AdminPage.tsx";
 import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
 import HowToPlayPage from "./pages/HowToPlayPage.tsx";
 import KnowMorePage from "./pages/KnowMorePage.tsx";
+import SocialLinkingErrorPage from "./pages/SocialLinkingErrorPage.tsx";
 
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 import MainMenuPage from "./pages/MainMenuPage.tsx";
@@ -38,6 +39,7 @@ function App() {
 				<Route path="/room/:id" element={<WaitingRoomPage />} />
 				<Route path="/game/:id" element={<GameBoardPage />} />
 				<Route path="/room-not-found" element={<RoomNotFoundPage />} />
+				<Route path="/social-error" element={<SocialLinkingErrorPage />} /> 
 			</Routes>
 
 			<GlobalLoader />

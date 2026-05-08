@@ -12,7 +12,6 @@ class Achievement extends Model
 
     protected $fillable = [
         'id',
-        'points',
     ];
 
     // Relación inversa: Un logro pertenece a muchos usuarios

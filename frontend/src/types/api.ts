@@ -1,6 +1,11 @@
 // src/types/api.ts
 // Interfaces de los datos que devuelve API Rest
 
+export interface RoomPlayer {
+	id: string;
+	name: string;
+}
+
 /**
  * Tipado de la sala
  */
@@ -8,9 +13,10 @@ export interface RoomData {
 	room_id: string;
 	name: string;
 	max_players: number;
+	owner_id: string;
 	owner_name: string;
 	status: string;
-	players: string[];
+	players: RoomPlayer[];
 	is_private?: string;
 }
 
@@ -67,7 +73,7 @@ export interface SocialAccountInfo {
 export interface UserRecord {
 	id: number;
 	username: string;
-	email?: string
+	email?: string;
 	role: string;
 	avatar: string | null;
 	socialAccounts?: SocialAccountInfo[];
@@ -80,6 +86,7 @@ export interface RoomRecord {
 	room_id: string;
 	name: string;
 	status: string;
+	owner_id: string;
 	owner_name: string;
 	max_players: string;
 	players: string[];

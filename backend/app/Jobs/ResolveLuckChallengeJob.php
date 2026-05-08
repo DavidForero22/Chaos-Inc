@@ -17,25 +17,30 @@ class ResolveLuckChallengeJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $roomId;
-    protected $playerName;
+    protected $playerId;
     protected $challengeId;
 
-    public function __construct(string $roomId, string $playerName, string $challengeId)
+    public function __construct(string $roomId, string $playerId, string $challengeId)
     {
         $this->roomId = $roomId;
-        $this->playerName = $playerName;
+        $this->playerId = $playerId;
         $this->challengeId = $challengeId;
     }
 
     public function handle(TurnService $turnService): void
     {
-        $challengeKey = "room:{$this->roomId}:luck_challenge:{$this->playerName}";
+        $challengeKey = "room:{$this->roomId}:luck_challenge:{$this->playerId}";
 
         $challengeDataStr = Redis::get($challengeKey);
 
+        $playerName = Redis::hget(
+            "room:{$this->roomId}:player:{$this->playerId}:info",
+            'username'
+        );
+
         // Si la key no existe, el jugador ya respondió y el sistema limpió la key.
         if (!$challengeDataStr) {
-            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$this->playerName} ya respondió o la partida terminó.");
+            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$playerName} ya respondió o la partida terminó.");
             return;
         }
 
@@ -43,16 +48,16 @@ class ResolveLuckChallengeJob implements ShouldQueue
 
         // Verificar que este Job pertenece a este minijuego exacto
         if (($challengeData['challenge_id'] ?? '') !== $this->challengeId) {
-            Log::info("ResolveLuckChallengeJob.php - Ignorado: Job obsoleto o fantasma para {$this->playerName}.");
+            Log::info("ResolveLuckChallengeJob.php - Ignorado: Job obsoleto o fantasma para {$playerName}.");
             return;
         }
 
         // Si llega aquí, es el Job legítimo y el jugador no ha respondido a tiempo.
         Redis::del($challengeKey);
 
-        Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$this->playerName} en {$this->roomId}. Saltando turno.");
+        Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$playerName} en {$this->roomId}. Saltando turno.");
 
-        $msg = __('game.luckyFailTimeout', ['player' => $this->playerName]);
+        $msg = __('game.luckyFailTimeout', ['player' => $playerName]);
         event(new RoomStateUpdated($this->roomId, $msg));
 
         $turnService->advanceTurn($this->roomId);

@@ -1,9 +1,10 @@
 // src/hooks/room/useRoomSession.ts
+
 import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useRoomStore } from "../../store/useRoomStore";
 import { useAuthStore } from "../../store/useAuthStore";
-// import { logWithTime } from "../../utils/logger";
+import { useAuth } from "../useAuth";
 
 export function useRoomSession(
 	roomId: string | undefined,
@@ -11,6 +12,7 @@ export function useRoomSession(
 ) {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { id: myPlayerId } = useAuth();
 
 	const {
 		room,
@@ -59,15 +61,18 @@ export function useRoomSession(
 
 	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
 	useEffect(() => {
-		if (!room || !myPlayerName || isJoining || needsPassword) return;
-		const stillInRoom = room.players?.includes(myPlayerName) ?? true;
+		if (!room || !myPlayerId || isJoining || needsPassword) return;
+		// Validar estrictamente por ID en la lista de objetos
+		const stillInRoom =
+			room.players?.some((player) => player.id === String(myPlayerId)) ?? true;
+
 		if (!stillInRoom) {
 			alert("Has sido expulsado de la sala.");
 			localStorage.removeItem("game_token");
 			resetRoomStore();
 			navigate("/");
 		}
-	}, [room, myPlayerName, isJoining, needsPassword, navigate, resetRoomStore]);
+	}, [room, myPlayerId, isJoining, needsPassword, navigate, resetRoomStore]);
 
 	// Vigilante de redirección a partida
 	useEffect(() => {

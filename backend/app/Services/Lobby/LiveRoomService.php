@@ -25,9 +25,9 @@ class LiveRoomService
         protected ReconnectionService $reconnectionService,
     ) {}
 
-    public function joinRoom(string $roomId, string $playerName, ?string $password = null): array
+    public function joinRoom(string $roomId, string $playerId, string $playerName, ?string $password = null): array
     {
-        $currentRoom = Redis::get("player:{$playerName}:room");
+        $currentRoom = Redis::get("player:{$playerId}:room");
 
         // Si el jugador ya está en otra sala distinta a la que intenta entrar
         if ($currentRoom && $currentRoom !== $roomId) {
@@ -39,9 +39,8 @@ class LiveRoomService
 
         // Si la sala a la que intenta entrar ya no existe...
         if (!Redis::exists($roomInfoKey)) {
-            // Si el servidor creía que el jugador estaba en esta sala fantasma, quitar la relacción
             if ($currentRoom === $roomId) {
-                Redis::del("player:{$playerName}:room");
+                Redis::del("player:{$playerId}:room");
             }
             throw new \Exception("La sala no existe o la partida ha finalizado.", 404);
         }
@@ -50,14 +49,22 @@ class LiveRoomService
         $roomState = Redis::hgetall($roomStateKey);
         $room      = array_merge($roomInfo, $roomState);
 
-        $alreadyInRoom = Redis::sismember("room:{$roomId}:players", $playerName);
+        Log::info("joinRoom DEBUG", [
+            'roomId' => $roomId,
+            'playerId' => $playerId,
+            'roomInfo keys' => array_keys($roomInfo),
+            'owner_id from roomInfo' => $roomInfo['owner_id'] ?? 'NO EXISTE',
+        ]);
+
+        $alreadyInRoom = Redis::sismember("room:{$roomId}:players", $playerId);
 
         // Si es un jugador nuevo entrando...
         if (!$alreadyInRoom) {
-            $this->validateNewPlayerEntry($room, $roomId, $playerName, $password);
+            $this->validateNewPlayerEntry($room, $roomId, $playerId, $password);
 
-            Redis::sadd("room:{$roomId}:players", $playerName);
-            Redis::setex("player:{$playerName}:room", 86400, $roomId);
+            Redis::sadd("room:{$roomId}:players", $playerId);
+            Redis::setex("player:{$playerId}:room", 86400, $roomId);
+            Redis::hset("room:{$roomId}:player:{$playerId}:info", 'username', $playerName);
 
             event(new RoomListUpdated($roomId));
             event(new RoomStateUpdated($roomId));
@@ -65,60 +72,58 @@ class LiveRoomService
 
         // Si ya estaba en la sala y la partida está en curso (Reconexión)...
         else if ($room['status'] === 'in_game') {
-            $playerData = Redis::hgetall("room:{$roomId}:player:{$playerName}:info");
-            $this->reconnectionService->handleReconnection($roomId, $playerName, $playerData);
-            Redis::setex("player:{$playerName}:room", 86400, $roomId);
+            $playerData = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
+            $this->reconnectionService->handleReconnection($roomId, $playerId, $playerData);
+            Redis::setex("player:{$playerId}:room", 86400, $roomId);
         }
 
-        $gameToken = $this->tokenService->refreshPlayerToken($roomId, $playerName);
+        $gameToken = $this->tokenService->refreshPlayerToken($roomId, $playerId);
 
         return [
             'message'    => $alreadyInRoom ? 'Reconnected.' : 'Joined.',
             'room_id'    => $roomId,
-            'player'     => $playerName,
+            'player_id'  => $playerId,
             'game_token' => $gameToken
         ];
     }
 
-    public function leaveRoom(string $roomId, string $playerName): void
+    public function leaveRoom(string $roomId, string $playerId): void
     {
         $roomInfoKey  = "room:{$roomId}:info";
         $roomStateKey = "room:{$roomId}:state";
-        Redis::del("player:{$playerName}:room");
+
+        // Quitar la relación global antes de validar
+        Redis::del("player:{$playerId}:room");
 
         if (!Redis::exists($roomInfoKey)) {
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room with ID {$roomId} does not exist.", 404);
         }
 
-        $roomInfo  = Redis::hgetall($roomInfoKey);
-        $roomState = Redis::hgetall($roomStateKey);
-        $room      = array_merge($roomInfo, $roomState);
-
-        if (!Redis::sismember("room:{$roomId}:players", $playerName)) {
-            throw new RoomException(RoomException::NOT_IN_ROOM, "Player {$playerName} is not in this room.", 409);
+        if (!Redis::sismember("room:{$roomId}:players", $playerId)) {
+            throw new RoomException(RoomException::NOT_IN_ROOM, "Player ID {$playerId} is not in this room.", 409);
         }
 
-        Log::info("LiveRoomService.php::leaveRoom - El jugador {$playerName} abandonó la sala {$roomId}\n");
+        // Obtener nombre para el log
+        $playerName = Redis::hget("room:{$roomId}:player:{$playerId}:info", 'username') ?? "ID_{$playerId}";
+        Log::info("LiveRoomService.php::leaveRoom - El jugador {$playerName} ({$playerId}) abandonó la sala {$roomId}\n");
 
-        // Derivar según el estado de la sala
+        $room = array_merge(Redis::hgetall($roomInfoKey), Redis::hgetall($roomStateKey));
+
         if ($room['status'] === 'in_game') {
-            // Grace period de 4s para cubrir F5/reconexiones rápidas
-            $disconnectKey = "room:{$roomId}:disconnecting:{$playerName}";
+            $disconnectKey = "room:{$roomId}:disconnecting:{$playerId}";
 
             if (!Redis::exists($disconnectKey)) {
                 Redis::setex($disconnectKey, 10, 'pending');
-
-                $playerId = Redis::hget("room:{$roomId}:player:{$playerName}:info", 'user_id');
 
                 ProcessDisconnectionJob::dispatch($roomId, $playerId, $playerName)
                     ->delay(now()->addSeconds(4));
             }
         } else {
-            $this->processLobbyLeave($roomId, $playerName, $room);
+            $this->processLobbyLeave($roomId, $playerId, $room);
         }
     }
 
-    public function kickPlayer(string $roomId, string $adminName, string $playerToKick): void
+    public function kickPlayer(string $roomId, string $adminId, string $playerToKickId): void
     {
         $roomInfoKey = "room:{$roomId}:info";
 
@@ -126,14 +131,24 @@ class LiveRoomService
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
         }
 
-        $ownerName = Redis::hget($roomInfoKey, 'owner_name');
+        $ownerId = (string) Redis::hget($roomInfoKey, 'owner_id');
+        $adminId = (string) $adminId;
 
-        if ($ownerName !== $adminName) throw new RoomException(RoomException::NOT_LEADER, "Only the room owner can kick players.", 403);
-        if ($adminName === $playerToKick) throw new RoomException(RoomException::CANNOT_KICK_SELF, "You cannot kick yourself.", 422);
-        if (!Redis::sismember("room:{$roomId}:players", $playerToKick)) throw new RoomException(RoomException::NOT_IN_ROOM, "The player is not in the room.", 404);
+        if ($ownerId !== $adminId) {
+            throw new RoomException(RoomException::NOT_LEADER, "Only the room owner can kick players.", 403);
+        }
 
-        Redis::srem("room:{$roomId}:players", $playerToKick);
-        $this->tokenService->deletePlayerToken($roomId, $playerToKick);
+        if ($adminId === $playerToKickId) {
+            throw new RoomException(RoomException::CANNOT_KICK_SELF, "You cannot kick yourself.", 422);
+        }
+
+        if (!Redis::sismember("room:{$roomId}:players", $playerToKickId)) {
+            throw new RoomException(RoomException::NOT_IN_ROOM, "The player is not in the room.", 404);
+        }
+
+        Redis::srem("room:{$roomId}:players", $playerToKickId);
+        Redis::del("player:{$playerToKickId}:room");
+        $this->tokenService->deletePlayerToken($roomId, $playerToKickId);
 
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
@@ -143,9 +158,9 @@ class LiveRoomService
     // MÉTODOS PRIVADOS DE VALIDACIÓN Y PROCESAMIENTO
     // =========================================================================
 
-    private function validateNewPlayerEntry(array $room, string $roomId, string $playerName, ?string $password): void
+    private function validateNewPlayerEntry(array $room, string $roomId, string $playerId, ?string $password): void
     {
-        $this->ensurePlayerNotInOtherRooms($playerName, $roomId);
+        $this->ensurePlayerNotInOtherRooms($playerId, $roomId);
 
         if ($room['status'] === 'in_game') {
             throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
@@ -162,11 +177,11 @@ class LiveRoomService
         }
     }
 
-    private function ensurePlayerNotInOtherRooms(string $playerName, string $currentRoomId): void
+    private function ensurePlayerNotInOtherRooms(string $playerId, string $currentRoomId): void
     {
         $activeRooms = Redis::smembers("active_rooms");
         foreach ($activeRooms as $activeRoomId) {
-            if ($activeRoomId !== $currentRoomId && Redis::sismember("room:{$activeRoomId}:players", $playerName)) {
+            if ($activeRoomId !== $currentRoomId && Redis::sismember("room:{$activeRoomId}:players", $playerId)) {
                 throw new RoomException(
                     RoomException::ALREADY_IN_ANOTHER_ROOM,
                     "You are already in another game. Finish or quit the current one first.",
@@ -176,21 +191,26 @@ class LiveRoomService
         }
     }
 
-    private function processLobbyLeave(string $roomId, string $playerName, array $room): void
+    private function processLobbyLeave(string $roomId, string $playerId, array $room): void
     {
-        Redis::srem("room:{$roomId}:players", $playerName);
-        $this->tokenService->deletePlayerToken($roomId, $playerName);
+        Redis::srem("room:{$roomId}:players", $playerId);
+        $this->tokenService->deletePlayerToken($roomId, $playerId);
 
         $remainingPlayersCount = Redis::scard("room:{$roomId}:players");
 
         if ($remainingPlayersCount === 0) {
             $this->finalizationService->destroyRoom($roomId);
         } else {
-            // Reasignar dueño si se va el admin
-            if ($room['owner_name'] === $playerName) {
-                $newOwner = Redis::srandmember("room:{$roomId}:players");
-                if ($newOwner) {
-                    Redis::hset("room:{$roomId}:info", 'owner_name', $newOwner);
+            // Reasignar dueño si se va el admin 
+            if ($room['owner_id'] === $playerId) {
+                $newOwnerId = Redis::srandmember("room:{$roomId}:players");
+                if ($newOwnerId) {
+                    Redis::hset("room:{$roomId}:info", 'owner_id', $newOwnerId);
+
+                    $newOwnerName = Redis::hget("room:{$roomId}:player:{$newOwnerId}:info", 'username');
+                    if ($newOwnerName) {
+                        Redis::hset("room:{$roomId}:info", 'owner_name', $newOwnerName);
+                    }
                 }
             }
             event(new RoomListUpdated($roomId));

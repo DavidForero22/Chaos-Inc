@@ -17,16 +17,16 @@ class ResolveSingleAttackJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $roomId;
-    protected $attackerName;
-    protected $targetName;
+    protected $attackerId;
+    protected $targetId;
     protected $attackToken;
 
-    public function __construct(string $roomId, string $attackerName, string $targetName, string $attackToken)
+    public function __construct(string $roomId, string $attackerId, string $targetId, string $attackToken)
     {
         $this->roomId = $roomId;
-        $this->attackerName = $attackerName;
-        $this->targetName = $targetName;
-        $this->attackToken = $attackToken; 
+        $this->attackerId = $attackerId;
+        $this->targetId = $targetId;
+        $this->attackToken = $attackToken;
     }
 
     public function handle(CombatService $combatService): void
@@ -45,14 +45,26 @@ class ResolveSingleAttackJob implements ShouldQueue
             return;
         }
 
-        // El jugador no respondió a tiempo. Entra el daño.
-        Log::info("ResolveSingleAttackJob.php - Daño automático aplicado en {$this->roomId} a {$this->targetName}");
+        $playerName = Redis::hget(
+            "room:{$this->roomId}:player:{$this->targetId}:info",
+            'username'
+        );
 
-        $combatService->applyDamageAndCheck($this->roomId, $this->attackerName, $this->targetName);
+        // El jugador no respondió a tiempo. Entra el daño.
+        Log::info("ResolveSingleAttackJob.php - Daño automático aplicado en {$this->roomId} a {$playerName}");
+
+        $combatService->applyDamageAndCheck(
+            $this->roomId,
+            $this->attackerId,
+            $this->targetId
+        );
 
         // Limpiamos el estado
         Redis::del($pendingKey);
 
-        event(new RoomStateUpdated($this->roomId, __("game.attack_auto_resolved", ['player' => $this->targetName])));
+        event(new RoomStateUpdated(
+            $this->roomId,
+            __("game.attack_auto_resolved", ['player' => $playerName])
+        ));
     }
 }
