@@ -74,6 +74,7 @@ export function PlayerActions() {
 	]);
 
 	const isDead = me?.is_dead || false;
+	const isInfoDisabled = isGlobalLoading || isDead || isDiscardMode;
 	if (!actionLogic.isReady) return null;
 
 	// ¿Deberían estar deshabilitados los botones por el modo Info?
@@ -117,9 +118,14 @@ export function PlayerActions() {
 					<>
 						{/* --- BOTÓN INFO (SOLO MÓVIL) --- */}
 						<button
-							onClick={() => setIsInfoMode?.(!isInfoMode)}
-							disabled={isGlobalLoading || isDead || isDiscardMode}
-							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${isDiscardMode ? styles.stampDisabled : ""}`}
+							onClick={() => {
+								if (isInfoDisabled) return;
+								setIsInfoMode?.(!isInfoMode);
+							}}
+							disabled={isInfoDisabled}
+							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${
+								isInfoDisabled ? styles.stampDisabled : ""
+							}`}
 						>
 							{isInfoMode ? "SALIR" : "INFO"}
 						</button>
