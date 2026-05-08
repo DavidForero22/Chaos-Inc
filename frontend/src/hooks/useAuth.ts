@@ -19,17 +19,7 @@ type LoginInput = {
 
 export function useAuth() {
 	// Extraemos también provider y providerAvatar del store
-	const {
-		id,
-		user,
-		avatar,
-		providerAvatar,
-		provider,
-		isGuest,
-		role,
-		setAuth,
-		logout,
-	} = useAuthStore();
+	const { id, user, avatar, isGuest, role, setAuth, logout } = useAuthStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 
@@ -101,11 +91,9 @@ export function useAuth() {
 			await getCsrfCookie();
 
 			const formData = new FormData();
-			// Enviar como POST, pero decirle que lo trate como PUT
-			formData.append("_method", "PUT");
 			formData.append("avatar", file);
 
-			const res = await api.post(`/users/${id}`, formData, {
+			const res = await api.post(`/users/${id}/avatar`, formData, {
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
@@ -157,8 +145,6 @@ export function useAuth() {
 		id,
 		user,
 		avatar,
-		providerAvatar,
-		provider,
 		isGuest,
 		role,
 		isAuthenticated: !!user,

@@ -1,95 +1,107 @@
 <?php
+// app/Services/Auth/SocialAuthService.php
 
 namespace App\Services\Auth;
 
 use App\Models\User;
+use App\Models\SocialAccount;
+use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Contracts\User as SocialUser;
 
 class SocialAuthService
 {
-    /**
-     * Encuentra un usuario existente o crea uno nuevo a partir de los datos OAuth.
-     *
-     * Prioridad de búsqueda:
-     *   1. Por provider + provider_id  → usuario ya registrado con OAuth
-     *   2. Por email                   → usuario con cuenta normal que usa el mismo email
-     *   3. Crear nuevo usuario
-     */
     public function findOrCreateUser(SocialUser $socialUser, string $provider): User
     {
-        // 1. Buscar por provider_id (login recurrente con OAuth)
-        $user = User::where('provider', $provider)
+        // Buscar si esta cuenta social específica ya está registrada
+        $socialAccount = SocialAccount::where('provider_name', $provider)
             ->where('provider_id', $socialUser->getId())
             ->first();
 
-        if ($user) {
-            // Guardar en provider_avatar respetando el avatar manual
-            $user->update(['provider_avatar' => $socialUser->getAvatar()]);
-            return $user;
+        if ($socialAccount) {
+            // Actualizar avatar de la red social por si lo cambiaron en Google/Discord
+            $socialAccount->update(['provider_avatar' => $socialUser->getAvatar()]);
+            // Retornamos el dueño de esta cuenta social
+            return $socialAccount->user;
         }
 
-        // 2. Buscar por email (vincular cuenta existente al proveedor)
-        if ($socialUser->getEmail()) {
-            $existingUser = User::where('email', $socialUser->getEmail())->first();
+        // Si no existe la cuenta social, buscar si el usuario ya existe por email
+        $email = $socialUser->getEmail();
+        if ($email) {
+            $existingUser = User::where('email', $email)->first();
 
             if ($existingUser) {
-                $existingUser->update([
-                    'provider'        => $provider,
-                    'provider_id'     => $socialUser->getId(),
-                    'provider_avatar' => $socialUser->getAvatar(),
-                ]);
+                // El email existe. Vincular esta nueva red social a su cuenta
+                $this->linkSocialAccount($existingUser, $socialUser, $provider);
                 return $existingUser;
             }
         }
 
-        // 3. Crear usuario nuevo
+        // Ni cuenta social ni email existen. Crear un usuario nuevo.
         return $this->createOAuthUser($socialUser, $provider);
     }
 
     private function createOAuthUser(SocialUser $socialUser, string $provider): User
     {
-        $displayName = $socialUser->getName()
-            ?? $socialUser->getNickname()
-            ?? 'user';
+        // Usar una transacción para que, si falla la creación de la cuenta social, 
+        // no se quede un usuario "huérfano" en la base de datos.
+        return DB::transaction(function () use ($socialUser, $provider) {
 
-        $username = $this->generateUsername($displayName);
+            $displayName = $socialUser->getName() ?? $socialUser->getNickname() ?? 'user';
+            $username = $this->generateUsername($displayName);
 
-        // Discord no siempre entrega email: generamos uno placeholder único
-        $email = $socialUser->getEmail()
-            ?? "{$provider}_{$socialUser->getId()}@oauth.noemail";
+            $email = $socialUser->getEmail() ?? "{$provider}_{$socialUser->getId()}@oauth.noemail";
 
-        return User::create([
-            'username'        => $username,
-            'email'           => $email,
-            'password'        => null,
-            'role'            => 'user',
-            'is_guest'        => false,
-            'provider'        => $provider,
+            // Creamos la Identidad Central
+            $user = User::create([
+                'username' => $username,
+                'email'    => $email,
+                'password' => null,
+                'role'     => 'user',
+                'is_guest' => false,
+                'avatar'   => null,
+            ]);
+
+            // Vincular su primer método de acceso
+            $this->linkSocialAccount($user, $socialUser, $provider);
+
+            return $user;
+        });
+    }
+
+    private function linkSocialAccount(User $user, SocialUser $socialUser, string $provider): void
+    {
+        $user->socialAccounts()->create([
+            'provider_name'   => $provider,
             'provider_id'     => $socialUser->getId(),
-            'avatar'          => null,
             'provider_avatar' => $socialUser->getAvatar(),
         ]);
     }
 
-    /**
-     * Genera un username único basado en el display name del proveedor.
-     * Sanitiza el nombre y añade un sufijo numérico si ya está en uso.
-     */
     private function generateUsername(string $displayName): string
     {
-        // Espacios → guión bajo, eliminar caracteres no permitidos, recortar a 12 chars
         $base = preg_replace('/[^A-Za-z0-9_]/', '', str_replace(' ', '_', $displayName));
         $base = $base ?: 'user';
         $base = substr($base, 0, 12);
 
-        $username = $base;
-        $counter  = 1;
+        $existingUsernames = User::where('username', 'REGEXP', '^' . preg_quote($base) . '(_[0-9]+)?$')
+            ->pluck('username')
+            ->toArray();
 
-        while (User::where('username', $username)->exists()) {
-            $username = $base . '_' . $counter;
-            $counter++;
+        if (empty($existingUsernames)) {
+            return $base;
         }
 
-        return $username;
+        if (!in_array($base, $existingUsernames)) {
+            return $base;
+        }
+
+        $maxSuffix = 1;
+        foreach ($existingUsernames as $username) {
+            if (preg_match('/_([0-9]+)$/', $username, $matches)) {
+                $maxSuffix = max($maxSuffix, (int)$matches[1]);
+            }
+        }
+
+        return $base . '_' . ($maxSuffix + 1);
     }
 }

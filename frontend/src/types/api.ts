@@ -59,14 +59,18 @@ export interface UserAchievement {
 	unlockedAt: string;
 }
 
+export interface SocialAccountInfo {
+	provider: string;
+	avatar: string | null;
+}
+
 export interface UserRecord {
 	id: number;
 	username: string;
 	email: string;
 	role: string;
-	avatar: string;
-	providerAvatar: string;
-	provider: string;
+	avatar: string | null;
+	socialAccounts?: SocialAccountInfo[];
 	isGuest: boolean;
 	joinedAt: string;
 	achievements?: UserAchievement[];

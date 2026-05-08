@@ -75,6 +75,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/users', [UserController::class, 'index']);
             Route::get('/users/{user}', [UserController::class, 'show']);
             Route::put('/users/{user}', [UserController::class, 'update']);
+            Route::post('/users/{user}/avatar', [UserController::class, 'updateAvatar']); 
             Route::get('/users/{user}/games', [GameController::class, 'userGames']);
 
             Route::get('/games', [GameController::class, 'index']);

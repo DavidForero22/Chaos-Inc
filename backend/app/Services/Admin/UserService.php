@@ -64,39 +64,47 @@ class UserService
             $data['password'] = Hash::make($data['password']);
         }
 
-        // ─── LÓGICA DE SINCRONIZACIÓN DE AVATAR ───
-        // Si el frontend pide sincronizar, borrar el avatar manual
-        if (isset($data['sync_avatar']) && $data['sync_avatar'] === 'true') {
-            if ($user->avatar) {
-                Storage::disk('public')->delete($user->avatar);
-            }
-            $data['avatar'] = null; // Poner a null para que el frontend use el provider_avatar
-        }
+        $user->update($data);
+        return $user;
+    }
 
-        // ─── PROCESAMIENTO DE SUBIDA DE AVATAR ───
-        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+    public function updateAvatar($id, array $data)
+    {
+        $user = User::findOrFail($id);
 
-            // Borrar el avatar antiguo si existe y es local
+        // Helper para borrar la foto local anterior y no llenar el servidor de basura
+        $deleteOldLocalAvatar = function () use ($user) {
             if ($user->avatar && !str_starts_with($user->avatar, 'http')) {
                 Storage::disk('public')->delete($user->avatar);
             }
+        };
 
-            // Inicializar Intervention
+        // OPCIÓN A: El usuario ha elegido usar el avatar de Google/Discord
+        if (!empty($data['provider'])) {
+            $socialAccount = $user->socialAccounts()->where('provider_name', $data['provider'])->first();
+
+            if ($socialAccount && $socialAccount->provider_avatar) {
+                $deleteOldLocalAvatar();
+                // Poner la URL directa de Discord/Google como su avatar oficial
+                $user->update(['avatar' => $socialAccount->provider_avatar]);
+            }
+            return $user;
+        }
+
+        // OPCIÓN B: El usuario ha subido un archivo manualmente
+        if (isset($data['avatar']) && $data['avatar'] instanceof \Illuminate\Http\UploadedFile) {
+            $deleteOldLocalAvatar();
+
             $manager = ImageManager::usingDriver(Driver::class);
-
-            // Leer, recortar a cuadrado perfecto (200x200) y convertir a WebP
             $image = $manager->decodeSplFileInfo($data['avatar']);
             $encodedImage = $image->cover(200, 200)->encode(new WebpEncoder(quality: 80));
 
-            // Generar nombre único y guardar en storage/app/public/avatars
             $filename = 'avatars/' . $user->id . '_' . time() . '.webp';
             Storage::disk('public')->put($filename, (string) $encodedImage);
 
-            // Asignar la ruta relativa a los datos que se guardarán en la BD
-            $data['avatar'] = $filename;
+            $user->update(['avatar' => $filename]);
         }
 
-        $user->update($data);
         return $user;
     }
 

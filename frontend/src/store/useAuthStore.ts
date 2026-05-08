@@ -1,16 +1,15 @@
 // src/store/useAuthStore.ts
 
 import { create } from "zustand";
-import type { UserAchievement } from "../types/api";
+import type { UserAchievement, SocialAccountInfo } from "../types/api";
 
 interface AuthState {
 	id: number | null;
 	user: string | null;
 	avatar: string | null;
-	providerAvatar: string | null;
 	isGuest: boolean;
 	role: string | null;
-	provider: string | null;
+	socialAccounts: SocialAccountInfo[] | null;
 	joinedAt: string | null;
 	achievements: UserAchievement[] | null;
 	setAuth: (
@@ -19,8 +18,7 @@ interface AuthState {
 		avatar?: string | null,
 		isGuest?: boolean,
 		role?: string,
-		provider?: string | null,
-		providerAvatar?: string | null,
+		socialAccounts?: SocialAccountInfo[] | null,
 		joinedAt?: string | null,
 		achievements?: UserAchievement[] | null,
 	) => void;
@@ -49,10 +47,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 	id: Number(getSafeStorage("userId")) || null,
 	user: getSafeStorage("user"),
 	avatar: getSafeStorage("avatar"),
-	providerAvatar: getSafeStorage("providerAvatar"),
 	isGuest: getSafeStorage("isGuest") === "true",
 	role: getSafeStorage("role"),
-	provider: getSafeStorage("provider"),
+	socialAccounts: getSafeJSON<SocialAccountInfo[]>("socialAccounts"),
 	joinedAt: getSafeStorage("joinedAt"),
 	achievements: getSafeJSON<UserAchievement[]>("achievements"),
 
@@ -62,8 +59,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 		avatar = null,
 		isGuest = false,
 		role = "user",
-		provider = null,
-		providerAvatar = null,
+		socialAccounts = null,
 		joinedAt = null,
 		achievements = null,
 	) => {
@@ -74,15 +70,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 			if (avatar) localStorage.setItem("avatar", avatar);
 			else localStorage.removeItem("avatar");
 
-			if (providerAvatar)
-				localStorage.setItem("providerAvatar", providerAvatar);
-			else localStorage.removeItem("providerAvatar");
-
 			localStorage.setItem("isGuest", String(isGuest));
 			localStorage.setItem("role", role ?? "user");
 
-			if (provider) localStorage.setItem("provider", provider);
-			else localStorage.removeItem("provider");
+			if (socialAccounts)
+				localStorage.setItem("socialAccounts", JSON.stringify(socialAccounts));
+			else localStorage.removeItem("socialAccounts");
 
 			if (joinedAt) localStorage.setItem("joinedAt", joinedAt);
 			else localStorage.removeItem("joinedAt");
@@ -95,10 +88,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 			id,
 			user,
 			avatar,
-			providerAvatar,
 			isGuest,
 			role,
-			provider,
+			socialAccounts,
 			joinedAt,
 			achievements,
 		});
@@ -117,10 +109,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 			localStorage.removeItem("userId");
 			localStorage.removeItem("user");
 			localStorage.removeItem("avatar");
-			localStorage.removeItem("providerAvatar");
 			localStorage.removeItem("isGuest");
 			localStorage.removeItem("role");
-			localStorage.removeItem("provider");
+			localStorage.removeItem("socialAccounts");
 			localStorage.removeItem("joinedAt");
 			localStorage.removeItem("achievements");
 		}
@@ -128,10 +119,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 			id: null,
 			user: null,
 			avatar: null,
-			providerAvatar: null,
 			isGuest: false,
 			role: null,
-			provider: null,
+			socialAccounts: null,
 			joinedAt: null,
 			achievements: null,
 		});
@@ -145,22 +135,20 @@ if (typeof window !== "undefined") {
 		if (
 			event.key === "user" ||
 			event.key === "avatar" ||
-			event.key === "providerAvatar" ||
 			event.key === "isGuest" ||
 			event.key === "role" ||
-			event.key === "provider" ||
+			event.key === "socialAccounts" ||
 			event.key === "joinedAt" ||
 			event.key === "achievements"
 		) {
 			useAuthStore.setState({
 				user: getSafeStorage("user"),
 				avatar: getSafeStorage("avatar"),
-				providerAvatar: getSafeStorage("providerAvatar"),
 				isGuest: getSafeStorage("isGuest") === "true",
 				role: getSafeStorage("role"),
-				provider: getSafeStorage("provider"),
+				socialAccounts: getSafeJSON<SocialAccountInfo[]>("socialAccounts"),
 				joinedAt: getSafeStorage("joinedAt"),
-				achievements: getSafeJSON<UserAchievement[]>("achievements"), 
+				achievements: getSafeJSON<UserAchievement[]>("achievements"),
 			});
 		}
 	});

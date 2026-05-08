@@ -3,9 +3,12 @@
 import { useState, useMemo, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useAuthStore } from "../../store/useAuthStore";
+import api from "../../api/axios";
 import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
-import type { UserAchievement } from "../../types/api";
+import ModalLayout from "../ui/ModalLayout";
+import type { UserAchievement, SocialAccountInfo } from "../../types/api";
 import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 
@@ -24,39 +27,60 @@ const ACCOUNT_ROLE_CONFIG: Record<
 };
 
 interface UserInfoProps {
+	userId?: number | null;
 	notMyProfile: boolean;
 	displayUser?: string | null;
 	displayRole?: string | null;
 	displayJoinedAt?: string | null;
 	avatar?: string | null;
-	providerAvatar?: string | null;
-	provider?: string | null;
+	socialAccounts?: SocialAccountInfo[] | null;
 	achievements?: UserAchievement[];
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
 }
 
 export default function UserInfo({
+	userId,
 	notMyProfile,
 	displayUser,
 	displayRole,
 	displayJoinedAt,
 	avatar,
-	providerAvatar,
-	provider,
+	socialAccounts,
 	achievements,
 	onLogout,
 	onDeleteAccount,
 }: UserInfoProps) {
 	const { uploadAvatar } = useAuth();
 	const [isUploading, setIsUploading] = useState(false);
+	const [showAvatarModal, setShowAvatarModal] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
-
+	
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[displayRole ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
 
+	// Calcular qué redes tiene vinculadas para encender/apagar los badges
+	const isDiscordLinked = socialAccounts?.some(
+		(acc) => acc.provider === "discord",
+	);
+	const isGoogleLinked = socialAccounts?.some(
+		(acc) => acc.provider === "google",
+	);
+
 	const handleAvatarClick = () => {
 		if (notMyProfile) return;
+
+		// Si tiene cuentas vinculadas, abrir modal. Si no, directo a subir foto.
+		if (socialAccounts && socialAccounts.length > 0) {
+			setShowAvatarModal(true);
+		} else {
+			fileInputRef.current?.click();
+		}
+	};
+
+	const handleManualUploadClick = (e: React.FormEvent) => {
+		e.preventDefault();
+		setShowAvatarModal(false);
 		fileInputRef.current?.click();
 	};
 
@@ -69,10 +93,33 @@ export default function UserInfo({
 		if (e.target) e.target.value = "";
 	};
 
+	const handleSelectProviderAvatar = async (
+		providerName: string,
+		avatarUrl: string | null,
+	) => {
+		if (!userId) return;
+
+		try {
+			setIsUploading(true);
+			setShowAvatarModal(false); // Cerrar el modal mientras carga para dar feedback visual en la polaroid
+
+			await api.post(`/users/${userId}/avatar`, { provider: providerName });
+
+			if (!notMyProfile) {
+				useAuthStore.getState().setAvatar(avatarUrl);
+			}
+		} catch (error) {
+			console.error("Error al actualizar avatar de proveedor:", error);
+		} finally {
+			setIsUploading(false);
+		}
+	};
+
 	const initials = displayUser
 		? displayUser.substring(0, 2).toUpperCase()
 		: "??";
-	const rawAvatar = avatar || providerAvatar;
+
+	const rawAvatar = avatar;
 
 	const avatarUrl = useMemo(() => {
 		if (!rawAvatar) return null;
@@ -135,32 +182,6 @@ export default function UserInfo({
 							</div>
 						</div>
 
-						{!notMyProfile && (
-							<div className={styles.formGroup}>
-								<label>ORIGEN DE REGISTRO:</label>
-								<div className={styles.providerContainer}>
-									{provider === "discord" ? (
-										<span
-											className={`${styles.providerBadge} ${styles.badgeDiscord}`}
-										>
-											DISCORD
-										</span>
-									) : provider === "google" ? (
-										<span
-											className={`${styles.providerBadge} ${styles.badgeGoogle}`}
-										>
-											GOOGLE
-										</span>
-									) : (
-										<span
-											className={`${styles.providerBadge} ${styles.badgeInternal}`}
-										>
-											CONTRATACIÓN INTERNA
-										</span>
-									)}
-								</div>
-							</div>
-						)}
 					</div>
 
 					<div className={styles.formGroupInline}>
@@ -171,6 +192,35 @@ export default function UserInfo({
 								: "REGISTRO DESCONOCIDO"}
 						</strong>
 					</div>
+
+					{/* ── CUENTAS VINCULADAS ── */}
+					{!notMyProfile && (
+						<div className={styles.linkedAccountsSection}>
+							<label>CUENTAS VINCULADAS:</label>
+							<div className={styles.providerContainer}>
+								<span
+									className={`${styles.providerBadge} ${styles.badgeDiscord} ${!isDiscordLinked ? styles.badgeUnlinked : ""}`}
+									title={
+										isDiscordLinked
+											? "Cuenta de Discord vinculada"
+											: "Discord no vinculado"
+									}
+								>
+									DISCORD
+								</span>
+								<span
+									className={`${styles.providerBadge} ${styles.badgeGoogle} ${!isGoogleLinked ? styles.badgeUnlinked : ""}`}
+									title={
+										isGoogleLinked
+											? "Cuenta de Google vinculada"
+											: "Google no vinculado"
+									}
+								>
+									GOOGLE
+								</span>
+							</div>
+						</div>
+					)}
 				</div>
 
 				{!notMyProfile && (
@@ -197,6 +247,40 @@ export default function UserInfo({
 						onDeleteAccount={onDeleteAccount}
 					/>
 				</>
+			)}
+
+			{/* ── MODAL DE SELECCIÓN DE AVATAR ── */}
+			{showAvatarModal && (
+				<ModalLayout
+					title="ACTUALIZAR AVATAR"
+					subtitle="Elige tu foto corporativa"
+					onClose={() => setShowAvatarModal(false)}
+					onSubmit={handleManualUploadClick}
+					submitText="Subir foto manual"
+				>
+					<div className="flex flex-col gap-3 py-2">
+						<p className="text-sm font-bold text-gray-600 mb-2 font-mono">
+							Opciones disponibles:
+						</p>
+
+						{socialAccounts?.map((acc) => (
+							<button
+								key={acc.provider}
+								type="button"
+								onClick={() =>
+									handleSelectProviderAvatar(acc.provider, acc.avatar)
+								}
+								className={`w-full py-3 px-4 font-black text-white text-sm uppercase tracking-wider rounded border flex justify-center items-center gap-2 transition-transform hover:scale-[1.02] ${
+									acc.provider === "discord"
+										? "bg-[#5865f2] border-[#4752c4]"
+										: "bg-[#db4437] border-[#b0362c]"
+								}`}
+							>
+								Usar avatar de {acc.provider}
+							</button>
+						))}
+					</div>
+				</ModalLayout>
 			)}
 		</>
 	);

@@ -19,18 +19,20 @@ class User extends Authenticatable
         'password',
         'role',
         'is_guest',
-        'provider',
-        'provider_id',
         'avatar',
-        'provider_avatar',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
+    public function socialAccounts()
+    {
+        return $this->hasMany(SocialAccount::class);
+    }
+
     public function games()
     {
         return $this->belongsToMany(Game::class)
-            ->withPivot('is_guest', 'display_name', 'has_won', 'role', 'is_dead', 'damage_dealt', 'damage_received', 'healing_done', 'cards_played', 'passives_played', 'eliminations')
+            ->withPivot('is_guest', 'display_name', 'has_won', 'role', 'is_dead', 'damage_dealt', 'damage_received', 'healing_done', 'cards_played', 'passives_played', 'eliminations', 'dodged_attacks', 'cards_stolen')
             ->withTimestamps();
     }
 
@@ -49,11 +51,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Indica si el usuario se registró mediante OAuth (no tiene contraseña propia).
+     * Indica si el usuario se registró mediante OAuth comprobando si tiene cuentas vinculadas.
      */
     public function isOAuthUser(): bool
     {
-        return !is_null($this->provider);
+        return $this->socialAccounts()->exists();
     }
 
     protected function casts(): array

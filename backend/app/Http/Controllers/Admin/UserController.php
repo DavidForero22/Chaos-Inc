@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
+use App\Http\Requests\User\UpdateAvatarRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+
 use App\Http\Resources\UserResource;
 use App\Services\Admin\UserService;
 use Illuminate\Http\Request;
@@ -35,10 +37,19 @@ class UserController extends Controller
         return new UserResource($user);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $user = $this->userService->getUserById($id);
-        $user->load(['games.participants', 'games.cardUsages', 'achievements']);
+
+        // Relaciones públicas (Partidas y Logros)
+        $relationsToLoad = ['games.participants', 'games.cardUsages', 'achievements'];
+
+        // Relaciones privadas (Cuentas sociales vinculadas)
+        if ($request->user() && $request->user()->id == $id) {
+            $relationsToLoad[] = 'socialAccounts';
+        }
+
+        $user->load($relationsToLoad);
 
         return new UserResource($user);
     }
@@ -60,6 +71,22 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully',
+            'user' => new UserResource($user)
+        ], 200);
+    }
+
+    public function updateAvatar(UpdateAvatarRequest $request, $id)
+    {
+        $targetUser = $this->userService->getUserById($id);
+
+        Gate::authorize('update', $targetUser);
+        $user = $this->userService->updateAvatar($id, $request->validated());
+
+        // Cargar las cuentas sociales para que el Resource devuelva toda la info
+        $user->load('socialAccounts');
+
+        return response()->json([
+            'message' => 'Avatar actualizado con éxito.',
             'user' => new UserResource($user)
         ], 200);
     }

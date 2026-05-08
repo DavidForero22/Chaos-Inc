@@ -27,22 +27,29 @@ export default function RegisteredProfileView({
 	publicProfile = null,
 	myProfile = null,
 }: RegisteredProfileViewProps) {
-	const { id, user, role, avatar, provider, providerAvatar, joinedAt } =
-		useAuthStore();
+	const { id, user, role, avatar, socialAccounts, joinedAt } = useAuthStore();
 
 	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
 		"info",
 	);
-	
+
 	const displayId = notMyProfile ? publicProfile?.id : id;
 	const displayUser = notMyProfile ? publicProfile?.username : user;
 	const displayRole = notMyProfile ? publicProfile?.role : role;
-	const displayJoinedAt = notMyProfile ? publicProfile?.joinedAt : joinedAt;
+	const displayJoinedAt = notMyProfile
+		? publicProfile?.joinedAt
+		: (myProfile?.joinedAt ?? joinedAt);
 	const displayAvatar = notMyProfile ? publicProfile?.avatar : avatar;
-	const displayProviderAvatar = notMyProfile
-		? publicProfile?.providerAvatar
-		: providerAvatar;
-	const displayProvider = notMyProfile ? publicProfile?.provider : provider;
+
+	// Verificar si el perfil que miramos es el mismo perfil de quien lo ve
+	const isActuallyMe = !notMyProfile && id === displayId;
+
+	// Si es propio, priorizar los datos recién traídos de /users/{id} (myProfile)
+	// Si falla, caer en el store. Si no es propio, SIEMPRE null.
+	const displaySocialAccounts = isActuallyMe
+		? myProfile?.socialAccounts || socialAccounts
+		: null;
+
 	const displayAchievements = notMyProfile
 		? publicProfile?.achievements
 		: myProfile?.achievements;
@@ -88,13 +95,13 @@ export default function RegisteredProfileView({
 				<div className={styles.sectionsWrapper}>
 					{activeTab === "info" && (
 						<UserInfo
+							userId={displayId}
 							notMyProfile={notMyProfile}
 							displayUser={displayUser}
 							displayRole={displayRole}
 							displayJoinedAt={displayJoinedAt}
 							avatar={displayAvatar}
-							providerAvatar={displayProviderAvatar}
-							provider={displayProvider}
+							socialAccounts={displaySocialAccounts}
 							achievements={displayAchievements}
 							onLogout={onLogout}
 							onDeleteAccount={onDeleteAccount}
