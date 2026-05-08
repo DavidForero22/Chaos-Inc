@@ -32,12 +32,22 @@ class UserPolicy
      */
     public function delete(User $currentUser, User $targetUser): Response
     {
-
-        if ($currentUser->role === 'admin' && $currentUser->id == $targetUser->id) {
-            return Response::deny("You can't delete yourself.");
+        // Un admin NUNCA puede borrarse a sí mismo
+        if ($currentUser->role === 'admin' && $currentUser->id === $targetUser->id) {
+            return Response::deny("Como administrador, no puedes borrar tu propia cuenta.");
         }
 
-        // Solo un admin puede borrar, pero NUNCA a sí mismo
-        return Response::allow();
+        // Permitir si es un admin borrando a OTRO usuario
+        if ($currentUser->role === 'admin') {
+            return Response::allow();
+        }
+
+        // Permitir si un usuario normal se está borrando a SÍ MISMO
+        if ($currentUser->id === $targetUser->id) {
+            return Response::allow();
+        }
+
+        // Fallback de seguridad: Todo lo demás se deniega
+        return Response::deny("No tienes permisos para borrar a otros usuarios.");
     }
 }

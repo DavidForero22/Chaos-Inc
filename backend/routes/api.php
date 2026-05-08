@@ -78,6 +78,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/users/{user}/avatar', [UserController::class, 'updateAvatar']);
             Route::get('/users/{user}/games', [GameController::class, 'userGames']);
             Route::delete('/users/{user}/social/{provider}', [UserController::class, 'unlinkSocialAccount']);
+            Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
             Route::get('/games', [GameController::class, 'index']);
             Route::get('/games/{game}', [GameController::class, 'show']);
@@ -85,7 +86,6 @@ Route::prefix('v1')->group(function () {
             // Rutas de Administrador
             Route::middleware(\App\Http\Middleware\IsAdmin::class)->group(function () {
                 Route::post('/users', [UserController::class, 'store']);
-                Route::delete('/users/{user}', [UserController::class, 'destroy']);
                 Route::post('/games', [GameController::class, 'store']);
             });
         });
