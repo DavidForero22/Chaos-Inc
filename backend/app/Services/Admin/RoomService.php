@@ -21,7 +21,7 @@ class RoomService
             return [];
         }
 
-        // Enviar todas las consultas a Redis en un solo viaje
+        // Primer pipeline: Info, Estado y lista de IDs de jugadores
         $results = Redis::pipeline(function ($pipe) use ($roomIds) {
             foreach ($roomIds as $id) {
                 $pipe->hgetall("room:{$id}:info");
@@ -30,31 +30,78 @@ class RoomService
             }
         });
 
-        $rooms = [];
+        $roomsTemp = [];
         $index = 0;
 
-        // Procesar los resultados que devolvió el Pipeline
+        $playerLookups = [];
+
+        // Procesar los resultados iniciales y preparar la búsqueda de nombres
         foreach ($roomIds as $id) {
             $infoData = $results[$index];
             $stateData = $results[$index + 1];
-            $players = $results[$index + 2];
+            $playerIds = $results[$index + 2];
 
-            // Avanzar el índice de 3 en 3 (porque hicimos 3 consultas por sala)
+            // Avanzar el índice de 3 en 3 (porque hay 3 consultas por sala)
             $index += 3;
 
             if (!empty($infoData)) {
                 $roomData = array_merge($infoData, $stateData);
                 $roomData['room_id'] = $id;
-
                 unset($roomData['password']);
 
-                $roomData['players'] = $players;
+                // Guardar temporalmente los IDs para usarlos luego
+                $roomData['player_ids'] = $playerIds;
+                $roomsTemp[$id] = $roomData;
 
-                $rooms[] = $roomData;
+                // Preparar la lista de jugadores a los que hay que buscar el nombre
+                foreach ($playerIds as $pid) {
+                    $playerLookups[] = [
+                        'roomId' => $id,
+                        'playerId' => $pid
+                    ];
+                }
             }
         }
 
-        return $rooms;
+        if (empty($roomsTemp)) {
+            return [];
+        }
+
+        // Segundo pipeline: Obtener todos los nombres de golpe
+        $namesResult = [];
+        if (!empty($playerLookups)) {
+            $namesResult = Redis::pipeline(function ($pipe) use ($playerLookups) {
+                foreach ($playerLookups as $lookup) {
+                    $pipe->hget("room:{$lookup['roomId']}:player:{$lookup['playerId']}:info", 'username');
+                }
+            });
+        }
+
+        // Construir la respuesta final uniendo los nombres con sus salas
+        $formattedRooms = [];
+        $lookupIndex = 0;
+
+        foreach ($roomsTemp as $roomId => $roomData) {
+            $formattedPlayers = [];
+
+            foreach ($roomData['player_ids'] as $pid) {
+                // Rescatar el nombre del segundo pipeline
+                $name = $namesResult[$lookupIndex] ?? false;
+                $formattedPlayers[] = [
+                    'id' => $pid,
+                    'name' => $name ?: "ID_{$pid}"
+                ];
+                $lookupIndex++;
+            }
+
+            // Limpiar la clave temporal y asignamos los objetos definitivos
+            unset($roomData['player_ids']);
+            $roomData['players'] = $formattedPlayers;
+
+            $formattedRooms[] = $roomData;
+        }
+
+        return $formattedRooms;
     }
 
     public function getRoom(string $roomId): array

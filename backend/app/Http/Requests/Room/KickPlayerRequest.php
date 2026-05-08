@@ -14,15 +14,15 @@ class KickPlayerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'player_to_kick' => 'required|integer',
+            'player_to_kick_id' => 'required|integer|exists:users,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'player_to_kick.required' => 'El id del jugador a expulsar es obligatorio.',
-            'player_to_kick.integer' => 'El id del jugador a expulsar no tiene un formato válido.',
+            'player_to_kick_id.required' => 'El id del jugador a expulsar es obligatorio.',
+            'player_to_kick_id.integer' => 'El id del jugador a expulsar no tiene un formato válido.',
         ];
     }
 }

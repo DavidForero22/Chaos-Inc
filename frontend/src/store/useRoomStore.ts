@@ -135,11 +135,11 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		await api.post(`/rooms/${encodeURIComponent(roomId)}/start`);
 	},
 
-	kickPlayer: async (playerToKick) => {
+	kickPlayer: async (playerIdToKick) => {
 		const { roomId } = get();
 		if (!roomId) return;
 		await api.post(`/rooms/${encodeURIComponent(roomId)}/kick`, {
-			player_to_kick: playerToKick,
+			player_to_kick_id: playerIdToKick,
 		});
 	},
 }));

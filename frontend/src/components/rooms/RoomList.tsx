@@ -19,6 +19,8 @@ export default function RoomList({
 	const playerCount = (room: RoomData) => room.players?.length || 0;
 	const isFull = (room: RoomData) => playerCount(room) >= room.max_players;
 
+	console.log(rooms)
+
 	return (
 		<div className={styles.listContainer}>
 			{/* ── OVERLAY: Cargando ── */}
@@ -67,7 +69,7 @@ export default function RoomList({
 
 							{room.players && room.players.length > 0 && (
 								<div className={styles.roomPlayers}>
-									{room.players.join(" · ")}
+									{room.players.map((player) => player.name).join(" · ")}
 								</div>
 							)}
 						</div>

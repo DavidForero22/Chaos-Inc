@@ -142,7 +142,7 @@ class LiveRoomService
             throw new RoomException(RoomException::CANNOT_KICK_SELF, "You cannot kick yourself.", 422);
         }
 
-        if (!Redis::sismember("room:{$roomId}:players", $playerToKickId)) {
+        if (!Redis::sismember("room:{$roomId}:players", (string) $playerToKickId)) {
             throw new RoomException(RoomException::NOT_IN_ROOM, "The player is not in the room.", 404);
         }
 
