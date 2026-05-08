@@ -1,13 +1,9 @@
 // src/components/profile/UserInfo.tsx
 
-import { useState, useMemo, useRef } from "react";
-import type { ChangeEvent } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { useAuthStore } from "../../store/useAuthStore";
-import api from "../../api/axios";
 import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
 import ModalLayout from "../ui/ModalLayout";
+import { useUserInfo } from "../../hooks/profile/useUserInfo";
 import type { UserAchievement, SocialAccountInfo } from "../../types/api";
 import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
@@ -16,14 +12,8 @@ const ACCOUNT_ROLE_CONFIG: Record<
 	string,
 	{ label: string; badgeClass: string }
 > = {
-	admin: {
-		label: "ADMINISTRADOR (NIVEL 5)",
-		badgeClass: styles.roleAdmin,
-	},
-	user: {
-		label: "EMPLEADO ESTÁNDAR (NIVEL 1)",
-		badgeClass: styles.roleUser,
-	},
+	admin: { label: "ADMINISTRADOR (NIVEL 5)", badgeClass: styles.roleAdmin },
+	user: { label: "EMPLEADO ESTÁNDAR (NIVEL 1)", badgeClass: styles.roleUser },
 };
 
 interface UserInfoProps {
@@ -51,82 +41,35 @@ export default function UserInfo({
 	onLogout,
 	onDeleteAccount,
 }: UserInfoProps) {
-	const { uploadAvatar } = useAuth();
-	const [isUploading, setIsUploading] = useState(false);
-	const [showAvatarModal, setShowAvatarModal] = useState(false);
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	
+	const {
+		isUploading,
+		showAvatarModal,
+		setShowAvatarModal,
+		showUnlinkModal,
+		setShowUnlinkModal,
+		providerToUnlink,
+		isUnlinking,
+		fileInputRef,
+		isDiscordLinked,
+		isGoogleLinked,
+		initials,
+		avatarUrl,
+		handleAvatarClick,
+		handleManualUploadClick,
+		handleFileChange,
+		handleSelectProviderAvatar,
+		handleProviderClick,
+		confirmUnlink,
+	} = useUserInfo({
+		userId,
+		notMyProfile,
+		displayUser,
+		avatar,
+		socialAccounts,
+	});
+
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[displayRole ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
-
-	// Calcular qué redes tiene vinculadas para encender/apagar los badges
-	const isDiscordLinked = socialAccounts?.some(
-		(acc) => acc.provider === "discord",
-	);
-	const isGoogleLinked = socialAccounts?.some(
-		(acc) => acc.provider === "google",
-	);
-
-	const handleAvatarClick = () => {
-		if (notMyProfile) return;
-
-		// Si tiene cuentas vinculadas, abrir modal. Si no, directo a subir foto.
-		if (socialAccounts && socialAccounts.length > 0) {
-			setShowAvatarModal(true);
-		} else {
-			fileInputRef.current?.click();
-		}
-	};
-
-	const handleManualUploadClick = (e: React.FormEvent) => {
-		e.preventDefault();
-		setShowAvatarModal(false);
-		fileInputRef.current?.click();
-	};
-
-	const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		setIsUploading(true);
-		await uploadAvatar(file);
-		setIsUploading(false);
-		if (e.target) e.target.value = "";
-	};
-
-	const handleSelectProviderAvatar = async (
-		providerName: string,
-		avatarUrl: string | null,
-	) => {
-		if (!userId) return;
-
-		try {
-			setIsUploading(true);
-			setShowAvatarModal(false); // Cerrar el modal mientras carga para dar feedback visual en la polaroid
-
-			await api.post(`/users/${userId}/avatar`, { provider: providerName });
-
-			if (!notMyProfile) {
-				useAuthStore.getState().setAvatar(avatarUrl);
-			}
-		} catch (error) {
-			console.error("Error al actualizar avatar de proveedor:", error);
-		} finally {
-			setIsUploading(false);
-		}
-	};
-
-	const initials = displayUser
-		? displayUser.substring(0, 2).toUpperCase()
-		: "??";
-
-	const rawAvatar = avatar;
-
-	const avatarUrl = useMemo(() => {
-		if (!rawAvatar) return null;
-		if (rawAvatar.startsWith("http")) return rawAvatar;
-		const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-		return `${backendUrl}/storage/${rawAvatar}`;
-	}, [rawAvatar]);
 
 	return (
 		<>
@@ -181,7 +124,6 @@ export default function UserInfo({
 								{roleConfig.label}
 							</div>
 						</div>
-
 					</div>
 
 					<div className={styles.formGroupInline}>
@@ -198,26 +140,32 @@ export default function UserInfo({
 						<div className={styles.linkedAccountsSection}>
 							<label>CUENTAS VINCULADAS:</label>
 							<div className={styles.providerContainer}>
-								<span
-									className={`${styles.providerBadge} ${styles.badgeDiscord} ${!isDiscordLinked ? styles.badgeUnlinked : ""}`}
+								<button
+									type="button"
+									onClick={() =>
+										handleProviderClick("discord", isDiscordLinked)
+									}
+									className={`${styles.providerBadge} ${styles.badgeDiscord} ${!isDiscordLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
 									title={
 										isDiscordLinked
-											? "Cuenta de Discord vinculada"
-											: "Discord no vinculado"
+											? "Desvincular Discord"
+											: "Conectar con Discord"
 									}
 								>
 									DISCORD
-								</span>
-								<span
-									className={`${styles.providerBadge} ${styles.badgeGoogle} ${!isGoogleLinked ? styles.badgeUnlinked : ""}`}
+								</button>
+								<button
+									type="button"
+									onClick={() => handleProviderClick("google", isGoogleLinked)}
+									className={`${styles.providerBadge} ${styles.badgeGoogle} ${!isGoogleLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
 									title={
 										isGoogleLinked
-											? "Cuenta de Google vinculada"
-											: "Google no vinculado"
+											? "Desvincular Google"
+											: "Conectar con Google"
 									}
 								>
 									GOOGLE
-								</span>
+								</button>
 							</div>
 						</div>
 					)}
@@ -279,6 +227,29 @@ export default function UserInfo({
 								Usar avatar de {acc.provider}
 							</button>
 						))}
+					</div>
+				</ModalLayout>
+			)}
+
+			{/* ── MODAL DE DESVINCULACIÓN ── */}
+			{showUnlinkModal && (
+				<ModalLayout
+					title="DESVINCULAR CUENTA"
+					subtitle={`¿Seguro que quieres quitar ${providerToUnlink?.toUpperCase()}?`}
+					onClose={() => setShowUnlinkModal(false)}
+					onSubmit={confirmUnlink}
+					isLoading={isUnlinking}
+					submitText="Desvincular"
+					loadingText="Procesando..."
+				>
+					<div className="py-2 text-center text-sm font-mono text-gray-700">
+						<p>
+							Si desvinculas esta cuenta, ya no podrás iniciar sesión usándola.
+						</p>
+						<p className="mt-2 text-red-600 font-bold">
+							Nota: Si tienes la foto de este proveedor como tu avatar
+							principal, se quitará de tu perfil.
+						</p>
 					</div>
 				</ModalLayout>
 			)}

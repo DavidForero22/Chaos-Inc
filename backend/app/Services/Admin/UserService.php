@@ -121,4 +121,23 @@ class UserService
 
         return $user->delete();
     }
+
+    public function unlinkSocialAccount($id, string $provider)
+    {
+        $user = User::findOrFail($id);
+
+        $socialAccount = $user->socialAccounts()->where('provider_name', $provider)->first();
+
+        if ($socialAccount) {
+            // Comprobar si el usuario estaba usando el avatar de este proveedor
+            if ($user->avatar === $socialAccount->provider_avatar) {
+                $user->update(['avatar' => null]);
+            }
+
+            // Eliminar la vinculación
+            $socialAccount->delete();
+        }
+
+        return $user;
+    }
 }

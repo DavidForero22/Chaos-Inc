@@ -20,8 +20,15 @@ class SocialAuthService
         if ($socialAccount) {
             // Actualizar avatar de la red social por si lo cambiaron en Google/Discord
             $socialAccount->update(['provider_avatar' => $socialUser->getAvatar()]);
-            // Retornamos el dueño de esta cuenta social
-            return $socialAccount->user;
+
+            $user = $socialAccount->user;
+
+            // Si el usuario no tiene foto principal, poner la foto de este proveedor
+            if (is_null($user->avatar) && $socialUser->getAvatar()) {
+                $user->update(['avatar' => $socialUser->getAvatar()]);
+            }
+
+            return $user;
         }
 
         // Si no existe la cuenta social, buscar si el usuario ya existe por email
@@ -32,6 +39,12 @@ class SocialAuthService
             if ($existingUser) {
                 // El email existe. Vincular esta nueva red social a su cuenta
                 $this->linkSocialAccount($existingUser, $socialUser, $provider);
+
+                // Si no tenía foto, poner esta
+                if (is_null($existingUser->avatar) && $socialUser->getAvatar()) {
+                    $existingUser->update(['avatar' => $socialUser->getAvatar()]);
+                }
+
                 return $existingUser;
             }
         }
@@ -58,7 +71,7 @@ class SocialAuthService
                 'password' => null,
                 'role'     => 'user',
                 'is_guest' => false,
-                'avatar'   => null,
+                'avatar'   => $socialUser->getAvatar(),
             ]);
 
             // Vincular su primer método de acceso

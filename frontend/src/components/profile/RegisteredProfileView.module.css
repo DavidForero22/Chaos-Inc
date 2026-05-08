@@ -233,35 +233,6 @@
 	background-color: rgba(30, 58, 138, 0.05);
 }
 
-.providerContainer {
-	display: flex;
-	align-items: flex-end;
-	height: 100%;
-}
-
-.providerBadge {
-	font-size: 0.7rem;
-	font-weight: 900;
-	padding: 4px 8px;
-	color: #fff;
-	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
-}
-
-.badgeDiscord {
-	background-color: #5865f2;
-	border: 1px solid #4752c4;
-}
-
-.badgeGoogle {
-	background-color: #db4437;
-	border: 1px solid #b0362c;
-}
-
-.badgeInternal {
-	background-color: #2b2b2b;
-	border: 1px solid #000;
-}
-
 /* ========================================
    SECCIONES INFERIORES
    ======================================== */

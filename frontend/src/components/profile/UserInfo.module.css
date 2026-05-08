@@ -177,6 +177,7 @@
 	padding: 4px 8px;
 	color: #fff;
 	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+	cursor: pointer;
 }
 
 .badgeDiscord {
@@ -226,7 +227,6 @@
 .badgeUnlinked {
 	opacity: 0.3;
 	filter: grayscale(100%);
-	cursor: not-allowed;
 	border: 1px dashed #666;
 	background-color: transparent !important;
 	color: #555 !important;

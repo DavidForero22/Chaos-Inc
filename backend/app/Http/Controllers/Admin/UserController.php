@@ -100,4 +100,22 @@ class UserController extends Controller
         $this->userService->deleteUser($id);
         return response()->noContent();
     }
+
+    public function unlinkSocialAccount(Request $request, $id, $provider)
+    {
+        $targetUser = $this->userService->getUserById($id);
+
+        // Solo el propio usuario (o un admin) puede desvincular sus cuentas
+        Gate::authorize('update', $targetUser);
+
+        $user = $this->userService->unlinkSocialAccount($id, $provider);
+
+        // Recargamos relaciones para el Resource
+        $user->load('socialAccounts');
+
+        return response()->json([
+            'message' => 'Cuenta desvinculada correctamente.',
+            'user' => new UserResource($user)
+        ], 200);
+    }
 }
