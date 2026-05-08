@@ -88,7 +88,6 @@ class LiveRoomController extends Controller
     public function reportDisconnect(string $roomId, Request $request)
     {
         $targetPlayerId = (string) $request->input('disconnected_player_id');
-        $targetPlayerName = $request->input('disconnected_player_name');
 
         $pusher = Broadcast::driver()->getPusher();
         $channelName = "presence-room.{$roomId}";
@@ -111,7 +110,7 @@ class LiveRoomController extends Controller
         if (!Redis::exists($disconnectKey)) {
             Redis::setex($disconnectKey, 10, 'pending');
 
-            ProcessDisconnectionJob::dispatch($roomId, $targetPlayerId, $targetPlayerName)
+            ProcessDisconnectionJob::dispatch($roomId, $targetPlayerId)
                 ->delay(now()->addSeconds(4));
         }
 

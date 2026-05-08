@@ -16,7 +16,7 @@ class PlayActionRequest extends FormRequest
         return [
             // Identificador de instancia de carta (string único generado en el servidor)
             'card_id' => 'required|string',
-            'target_id' => 'required|integer',
+            'target_id' => 'required|string',
             'perk_key'    => 'nullable|string|in:has_shield,vision_bonus,has_distance,has_storage,has_luck',
         ];
     }

@@ -28,37 +28,31 @@ class LiveGameService
         protected DisconnectionService $disconnectionService,
     ) {}
 
-    public function startGame(string $roomId, string $requestingPlayer): void
+    public function startGame(string $roomId, string $requestingPlayerId): void
     {
         $roomInfoKey = "room:{$roomId}:info";
 
         if (!Redis::exists($roomInfoKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
-        $ownerName = Redis::hget($roomInfoKey, 'owner_name');
+        $ownerId = Redis::hget($roomInfoKey, 'owner_id');
 
-        if ($ownerName !== $requestingPlayer) {
-            throw new RoomException(RoomException::NOT_LEADER, "Only the leader can start the game.", 403);
+        if ($ownerId !== $requestingPlayerId) {
+            throw new RoomException(RoomException::NOT_LEADER, "Solo el líder puede iniciar la partida.", 403);
         }
 
-        $players = Redis::smembers("room:{$roomId}:players");
-        $playersCount = count($players);
+        $playerIds = Redis::smembers("room:{$roomId}:players");
+        $playersCount = count($playerIds);
 
         if ($playersCount < 3) {
-            throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "There are not enough players (at least 3).", 409);
+            throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "No hay suficientes jugadores (al menos 3).", 409);
         }
 
-        // Obtener usuarios indexados por username
-        $users = User::whereIn('username', $players)
+        // Obtener los modelos User de la BD y e indexar por ID
+        $users = User::whereIn('id', $playerIds)
             ->get()
-            ->keyBy('username');
-
-        // Convertir usernames → userIds
-        $playerIds = [];
-        foreach ($players as $playerName) {
-            $playerIds[] = (string) ($users[$playerName]->id ?? 0);
-        }
+            ->keyBy('id');
 
         $this->initializeRoomState($roomId, $playerIds);
 
@@ -80,7 +74,7 @@ class LiveGameService
         event(new GameStarted($roomId));
     }
 
-    public function getPlayerData(string $roomId, string $playerName): array
+    public function getPlayerData(string $roomId, string $playerId): array
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -94,19 +88,13 @@ class LiveGameService
             throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
         }
 
-        $user = User::where('username', $playerName)->first();
-
-        if (!$user) {
-            throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player not found.", 404);
-        }
-
-        $playerId = (string) $user->id;
-
         $playerInfoKey = "room:{$roomId}:player:{$playerId}:info";
 
         if (!Redis::exists($playerInfoKey)) {
             throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
         }
+
+        $playerName = Redis::hget($playerInfoKey, 'username') ?? "ID_{$playerId}";
 
         $this->disconnectionService->checkBossGracePeriod($roomId);
 
@@ -118,7 +106,6 @@ class LiveGameService
 
         $myData = array_merge($myDataInfo, $myDataStats, $myDataTurn, $myDataPerks);
 
-        // Mantener username para frontend/logs
         $myData['username'] = $playerName;
         $myData['user_id'] = $playerId;
         $myData['cards'] = $myDataHand;
@@ -140,7 +127,8 @@ class LiveGameService
             ]),
             'game' => new GameDataResource([
                 'roomId'       => $roomId,
-                'myPlayerName' => $playerName,
+                'myPlayerId'   => $playerId,   // Mantenido por retrocompatibilidad
+                'myPlayerName' => $playerName, // Mantenido por retrocompatibilidad
             ])
         ];
     }

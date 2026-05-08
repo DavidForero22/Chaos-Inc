@@ -98,7 +98,13 @@ export function OpponentCard({
 	const isCleanMode = selectedCard?.card_id === 12 && isMyTurn;
 	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
 
-	const showAvatar = !!player.avatar && !avatarError;
+	const avatarUrl = player.avatar?.startsWith("http")
+		? player.avatar
+		: player.avatar
+			? `http://localhost:8000/storage/${player.avatar}`
+			: undefined;
+
+	const showAvatar = !!avatarUrl && !avatarError;
 	const initials = player.name.substring(0, 2).toUpperCase();
 
 	const renderPerkSlot = (slot: OpponentPerkSlot) => {
@@ -215,7 +221,7 @@ export function OpponentCard({
 			<div className={styles.photoBox}>
 				{showAvatar ? (
 					<img
-						src={player.avatar!}
+						src={avatarUrl}
 						alt={`Avatar de ${player.name}`}
 						className={styles.photoImage}
 						onError={() => setAvatarError(true)}

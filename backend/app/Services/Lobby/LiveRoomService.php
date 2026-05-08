@@ -49,7 +49,7 @@ class LiveRoomService
         $roomState = Redis::hgetall($roomStateKey);
         $room      = array_merge($roomInfo, $roomState);
 
-        Log::info("joinRoom DEBUG", [
+        Log::info("LiveRoomService.php::joinRoom()", [
             'roomId' => $roomId,
             'playerId' => $playerId,
             'roomInfo keys' => array_keys($roomInfo),

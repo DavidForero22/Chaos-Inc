@@ -16,7 +16,7 @@ class GameDataResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roomId       = $this['roomId'];
-        $myPlayerId   = $this['myPlayerName'];
+        $myPlayerId   = $this['myPlayerId'];
 
         $roomInfo  = Redis::hgetall("room:{$roomId}:info");
         $roomState = Redis::hgetall("room:{$roomId}:state");
@@ -33,6 +33,11 @@ class GameDataResource extends JsonResource
 
         foreach (Redis::smembers("room:{$roomId}:players") as $playerId) {
 
+            $playerId = (string) $playerId;
+
+            // Saltar si es el mismo jugador
+            if ($playerId === $myPlayerId) continue;
+
             $pInfoKey  = "room:{$roomId}:player:{$playerId}:info";
             $pPerksKey = "room:{$roomId}:player:{$playerId}:perks";
             $pHandKey  = "room:{$roomId}:player:{$playerId}:hand";
@@ -47,7 +52,7 @@ class GameDataResource extends JsonResource
                 $hasActingBoss = true;
             }
 
-            // Reto de suerte ahora por ID
+            // Reto de suerte
             if (Redis::exists("room:{$roomId}:luck_challenge:{$playerId}")) {
                 $playerInLuckChallenge = $playerId;
             }
@@ -133,12 +138,13 @@ class GameDataResource extends JsonResource
 
     private static function resolveAvatar(array $pInfo): ?string
     {
+        // Mirar si el avatar ya está guardado en el hash de Redis
         $avatar = $pInfo['avatar'] ?? null;
-        if (!empty($avatar)) return $avatar;
+        if (!empty($avatar)) {
+            return $avatar;
+        }
 
-        $provider = $pInfo['provider_avatar'] ?? $pInfo['providerAvatar'] ?? null;
-        if (!empty($provider)) return $provider;
-
+        // Si no está en Redis, consultar la Base de Datos usando el ID
         $userId = $pInfo['user_id'] ?? null;
 
         if ($userId) {
@@ -148,8 +154,9 @@ class GameDataResource extends JsonResource
                 return $cache[$userId];
             }
 
-            $user = User::select('avatar', 'provider_avatar')->find($userId);
-            $cache[$userId] = $user ? ($user->avatar ?: $user->provider_avatar) : null;
+            $user = User::select('avatar')->find($userId);
+
+            $cache[$userId] = $user ? $user->avatar : null;
 
             return $cache[$userId];
         }

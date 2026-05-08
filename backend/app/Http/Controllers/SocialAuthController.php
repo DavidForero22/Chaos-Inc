@@ -56,6 +56,6 @@ class SocialAuthController extends Controller
         request()->session()->regenerate();
 
         // Redirigir al frontend. El frontend leerá /api/v1/me para obtener el usuario.
-        return redirect("{$frontendUrl}/");
+        return redirect("{$frontendUrl}/?login=success");
     }
 }

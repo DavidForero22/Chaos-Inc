@@ -18,7 +18,6 @@ class ProcessDisconnectionJob implements ShouldQueue
     public function __construct(
         public string $roomId,
         public int|string $playerId,
-        public string $playerName
     ) {}
 
     public function handle(DisconnectionService $disconnectionService): void
@@ -47,7 +46,6 @@ class ProcessDisconnectionJob implements ShouldQueue
         }
 
         // Desconexión real
-        // OJO: la lógica interna todavía usa playerName porque el resto del sistema aún depende de ello
         $disconnectionService->processInGameDisconnection($this->roomId, $this->playerId);
 
         Redis::del($disconnectKey);

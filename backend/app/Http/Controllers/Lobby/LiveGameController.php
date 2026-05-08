@@ -37,15 +37,15 @@ class LiveGameController extends Controller
 
     // MÉTODOS PRIVADOS DE AYUDA 
 
-    private function getPlayerName(Request $request, $id): ?string
+    private function getPlayerId(Request $request, $id): ?string
     {
         $gameToken = $request->header('X-Game-Token') ?? $request->input('game_token');
         return Redis::get("room:{$id}:token:{$gameToken}");
     }
 
-    private function syncResponse($id, $playerName)
+    private function syncResponse($id, $playerId)
     {
-        $data = $this->liveGameService->getPlayerData($id, $playerName);
+        $data = $this->liveGameService->getPlayerData($id, $playerId);
         return response()->json($data, 200);
     }
 
@@ -53,75 +53,86 @@ class LiveGameController extends Controller
 
     public function start(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        // Obtener el ID del token o del usuario autenticado
+        $gameToken = $request->header('X-Game-Token')
+            ?? $request->input('game_token')
+            ?? $request->query('game_token');
 
-        $this->liveGameService->startGame($id, $playerName);
+        $playerId = $gameToken
+            ? Redis::get("room:{$id}:token:{$gameToken}")
+            : (string) $request->user()?->id;
 
-        return $this->syncResponse($id, $playerName);
+        if (!$playerId) {
+            return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        }
+
+        $this->liveGameService->startGame($id, $playerId);
+
+        // Asumo que syncResponse también requerirá el ID ahora
+        return $this->syncResponse($id, $playerId);
     }
 
     public function sync(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function action(PlayActionRequest $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->gameActionService->playAction(
             $id,
-            $playerName,
+            $playerId,
             $request->input('card_id'),
-            $request->input('target_name'),
+            $request->input('target_id'),
             $request->input('perk_key')
         );
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function endTurn(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
-        $this->turnService->endTurn($id, $playerName);
+        $this->turnService->endTurn($id, $playerId);
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function react(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->gameReactionService->reactToAttack(
             $id,
-            $playerName,
+            $playerId,
             $request->input('reaction'),
             $request->input('card_id')
         );
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function resolveLuckChallenge(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         try {
-            $success = $this->gameReactionService->resolveLuckChallenge($id, $playerName, $request->input('color'));
+            $success = $this->gameReactionService->resolveLuckChallenge($id, $playerId, $request->input('color'));
 
             // Obtener los datos sincronizados
-            $data = $this->liveGameService->getPlayerData($id, $playerName);
+            $data = $this->liveGameService->getPlayerData($id, $playerId);
 
-            // Inyectar el resultado del challenge en la respuesta para que el frontend no pierda esa info
+            // Inyectar el resultado del challenge en la respuesta
             $data['_luck_result'] = $success ? 'success' : 'fail';
 
             return response()->json($data, 200);
@@ -132,52 +143,52 @@ class LiveGameController extends Controller
 
     public function reactMulti(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $this->gameReactionService->reactToMultiAttack(
             $id,
-            $playerName,
+            $playerId,
             $request->input('reaction'),
             $request->input('card_id')
         );
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function discard(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $request->validate(['card_ids' => 'required|array', 'card_ids.*' => 'string']);
 
-        $this->playerHandService->discardCards($id, $playerName, $request->input('card_ids'));
+        $this->playerHandService->discardCards($id, $playerId, $request->input('card_ids'));
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function reactDiscard(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $request->validate(['card_id' => 'required|string']);
 
-        $this->gameReactionService->resolveSabotage($id, $playerName, $request->input('card_id'));
+        $this->gameReactionService->resolveSabotage($id, $playerId, $request->input('card_id'));
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 
     public function discardPerks(Request $request, $id)
     {
-        $playerName = $this->getPlayerName($request, $id);
-        if (!$playerName) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
+        $playerId = $this->getPlayerId($request, $id);
+        if (!$playerId) return response()->json(['error' => 'Token no autorizado o caducado.'], 401);
 
         $request->validate(['perk_ids' => 'required|array', 'perk_ids.*' => 'string']);
 
-        $this->playerHandService->discardPerks($id, $playerName, $request->input('perk_ids'));
+        $this->playerHandService->discardPerks($id, $playerId, $request->input('perk_ids'));
 
-        return $this->syncResponse($id, $playerName);
+        return $this->syncResponse($id, $playerId);
     }
 }
