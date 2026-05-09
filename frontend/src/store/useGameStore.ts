@@ -4,6 +4,7 @@ import { create } from "zustand";
 import api from "../api/axios";
 import { logWithTime } from "../utils/logger";
 import type { GameData } from "../types/live-game";
+import { useNotificationStore } from "./useNotificationStore.ts";
 
 export interface LogEntry {
 	id: string;
@@ -71,6 +72,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 	matchAchievements: [],
 
 	setRoomId: (id) => {
+		if (id !== get().roomId) {
+			useNotificationStore.getState().clearLogs();
+		}
+
 		if (id) {
 			localStorage.setItem("active_room_id", id);
 		} else {
@@ -102,6 +107,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 	clearMatchAchievements: () => set({ matchAchievements: [] }),
 
 	resetStore: (keepRoomId = false) => {
+		useNotificationStore.getState().clearLogs();
+
 		if (!keepRoomId) {
 			localStorage.removeItem("active_room_id");
 		}
@@ -128,6 +135,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 	applyGameData: (newGameData: GameData) => {
 		const currentData = get().gameData;
 
+		if (get().gameOver && newGameData.game && !newGameData.game.game_over) {
+			useNotificationStore.getState().clearLogs();
+		}
+
 		const isNowActingBoss = newGameData?.me?.conditions?.acting_boss === true;
 		const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
 
@@ -146,6 +157,8 @@ export const useGameStore = create<GameState>((set, get) => ({
 			if (roomId) {
 				localStorage.removeItem(getRoleRevealKey(roomId));
 			}
+		} else {
+			set({ gameOver: false });
 		}
 	},
 
@@ -192,7 +205,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 				`/rooms/${encodeURIComponent(roomId)}/action`,
 				{
 					card_id: cardId,
-					target_id: targetId, 
+					target_id: targetId,
 					...(perkKey && { perk_key: perkKey }),
 				},
 			);

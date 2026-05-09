@@ -3,8 +3,8 @@
 
 namespace App\Services\Game\Actions;
 
-use App\App\Jobs\ResolveMultiAttackJob;
 use App\Events\RoomStateUpdated;
+use App\Jobs\ResolveMultiAttackJob;
 use App\Jobs\ResolveSabotageJob;
 use App\Jobs\ResolveSingleAttackJob;
 use App\Services\Game\Engine\CombatService;

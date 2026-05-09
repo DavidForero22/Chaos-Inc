@@ -1,6 +1,6 @@
 <?php
 
-namespace App\App\Jobs;
+namespace App\Jobs;
 
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\CombatService;
