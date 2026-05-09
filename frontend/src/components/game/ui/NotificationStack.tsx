@@ -29,8 +29,16 @@ const ICON_MAP: Record<string, React.ElementType> = {
 const STYLE_MAP: Record<string, string> = {
 	attack:
 		"bg-red-600 text-white border-red-800 shadow-[0_4px_12px_rgba(220,38,38,0.5)]",
+
 	heal: "bg-green-600 text-white border-green-800 shadow-[0_4px_12px_rgba(22,163,74,0.5)]",
+
 	perk: "bg-amber-500 text-black border-amber-700 shadow-[0_4px_12px_rgba(245,158,11,0.5)]",
+
+	achievement:
+		"bg-purple-600 text-white border-purple-800 shadow-[0_4px_12px_rgba(147,51,234,0.6)]",
+
+	luck: "bg-emerald-500 text-white border-emerald-700 shadow-[0_4px_12px_rgba(16,185,129,0.5)]",
+
 	default:
 		"bg-gray-700 text-white border-gray-900 shadow-[0_4px_12px_rgba(55,65,81,0.5)]",
 };

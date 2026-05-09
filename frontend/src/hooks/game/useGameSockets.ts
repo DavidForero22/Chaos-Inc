@@ -63,9 +63,6 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 			.listen(".RoomStateUpdated", (data: any) => {
 				const state = useGameStore.getState();
 
-				// Si el juego acabó, ignorar actualizaciones
-				if (state.gameOver) return;
-
 				// Lógica de Logros
 				if (
 					Array.isArray(data.achievement_notifications) &&
@@ -115,6 +112,9 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 						},
 					);
 				}
+
+				// Si el juego acabó, ignorar actualizaciones
+				if (state.gameOver) return;
 
 				// 2. Notificaciones de uso de cartas
 				if (data.card_action) {

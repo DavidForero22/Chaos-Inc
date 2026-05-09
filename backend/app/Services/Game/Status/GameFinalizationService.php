@@ -81,6 +81,7 @@ class GameFinalizationService
             $userId = $pInfo['user_id'] ?? $playerId;
 
             $playersData[] = [
+                'player_id'       => $playerId,
                 'user_id'         => $userId,
                 'is_guest'        => $isGuest,
                 'display_name'    => $displayName,

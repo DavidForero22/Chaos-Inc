@@ -83,7 +83,7 @@ class AchievementService
                     foreach ($newUnlocks as $achId) {
                         $syncData[$achId] = ['unlocked_at' => now()];
                         $achievementsUnlocked[] = [
-                            'playerId' => $player['display_name'] ?? ($user->username ?? (string) $user->id),
+                            'playerId' => $player['player_id'],
                             'achievementId' => $achId,
                         ];
                     }
