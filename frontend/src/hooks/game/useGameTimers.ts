@@ -6,6 +6,7 @@ import { useGameStore } from "../../store/useGameStore.ts";
 import { useTimerStore } from "../../store/useTimerStore.ts";
 import { useLoadingStore } from "../../store/useLoadingStore";
 import { useAuth } from "../useAuth.ts";
+import { useGameUIStore } from "../../store/useGameUIStore.ts";
 
 export function useGameTimers() {
 	const { id: myId } = useAuth();
@@ -198,6 +199,7 @@ export function useGameTimers() {
 	// --- Countdown Sabotaje (15s para descartar) ---
 	const prevHasPendingSabotageRef = useRef(false);
 	const sabotageTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+	const sabotageLoaderRef = useRef(false);
 
 	useEffect(() => {
 		const isTarget = hasPendingSabotage;
@@ -206,6 +208,7 @@ export function useGameTimers() {
 
 		if (isTarget && !wasTarget) {
 			setSabotageSecondsLeft(15);
+			sabotageLoaderRef.current = false;
 			if (sabotageTimerRef.current) clearInterval(sabotageTimerRef.current);
 
 			sabotageTimerRef.current = setInterval(() => {
@@ -213,6 +216,15 @@ export function useGameTimers() {
 					if (prev === null || prev <= 1) {
 						clearInterval(sabotageTimerRef.current!);
 						sabotageTimerRef.current = null;
+
+						if (!sabotageLoaderRef.current) {
+							// Limpiar UI
+							useGameUIStore.getState().setIsDiscardMode(false);
+							useGameUIStore.getState().clearDiscardSelection();
+							// Poner Loader
+							useLoadingStore.getState().startLoading("Procesando descarte...");
+							sabotageLoaderRef.current = true;
+						}
 						return null;
 					}
 					return prev - 1;
@@ -220,16 +232,30 @@ export function useGameTimers() {
 			}, 1000);
 		}
 
+		// Se quita el modo sabotaje desde el servidor
 		if (!isTarget && wasTarget) {
-			if (sabotageTimerRef.current) {
-				clearInterval(sabotageTimerRef.current);
-				sabotageTimerRef.current = null;
-			}
+			if (sabotageTimerRef.current) clearInterval(sabotageTimerRef.current);
 			setSabotageSecondsLeft(null);
+			useGameUIStore.getState().clearDiscardSelection();
+
+			// Apagar el loader porque ya se resolvió
+			if (sabotageLoaderRef.current) {
+				useLoadingStore.getState().stopLoading();
+				sabotageLoaderRef.current = false;
+			}
 		}
 
 		return () => {
-			if (sabotageTimerRef.current) clearInterval(sabotageTimerRef.current);
+			if (sabotageTimerRef.current) {
+				clearInterval(sabotageTimerRef.current);
+				sabotageTimerRef.current = null;
+				// Si el intervalo se canceló antes de llegar a 0, limpiar UI aquí también
+				useGameUIStore.getState().clearDiscardSelection();
+			}
+			if (sabotageLoaderRef.current) {
+				useLoadingStore.getState().stopLoading();
+				sabotageLoaderRef.current = false;
+			}
 		};
 	}, [hasPendingSabotage, setSabotageSecondsLeft]);
 

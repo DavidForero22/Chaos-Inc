@@ -11,7 +11,7 @@ export interface Achievement {
 export const ACHIEVEMENTS: Achievement[] = [
 	{
 		id: "ach_win_intern",
-		title: "Apropiación de Empresa",
+		title: "El Lobo de Chaos INC",
 		technicalDescription: "Gana una partida siendo Becario.",
 		lore: "Ya no tendrás que revisar cada dia si te han puesto pegamento ultra fuerte en tu taza de café.",
 		image: "/achievements/ach_1_sketch.png",

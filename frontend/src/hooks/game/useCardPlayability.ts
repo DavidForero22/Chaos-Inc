@@ -14,11 +14,6 @@ export function useCardPlayability(
 	const globalConditions = useMemo(() => {
 		const myRange = me.perks.vision_range ?? 1;
 		const isMyTurn = String(current_turn) === String(myPlayerId);
-		console.log("current_turn: ", current_turn);
-
-		console.log("myPlayerId: ", myPlayerId);
-
-		console.log("isMyTurn = current_turn === myPlayerId: ", isMyTurn);
 
 		const incomingAttack = me.combat_state.is_defending_single;
 		const hasPendingMultiAttack = me.combat_state.is_defending_multi;
