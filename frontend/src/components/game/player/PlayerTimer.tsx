@@ -18,7 +18,7 @@ export function PlayerTimer({
 	if (!gameData || !gameData.me || !gameData.game) return null;
 
 	const { me, game } = gameData;
-	const isMyTurn = game.current_turn === me.name;
+	const isMyTurn = String(game.current_turn) === String(me.id);
 
 	// Lógica para saber si el jugador está ocupado reaccionando a algo
 	const hasActiveReaction =

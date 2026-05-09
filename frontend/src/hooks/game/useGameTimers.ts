@@ -154,45 +154,38 @@ export function useGameTimers() {
 	}, [hasActingBoss, endingSoon]);
 
 	// --- Countdown ataque masivo (15s para objetivos) ---
-	const prevHasPendingMultiRef = useRef(false);
-	const multiAttackTimerRef = useRef<ReturnType<typeof setInterval> | null>(
-		null,
-	);
-
 	useEffect(() => {
-		const isTarget = hasPendingMultiAttack;
-		const wasTarget = prevHasPendingMultiRef.current;
-		prevHasPendingMultiRef.current = isTarget;
+		if (!hasPendingMultiAttack) return; // Solo se activa si eres el objetivo
 
-		if (isTarget && !wasTarget) {
-			setMultiAttackSecondsLeft(15);
-			if (multiAttackTimerRef.current)
-				clearInterval(multiAttackTimerRef.current);
+		let secondsLeft = 15;
+		setMultiAttackSecondsLeft(secondsLeft);
+		let didTriggerLoader = false;
 
-			multiAttackTimerRef.current = setInterval(() => {
-				setMultiAttackSecondsLeft((prev) => {
-					if (prev === null || prev <= 1) {
-						clearInterval(multiAttackTimerRef.current!);
-						multiAttackTimerRef.current = null;
-						reactToMultiAttack("accept").catch(() => {});
-						return null;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		}
+		const interval = setInterval(() => {
+			secondsLeft -= 1;
 
-		if (!isTarget && wasTarget) {
-			if (multiAttackTimerRef.current) {
-				clearInterval(multiAttackTimerRef.current);
-				multiAttackTimerRef.current = null;
+			if (secondsLeft <= 0) {
+				clearInterval(interval);
+				setMultiAttackSecondsLeft(null);
+
+				if (!didTriggerLoader) {
+					useLoadingStore.getState().startLoading("Procesando impacto...");
+					didTriggerLoader = true;
+					// Auto-aceptar si se acaba el tiempo
+					reactToMultiAttack("accept").catch(() => {});
+				}
+			} else {
+				setMultiAttackSecondsLeft(secondsLeft);
 			}
-			setMultiAttackSecondsLeft(null);
-		}
+		}, 1000);
 
+		// La función de limpieza se encarga de borrar el loader cuando el backend responda
 		return () => {
-			if (multiAttackTimerRef.current)
-				clearInterval(multiAttackTimerRef.current);
+			clearInterval(interval);
+			setMultiAttackSecondsLeft(null);
+			if (didTriggerLoader) {
+				useLoadingStore.getState().stopLoading();
+			}
 		};
 	}, [hasPendingMultiAttack, reactToMultiAttack, setMultiAttackSecondsLeft]);
 
@@ -260,86 +253,68 @@ export function useGameTimers() {
 	}, [hasPendingSabotage, setSabotageSecondsLeft]);
 
 	// --- Countdown Ataque Simple (15s) ---
-	const prevHasIncomingAttackRef = useRef(false);
-	const singleAttackTimerRef = useRef<ReturnType<typeof setInterval> | null>(
-		null,
-	);
-
 	useEffect(() => {
-		const isTarget = hasIncomingAttack;
-		const wasTarget = prevHasIncomingAttackRef.current;
-		prevHasIncomingAttackRef.current = isTarget;
+		if (!hasIncomingAttack) return;
 
-		if (isTarget && !wasTarget) {
-			setSingleAttackSecondsLeft(15);
-			if (singleAttackTimerRef.current)
-				clearInterval(singleAttackTimerRef.current);
+		let secondsLeft = 15;
+		setSingleAttackSecondsLeft(secondsLeft);
+		let didTriggerLoader = false;
 
-			singleAttackTimerRef.current = setInterval(() => {
-				setSingleAttackSecondsLeft((prev) => {
-					if (prev === null || prev <= 1) {
-						clearInterval(singleAttackTimerRef.current!);
-						singleAttackTimerRef.current = null;
-						return null;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		}
+		const interval = setInterval(() => {
+			secondsLeft -= 1;
 
-		if (!isTarget && wasTarget) {
-			if (singleAttackTimerRef.current) {
-				clearInterval(singleAttackTimerRef.current);
-				singleAttackTimerRef.current = null;
+			if (secondsLeft <= 0) {
+				clearInterval(interval);
+				setSingleAttackSecondsLeft(null);
+
+				if (!didTriggerLoader) {
+					useLoadingStore.getState().startLoading("Procesando ataque...");
+					didTriggerLoader = true;
+				}
+			} else {
+				setSingleAttackSecondsLeft(secondsLeft);
 			}
-			setSingleAttackSecondsLeft(null);
-		}
+		}, 1000);
 
 		return () => {
-			if (singleAttackTimerRef.current)
-				clearInterval(singleAttackTimerRef.current);
+			clearInterval(interval);
+			setSingleAttackSecondsLeft(null);
+			if (didTriggerLoader) {
+				useLoadingStore.getState().stopLoading();
+			}
 		};
 	}, [hasIncomingAttack, setSingleAttackSecondsLeft]);
 
 	// --- Countdown Prueba de Suerte (15s) ---
-	const prevHasLuckChallengeRef = useRef(false);
-	const luckChallengeTimerRef = useRef<ReturnType<typeof setInterval> | null>(
-		null,
-	);
-
 	useEffect(() => {
-		const isTarget = hasLuckChallenge;
-		const wasTarget = prevHasLuckChallengeRef.current;
-		prevHasLuckChallengeRef.current = isTarget;
+		if (!hasLuckChallenge) return;
 
-		if (isTarget && !wasTarget) {
-			setLuckChallengeSecondsLeft(15);
-			if (luckChallengeTimerRef.current)
-				clearInterval(luckChallengeTimerRef.current);
+		let secondsLeft = 15;
+		setLuckChallengeSecondsLeft(secondsLeft);
+		let didTriggerLoader = false;
 
-			luckChallengeTimerRef.current = setInterval(() => {
-				setLuckChallengeSecondsLeft((prev) => {
-					if (prev === null || prev <= 1) {
-						clearInterval(luckChallengeTimerRef.current!);
-						luckChallengeTimerRef.current = null;
-						return null;
-					}
-					return prev - 1;
-				});
-			}, 1000);
-		}
+		const interval = setInterval(() => {
+			secondsLeft -= 1;
 
-		if (!isTarget && wasTarget) {
-			if (luckChallengeTimerRef.current) {
-				clearInterval(luckChallengeTimerRef.current);
-				luckChallengeTimerRef.current = null;
+			if (secondsLeft <= 0) {
+				clearInterval(interval);
+				setLuckChallengeSecondsLeft(null);
+
+				if (!didTriggerLoader) {
+					useLoadingStore.getState().startLoading("Resolviendo desafío...");
+					didTriggerLoader = true;
+				}
+			} else {
+				setLuckChallengeSecondsLeft(secondsLeft);
 			}
-			setLuckChallengeSecondsLeft(null);
-		}
+		}, 1000);
 
 		return () => {
-			if (luckChallengeTimerRef.current)
-				clearInterval(luckChallengeTimerRef.current);
+			clearInterval(interval);
+			setLuckChallengeSecondsLeft(null);
+			if (didTriggerLoader) {
+				useLoadingStore.getState().stopLoading();
+			}
 		};
 	}, [hasLuckChallenge, setLuckChallengeSecondsLeft]);
 
