@@ -127,50 +127,40 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 					useNotificationStore.getState().addLog(data.log_message);
 				}
 
+				// 2.5 Procesamiento Síncrono de la Carta Extra
+				if (data.player_drew_extra_card) {
+					const state = useGameStore.getState();
+					const myPlayerId = state.gameData?.me?.id;
+					const opponents = state.gameData?.game?.opponents ?? [];
+
+					const luckPlayerId = data.player_drew_extra_card;
+					const isMe = String(myPlayerId) === String(luckPlayerId);
+
+					let playerName = "Alguien";
+					if (!isMe) {
+						const opponent = opponents.find(
+							(o: any) => String(o.id) === String(luckPlayerId),
+						);
+						if (opponent) playerName = opponent.name;
+					}
+
+					const message = isMe
+						? "¡Has robado una carta extra!"
+						: `${playerName} ha robado una carta extra`;
+
+					useNotificationStore.getState().addNotification({
+						type: "luck",
+						message,
+						iconKey: "luck",
+					});
+				}
+
 				// 3. Sincronización general
 				if (!state.isConnecting) {
 					if (syncTimeout) clearTimeout(syncTimeout);
 
 					syncTimeout = setTimeout(() => {
-						useGameStore
-							.getState()
-							.syncGame()
-							.then(() => {
-								// Una vez sincronizado, verificar la suerte
-								if (data.player_drew_extra_card) {
-									const latestState = useGameStore.getState();
-
-									// currentTurnPlayer ahora es un ID (ej: "2")
-									const currentTurnPlayerId =
-										latestState.gameData?.game?.current_turn;
-
-									const myPlayerId = latestState.gameData?.me?.id;
-									const opponents = latestState.gameData?.game?.opponents ?? [];
-
-									if (currentTurnPlayerId) {
-										// Comparar ID contra ID
-										const isMe =
-											String(myPlayerId) === String(currentTurnPlayerId);
-
-										// Buscar el nombre si no soy yo
-										const opponent = opponents.find(
-											(o: any) => String(o.id) === String(currentTurnPlayerId),
-										);
-										const playerName = opponent ? opponent.name : "Alguien";
-
-										const message = isMe
-											? "¡Has robado una carta extra!"
-											: `${playerName} ha robado una carta extra`;
-
-										const notifStore = useNotificationStore.getState();
-										notifStore.addNotification({
-											type: "luck",
-											message,
-											iconKey: "luck",
-										});
-									}
-								}
-							});
+						useGameStore.getState().syncGame();
 						syncTimeout = null;
 					}, 100);
 				}

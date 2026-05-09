@@ -17,14 +17,14 @@ class RoomStateUpdated implements ShouldBroadcastNow
     public ?string $logMessage;
     public ?array $cardAction;
     public ?array $achievementsUnlocked;
-    public bool $playerDrewExtraCard;
+    public ?string $playerDrewExtraCard;
 
     public function __construct(
         string $roomId,
         ?string $logMessage = null,
         ?array $cardAction = null,
         ?array $achievementsUnlocked = null,
-        bool $playerDrewExtraCard = false
+        ?string $playerDrewExtraCard = null
     ) {
         $this->roomId = $roomId;
         $this->logMessage = $logMessage;

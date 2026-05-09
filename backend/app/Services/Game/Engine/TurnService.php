@@ -8,7 +8,6 @@ use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
 use App\Jobs\AutoEndTurnJob;
 use App\Jobs\ResolveLuckChallengeJob;
-use App\Models\User;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Log;
@@ -79,12 +78,11 @@ class TurnService
                         Log::info("TurnService.php::advanceTurn - El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
                     }
                 }
-                +$this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);
+                $this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);
 
                 if ($drewExtra) {
-                    event(new RoomStateUpdated($roomId, $logMessage, null, null, $drewExtra));
+                    event(new RoomStateUpdated($roomId, $logMessage, null, null, $nextPlayerId));
                 }
-
                 if ($hasWrapped) {
                     Redis::hincrby($roomStateKey, 'round_number', 1);
                 }

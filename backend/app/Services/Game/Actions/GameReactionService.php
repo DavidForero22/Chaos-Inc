@@ -139,7 +139,7 @@ class GameReactionService
         if ($isSuccess) {
             app(TurnService::class)->resumeTurnTimer($roomId);
 
-            $msg = __('game.luckySuccess', [
+            $msg = __('game.challenge_sucess', [
                 'player' => $playerName
             ]);
 
@@ -151,7 +151,7 @@ class GameReactionService
         // Falló
         app(TurnService::class)->advanceTurn($roomId);
 
-        $msg = __('game.luckyFail', [
+        $msg = __('game.challenge_fail', [
             'player' => $playerName
         ]);
 

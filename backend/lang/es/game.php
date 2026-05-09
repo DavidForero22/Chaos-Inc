@@ -31,9 +31,9 @@ return [
     'multi_dodged'          => ':dodgers esquivaron el ataque.',
 
     // Suerte
-    'luckySuccess'          => ':player superó la prueba de suerte y puede jugar su turno.',
-    'luckyFail'             => ':player falló la prueba de suerte y pierde su turno.',
-    'luckyFailTimeout'      => ':player no respondió a tiempo la prueba de suerte y pierde su turno.',
+    'challenge_sucess'          => ':player superó la prueba de suerte y puede jugar su turno.',
+    'challenge_fail'             => ':player falló la prueba de suerte y pierde su turno.',
+    'challenge_timeoit'      => ':player no respondió a tiempo la prueba de suerte y pierde su turno.',
 
     // Conexiones
     'disconnected'          => ':player se ha desconectado.',

@@ -57,7 +57,7 @@ class ResolveLuckChallengeJob implements ShouldQueue
 
         Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$playerName} en {$this->roomId}. Saltando turno.");
 
-        $msg = __('game.luckyFailTimeout', ['player' => $playerName]);
+        $msg = __('game.challenge_timeoit', ['player' => $playerName]);
         event(new RoomStateUpdated($this->roomId, $msg));
 
         $turnService->advanceTurn($this->roomId);
