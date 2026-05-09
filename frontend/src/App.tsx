@@ -6,25 +6,25 @@ import {
 } from "react-router-dom";
 
 // -- PÁGINAS --
-import RoomsPage from "./pages/RoomsPage.tsx";
-import WaitingRoomPage from "./pages/WaitingRoomPage.tsx";
+import RoomsPage from "./pages/rooms/RoomsPage.tsx";
+import WaitingRoomPage from "./pages/waitingRoom/WaitingRoomPage.tsx";
 import GameBoardPage from "./pages/GameBoardPage.tsx";
-import ProfilePage from "./pages/ProfilePage.tsx";
+import ProfilePage from "./pages/profile/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
-import RoomNotFoundPage from "./pages/RoomNotFoundPage.tsx";
-import HowToPlayPage from "./pages/HowToPlayPage.tsx";
-import KnowMorePage from "./pages/KnowMorePage.tsx";
-import SocialLinkingErrorPage from "./pages/SocialLinkingErrorPage.tsx";
+import RoomNotFoundPage from "./pages/errors/RoomNotFoundPage.tsx";
+import HowToPlayPage from "./pages/info/HowToPlayPage.tsx";
+import KnowMorePage from "./pages/info/KnowMorePage.tsx";
+import SocialLinkingErrorPage from "./pages/errors/SocialLinkingErrorPage.tsx";
 
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
 import MainMenuPage from "./pages/MainMenuPage.tsx";
 import NotebookLayout from "./layouts/NotebookLayout.tsx";
 import { useSessionGuard } from "./hooks/useSessionGuard.ts";
-import PublicProfilePage from "./pages/PublicProfilePage.tsx";
+import PublicProfilePage from "./pages/profile/PublicProfilePage.tsx";
 import { AchievementNotification } from "./components/ui/AchievementNotification.tsx";
 import AdminGuard from "./components/admin/AdminGuard.tsx";
-import UnauthorizedPage from "./pages/UnauthorizedPage.tsx";
-import PageNotFoundPage from "./pages/PageNotFoundPage.tsx";
+import UnauthorizedPage from "./pages/errors/UnauthorizedPage.tsx";
+import PageNotFoundPage from "./pages/errors/PageNotFoundPage.tsx";
 
 function App() {
 	useSessionGuard();

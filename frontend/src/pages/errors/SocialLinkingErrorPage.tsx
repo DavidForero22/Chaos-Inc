@@ -1,5 +1,5 @@
 import { useSearchParams } from "react-router-dom";
-import ErrorLayout from "../layouts/ErrorLayout.tsx";
+import ErrorLayout from "../../layouts/ErrorLayout.tsx";
 
 export default function SocialLinkingErrorPage() {
 	const [searchParams] = useSearchParams();

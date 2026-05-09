@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/useAuthStore";
-import GuestProfileView from "../components/profile/GuestProfileView";
-import api from "../api/axios";
-import styles from "../components/profile/Profile.module.css";
+import { useAuthStore } from "../../store/useAuthStore";
+import GuestProfileView from "../../components/profile/GuestProfileView";
+import api from "../../api/axios";
+import styles from "../../components/profile/Profile.module.css";
 
 export default function ProfilePage() {
 	const { isGuest, id, logout } = useAuthStore();
@@ -32,9 +32,7 @@ export default function ProfilePage() {
 	if (!id) {
 		return (
 			<div className={styles.loadingWrapper}>
-				<span >
-					Debes tener una cuenta activa para acceder al perfil.
-				</span>
+				<span>Debes tener una cuenta activa para acceder al perfil.</span>
 			</div>
 		);
 	}

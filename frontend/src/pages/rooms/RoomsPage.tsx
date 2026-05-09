@@ -1,13 +1,13 @@
 // src/pages/RoomsPage.tsx
 
 import { useState } from "react";
-import { useLobby } from "../hooks/useLobby";
-import RoomList from "../components/rooms/RoomList";
-import CreateRoomModal from "../components/rooms/CreateRoomModal";
-import GuestNameModal from "../components/lobby/GuestNameModal";
-import ActiveGameWarning from "../components/rooms/ActiveGameWarning";
+import { useLobby } from "../../hooks/useLobby";
+import RoomList from "../../components/rooms/RoomList";
+import CreateRoomModal from "../../components/rooms/CreateRoomModal";
+import GuestNameModal from "../../components/lobby/GuestNameModal";
+import ActiveGameWarning from "../../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../../store/useAuthStore";
 
 export default function RoomsPage() {
 	const {

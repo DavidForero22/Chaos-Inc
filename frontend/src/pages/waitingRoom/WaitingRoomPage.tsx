@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoom } from "../hooks/room/useRoom.ts";
-import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { useRoom } from "../../hooks/room/useRoom.ts";
+import { useLoadingStore } from "../../store/useLoadingStore.ts";
 import { FaShareAlt, FaCheck } from "react-icons/fa";
 
-import GuestNameModal from "../components/lobby/GuestNameModal.tsx";
-import BoardPlayerList from "../components/lobby/BoardPlayerList.tsx";
-import RoomPasswordBoard from "../components/lobby/RoomPasswordBoard.tsx";
-import WallLayout from "../layouts/WallLayout.tsx";
+import GuestNameModal from "../../components/lobby/GuestNameModal.tsx";
+import BoardPlayerList from "../../components/lobby/BoardPlayerList.tsx";
+import RoomPasswordBoard from "../../components/lobby/RoomPasswordBoard.tsx";
+import WallLayout from "../../layouts/WallLayout.tsx";
 import styles from "./WaitingRoomPage.module.css";
 
 export default function WaitingRoomPage() {

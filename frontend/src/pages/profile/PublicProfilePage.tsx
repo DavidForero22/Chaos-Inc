@@ -1,12 +1,12 @@
 // src/pages/PublicProfilePage.tsx
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/useAuthStore";
-import { useUserProfileData } from "../hooks/profile/useUserProfileData";
-import RegisteredProfileView from "../components/profile/RegisteredProfileView";
-import GuestProfileView from "../components/profile/GuestProfileView";
-import styles from "../components/profile/Profile.module.css";
-import api from "../api/axios";
+import { useAuthStore } from "../../store/useAuthStore";
+import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
+import RegisteredProfileView from "../../components/profile/RegisteredProfileView";
+import GuestProfileView from "../../components/profile/GuestProfileView";
+import styles from "../../components/profile/Profile.module.css";
+import api from "../../api/axios";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();

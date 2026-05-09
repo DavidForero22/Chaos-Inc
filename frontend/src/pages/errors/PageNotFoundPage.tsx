@@ -1,4 +1,4 @@
-import ErrorLayout from "../layouts/ErrorLayout.tsx";
+import ErrorLayout from "../../layouts/ErrorLayout.tsx";
 
 export default function PageNotFoundPage() {
 	return (
