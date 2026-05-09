@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Auth\SocialAuthService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -15,9 +16,14 @@ class SocialAuthController extends Controller
     /**
      * Redirige al usuario a la página de autenticación del proveedor.
      */
-    public function redirect(string $provider): RedirectResponse
+    public function redirect(string $provider, Request $request): RedirectResponse
     {
         abort_unless(in_array($provider, self::ALLOWED_PROVIDERS), 404);
+
+        // Guardar la URL de retorno en la sesión si existe
+        if ($request->has('return_to')) {
+            $request->session()->put('oauth_return_to', $request->input('return_to'));
+        }
 
         /** @var \Laravel\Socialite\Two\AbstractProvider $driver */
         $driver = Socialite::driver($provider);
@@ -55,7 +61,10 @@ class SocialAuthController extends Controller
         Auth::guard('web')->login($user, remember: true);
         request()->session()->regenerate();
 
-        // Redirigir al frontend. El frontend leerá /api/v1/me para obtener el usuario.
-        return redirect("{$frontendUrl}/?login=success");
+        // Recuperar la URL de retorno, si no hay, ir a la raíz
+        $returnTo = request()->session()->pull('oauth_return_to', '/');
+
+        // Redirigir al frontend a la sala correspondiente (o al menú)
+        return redirect("{$frontendUrl}{$returnTo}?login=success");
     }
 }

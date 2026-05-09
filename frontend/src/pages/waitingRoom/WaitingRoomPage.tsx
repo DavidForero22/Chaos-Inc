@@ -1,6 +1,6 @@
 // src/pages/WaitingRoomPage.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../../hooks/room/useRoom.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
@@ -30,18 +30,46 @@ export default function WaitingRoomPage() {
 	} = useRoom(id);
 
 	const [showGuestModal, setShowGuestModal] = useState(false);
-
-	// --- ESTADO PARA EL FEEDBACK DE COPIA ---
 	const [copied, setCopied] = useState(false);
 
-	const missingPlayers = 3 - (room?.players.length || 0);
-	const isOwner = room?.owner_name === user;
+	// Detectar si la página acaba de cargar tras un login social
+	const [isSocialAuthPending, setIsSocialAuthPending] = useState(
+		() =>
+			new URLSearchParams(window.location.search).get("login") === "success",
+	);
+
+	// Ref para evitar llamar a attemptJoin múltiples veces
+	const authResolved = useRef(false);
 
 	useEffect(() => {
-		if (!isJoining && !user && !showGuestModal) {
+		// --- CASO A: YA HAY USUARIO ---
+		if (user) {
+			setIsSocialAuthPending(false);
+			if (showGuestModal) setShowGuestModal(false);
+
+			// Si viene de registrarse y no ha intentado entrar a la sala, forzar la entrada
+			if (!authResolved.current) {
+				authResolved.current = true;
+				if (!room && !isJoining) {
+					attemptJoin();
+				}
+			}
+			return;
+		}
+
+		// --- CASO B: ESTA ESPERANDO A QUE EL BACKEND DE EL USUARIO (OAUTH) ---
+		if (isSocialAuthPending) {
+			// Timeout de seguridad: Si pasan 4 segundos y el usuario no cargó,
+			// asumir que el OAuth falló y liberar el modal para que pueda entrar como invitado.
+			const fallback = setTimeout(() => setIsSocialAuthPending(false), 4000);
+			return () => clearTimeout(fallback);
+		}
+
+		// --- CASO C: FLUJO NORMAL SIN USUARIO ---
+		if (!isJoining && !showGuestModal) {
 			setShowGuestModal(true);
 		}
-	}, [isJoining, user, showGuestModal]);
+	}, [isJoining, user, showGuestModal, isSocialAuthPending, room, attemptJoin]);
 
 	const onLeaveClick = async () => {
 		startLoading("Saliendo de la sala...");
@@ -54,7 +82,7 @@ export default function WaitingRoomPage() {
 
 	const onKickClick = async (playerIdToKick: string) => {
 		const playerObj = room?.players.find((p) => p.id === playerIdToKick);
-		const playerName = playerObj;
+		const playerName = playerObj?.name || "jugador";
 
 		startLoading(`Expulsando a ${playerName}...`);
 		try {
@@ -64,7 +92,6 @@ export default function WaitingRoomPage() {
 		}
 	};
 
-	// --- FUNCIÓN PARA COPIAR AL PORTAPAPELES ---
 	const handleShare = async () => {
 		try {
 			await navigator.clipboard.writeText(window.location.href);
@@ -75,7 +102,24 @@ export default function WaitingRoomPage() {
 		}
 	};
 
-	// 1. Estado: Cargando/Conectando
+	// 0. Estado de Intercepción: Verificando OAuth
+	if (isSocialAuthPending) {
+		return (
+			<WallLayout boardWidth="500px">
+				<div className="flex flex-col items-center justify-center text-center">
+					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+					<p
+						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
+						style={{ fontFamily: "'Kalam', cursive" }}
+					>
+						Validando credenciales corporativas...
+					</p>
+				</div>
+			</WallLayout>
+		);
+	}
+
+	// 1. Estado: Cargando/Conectando normal
 	if (isJoining) {
 		return (
 			<WallLayout boardWidth="500px">
@@ -106,6 +150,7 @@ export default function WaitingRoomPage() {
 				onClose={() => navigate("/")}
 				onSuccess={() => {
 					setShowGuestModal(false);
+					authResolved.current = true; // Evita doble join si useAuthStore reacciona rápido
 					attemptJoin();
 				}}
 			/>
@@ -140,6 +185,9 @@ export default function WaitingRoomPage() {
 		);
 	}
 
+	const missingPlayers = 3 - (room?.players.length || 0);
+	const isOwner = room?.owner_name === user;
+
 	// 5. Estado: Pizarra Principal de la Sala
 	return (
 		<WallLayout>
@@ -158,7 +206,6 @@ export default function WaitingRoomPage() {
 						CÓDIGO: <span className={styles.markerRed}>{id}</span>
 					</span>
 
-					{/* Feedback visual interactivo */}
 					{copied ? (
 						<span className="flex items-center gap-1 text-green-600 text-sm font-bold">
 							<FaCheck /> ¡Copiado!

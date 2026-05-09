@@ -9,11 +9,15 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 interface RegisterModalProps {
 	onClose: () => void;
 	onSwitchToLogin?: () => void;
+	onSuccess?: () => void; // Para auto-unirse a la sala al terminar
+	isGuestFlow?: boolean; // Para identificar si venimos de invitado
 }
 
 export default function RegisterModal({
 	onClose,
 	onSwitchToLogin,
+	onSuccess,
+	isGuestFlow = false,
 }: RegisterModalProps) {
 	const { register, isLoading, error, clearError } = useAuth();
 	const [form, setForm] = useState({
@@ -31,7 +35,13 @@ export default function RegisterModal({
 
 		clearError();
 
-		// Si existe callback, abrir modal de login
+		// Si viene del flujo de invitado, auto-unirse a la sala
+		if (onSuccess) {
+			onSuccess();
+			return;
+		}
+
+		// Si existe callback, abrir modal de login (comportamiento normal sin invitado)
 		if (onSwitchToLogin) {
 			onSwitchToLogin();
 			return;
@@ -42,18 +52,23 @@ export default function RegisterModal({
 	};
 
 	const handleSocialLogin = (provider: "google" | "discord") => {
-		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect`;
+		// Guardar la ruta actual para que el backend devuelva a la sala si es necesario
+		const currentPath = encodeURIComponent(window.location.pathname);
+		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect?return_to=${currentPath}`;
 	};
 
 	return (
 		<ModalLayout
 			title="Chaos Inc."
-			subtitle="Solicitud de Alta de Empleado"
+			subtitle={
+				isGuestFlow ? "Regístrate para Unirte" : "Solicitud de Alta de Empleado"
+			}
 			onClose={onClose}
 			onSubmit={handleRegister}
 			isLoading={isLoading}
 			submitText="Registrarse"
 			loadingText="Procesando..."
+			disableBackdropClick={isGuestFlow} // Bloquea cerrar haciendo clic fuera
 			switchButton={
 				onSwitchToLogin && (
 					<button

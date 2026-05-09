@@ -7,6 +7,8 @@ import { GoogleIcon, DiscordIcon } from "./AuthIcons";
 interface LoginModalProps {
 	onClose: () => void;
 	onSwitchToRegister?: () => void;
+	onSuccess?: () => void; // Para auto-unirse a la sala
+	isGuestFlow?: boolean; //  Para saber de dónde viene el user
 }
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -14,6 +16,8 @@ const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 export default function LoginModal({
 	onClose,
 	onSwitchToRegister,
+	onSuccess,
+	isGuestFlow = false,
 }: LoginModalProps) {
 	const { login, isLoading, error, clearError } = useAuth();
 	const [credentials, setCredentials] = useState({
@@ -24,26 +28,31 @@ export default function LoginModal({
 
 	const handleLogin = async (e: React.FormEvent) => {
 		e.preventDefault();
-
 		const ok = await login(credentials);
-		if (ok) onClose();
+		if (ok) {
+			if (onSuccess) onSuccess();
+			else onClose();
+		}
 	};
 
 	const handleSocialLogin = (provider: "google" | "discord") => {
-		// Redireccion directa al backend. Laravel gestiona el OAuth completo
-		// y al terminar redirige al frontend. No hay fetch ni await.
-		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect`;
+		// Obtener la ruta actual (ej: /room/123) para decirle al backend que devuelva aquí
+		const currentPath = encodeURIComponent(window.location.pathname);
+		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect?return_to=${currentPath}`;
 	};
 
 	return (
 		<ModalLayout
 			title="Chaos Inc."
-			subtitle="Acceso de Empleado"
+			subtitle={
+				isGuestFlow ? "Inicia Sesión para Unirte" : "Acceso de Empleado"
+			}
 			onClose={onClose}
 			onSubmit={handleLogin}
 			isLoading={isLoading}
 			submitText="Acceder"
 			loadingText="Verificando..."
+			disableBackdropClick={isGuestFlow} // Evita cerrar si viene de invitado
 			switchButton={
 				onSwitchToRegister && (
 					<button

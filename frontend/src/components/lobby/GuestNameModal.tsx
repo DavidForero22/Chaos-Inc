@@ -1,26 +1,32 @@
-// src/components/lobby/GuestNameModal.tsx
-
 import { useState } from "react";
 import api, { getCsrfCookie } from "../../api/axios";
 import { useAuthStore } from "../../store/useAuthStore";
 import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
+import LoginModal from "../ui/AuthModal/LoginModal";
+import RegisterModal from "../ui/AuthModal/RegisterModal";
+import { DiscordIcon, GoogleIcon } from "../ui/AuthModal/AuthIcons";
 
 interface GuestNameModalProps {
 	onClose: () => void;
 	onSuccess: () => void;
 }
 
+const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+type ViewState = "menu" | "guest_input" | "login" | "register";
+
 export default function GuestNameModal({
 	onClose,
 	onSuccess,
 }: GuestNameModalProps) {
 	const { setAuth } = useAuthStore();
+	const [view, setView] = useState<ViewState>("menu");
 	const [username, setUsername] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleGuestSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!username.trim()) return;
 
@@ -31,7 +37,6 @@ export default function GuestNameModal({
 			await getCsrfCookie();
 			const res = await api.post("/guest-login", { username });
 
-			// setAuth(user, isGuest?, role?)
 			setAuth(
 				res.data.user.id,
 				res.data.user.username,
@@ -49,39 +54,145 @@ export default function GuestNameModal({
 		}
 	};
 
+	const handleSocialLogin = (provider: "google" | "discord") => {
+		const currentPath = encodeURIComponent(window.location.pathname);
+		window.location.href = `${BACKEND_URL}/auth/${provider}/redirect?return_to=${currentPath}`;
+	};
+
+	if (view === "login") {
+		return (
+			<LoginModal
+				onClose={() => setView("menu")}
+				onSwitchToRegister={() => setView("register")}
+				onSuccess={onSuccess}
+				isGuestFlow={true}
+			/>
+		);
+	}
+
+	if (view === "register") {
+		return (
+			<RegisterModal
+				onClose={() => setView("menu")}
+				onSwitchToLogin={() => setView("login")}
+				onSuccess={onSuccess}
+				isGuestFlow={true}
+			/>
+		);
+	}
+
+	if (view === "guest_input") {
+		return (
+			<ModalLayout
+				title="Chaos Inc."
+				subtitle="Pase de Jugador Temporal"
+				onClose={() => setView("menu")}
+				onSubmit={handleGuestSubmit}
+				isLoading={loading}
+				submitText="Entrar a la Sala"
+				loadingText="Autorizando..."
+				disableBackdropClick={true}
+			>
+				<div className={styles.fieldRow}>
+					<span className={styles.annexNum}>1.</span>
+					<div className={styles.fieldWrap}>
+						<label className={`${styles.label} ${styles.labelFirst}`}>
+							Nombre Temporal
+						</label>
+						<input
+							className={styles.input}
+							type="text"
+							placeholder="Ingresa tu nombre..."
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+							required
+							autoFocus
+							maxLength={15}
+						/>
+						<p className={styles.hint}>
+							Los progresos no se guardarán al finalizar la jornada.
+						</p>
+					</div>
+				</div>
+				{error && <p className={styles.error}>⚠ {error}</p>}
+			</ModalLayout>
+		);
+	}
+
+	// Vista Principal del Menú
 	return (
 		<ModalLayout
 			title="Chaos Inc."
-			subtitle="Pase de Jugador Temporal"
+			subtitle="Identificación Requerida"
 			onClose={onClose}
-			onSubmit={handleSubmit}
-			isLoading={loading}
-			submitText="Entrar como Invitado"
-			loadingText="Autorizando..."
+			hideSubmit={true}
 		>
-			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>1.</span>
-				<div className={styles.fieldWrap}>
-					<label className={`${styles.label} ${styles.labelFirst}`}>
-						Nombre de Usuario
-					</label>
-					<input
-						className={styles.input}
-						type="text"
-						placeholder="Ingresa tu nombre..."
-						value={username}
-						onChange={(e) => setUsername(e.target.value)}
-						required
-						autoFocus
-						maxLength={15}
-					/>
-					<p className={styles.hint}>
-						Ingresa un nombre para unirte a la partida con un usuario invitado.
-					</p>
-				</div>
-			</div>
+			<p
+				className={styles.hint}
+				style={{ textAlign: "center", marginBottom: "2rem" }}
+			>
+				Para acceder a la sala, por favor seleccione un método de registro:
+			</p>
 
-			{error && <p className={styles.error}>⚠ {error}</p>}
+			<div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+				{/* ── BOTONES DE INICIO Y REGISTRO ── */}
+				<div style={{ display: "flex", gap: "1rem", width: "100%" }}>
+					<button
+						type="button"
+						onClick={() => setView("login")}
+						className="flex-1 px-4 py-3 bg-[#393e42] hover:bg-[#2a2d30] text-[#d2d4d1] font-bold uppercase text-sm transition-all rounded-sm text-center"
+					>
+						Iniciar Sesión
+					</button>
+					<button
+						type="button"
+						onClick={() => setView("register")}
+						className="flex-1 px-4 py-3 bg-[#393e42] hover:bg-[#2a2d30] text-[#d2d4d1] font-bold uppercase text-sm transition-all rounded-sm text-center"
+					>
+						Crear Cuenta
+					</button>
+				</div>
+
+				
+				<div className={styles.socialDivider}>
+					<div className={styles.socialDividerLine} />
+					<span className={styles.socialDividerText}>o registrate con </span>
+					<div className={styles.socialDividerLine} />
+				</div>
+
+				<div className={styles.socialButtons}>
+					<button
+						type="button"
+						className={`${styles.btnSocial} ${styles.btnGoogle}`}
+						onClick={() => handleSocialLogin("google")}
+					>
+						<GoogleIcon />
+						Google
+					</button>
+					<button
+						type="button"
+						className={`${styles.btnSocial} ${styles.btnDiscord}`}
+						onClick={() => handleSocialLogin("discord")}
+					>
+						<DiscordIcon />
+						Discord
+					</button>
+				</div>
+
+				<div className={styles.socialDivider}>
+					<div className={styles.socialDividerLine} />
+					<span className={styles.socialDividerText}>o si lo prefieres</span>
+					<div className={styles.socialDividerLine} />
+				</div>
+
+				<button
+					type="button"
+					onClick={() => setView("guest_input")}
+					className="px-6 py-3 bg-transparent border-2 border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42] font-bold uppercase text-sm transition-all rounded-sm w-full"
+				>
+					Entrar como Invitado Temporal
+				</button>
+			</div>
 		</ModalLayout>
 	);
 }
