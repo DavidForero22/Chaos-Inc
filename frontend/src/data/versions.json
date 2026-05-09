@@ -20,7 +20,7 @@
 		"id": 2,
 		"version": "0.2.0",
 		"date": "29-04-2026",
-		"description": "Rediseño y optimizaciones.",
+		"description": "Rediseño de la web y optimizaciones.",
 		"notes": [
 			"Tras terminar la parte más difícil del desarrollo, comencé a preparar el diseño final del sitio web y su versión móvil. Tuve una crisis artística al no saber cómo tematizar el sitio web, hasta que a base de dibujar bocetos en Paint comencé a hacerme una idea de qué quería realmente.",
 			"En un principio, las páginas principales iban a tener de cuerpo una carpeta de pinza y el fondo sería una pared; de hecho, saqué una foto de la pared de mi propia habitación. No me terminó de convencer, hasta que se me ocurrió que el cuerpo fuese una libreta, los enlaces fuesen marcapáginas y el fondo una mesa de madera.",
@@ -42,7 +42,7 @@
 		"id": 3,
 		"version": "0.3.0",
 		"date": "04-05-2026",
-		"description": "Tematización y mejoras de interfaz.",
+		"description": "Tematización y mejoras de interfaz y jugabilidad.",
 		"notes": [
 			"Con la web finalizada y el servidor optimizado, pude avanzar en las funcionalidades que realmente quería desarrollar.",
 			"Mientras corregía errores, anotaba constantemente fallos o ideas que se me ocurrían para implementarlas más adelante.",
@@ -56,11 +56,36 @@
 			"Añadida ilustración de rol de jugador (Progreso: 3/4).",
 			"Implementados avisos de acciones durante la partida.",
 			"Añadido modo 'Info' para pantallas pequeñas.",
-			"Implementado inicio de sesión con Google y Discord.",
 			"Cartas y pantallas de fin de juego tematizadas.",
 			"Interfaz optimizada para dispositivos móviles y tablets.",
 			"Descartadas variantes de cartas.",
 			"Correcciones de errores en el cliente y en el servidor."
+		]
+	},
+
+	{
+		"id": 4,
+		"version": "0.4.0",
+		"date": "10-05-2026",
+		"description": "Perfiles y logros.",
+		"notes": [
+			"Esta versión se centró principalmente en mejorar los perfiles, los cuales eran el punto más flojo que tenía la web. En cambio ahora, es un apartado mucho más complejo (avatares, redes sociales conectadas, logros, gráficos, visualización de otros perfiles...)",
+			"Intenté mejorar la seguridad de los datos de las partidas porque, hasta ahora, estaba usando los nombres de usuario como claves para guardar los datos, lo cual era un riesgo alto que no había visto antes, ya que los nombres pueden ser cambiados durante las partidas. Al intentar cambiar estas claves por los IDs de jugadores, rompí toda la lógica del servidor y estuve dos días enteros corrigiendo la pifia que había hecho.",
+			"A medida que la fecha de entrega del proyecto se acercaba, dudaba de si debería descartar el chat de la partida o intentar sacar tiempo para implementarlo."
+		],
+		"changes": [
+			"Añadidos 6 logros.",
+			"Añadidos gráficos a los perfiles con nuevas estadísticas.",
+			"Añadidas páginas de errores.",
+			"Añadida navegación de perfiles.",
+			"Añadida sincronización con Discord y Google.",
+			"Añadida edición de perfil.",
+			"Añadidos avatares de perfil.",
+			"Página de perfiles renovada con un nuevo estilo.",
+			"Historial de partidas mejorado.",
+			"Mejoras de usabilidad.",
+			"Mejoras de seguridad.",
+			"Corrección de errores."
 		]
 	}
 ]
