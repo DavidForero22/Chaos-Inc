@@ -76,7 +76,7 @@ export function useRoomSession(
 
 	// Vigilante de redirección a partida
 	useEffect(() => {
-		if (room?.status === "in_game" && location.pathname.includes(`/room/`)) {
+		if (room?.status === "in_game" && location.pathname.includes(`/rooms/`)) {
 			navigate(`/game/${roomId}`, { replace: true });
 		}
 	}, [room?.status, roomId, navigate, location.pathname]);

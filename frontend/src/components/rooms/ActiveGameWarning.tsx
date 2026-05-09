@@ -20,7 +20,7 @@ export default function ActiveGameWarning({ roomId }: ActiveGameWarningProps) {
 				</div>
 			</div>
 			<button
-				onClick={() => navigate(`/room/${roomId}`)}
+				onClick={() => navigate(`/rooms/${roomId}`)}
 				className={styles.returnBtn}
 			>
 				Volver a la sala

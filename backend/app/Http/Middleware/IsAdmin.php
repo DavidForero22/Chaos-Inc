@@ -19,7 +19,7 @@ class IsAdmin
 
         // Si es un 'user' normal, denegar
         return response()->json([
-            'message' => 'Administrator permissions are required.'
+            'message' => 'Acceso denegado.'
         ], 403);
     }
 }

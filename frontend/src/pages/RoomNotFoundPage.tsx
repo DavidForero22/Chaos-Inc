@@ -1,20 +1,13 @@
-import { Link } from "react-router-dom";
+import ErrorLayout from "../layouts/ErrorLayout.tsx";
 
 export default function RoomNotFoundPage() {
 	return (
-		<div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4 text-center">
-			<h1 className="text-6xl font-black text-red-500 mb-4">404</h1>
-			<h2 className="text-3xl font-bold mb-2">Partida no encontrada</h2>
-			<p className="text-gray-400 mb-8 max-w-md">
-				La sala a la que intentas acceder ya no existe, la partida ha terminado
-				o el enlace es incorrecto.
-			</p>
-			<Link
-				to="/"
-				className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded font-bold transition shadow-lg shadow-purple-900/50"
-			>
-				Volver
-			</Link>
-		</div>
+		<ErrorLayout
+			title="Sala no encontrada (404)"
+			description="No se ha podido acceder a la sala solicitada."
+			subtitle="Es posible que la partida haya terminado, la sala se haya borrado o que accidentalmente a alguien se le cayera el café en el servidor."
+			buttonText="Volver a buscar sala"
+			returnPath="/rooms"
+		/>
 	);
 }

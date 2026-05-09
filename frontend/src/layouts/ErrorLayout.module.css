@@ -1,0 +1,160 @@
+/* src/layouts/ErrorLayout.module.css */
+
+.wallBackground {
+    min-height: 100vh;
+    /* Color temporal de pared aburrida */
+    background-color: #8b939c; 
+    
+    /* ── CUANDO TENGAS TU TEXTURA DE PARED, DESCOMENTA ESTO ── */
+    /* background-image: url('/path/a/tu/textura-pared.png'); */
+    /* background-size: cover; */
+    /* background-position: center; */
+    /* background-blend-mode: multiply; */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.paper {
+    position: relative;
+    background-color: #fdfbf7;
+    width: 100%;
+    max-width: 28rem;
+    padding: 2.5rem 2rem;
+    border-radius: 2px;
+    transform: rotate(1deg);
+    color: #1f2937;
+    font-family: monospace;
+    
+    /* Efecto 3D del papel: sombra cercana, sombra lejana e iluminación interior (vignette) */
+    box-shadow: 
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        15px 20px 30px rgba(0, 0, 0, 0.2),
+        inset 0 0 60px rgba(0, 0, 0, 0.03);
+    
+    /* Ligera textura de ruido/líneas de impresora barata */
+    background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    background-size: 100% 2.5rem;
+}
+
+.tape {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-2.5deg);
+    width: 130px;
+    height: 38px;
+    background-color: rgba(255, 255, 255, 0.3);
+    
+    /* Simula la textura rugosa del celofán con líneas diagonales */
+    background-image: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.15) 2px,
+        rgba(255, 255, 255, 0.15) 4px
+    );
+    
+    /* Bordes dentados simulados típicos de la cinta cortada */
+    border-left: 2px dashed rgba(255, 255, 255, 0.5);
+    border-right: 2px dashed rgba(255, 255, 255, 0.5);
+    
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(2px);
+    z-index: 10;
+    opacity: 0.9;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.icon {
+    font-size: 3.5rem;
+    color: #dc2626;
+    margin-bottom: 1rem;
+    /* Efecto de tinta corrida leve en el icono */
+    filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.2));
+}
+
+.stamp {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.5rem;
+    width: 100%;
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #b91c1c;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    margin-bottom: 1rem;
+}
+
+.descriptionBox {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #374151;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .descriptionBox {
+        font-size: 1rem;
+    }
+}
+
+.subtitle {
+    margin-top: 2rem;
+    font-size: 0.75rem;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: -0.025em;
+    border-left: 4px solid rgba(0, 0, 0, 0.2);
+    padding-left: 0.75rem;
+    font-style: italic;
+    text-align: left;
+}
+
+.button {
+    padding: 0.75rem 1.5rem;
+    background-color: #393e42;
+    color: #d2d4d1;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease-in-out;
+    border: 2px solid transparent;
+    border-radius: 2px;
+    width: 100%;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+    background-color: #2a2d30;
+    border-color: #9ca3af;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

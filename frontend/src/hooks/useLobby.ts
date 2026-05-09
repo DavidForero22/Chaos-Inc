@@ -124,7 +124,7 @@ export function useLobby() {
 			const response = await api.post(`/rooms/${selectedRoom}/join`, {
 				password,
 			});
-			navigate(`/room/${selectedRoom}`, {
+			navigate(`/rooms/${selectedRoom}`, {
 				state: { playerName: response.data.player },
 			});
 		} catch (error: any) {

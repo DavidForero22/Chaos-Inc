@@ -37,7 +37,7 @@ export default function CreateRoomModal({
 			useGameStore.getState().setRoomId(response.data.room_id);
 
 			onClose();
-			navigate(`/room/${response.data.room_id}`, {
+			navigate(`/rooms/${response.data.room_id}`, {
 				state: { playerName: user },
 			});
 		} catch (error) {

@@ -1,5 +1,5 @@
-import { useSearchParams, Link } from "react-router-dom";
-import styles from "./SocialLinkingErrorPage.module.css";
+import { useSearchParams } from "react-router-dom";
+import ErrorLayout from "../layouts/ErrorLayout.tsx";
 
 export default function SocialLinkingErrorPage() {
 	const [searchParams] = useSearchParams();
@@ -8,25 +8,36 @@ export default function SocialLinkingErrorPage() {
 	const getErrorMessage = () => {
 		switch (error) {
 			case "email_taken":
-				return "Este correo electrónico ya está vinculado a otra cuenta corporativa.";
+				return "Este correo electrónico ya está registrado en el perfil de otro usuario.";
 			case "provider_taken":
-				return "Esta cuenta social ya está vinculada a otro empleado.";
+				return "Esta credencial de acceso ya está asignada a otro usuario.";
 			case "oauth_failed":
-				return "La comunicación con el proveedor ha fallado. Inténtalo de nuevo.";
+				return "El proveedor externo ha rechazado la solicitud. Inténtelo de nuevo.";
 			default:
-				return "Ha ocurrido un error inesperado al intentar vincular tu cuenta.";
+				return "Se ha producido un error inesperado al conectar cuentas.";
+		}
+	};
+
+	const getErrorCode = () => {
+		switch (error) {
+			case "email_taken":
+				return "AUTH-409";
+			case "provider_taken":
+				return "AUTH-403";
+			case "oauth_failed":
+				return "AUTH-502";
+			default:
+				return "SYS-500";
 		}
 	};
 
 	return (
-		<div className={styles.wrapper}>
-			<h1 className={styles.title}>ERROR</h1>
-			<div className={styles.card}>
-				<p className={styles.message}>{getErrorMessage()}</p>
-				<Link to="/profile" className={styles.button}>
-					Volver a la página principal
-				</Link>
-			</div>
-		</div>
+		<ErrorLayout
+			title={`Fallo de Credenciales (${getErrorCode()})`}
+			description={getErrorMessage()}
+			subtitle="Quizás la culpa no sea nuestra, no nos mires así."
+			buttonText="Volver al Perfil"
+			returnPath="/profile"
+		/>
 	);
 }
