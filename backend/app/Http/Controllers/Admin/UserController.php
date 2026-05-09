@@ -56,21 +56,34 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, $id)
     {
+        $authUser = $request->user();
         $targetUser = $this->userService->getUserById($id);
 
-        Gate::authorize('update', $targetUser);
-
-        // Validar que el usuario no cambia su propio rol
-        if ($request->has('role') && $request->user()->id === $targetUser->id) {
-            return response()->json([
-                'message' => 'You are not allowed to change your own role.'
-            ], 403);
+        // Solo admin o el propio usuario pueden editar
+        if ($authUser->role !== 'admin' && $authUser->id !== $targetUser->id) {
+            return response()->json(['message' => 'No tienes permiso para editar este perfil.'], 403);
         }
 
-        $user = $this->userService->updateUser($id, $request->validated());
+        $validated = $request->validated();
+
+        // Eliminar del array cualquier campo que esté vacío o sea nulo
+        $dataToUpdate = array_filter($validated, function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        // Si después de limpiar los vacíos no queda nada por actualizar, devolver éxito sin hacer nada
+        if (empty($dataToUpdate)) {
+            return response()->json([
+                'message' => 'No se detectaron cambios.',
+                'user' => new UserResource($targetUser->load('socialAccounts'))
+            ], 200);
+        }
+
+        $user = $this->userService->updateUser($id, $dataToUpdate);
+        $user->load('socialAccounts');
 
         return response()->json([
-            'message' => 'Profile updated successfully',
+            'message' => 'Perfil actualizado con éxito.',
             'user' => new UserResource($user)
         ], 200);
     }
@@ -108,7 +121,25 @@ class UserController extends Controller
         // Solo el propio usuario (o un admin) puede desvincular sus cuentas
         Gate::authorize('update', $targetUser);
 
-        $user = $this->userService->unlinkSocialAccount($id, $provider);
+        // Validar la contraseña si viene en la request
+        $request->validate([
+            'password' => 'sometimes|required|string|min:8'
+        ]);
+
+        try {
+            // Pasar la contraseña al servicio (será null si no viene)
+            $user = $this->userService->unlinkSocialAccount($id, $provider, $request->input('password'));
+        } catch (\Exception $e) {
+            if ($e->getMessage() === "PASSWORD_REQUIRED") {
+                return response()->json([
+                    'error_code' => 'PASSWORD_REQUIRED',
+                    'message' => 'Para desvincular tu último método de acceso, primero debes establecer una contraseña.'
+                ], 428); // 428 Precondition Required
+            }
+
+            // Cualquier otro error
+            return response()->json(['message' => 'Error al desvincular la cuenta.'], 500);
+        }
 
         // Recargamos relaciones para el Resource
         $user->load('socialAccounts');

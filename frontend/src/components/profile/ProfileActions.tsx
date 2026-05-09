@@ -3,24 +3,49 @@
 import { useState } from "react";
 import styles from "./ProfileActions.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
+import EditProfileModal from "./EditProfileModal";
+import type { UserRecord } from "../../types/api";
 
 interface ProfileActionsProps {
+	user?: UserRecord | null;
 	onLogout: () => void;
 	onDeleteAccount: () => void;
+	onUpdateProfile: (data: any) => Promise<void>;
 }
 
 export default function ProfileActions({
+	user,
 	onLogout,
 	onDeleteAccount,
+	onUpdateProfile,
 }: ProfileActionsProps) {
 	const [confirmDelete, setConfirmDelete] = useState(false);
+	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+	const [isUpdating, setIsUpdating] = useState(false);
 
+	const handleUpdateProfile = async (data: any) => {
+		setIsUpdating(true);
+		try {
+			await onUpdateProfile(data);
+			setIsEditModalOpen(false);
+		} finally {
+			setIsUpdating(false);
+		}
+	};
 
 	return (
 		<div className={styles.section}>
 			<h2 className={viewStyles.sectionLabel}>ACCIONES DISPONIBLES</h2>
 
 			<div className={styles.actionsGrid}>
+				{/* ── BOTÓN DE EDITAR PERFIL ── */}
+				<button
+					className={`${styles.actionBtn} ${styles.actionBtnEdit}`}
+					onClick={() => setIsEditModalOpen(true)}
+				>
+					EDITAR PERFIL
+				</button>
+
 				{/* ── BOTÓN DE CERRAR SESIÓN ── */}
 				<button
 					className={`${styles.actionBtn} ${styles.actionBtnLogout}`}
@@ -61,6 +86,16 @@ export default function ProfileActions({
 					</div>
 				)}
 			</div>
+
+			{/* ── RENDER DEL MODAL ── */}
+			{isEditModalOpen && user && (
+				<EditProfileModal
+					user={user}
+					onClose={() => setIsEditModalOpen(false)}
+					onSubmit={handleUpdateProfile}
+					isLoading={isUpdating}
+				/>
+			)}
 		</div>
 	);
 }

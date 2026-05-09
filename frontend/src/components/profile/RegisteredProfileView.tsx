@@ -14,6 +14,7 @@ interface RegisteredProfileViewProps {
 	games: GameRecord[];
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
+	onUpdateProfile?: (data: any) => Promise<void>;
 	notMyProfile?: boolean;
 	publicProfile?: UserRecord | null;
 	myProfile?: UserRecord | null;
@@ -23,12 +24,12 @@ export default function RegisteredProfileView({
 	games,
 	onLogout,
 	onDeleteAccount,
+	onUpdateProfile,
 	notMyProfile = false,
 	publicProfile = null,
 	myProfile = null,
 }: RegisteredProfileViewProps) {
 	const { id, user, role, avatar, socialAccounts, joinedAt } = useAuthStore();
-
 	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
 		"info",
 	);
@@ -95,8 +96,9 @@ export default function RegisteredProfileView({
 				<div className={styles.sectionsWrapper}>
 					{activeTab === "info" && (
 						<UserInfo
-							userId={displayId}
+							userId={Number(displayId)}
 							notMyProfile={notMyProfile}
+							userRecord={notMyProfile ? publicProfile : myProfile}
 							displayUser={displayUser}
 							displayRole={displayRole}
 							displayJoinedAt={displayJoinedAt}
@@ -105,6 +107,7 @@ export default function RegisteredProfileView({
 							achievements={displayAchievements}
 							onLogout={onLogout}
 							onDeleteAccount={onDeleteAccount}
+							onUpdateProfile={onUpdateProfile}
 						/>
 					)}
 

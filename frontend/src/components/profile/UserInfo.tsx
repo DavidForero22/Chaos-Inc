@@ -4,7 +4,11 @@ import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
 import ModalLayout from "../ui/ModalLayout";
 import { useUserInfo } from "../../hooks/profile/useUserInfo";
-import type { UserAchievement, SocialAccountInfo } from "../../types/api";
+import type {
+	UserAchievement,
+	SocialAccountInfo,
+	UserRecord,
+} from "../../types/api";
 import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 
@@ -19,6 +23,7 @@ const ACCOUNT_ROLE_CONFIG: Record<
 interface UserInfoProps {
 	userId?: number | null;
 	notMyProfile: boolean;
+	userRecord?: UserRecord | null;
 	displayUser?: string | null;
 	displayRole?: string | null;
 	displayJoinedAt?: string | null;
@@ -27,11 +32,13 @@ interface UserInfoProps {
 	achievements?: UserAchievement[];
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
+	onUpdateProfile?: (data: any) => Promise<void>;
 }
 
 export default function UserInfo({
 	userId,
 	notMyProfile,
+	userRecord,
 	displayUser,
 	displayRole,
 	displayJoinedAt,
@@ -40,6 +47,7 @@ export default function UserInfo({
 	achievements,
 	onLogout,
 	onDeleteAccount,
+	onUpdateProfile,
 }: UserInfoProps) {
 	const {
 		isUploading,
@@ -60,6 +68,11 @@ export default function UserInfo({
 		handleSelectProviderAvatar,
 		handleProviderClick,
 		confirmUnlink,
+		showForcePasswordModal,
+		closeForcePasswordModal,
+		unlinkPassword,
+		setUnlinkPassword,
+		unlinkPasswordError,
 	} = useUserInfo({
 		userId,
 		notMyProfile,
@@ -187,12 +200,14 @@ export default function UserInfo({
 			<ProfileAchievements userAchievements={achievements} />
 
 			{/* ── ACCIONES DEL PERFIL PROPIO ── */}
-			{!notMyProfile && onLogout && onDeleteAccount && (
+			{!notMyProfile && onLogout && onDeleteAccount && onUpdateProfile && (
 				<>
 					<div className={styles.divider} />
 					<ProfileActions
+						user={userRecord}
 						onLogout={onLogout}
 						onDeleteAccount={onDeleteAccount}
+						onUpdateProfile={onUpdateProfile}
 					/>
 				</>
 			)}
@@ -250,6 +265,47 @@ export default function UserInfo({
 							Nota: Si tienes la foto de este proveedor como tu avatar
 							principal, se quitará de tu perfil.
 						</p>
+					</div>
+				</ModalLayout>
+			)}
+			{/* ── FORZAR CONTRASEÑA DE SEGURIDAD ── */}
+			{showForcePasswordModal && (
+				<ModalLayout
+					title="ACCIÓN REQUERIDA"
+					subtitle="Establece una contraseña de seguridad"
+					onClose={closeForcePasswordModal}
+					onSubmit={confirmUnlink}
+					isLoading={isUnlinking}
+					submitText="Guardar y Desvincular"
+					loadingText="Procesando..."
+				>
+					<div className="flex flex-col gap-4 py-2">
+						<div className={`border-2 border-[#d32f2f] bg-[#d32f2f]/10 p-3`}>
+							<p className="text-sm font-bold text-[#b71c1c] text-justify font-mono leading-tight">
+								ALERTA: Esta es tu última cuenta vinculada y no tienes una
+								contraseña establecida. Si desvinculas{" "}
+								{providerToUnlink?.toUpperCase()} ahora, perderás el acceso a
+								esta cuenta.
+							</p>
+						</div>
+
+						<div className={styles.formGroup}>
+							<label className={styles.label}>NUEVA CONTRASEÑA</label>
+							<input
+								type="password"
+								className={`${styles.input} ${unlinkPasswordError ? "border-[#d32f2f]" : ""}`}
+								value={unlinkPassword}
+								onChange={(e) => setUnlinkPassword(e.target.value)}
+								placeholder="Mínimo 8 caracteres"
+								required
+								minLength={8}
+							/>
+							{unlinkPasswordError && (
+								<p className="text-[#d32f2f] text-xs font-bold mt-1 font-mono">
+									{unlinkPasswordError}
+								</p>
+							)}
+						</div>
 					</div>
 				</ModalLayout>
 			)}

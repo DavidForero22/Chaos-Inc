@@ -1,0 +1,56 @@
+/* src/components/profile/EditProfileModal.module.css */
+
+.formGroup {
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 1.5rem;
+}
+
+.label {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	font-weight: 900;
+	color: #2b2b2b;
+	margin-bottom: 0.4rem;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+}
+
+.input {
+	padding: 10px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.9rem;
+	border: 2px solid #2b2b2b;
+	background-color: #fcf9f2;
+	color: #2b2b2b;
+	outline: none;
+	transition:
+		box-shadow 0.2s ease,
+		border-color 0.2s ease;
+}
+
+.input:focus {
+	box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+	background-color: #fff;
+}
+
+.inputDisabled {
+	background-color: #eaddc5;
+	color: #888;
+	border-style: dashed;
+	cursor: not-allowed;
+}
+
+.inputDisabled:focus {
+	box-shadow: none;
+}
+
+.oauthWarning {
+	margin-top: 0.5rem;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.75rem;
+	font-weight: bold;
+	color: #b71c1c; /* Tinta roja para avisos de bloqueo */
+	line-height: 1.4;
+	text-align: justify;
+}

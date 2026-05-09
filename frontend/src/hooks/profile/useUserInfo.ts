@@ -50,6 +50,10 @@ export function useUserInfo({
 	const [providerToUnlink, setProviderToUnlink] = useState<string | null>(null);
 	const [isUnlinking, setIsUnlinking] = useState(false);
 
+	const [showForcePasswordModal, setShowForcePasswordModal] = useState(false);
+	const [unlinkPassword, setUnlinkPassword] = useState("");
+	const [unlinkPasswordError, setUnlinkPasswordError] = useState("");
+
 	// Cálculos derivados
 	const isDiscordLinked = effectiveSocialAccounts?.some(
 		(acc) => acc.provider === "discord",
@@ -138,15 +142,21 @@ export function useUserInfo({
 		e.preventDefault();
 		if (!userId || !providerToUnlink) return;
 
+		setUnlinkPasswordError("");
+		setIsUnlinking(true);
+
 		try {
-			setIsUnlinking(true);
+			// En Axios, el body de un DELETE se pasa dentro de 'data'
+			const payload = unlinkPassword
+				? { data: { password: unlinkPassword } }
+				: {};
+
 			const res = await api.delete(
 				`/users/${userId}/social/${providerToUnlink}`,
+				payload,
 			);
-
 			const updatedUser = res.data.user;
 
-			// Esto disparará una actualización en 'storeSocialAccounts' y la UI cambiará al instante.
 			useAuthStore
 				.getState()
 				.setAuth(
@@ -160,14 +170,45 @@ export function useUserInfo({
 					updatedUser.achievements,
 				);
 
+			// Resetear todo si hay éxito
 			setShowUnlinkModal(false);
+			setShowForcePasswordModal(false);
 			setProviderToUnlink(null);
-		} catch (error) {
+			setUnlinkPassword("");
+			window.location.reload();
+		} catch (error: any) {
 			console.error("Error al desvincular cuenta:", error);
-			alert("Error al desvincular cuenta.");
+
+			// 1. Si es el error 428 de "Falta contraseña"
+			if (
+				error.response?.status === 428 ||
+				error.response?.data?.error_code === "PASSWORD_REQUIRED"
+			) {
+				setShowUnlinkModal(false); // Cerrar el modal normal
+				setShowForcePasswordModal(true); // Abrir el modal de contraseña
+			}
+			// 2. Si es un error de validación (ej. contraseña muy corta)
+			else if (error.response?.status === 422) {
+				setUnlinkPasswordError(
+					error.response.data.errors?.password?.[0] || "Contraseña inválida.",
+				);
+			}
+			// 3. Cualquier otro error
+			else {
+				setUnlinkPasswordError(
+					error.response?.data?.message || "Error inesperado al desvincular.",
+				);
+			}
 		} finally {
 			setIsUnlinking(false);
 		}
+	};
+
+	const closeForcePasswordModal = () => {
+		setShowForcePasswordModal(false);
+		setProviderToUnlink(null);
+		setUnlinkPassword("");
+		setUnlinkPasswordError("");
 	};
 
 	return {
@@ -190,5 +231,10 @@ export function useUserInfo({
 		handleSelectProviderAvatar,
 		handleProviderClick,
 		confirmUnlink,
+		showForcePasswordModal,
+		closeForcePasswordModal,
+		unlinkPassword,
+		setUnlinkPassword,
+		unlinkPasswordError,
 	};
 }

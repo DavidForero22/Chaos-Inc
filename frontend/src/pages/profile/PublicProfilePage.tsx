@@ -2,6 +2,7 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useAuth } from "../../hooks/useAuth";
 import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../../components/profile/RegisteredProfileView";
 import GuestProfileView from "../../components/profile/GuestProfileView";
@@ -11,6 +12,7 @@ import api from "../../api/axios";
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
 	const { id: myId, logout, isGuest } = useAuthStore();
+	const { updateProfile } = useAuth();
 	const navigate = useNavigate();
 
 	// ¿Es mi perfil o el de otro?
@@ -25,22 +27,6 @@ export default function PublicProfilePage() {
 		logout();
 		navigate("/");
 	};
-	
-	// Si es un perfil sin registrar, no puede consultar perfiles.
-	if (myId == null) {
-		return (
-			<div className={styles.loadingWrapper}>
-				<span>
-					Debes tener una cuenta activa para consultar perfiles.
-				</span>
-			</div>
-		);
-	}
-
-	// Invitados: si es su propio perfil, aviso existente.
-	if (isGuest && isMe) {
-		return <GuestProfileView onLogout={handleLogout} />;
-	}
 
 	const handleDeleteAccount = async () => {
 		if (!myId) return;
@@ -52,6 +38,22 @@ export default function PublicProfilePage() {
 			alert(e.response?.data?.message || "Error al eliminar la cuenta.");
 		}
 	};
+	const handleUpdateProfile = async (data: any) => {
+		await updateProfile(data);
+		window.location.reload();
+	};
+
+	if (myId == null) {
+		return (
+			<div className={styles.loadingWrapper}>
+				<span>Debes tener una cuenta activa para consultar perfiles.</span>
+			</div>
+		);
+	}
+
+	if (isGuest && isMe) {
+		return <GuestProfileView onLogout={handleLogout} />;
+	}
 
 	if (loading) {
 		return (
@@ -70,6 +72,7 @@ export default function PublicProfilePage() {
 			notMyProfile={!isMe}
 			onLogout={isMe ? handleLogout : undefined}
 			onDeleteAccount={isMe ? handleDeleteAccount : undefined}
+			onUpdateProfile={isMe ? handleUpdateProfile : undefined}
 		/>
 	);
 }

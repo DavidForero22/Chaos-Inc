@@ -17,6 +17,12 @@ type LoginInput = {
 	remember?: boolean;
 };
 
+type UpdateProfileInput = {
+	username?: string;
+	email?: string;
+	password?: string;
+};
+
 export function useAuth() {
 	// Extraemos también provider y providerAvatar del store
 	const { id, user, avatar, isGuest, role, setAuth, logout } = useAuthStore();
@@ -110,6 +116,32 @@ export function useAuth() {
 		}
 	};
 
+	const updateProfile = async (data: UpdateProfileInput) => {
+		if (!id) return false;
+
+		clearError();
+		setIsLoading(true);
+
+		try {
+			await getCsrfCookie();
+			const res = await api.put(`/users/${id}`, data);
+
+			if (res.data.user && res.data.user.username !== user) {
+				useAuthStore.setState({ user: res.data.user.username });
+				if (typeof window !== "undefined") {
+					localStorage.setItem("user", res.data.user.username);
+				}
+			}
+
+			return true;
+		} catch (err: any) {
+			setError(err.response?.data?.message || "Error al actualizar el perfil.");
+			throw err;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return {
 		id,
 		user,
@@ -123,5 +155,6 @@ export function useAuth() {
 		register,
 		logout,
 		uploadAvatar,
+		updateProfile,
 	};
 }

@@ -232,6 +232,25 @@
 	color: #555 !important;
 }
 
+.input {
+	display: block;
+	width: 100%;
+	background: transparent;
+	border: none;
+	border-bottom: 1.5px solid rgba(57, 62, 66, 0.4);
+	padding: 4px 0;
+	font-size: 0.9rem;
+	color: #393e42;
+	font-family: "Courier New", Courier, monospace;
+	outline: none;
+	line-height: 28px;
+	box-sizing: border-box;
+	transition: border-color 0.2s;
+}
+.input:focus {
+	border-bottom-color: #295c60;
+}
+
 /* ---------------------------------------------------
    MEDIA QUERIES (RESPONSIVE DESIGN)
 --------------------------------------------------- */

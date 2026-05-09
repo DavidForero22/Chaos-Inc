@@ -36,6 +36,16 @@
 	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
 }
 
+.actionBtnEdit {
+	background-color: #2b2b2b;
+	color: #fcf9f2;
+}
+
+.actionBtnEdit:hover {
+	background-color: #1a1a1a;
+	color: #fff;
+}
+
 /* --- VARIANTES DE BOTÓN --- */
 
 /* Cerrar sesión: Tinta negra estándar */
