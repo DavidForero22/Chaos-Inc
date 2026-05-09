@@ -39,7 +39,7 @@ export function LuckChallengeModal({
 
 		try {
 			const res = await api.post(`/rooms/${roomId}/luck-challenge`, { color });
-			onResult(res.data.result === "success");
+			onResult(res.data._luck_result === "success");
 		} catch {
 			onResult(false);
 		} finally {
@@ -82,7 +82,7 @@ export function LuckChallengeModal({
 						disabled={!!chosen || loading || luckChallengeSecondsLeft === null}
 						className={`flex-1 rounded-t-md rounded-b-sm border-b-8 border-x-4 border-t-4 transition-all duration-200 relative overflow-hidden shadow-lg ${COLOR_STYLES[color]} ${
 							chosen === color
-								? "translate-y-4 border-b-0 brightness-125 shadow-none" /* Animación de puerta hundiéndose/abriéndose */
+								? "translate-y-4 border-b-0 brightness-125 shadow-none"
 								: "hover:-translate-y-1"
 						} ${chosen && chosen !== color ? "opacity-30 grayscale" : ""} ${
 							chosen || loading || luckChallengeSecondsLeft === null
