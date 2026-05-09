@@ -60,7 +60,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	// Evaluación de estados actuales
 	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
 	const isTargetingMode = selectedCard?.target === "opponent";
-	const isMyTurnNow = currentTurn === me?.name;
+	const isMyTurnNow = currentTurn === me?.id;
 	const isDefending =
 		me?.combat_state.is_defending_single || me?.combat_state.is_defending_multi;
 

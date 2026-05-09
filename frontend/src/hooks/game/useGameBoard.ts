@@ -3,7 +3,7 @@ import { useAuth } from "../useAuth.ts";
 import { useGameUIStore } from "../../store/useGameUIStore.ts";
 
 export function useGameBoard() {
-	const { user } = useAuth();
+	const { user, id: myId } = useAuth();
 
 	// Extraer todo del Store
 	const gameData = useGameStore((state) => state.gameData);
@@ -21,7 +21,7 @@ export function useGameBoard() {
 	const me = gameData?.me;
 	const game = gameData?.game;
 
-	const isMyTurn = game?.current_turn === user;
+	const isMyTurn = String(game?.current_turn) === String(myId);
 	const hasPendingAttack = me?.combat_state.is_attacking_single ?? false;
 	const hasPendingMultiAttack = me?.combat_state.is_defending_multi ?? false;
 	const isAttackerWaiting = me?.combat_state.is_attacking_multi ?? false;
@@ -29,7 +29,8 @@ export function useGameBoard() {
 	const hasLuckChallenge =
 		isMyTurn && !!me?.luck_challenge && luckResult === null;
 	const hasPendingSabotage =
-		!!game?.player_pending_sabotage && game?.player_pending_sabotage !== user;
+		!!game?.player_pending_sabotage &&
+		String(game?.player_pending_sabotage) !== String(myId);
 
 	const handleEndTurn = async () => {
 		if (

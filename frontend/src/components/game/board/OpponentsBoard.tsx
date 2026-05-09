@@ -16,7 +16,7 @@ export function OpponentsBoard({
 	turnTimeLeft,
 	isTurnPaused,
 }: OpponentsBoardProps) {
-	const { user } = useAuth();
+	const { id: myId } = useAuth();
 
 	const gameData = useGameStore((state) => state.gameData);
 	const playTurn = useGameStore((state) => state.playTurn);
@@ -41,23 +41,23 @@ export function OpponentsBoard({
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
-	if (!gameData || !user) return null;
+	if (!gameData || !myId) return null;
 
 	const { me, game } = gameData;
 	const { opponents, current_turn } = game;
-	const isMyTurn = current_turn === user;
+	const isMyTurn = String(current_turn) === String(myId);
 
 	const selectedCard =
 		me.cards.find((c: CardInstance) => c.id === selectedCardId) ?? null;
 	const isTargetingCard = selectedCard?.target === "opponent";
 
 	const handleAction = async (
-		targetName: string,
+		targetId: string,
 		isOnline: boolean,
 		perkKey?: string,
 	) => {
 		if (!isMyTurn || !selectedCardId || !isOnline) return;
-		const success = await playTurn(selectedCardId, targetName, perkKey);
+		const success = await playTurn(selectedCardId, targetId, perkKey);
 		if (success) {
 			setSelectedCardId(null);
 		}
@@ -160,7 +160,7 @@ export function OpponentsBoard({
 
 					return (
 						<div
-							key={player.name}
+							key={player.id}
 							className={`relative pointer-events-auto ${isBoss ? "z-50" : "z-10"}`}
 							style={inlineStyles}
 						>

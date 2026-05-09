@@ -72,21 +72,17 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 					data.achievement_notifications.length > 0
 				) {
 					const me = state.gameData?.me as any;
-					const myPlayerName =
-						me?.name ?? me?.username ?? me?.display_name ?? null;
-					const myUserId = me?.id ?? me?.userId ?? me?.user_id ?? null;
+					const myPlayerId = me?.playerId ?? me?.user_id ?? me?.id ?? null;
+					const opponents = state.gameData?.game?.opponents ?? [];
 
 					data.achievement_notifications.forEach(
 						(notif: AchievementNotificationPayload) => {
-							const playerId = notif?.playerId;
+							const achievementOwnerId = notif?.playerId;
 							const achievementId = notif?.achievementId;
 
-							if (!achievementId || playerId == null) return;
+							if (!achievementId || achievementOwnerId == null) return;
 
-							const isMe =
-								(myUserId != null &&
-									playerId?.toString?.() === myUserId.toString()) ||
-								(!!myPlayerName && playerId === myPlayerName);
+							const isMe = String(myPlayerId) === String(achievementOwnerId);
 
 							if (isMe) {
 								useAchievementNotificationStore
@@ -98,7 +94,15 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 									(a) => a.id === achievementId,
 								);
 								const achievementTitle = achievement?.title ?? achievementId;
-								const message = `${playerId} ha desbloqueado el logro "${achievementTitle}"`;
+
+								const opponent = opponents.find(
+									(o: any) => String(o.id) === String(achievementOwnerId),
+								);
+								const playerName = opponent
+									? opponent.name
+									: `Jugador ${achievementOwnerId}`;
+
+								const message = `${playerName} ha desbloqueado el logro "${achievementTitle}"`;
 
 								const notifStore = useNotificationStore.getState();
 								notifStore.addNotification({
@@ -135,15 +139,28 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 								// Una vez sincronizado, verificar la suerte
 								if (data.player_drew_extra_card) {
 									const latestState = useGameStore.getState();
-									const currentTurnPlayer =
-										latestState.gameData?.game?.current_turn;
-									const myName = latestState.gameData?.me?.name;
 
-									if (currentTurnPlayer) {
-										const isMe = myName === currentTurnPlayer;
+									// currentTurnPlayer ahora es un ID (ej: "2")
+									const currentTurnPlayerId =
+										latestState.gameData?.game?.current_turn;
+
+									const myPlayerId = latestState.gameData?.me?.id;
+									const opponents = latestState.gameData?.game?.opponents ?? [];
+
+									if (currentTurnPlayerId) {
+										// Comparar ID contra ID
+										const isMe =
+											String(myPlayerId) === String(currentTurnPlayerId);
+
+										// Buscar el nombre si no soy yo
+										const opponent = opponents.find(
+											(o: any) => String(o.id) === String(currentTurnPlayerId),
+										);
+										const playerName = opponent ? opponent.name : "Alguien";
+
 										const message = isMe
 											? "¡Has robado una carta extra!"
-											: `${currentTurnPlayer} ha robado una carta extra`;
+											: `${playerName} ha robado una carta extra`;
 
 										const notifStore = useNotificationStore.getState();
 										notifStore.addNotification({

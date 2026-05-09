@@ -62,24 +62,41 @@ export function GameBanners({
 	playerPendingSabotage,
 }: GameBannersProps) {
 	const gameData = useGameStore((state) => state.gameData);
-	const { user } = useAuth();
+	const { id: myId } = useAuth();
 	const luckResult = useGameUIStore((state) => state.luckResult);
 
 	if (!gameData) return null;
-	const { game } = gameData;
+	const { game, me } = gameData;
+
+	/**
+	 * Helper para obtener el nombre a partir de un ID
+	 * Buscar en la lista de oponentes o comprueba si soy yo.
+	 */
+	const getName = (id: string | null | undefined) => {
+		if (!id) return "Alguien";
+		if (String(id) === String(myId)) return me.name;
+		const opponent = game.opponents.find((o) => String(o.id) === String(id));
+		return opponent ? opponent.name : `Jugador ${id}`;
+	};
 
 	const isSomeoneElseDefendingSingle = !!(
 		game.pending_single_attack_target &&
-		game.pending_single_attack_target !== user
+		String(game.pending_single_attack_target) !== String(myId)
 	);
 
 	const isSomeoneElseDefendingMulti =
 		game.pending_multi_attack_targets.length > 0 &&
-		!game.pending_multi_attack_targets.includes(user || "");
+		!game.pending_multi_attack_targets.some(
+			(id) => String(id) === String(myId),
+		);
 
 	const isSomeoneElseInLuckChallenge = !!(
 		game.player_in_luck_challenge &&
-		game.player_in_luck_challenge !== user
+		String(game.player_in_luck_challenge) !== String(myId)
+	);
+
+	const isSomeoneElsePendingSabotage = !!(
+		playerPendingSabotage && String(playerPendingSabotage) !== String(myId)
 	);
 
 	return (
@@ -87,7 +104,7 @@ export function GameBanners({
 			{/* NUEVOS BANNERS INFORMATIVOS */}
 			<AnimatedBanner
 				show={isSomeoneElseDefendingSingle}
-				message={`¡${game.pending_single_attack_target} ESTÁ DECIDIENDO SI ASUMIR EL ATAQUE!`}
+				message={`¡${getName(game.pending_single_attack_target)} ESTÁ DECIDIENDO SI ASUMIR EL ATAQUE!`}
 				colorClass={styles.bgNotice}
 			/>
 
@@ -99,7 +116,7 @@ export function GameBanners({
 
 			<AnimatedBanner
 				show={isSomeoneElseInLuckChallenge}
-				message={`¡${game.player_in_luck_challenge} INTENTA ESCAPAR DEL BLOQUEO DE RRHH!`}
+				message={`¡${getName(game.player_in_luck_challenge)} INTENTA ESCAPAR DEL BLOQUEO DE RRHH!`}
 				colorClass={styles.bgNotice}
 			/>
 
@@ -125,10 +142,8 @@ export function GameBanners({
 			/>
 
 			<AnimatedBanner
-				show={
-					!!(playerPendingSabotage && playerPendingSabotage !== user)
-				}
-				message={`¡${playerPendingSabotage} ESTÁ SIENDO OBLIGADO A DESCARTAR!`}
+				show={isSomeoneElsePendingSabotage}
+				message={`¡${getName(playerPendingSabotage)} ESTÁ SIENDO OBLIGADO A DESCARTAR!`}
 				colorClass={styles.bgNotice}
 			/>
 

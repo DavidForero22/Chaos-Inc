@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useLoadingStore } from "../../store/useLoadingStore";
 
 export function usePlayerActions() {
-	const { user } = useAuth();
+	const { id: myId } = useAuth();
 
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
@@ -28,7 +28,7 @@ export function usePlayerActions() {
 		selectedCardId,
 		setSelectedCardId,
 		setIsDiscardMode,
-		setIsInfoMode, 
+		setIsInfoMode,
 		clearDiscardSelection,
 	} = useGameUIStore();
 
@@ -36,17 +36,18 @@ export function usePlayerActions() {
 	const requestCount = useLoadingStore((state) => state.requestCount);
 	const isGlobalLoading = requestCount > 0 || isActionLocked;
 
-	if (!me || !game || !user) {
+	if (!me || !game || !myId) {
 		return { isReady: false as const };
 	}
 
-	const isMyTurn = game.current_turn === user;
+	const isMyTurn = String(game.current_turn) === String(myId);
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
 	const hasPendingAttack = me.combat_state.is_attacking_single;
 	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
 	const isAttackerWaiting = me.combat_state.is_attacking_multi;
 	const hasPendingSabotage =
-		!!game.player_pending_sabotage && game.player_pending_sabotage !== user;
+		!!game.player_pending_sabotage &&
+		String(game.player_pending_sabotage) !== String(myId);
 
 	const currentCardsCount = me.cards.length;
 	const projectedCardsCount = currentCardsCount - cardsToDiscard.length;
@@ -79,7 +80,7 @@ export function usePlayerActions() {
 		isSelfTargetCard &&
 		!isTurnFrozen &&
 		!isAttackerWaiting &&
-		!isInfoMode && 
+		!isInfoMode &&
 		!isGlobalLoading;
 
 	const canEndTurn =
@@ -91,7 +92,7 @@ export function usePlayerActions() {
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
 		!isDiscardMode &&
-		!isInfoMode && 
+		!isInfoMode &&
 		selectedCardId === null &&
 		!isGlobalLoading;
 
@@ -102,7 +103,7 @@ export function usePlayerActions() {
 		!hasPendingAttack &&
 		!me.conditions.must_discard &&
 		!hasPendingSabotage &&
-		!isInfoMode && 
+		!isInfoMode &&
 		(currentCardsCount > 0 || hasEquippedPerks) &&
 		!isGlobalLoading;
 
@@ -125,7 +126,7 @@ export function usePlayerActions() {
 	// Usar la carta seleccionada de auto-uso
 	const handleUseCard = async () => {
 		if (!canUseCard || !selectedCardId) return;
-		await playTurn(selectedCardId, user);
+		await playTurn(selectedCardId, String(myId));
 		setSelectedCardId(null);
 	};
 
@@ -133,7 +134,7 @@ export function usePlayerActions() {
 		isReady: true as const,
 		me,
 		isDiscardMode,
-		isInfoMode, 
+		isInfoMode,
 		currentCardsCount,
 		projectedCardsCount,
 		willBeOverLimit,

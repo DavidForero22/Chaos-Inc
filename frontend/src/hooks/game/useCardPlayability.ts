@@ -4,7 +4,7 @@ import type { CardInstance, GameData } from "../../types/live-game";
 
 export function useCardPlayability(
 	gameData: GameData,
-	myPlayerName: string,
+	myPlayerId: string,
 	isDiscardMode: boolean,
 ) {
 	const { me, game } = gameData;
@@ -13,14 +13,20 @@ export function useCardPlayability(
 	// --- CONDICIONES GLOBALES CALCULADAS UNA SOLA VEZ ---
 	const globalConditions = useMemo(() => {
 		const myRange = me.perks.vision_range ?? 1;
-		const isMyTurn = current_turn === myPlayerName;
+		const isMyTurn = String(current_turn) === String(myPlayerId);
+		console.log("current_turn: ", current_turn);
+
+		console.log("myPlayerId: ", myPlayerId);
+
+		console.log("isMyTurn = current_turn === myPlayerId: ", isMyTurn);
+
 		const incomingAttack = me.combat_state.is_defending_single;
 		const hasPendingMultiAttack = me.combat_state.is_defending_multi;
 		const hasPendingAttack = me.combat_state.is_attacking_single;
 		const isAttackerWaiting = me.combat_state.is_attacking_multi;
 		const hasPendingSabotage =
 			!!game.player_pending_sabotage &&
-			game.player_pending_sabotage !== myPlayerName;
+			game.player_pending_sabotage !== myPlayerId;
 		const hasLuckChallenge = isMyTurn && !!me.luck_challenge;
 
 		const anyOpponentHasCards = opponents.some(
@@ -62,7 +68,7 @@ export function useCardPlayability(
 			anyOpponentHasPerks,
 			myActivePerksCount,
 		};
-	}, [me, opponents, current_turn, myPlayerName]);
+	}, [me, opponents, current_turn, myPlayerId]);
 
 	// --- FUNCIÓN EVALUADORA POR CARTA ---
 	const evaluateCard = (card: CardInstance) => {

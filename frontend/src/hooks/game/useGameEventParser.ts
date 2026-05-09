@@ -1,6 +1,7 @@
 import { useNotificationStore } from "../../store/useNotificationStore";
 import type { NotificationType } from "../../store/useNotificationStore";
 import { useGameStore } from "../../store/useGameStore";
+import { useAuth } from "../useAuth";
 
 // Objetivo de la carta
 type TargetScope = "single" | "all" | "opponents" | "self";
@@ -31,6 +32,8 @@ const CARD_DICT: Record<
 };
 
 export function useGameEventParser() {
+	const { id: myId } = useAuth();
+
 	const addNotification = useNotificationStore(
 		(state) => state.addNotification,
 	);
@@ -38,16 +41,32 @@ export function useGameEventParser() {
 
 	const parseAndNotify = (
 		cardId: number,
-		sourceName: string,
-		targetName?: string | null,
+		sourceId: string,
+		targetId?: string | null,
 	) => {
-		const myPlayerName = useGameStore.getState().gameData?.me?.name;
+		const state = useGameStore.getState();
+		const me = state.gameData?.me;
+		const opponents = state.gameData?.game?.opponents ?? [];
+
 		const cardInfo = CARD_DICT[cardId];
 		if (!cardInfo) return; // Si la carta no existe, ignorar
 
+		/**
+		 * Resolver ID a Nombre
+		 */
+		const resolveName = (id: string | null | undefined) => {
+			if (!id) return "Alguien";
+			if (String(id) === String(myId)) return me?.name;
+			const opponent = opponents.find((o) => String(o.id) === String(id));
+			return opponent ? opponent.name : `Empleado ${id}`;
+		};
+
+		const sourceName = resolveName(sourceId);
+		const targetName = resolveName(targetId);
+
 		let message = "";
-		const isMeSource = sourceName === myPlayerName;
-		const isMeTarget = targetName === myPlayerName;
+		const isMeSource = String(sourceId) === String(myId);
+		const isMeTarget = targetId ? String(targetId) === String(myId) : false;
 
 		switch (cardInfo.type) {
 			case "attack":
@@ -88,11 +107,11 @@ export function useGameEventParser() {
 					if (isMeTarget)
 						message = `¡${sourceName} usó ${cardInfo.name} contra ti!`;
 					else if (isMeSource)
-						message = targetName
+						message = targetId
 							? `Usaste ${cardInfo.name} en ${targetName}`
 							: `Usaste ${cardInfo.name}`;
 					else
-						message = targetName
+						message = targetId
 							? `${sourceName} usó ${cardInfo.name} en ${targetName}`
 							: `${sourceName} usó ${cardInfo.name}`;
 				}

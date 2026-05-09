@@ -8,7 +8,7 @@ import type { CardInstance } from "../../../types/live-game.ts";
 import styles from "./PlayerHand.module.css";
 
 export function PlayerHand() {
-    const { user } = useAuth();
+    const { id } = useAuth();
 
     // --- ESTADO GLOBAL Y UI ---
     const gameData = useGameStore((state) => state.gameData);
@@ -26,11 +26,11 @@ export function PlayerHand() {
 
     const { evaluateCard, globalConditions } = useCardPlayability(
         gameData!,
-        user!,
+        id!,
         isDiscardMode,
     );
 
-    if (!gameData || !user) return null;
+    if (!gameData || !id) return null;
     const { me } = gameData;
 
     // --- MANEJADOR DE CLIC CENTRALIZADO ---

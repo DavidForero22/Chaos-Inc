@@ -44,6 +44,7 @@ export interface CombatState {
  * Datos compartidos entre cualquier tipo de jugador (Tú o los Oponentes)
  */
 export interface BasePlayer {
+	id: string;
 	name: string;
 	avatar?: string | null;
 	stress: number;

@@ -17,7 +17,7 @@ import { useLeaveOnUnload } from "./useLeaveOnUnload.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
-	const { user } = useAuth();
+	const { id: myId } = useAuth();
 
 	const isKickedRef = useRef(false);
 
@@ -59,18 +59,22 @@ export function useLiveGame(roomId: string | undefined) {
 	const previousTurnRef = useRef<string | null>(null);
 
 	useEffect(() => {
-		// Si el turno ha cambiado, o si se ha reiniciado por completo
 		if (currentTurn !== previousTurnRef.current) {
-			if (previousTurnRef.current === user && currentTurn !== user) {
+			// Si el turno que acaba de terminar era el mío
+			if (
+				previousTurnRef.current === String(myId) &&
+				currentTurn !== String(myId)
+			) {
 				logWithTime(
 					"useLiveGame.ts - El turno ha pasado a otro jugador. Limpiando UI.",
 				);
+				// Limpiar las cartas que el usuario hubiera dejado seleccionadas
 				clearDiscardSelection();
 			}
 
-			previousTurnRef.current = currentTurn || null;
+			previousTurnRef.current = currentTurn ? String(currentTurn) : null;
 		}
-	}, [currentTurn, user, clearDiscardSelection]);
+	}, [currentTurn, myId, clearDiscardSelection]);
 
 	// -- 2. WRAPPER DE SINCRONIZACIÓN (Maneja las redirecciones) --
 	const handleSync = useCallback(async () => {
@@ -118,7 +122,8 @@ export function useLiveGame(roomId: string | undefined) {
 	// -- 3. RECONEXIÓN INICIAL (JOIN) --
 	useEffect(() => {
 		const reconnect = async () => {
-			if (!roomId || !user) return;
+			// Asegurar que tiene ID para intentar reconectar
+			if (!roomId || !myId) return;
 
 			try {
 				setIsConnecting(true);
@@ -149,7 +154,7 @@ export function useLiveGame(roomId: string | undefined) {
 		};
 
 		reconnect();
-	}, [roomId, user, handleSync, navigate, setIsConnecting]);
+	}, [roomId, myId, handleSync, navigate, setIsConnecting]);
 
 	// -- 4. AVISAR AL SERVIDOR AL CERRAR/NAVEGAR FUERA DE LA PARTIDA --
 	useLeaveOnUnload(roomId, () => {

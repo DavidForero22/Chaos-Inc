@@ -6,7 +6,6 @@ namespace App\Services\Game\Actions;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\GameException;
 use App\Exceptions\RoomException;
-use App\Jobs\AutoEndTurnJob;
 use App\Services\Game\Engine\CardValidationService;
 use App\Services\Game\Engine\PlayerHandService;
 use Illuminate\Support\Facades\Redis;

@@ -45,7 +45,7 @@ export function OpponentCard({
 	const currentTurn = useGameStore(
 		(state) => state.gameData?.game?.current_turn,
 	);
-	const isThisOpponentTurn = currentTurn === player.name && !player.is_dead;
+	const isThisOpponentTurn = currentTurn === player.id && !player.is_dead;
 
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCard !== null;
@@ -129,7 +129,7 @@ export function OpponentCard({
 				onClick={(e) => {
 					e.stopPropagation();
 					if (canCleanGlobally) {
-						onAction(player.name, player.is_online, slot.id);
+						onAction(player.id, player.is_online, slot.id);
 					} else if (slot.cardType !== undefined) {
 						setInfoCard({
 							id: slot.id,
@@ -161,7 +161,7 @@ export function OpponentCard({
 				if (isUnclickable) return;
 				if (isNonOpponentTarget) return;
 				if (selectedCard?.card_id === 12) return;
-				onAction(player.name, player.is_online);
+				onAction(player.id, player.is_online);
 			}}
 			className={`
                 ${styles.cardBase}

@@ -4,7 +4,7 @@ import { create } from "zustand";
 import type { UserAchievement, SocialAccountInfo } from "../types/api";
 
 interface AuthState {
-	id: number | null;
+	id: string | null;
 	user: string | null;
 	avatar: string | null;
 	isGuest: boolean;
@@ -13,7 +13,7 @@ interface AuthState {
 	joinedAt: string | null;
 	achievements: UserAchievement[] | null;
 	setAuth: (
-		id: number | null,
+		id: string | null,
 		user: string,
 		avatar?: string | null,
 		isGuest?: boolean,
@@ -44,7 +44,7 @@ const getSafeJSON = <T>(key: string): T | null => {
 };
 
 export const useAuthStore = create<AuthState>((set) => ({
-	id: Number(getSafeStorage("userId")) || null,
+	id: (getSafeStorage("userId")) || null,
 	user: getSafeStorage("user"),
 	avatar: getSafeStorage("avatar"),
 	isGuest: getSafeStorage("isGuest") === "true",

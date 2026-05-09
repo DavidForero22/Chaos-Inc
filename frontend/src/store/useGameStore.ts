@@ -35,7 +35,7 @@ interface GameState {
 	syncGame: () => Promise<void>;
 	playTurn: (
 		cardId: string,
-		targetName: string,
+		targetId: string,
 		perkKey?: string,
 	) => Promise<boolean>;
 	reactToAttack: (
@@ -182,7 +182,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 		}
 	},
 
-	playTurn: async (cardId, targetName, perkKey) => {
+	playTurn: async (cardId, targetId, perkKey) => {
 		const { roomId, applyGameData, isActionLocked } = get();
 		if (!roomId || isActionLocked) return false;
 
@@ -192,7 +192,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 				`/rooms/${encodeURIComponent(roomId)}/action`,
 				{
 					card_id: cardId,
-					target_name: targetName,
+					target_id: targetId, 
 					...(perkKey && { perk_key: perkKey }),
 				},
 			);

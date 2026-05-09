@@ -5,8 +5,11 @@ import { logWithTime } from "../../utils/logger.ts";
 import { useGameStore } from "../../store/useGameStore.ts";
 import { useTimerStore } from "../../store/useTimerStore.ts";
 import { useLoadingStore } from "../../store/useLoadingStore";
+import { useAuth } from "../useAuth.ts";
 
 export function useGameTimers() {
+	const { id: myId } = useAuth();
+
 	const gameData = useGameStore((state) => state.gameData);
 	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
 
@@ -41,10 +44,10 @@ export function useGameTimers() {
 	const turnExpiresAt = gameData?.game?.turn_expires_at;
 	const turnRemaining = gameData?.game?.turn_remaining;
 	const currentTurn = gameData?.game?.current_turn;
-	const myName = gameData?.me?.name;
 
 	// Verificar si es el turno del jugador
-	const isMyTurn = currentTurn === myName;
+	const isMyTurn = String(currentTurn) === String(myId);
+
 	// Identificar si el jugador es el que está esperando (Pausa de turno)
 	const isSomeoneWaitingForReaction =
 		gameData?.game?.pending_single_attack_target !== null ||
