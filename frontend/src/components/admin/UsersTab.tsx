@@ -3,18 +3,14 @@
 import { useState, useEffect } from "react";
 import { useUsersData } from "../../hooks/admin/useUsersData.ts";
 import Pagination from "./Pagination.tsx";
-
-// Props
-interface Props {
-	currentUser?: string | null;
-}
+import { useAuthStore } from "../../store/useAuthStore.ts";
 
 // ── Constantes
 const PAGE_SIZE = 20;
 
 type SortField = "username" | "joinedAt";
 type SortDir = "asc" | "desc";
-type RoleFilter = "all" | "user" | "admin" | "guest"; 
+type RoleFilter = "all" | "user" | "admin" | "guest";
 
 // Mapeo de roles a español
 const roleLabels: Record<string, string> = {
@@ -36,7 +32,10 @@ function SortArrow({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 // ── Componente ────────────────────────────────────────────────────────────────
-export default function UsersTab({ currentUser }: Props) {
+export default function UsersTab() {
+	// ── OBTENER EL ID DEL USUARIO ACTUAL ──
+	const currentUserId = useAuthStore((s) => s.id);
+
 	const {
 		users,
 		loading,
@@ -44,8 +43,8 @@ export default function UsersTab({ currentUser }: Props) {
 		createUser,
 		updateUser,
 		deleteUser,
-		totalPages, 
-		totalCount, 
+		totalPages,
+		totalCount,
 	} = useUsersData();
 
 	// Edición
@@ -139,7 +138,7 @@ export default function UsersTab({ currentUser }: Props) {
 		}
 	};
 
-	// Helper para determinar el rol real 
+	// Helper para determinar el rol real
 	const getDisplayRole = (userRole: string, isGuest: boolean) => {
 		if (isGuest) return "guest";
 		return userRole;
@@ -171,7 +170,6 @@ export default function UsersTab({ currentUser }: Props) {
 			{/* Formulario de creación */}
 			{showCreate && (
 				<div className="bg-gray-400/10 border-2 border-dashed border-[#295c60]/50 p-4 flex flex-wrap gap-4 items-end mb-4">
-					{/* ... (Tus inputs de creación se mantienen igual) ... */}
 					<div className="flex-1 min-w-37.5">
 						<label className="block text-xs font-bold uppercase opacity-70 mb-1">
 							Nombre
@@ -306,7 +304,8 @@ export default function UsersTab({ currentUser }: Props) {
 					</p>
 				) : (
 					users.map((u) => {
-						const isMe = u.username === currentUser;
+						// ── IDENTIFICACIÓN SEGURA POR ID ──
+						const isMe = String(u.id) === String(currentUserId);
 						const displayRole = getDisplayRole(u.role, u.isGuest);
 
 						return (
@@ -379,8 +378,8 @@ export default function UsersTab({ currentUser }: Props) {
 												</span>
 											</span>
 											<p className="text-sm opacity-70 mt-1">
-												<span className="font-bold">Email:</span> {u.email}{" "}
-												<span className="mx-2">|</span>{" "}
+												<span className="font-bold">Email:</span>{" "}
+												{u.email || "Oculto"} <span className="mx-2">|</span>{" "}
 												<span className="font-bold">Alta:</span>{" "}
 												{new Date(u.joinedAt).toLocaleDateString("es-ES")}
 											</p>
@@ -402,9 +401,10 @@ export default function UsersTab({ currentUser }: Props) {
 													<button
 														onClick={() => {
 															setEditingId(u.id);
+															// ── FIX TYPE ERROR: Fallback para el email a un string vacío
 															setEditData({
 																username: u.username,
-																email: u.email,
+																email: u.email || "",
 																role: u.role,
 															});
 														}}

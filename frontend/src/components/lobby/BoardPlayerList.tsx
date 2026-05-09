@@ -6,46 +6,56 @@ import styles from "./BoardPlayerList.module.css";
 interface BoardPlayerListProps {
 	players: RoomPlayer[];
 	maxPlayers: number;
-	ownerName: string;
-	user: string | null;
+	ownerId: string | number; 
+	currentUserId: string | number | null; 
 	onKickClick: (playerId: string) => void;
 }
 
 export default function BoardPlayerList({
 	players,
 	maxPlayers,
-	ownerName,
-	user,
+	ownerId,
+	currentUserId,
 	onKickClick,
 }: BoardPlayerListProps) {
+	const amIOwner = String(ownerId) === String(currentUserId);
+
 	return (
 		<div className={styles.playerList}>
-			{players.map((player) => (
-				<div key={player.id} className={styles.playerRow}>
-					{" "}
-					<div className={`flex items-center ${styles.markerBlack}`}>
-						<span className={`${styles.magnet} ${styles.magnetGreen}`}></span>
-						{player.name}
-						{player.name === user && (
-							<span className={`${styles.markerBlue} text-sm ml-3 italic`}>
-								(Tú)
-							</span>
-						)}
-						{player.name === ownerName && (
-							<span className="text-sm ml-3">⭐ Líder</span>
+			{players.map((player) => {
+				const isMe = String(player.id) === String(currentUserId);
+				const isPlayerTheOwner = String(player.id) === String(ownerId);
+
+				return (
+					<div key={player.id} className={styles.playerRow}>
+						<div className={`flex items-center ${styles.markerBlack}`}>
+							<span className={`${styles.magnet} ${styles.magnetGreen}`}></span>
+							{player.name}
+
+							{isMe && (
+								<span className={`${styles.markerBlue} text-sm ml-3 italic`}>
+									(Tú)
+								</span>
+							)}
+
+							{isPlayerTheOwner && (
+								<span className="text-sm ml-3">⭐ Líder</span>
+							)}
+						</div>
+
+						{/* Mostrar botón de expulsar si soy el líder y este jugador no soy yo */}
+						{amIOwner && !isMe && (
+							<button
+								onClick={() => onKickClick(String(player.id))}
+								className={styles.btnErase}
+								title={"Expulsar a " + player.name}
+							>
+								Expulsar
+							</button>
 						)}
 					</div>
-					{ownerName === user && player.name !== user && (
-						<button
-							onClick={() => onKickClick(player.id)}
-							className={styles.btnErase}
-							title={"Expulsar a " + player.name}
-						>
-							Expulsar
-						</button>
-					)}
-				</div>
-			))}
+				);
+			})}
 
 			{players.length < maxPlayers && (
 				<div

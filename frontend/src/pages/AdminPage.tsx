@@ -54,7 +54,7 @@ export default function AdminPage() {
 
 			<div className="font-mono text-[#393e42]">
 				{tab === "users" && (
-					<UsersTab currentUser={user}/>
+					<UsersTab/>
 				)}
 				{tab === "games" && <GamesTab />}
 			</div>

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../../hooks/room/useRoom.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
+import { useAuthStore } from "../../store/useAuthStore.ts";
 import { FaShareAlt, FaCheck } from "react-icons/fa";
 
 import GuestNameModal from "../../components/lobby/GuestNameModal.tsx";
@@ -16,6 +17,7 @@ export default function WaitingRoomPage() {
 	const { id } = useParams();
 	const navigate = useNavigate();
 	const { startLoading, stopLoading } = useLoadingStore();
+	const currentUserId = useAuthStore((state) => state.id);
 
 	const {
 		room,
@@ -186,7 +188,8 @@ export default function WaitingRoomPage() {
 	}
 
 	const missingPlayers = 3 - (room?.players.length || 0);
-	const isOwner = room?.owner_name === user;
+
+	const isOwner = String(room?.owner_id) === String(currentUserId);
 
 	// 5. Estado: Pizarra Principal de la Sala
 	return (
@@ -232,11 +235,12 @@ export default function WaitingRoomPage() {
 				</span>
 			</div>
 
+			{/* Listado de jugadores */}
 			<BoardPlayerList
 				players={room.players}
 				maxPlayers={room.max_players}
-				ownerName={room.owner_name}
-				user={user}
+				ownerId={room.owner_id}
+				currentUserId={currentUserId}
 				onKickClick={onKickClick}
 			/>
 
