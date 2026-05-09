@@ -110,44 +110,12 @@ export function useAuth() {
 		}
 	};
 
-	// Sincronizar Avatar con el Provider
-	const syncProviderAvatar = async () => {
-		if (!id) return false;
-
-		clearError();
-		setIsLoading(true);
-
-		try {
-			await getCsrfCookie();
-
-			const formData = new FormData();
-			formData.append("_method", "PUT");
-			formData.append("sync_avatar", "true");
-
-			await api.post(`/users/${id}`, formData);
-
-			// Al borrar el manual, actualizamos el store a null.
-			// La UI automáticamente pasará a mostrar el providerAvatar.
-			useAuthStore.getState().setAvatar?.(null);
-
-			return true;
-		} catch (err: any) {
-			setError(
-				err.response?.data?.message || "Error al sincronizar el avatar.",
-			);
-			return false;
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
 	return {
 		id,
 		user,
 		avatar,
 		isGuest,
 		role,
-		isAuthenticated: !!user,
 		isLoading,
 		error,
 		clearError,
@@ -155,6 +123,5 @@ export function useAuth() {
 		register,
 		logout,
 		uploadAvatar,
-		syncProviderAvatar,
 	};
 }
