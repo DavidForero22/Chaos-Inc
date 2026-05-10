@@ -38,7 +38,7 @@ export const RESULT_CONFIG: Record<
 		headline: "¡RUBIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
 		image: "/game-result/game_result_placeholder.jpg",
 		subtitle:
-			"¡Pues ahora pienso montar mi propia empresa, con casinos y furcias! Es más, paso de la empresa.",
+			"¡Pues ahora pienso montar mi propia empresa, con casinos y f*rcias! Es más, paso de la empresa.",
 		description: `En mitad de las encarnizadas disputas entre la directiva de Chaos Inc. y el sindicato de trabajadores, una joven que se incorporó hace apenas semanas como becaria ha 
             aprovechado el vacío de poder para autoproclamarse CEO. La incógnita sobre cómo logró inscribir su nombre en las escrituras de la empresa entre grito y grito sigue
             desconcertando a los analistas. Mientras tanto, antiguos empleados aseguran haber visto a Oswaldo Calzas y Gusi Baboncia, ex-directivos de la empresa, pidiendo limosna 

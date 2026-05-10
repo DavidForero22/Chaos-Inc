@@ -29,6 +29,7 @@ class DeckService
                     'description'          => $card['description'] ?? '',
                     'lore'                 => $card['lore'] ?? '',
                     'icons'                => $card['icons'] ?? [],
+                    'image'                => $card['image'] ?? null,
                 ];
             }
         }

@@ -84,7 +84,7 @@ export function GameOverModal({
 
 					{!isCancelled && (
 						<div className="mt-6 border-t-2 border-black pt-4">
-							<strong>FACCIONES VICTORIOSAS RECONOCIDAS:</strong>
+							<strong>FACCIONES VICTORIOSAS:</strong>
 							<ul className="list-disc pl-5 mt-2">
 								{config.winners.map((role) => (
 									<li key={role} className="font-bold">

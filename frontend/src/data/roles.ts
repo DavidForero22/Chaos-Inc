@@ -35,7 +35,7 @@ export const ROLE_CONFIG: Record<
 	},
 	union: {
 		label: "Sindicalista",
-		image: "/roles/role_reveal_placeholder.png",
+		image: "/roles/role_reveal_union.jpeg",
 		objective:
 			"El sistema está corrupto y tú eres la cura. Coordínate en secreto, expón las prácticas ilegales y acaba con la Dirección actual para tomar el control de la empresa.",
 		titleLabel: "Tu rol en esta partida",

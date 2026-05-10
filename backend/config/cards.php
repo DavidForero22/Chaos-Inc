@@ -21,6 +21,7 @@ return [
             'lore'         => 'Al contable le cayó una grapadora mientras caminaba por el pasillo.',
             'icons'        => ['opponent', 'attack'],
             'count'        => 28,
+            'image'        => 'attack.png',
         ],
 
         // ─── 2. CURAR  ────────────────────────────────
@@ -34,6 +35,7 @@ return [
             'lore'         => 'Tomas una taza de té y te lo bebes tranquilamente entre todo el caós de la oficina. Te sientes tan británico que podrias robar artefactos egipcios.',
             'icons'        => ['self', 'heal'],
             'count'        => 7,
+            'image'        => 'heal.png',
         ],
 
         // ─── 3. ESQUIVAR  ─────────────────────────────
@@ -47,6 +49,7 @@ return [
             'lore'         => 'Si lo piensas bien, los impuestos son un ataque contra tu persona.',
             'icons'        => ['self', 'dodge'],
             'count'        => 11,
+            'image'        => 'dodge.png',
         ],
 
         // ─── 4. ROBAR  ──────────────────────────────
@@ -60,6 +63,7 @@ return [
             'lore'         => 'Pensaba que el nombre del tupper era el nombre del plato...',
             'icons'        => ['opponent', 'steal'],
             'count'        => 5,
+            'image'        => 'steal.png',
         ],
 
         // ─── 5. ESCUDO  ────────────────────────────────
@@ -73,6 +77,7 @@ return [
             'lore'         => '"¡Escudo para siempre, me rebota todo!"',
             'icons'        => ['self', 'perk'],
             'count'        => 4,
+            'image'        => 'shield.png',
         ],
 
         // ─── 6. BLOQUEO  ────────────────────────────
@@ -86,6 +91,7 @@ return [
             'lore'         => '¡Codigo marrón, codigo marrón!',
             'icons'        => ['opponent', 'block'],
             'count'        => 4,
+            'image'        => 'block.png',
         ],
 
         // ─── 7. ATAQUE MASIVO  ──────────────────────
@@ -99,6 +105,7 @@ return [
             'lore'         => 'Una presencia terrorifica ha entrado en la sala...',
             'icons'        => ['opponents', 'attack'],
             'count'        => 6,
+            'image'        => 'multi_attack.png',
         ],
 
         // ─── 8. CURACIÓN MASIVA  ────────────────────
@@ -112,6 +119,7 @@ return [
             'lore'         => 'Sin tele y sin cerveza, todos pierden la cabeza.',
             'icons'        => ['all', 'heal'],
             'count'        => 3,
+            'image'        => 'multi_heal.png',
         ],
 
         // ─── 9. SABOTAJE  ────────────────────
@@ -125,6 +133,7 @@ return [
             'lore'         => '"¡Es que no quedaba más papel higiénico!"',
             'icons'        => ['opponent', 'discard'],
             'count'        => 6,
+            'image'        => 'discard.png',
         ],
 
         // ─── 10. VISIÓN  ───────────────────────────────
@@ -138,6 +147,7 @@ return [
             'lore'         => 'Ahh, por eso les llaman piratas informáticos...',
             'icons'        => ['self', 'perk'],
             'count'        => 3,
+            'image'        => 'vision.png',
         ],
 
         // ─── 11. LEJANÍA  ──────────────────────────────
@@ -148,9 +158,10 @@ return [
             'base_name'    => 'Lejanía',
             'display_name' => 'Teletrabajo',
             'description'  => 'Los jugadores te ven a +1 de distancia.',
-            'lore'         => '"Una partida más al LoL y vuelta al curro, esta vez sí."',
+            'lore'         => 'Llevas 3 horas jugando y el único "trabajo" que has hecho es avisar por el chat de la empresa que estás en linea.',
             'icons'        => ['self', 'perk'],
             'count'        => 3,
+            'image'        => 'distance.png',
         ],
 
         // ─── 12. LIMPIEZA  ──────────────────────────
@@ -164,6 +175,7 @@ return [
             'lore'         => 'Te han recortado hasta la ropa... Esto si que es un corte de manga.',
             'icons'        => ['opponent', 'discard'],
             'count'        => 8,
+            'image'        => 'clean.png',
         ],
 
         // ─── 13. ALMACÉN  ──────────────────────────────
@@ -177,6 +189,7 @@ return [
             'lore'         => '"¡Mirad que pedazo riñonera me he traido! Son las bragas de mi mujer."',
             'icons'        => ['self', 'perk'],
             'count'        => 3,
+            'image'        => 'storage.png',
         ],
 
         // ─── 14. SUERTE  ───────────────────────────────
@@ -185,11 +198,12 @@ return [
             'type'         => 'perk',
             'target'       => 'self',
             'base_name'    => 'Suerte',
-            'display_name' => 'Buenaventura Gitana',
+            'display_name' => 'Suerte',
             'description'  => 'Al inicio de tu turno, tienes un 50% de probabilidad de tomar una carta extra.',
-            'lore'         => 'Les has devuelto los dos gallos y te han regalado una estampita de la Virgen de la Capilla.',
+            'lore'         => 'Es la 10º rifa de la oficina que has ganado este año.',
             'icons'        => ['self', 'perk'],
             'count'        => 3,
+            'image'        => 'luck.png',
         ],
     ],
 ];

@@ -447,7 +447,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 										<div className={styles.chartsRow}>
 											<div className={styles.chartBlock}>
 												<p className={styles.chartTitle}>
-													— PERFIL DE AGENTE —
+													— PERFIL DE JUGADOR —
 												</p>
 												<ReactECharts
 													option={radarOption}
@@ -457,7 +457,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 											</div>
 											<div className={styles.chartBlock}>
 												<p className={styles.chartTitle}>
-													— DEPARTAMENTO HABITUAL —
+													— ROLES JUGADOS —
 												</p>
 												<ReactECharts
 													option={doughnutOption}
@@ -471,7 +471,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 										<div className={styles.chartsRow}>
 											<div className={styles.chartBlock}>
 												<p className={styles.chartTitle}>
-													— EFICACIA POR DEPARTAMENTO —
+													— EFICACIA POR ROL —
 												</p>
 												<ReactECharts
 													option={winrateOption}
@@ -502,7 +502,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												className={`${styles.chartBlock} ${styles.chartFull}`}
 											>
 												<p className={styles.chartTitle}>
-													— HERRAMIENTAS DE CONFIANZA (TOP 5) —
+													— CARTAS MÁS USADAS —
 												</p>
 												<ReactECharts
 													option={topCardsOption}

@@ -125,17 +125,17 @@ export function Card({
 					)}
 
 					{/* 1. CABECERA: Título (Formato BANG!) */}
-					<div className="w-full grow flex items-center justify-center px-1 pt-1 pb-1 z-10">
+					<div className="w-full h-10 flex items-center justify-center px-1  z-10">
 						<div className={styles.cardName} title={card.name}>
 							{card.name}
 						</div>
 					</div>
 
 					{/* 2. MEDIO: Imagen */}
-					<div className="w-full h-20 relative shrink-0 bg-gray-900 border-y-2 border-gray-800/10 flex items-center justify-center overflow-hidden">
+					<div className="w-full h-20 relative shrink-0  border-y-2 border-gray-800/10 flex items-center justify-center overflow-hidden">
 						{card.image ? (
 							<img
-								src={`/images/cards/${card.image}`}
+								src={`/cards/${card.image}`}
 								alt={card.name}
 								className="w-full h-full object-cover opacity-95"
 							/>
@@ -147,7 +147,7 @@ export function Card({
 					</div>
 
 					{/* 3. PIE: Iconos */}
-					<div className="w-full h-6 shrink-0 flex justify-center items-center gap-1 z-10 ">
+					<div className="w-full h-6 shrink-0 flex justify-center items-center mt-1 gap-1 z-10 ">
 						{card.icons?.map((iconKey, index) => {
 							const IconComponent = ICON_MAP[iconKey];
 							if (!IconComponent) return null;
