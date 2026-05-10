@@ -1,5 +1,7 @@
 // src/pages/KnowMorePage.tsx
 
+import Changelog from "../../components/know-more/Changelog";
+
 export default function KnowMorePage() {
 	return (
 		<div className="pl-6 space-y-6 pb-10">
@@ -26,15 +28,15 @@ export default function KnowMorePage() {
 					firmemente que de la paranoia nace la excelencia corporativa.
 				</p>
 
-				<h3 className="text-lg font-bold mt-6">
-					Nuestro Historial de Versiones
-				</h3>
+				<h3 className="text-lg font-bold mt-6">Historial de Versiones</h3>
 				<p>
-					El desarrollo de nuestro software interno (también conocido como "El
-					Juego") está documentado meticulosamente. Puede revisar la evolución
-					de nuestro sistema operativo en su expediente, donde detallamos cómo
-					hemos ido optimizando las mecánicas de sufrimiento laboral.
+					El desarrollo de <strong>Chaos Inc.</strong> ha sido largo y laborioso al estar sobre
+					los hombros de un único desarrollador. Me parecía una buena práctica
+					registrar las diferentes versiones que han ido surgiendo para poder
+					consultar el avance del proyecto con el tiempo.
 				</p>
+
+				<Changelog />
 
 				<br />
 				<br />

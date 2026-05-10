@@ -1,0 +1,154 @@
+/* src/components/know-more/Changelog.module.css */
+
+.container {
+	margin-top: 1.5rem;
+	font-family: "Courier New", Courier, monospace;
+	color: #2b2b2b;
+}
+
+/* ── BOTÓN PRINCIPAL ── */
+.mainToggle {
+	width: 100%;
+	padding: 15px;
+	font-size: 1rem;
+	font-weight: 900;
+	text-align: left;
+	background-color: #2b2b2b;
+	color: #fcf9f2;
+	border: 2px solid #2b2b2b;
+	cursor: pointer;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	transition:
+		background-color 0.2s,
+		color 0.2s;
+	box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+.mainToggle:hover {
+	background-color: #1a1a1a;
+}
+
+/* ── ANIMACIONES DE DESPLIEGUE (CSS GRID TRICK) ── */
+.collapsibleWrapper {
+	display: grid;
+	grid-template-rows: 0fr;
+	/* AÑADIMOS la transición de visibility para que espere al cerrar */
+	transition:
+		grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+		opacity 0.3s ease-out,
+		visibility 0.3s;
+	opacity: 0;
+	visibility: hidden;
+}
+
+.collapsibleWrapperOpen {
+	grid-template-rows: 1fr;
+	opacity: 1;
+	visibility: visible;
+}
+
+.collapsibleInner {
+	overflow: hidden;
+}
+
+/* ── CONTENEDOR DEL CHANGELOG ── */
+.changelogContent {
+	margin-top: 1rem;
+	border: 2px solid #2b2b2b;
+	background-color: rgba(255, 255, 255, 0.5);
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
+/* ── BLOQUE DE VERSIÓN ── */
+.releaseBlock {
+	border-bottom: 2px dashed #a0a0a0;
+	padding-bottom: 1.5rem;
+}
+
+.releaseBlock:last-child {
+	border-bottom: none;
+	padding-bottom: 0;
+}
+
+.releaseHeader {
+	margin-bottom: 1rem;
+}
+
+.versionTitle {
+	font-size: 1.4rem;
+	font-weight: 900;
+	margin: 0 0 0.2rem 0;
+	text-transform: uppercase;
+}
+
+.date {
+	font-size: 0.8rem;
+	font-weight: bold;
+	color: #555;
+	background-color: #eaddc5;
+	padding: 2px 6px;
+	border: 1px solid #2b2b2b;
+	display: inline-block;
+}
+
+/* ── LISTA DE CAMBIOS ── */
+.changesList {
+	margin: 0 0 1.5rem 1.2rem;
+	padding: 0;
+	list-style-type: square;
+	font-size: 0.95rem;
+	line-height: 1.5;
+}
+
+.changesList li {
+	margin-bottom: 0.4rem;
+}
+
+/* ── NOTAS DE DESARROLLO (Desplegable secundario) ── */
+.notesSection {
+	margin-top: 1rem;
+	background-color: rgba(0, 0, 0, 0.03);
+	border: 1px solid #ccc;
+	padding: 0.5rem;
+}
+
+.notesToggle {
+	width: 100%;
+	text-align: left;
+	font-family: inherit;
+	font-weight: bold;
+	font-size: 0.85rem;
+	background: transparent;
+	border: none;
+	color: #2b2b2b;
+	cursor: pointer;
+	padding: 0.5rem;
+	text-decoration-style: dashed;
+}
+
+.notesToggle:hover {
+	color: #000;
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.notesContent {
+	margin-top: 0.5rem;
+	padding: 2rem;
+	border-left: 3px solid #2b2b2b;
+	background-color: #eaddc5;
+	font-size: 0.9rem;
+	line-height: 1.6;
+	text-align: justify;
+}
+
+.notesContent p {
+	margin: 0 0 2rem 0;
+}
+
+.notesContent p:last-child {
+	margin: 0;
+}
