@@ -25,7 +25,7 @@ export const RESULT_CONFIG: Record<
 	},
 	union: {
 		headline: "¡CHAOS INC. CIERRA SUS PUERTAS!",
-		image: "/game-result/game_result_placeholder.jpg",
+		image: "/game-result/game_result_union.jpg",
 		subtitle:
 			"El abandonado establecimiento fue comprado por una cadena de Labubus.",
 		description: `Tras meses de huelgas y recogida de firmas por abusos laborales, el sindicato de trabajadores ha logrado que Chaos Inc. se declare en bancarrota y cierre 
@@ -36,7 +36,7 @@ export const RESULT_CONFIG: Record<
 	},
 	intern: {
 		headline: "¡RUBIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
-		image: "/game-result/game_result_placeholder.jpg",
+		image: "/game-result/game_result_intern.jpg",
 		subtitle:
 			"¡Pues ahora pienso montar mi propia empresa, con casinos y f*rcias! Es más, paso de la empresa.",
 		description: `En mitad de las encarnizadas disputas entre la directiva de Chaos Inc. y el sindicato de trabajadores, una joven que se incorporó hace apenas semanas como becaria ha 
@@ -50,9 +50,9 @@ export const RESULT_CONFIG: Record<
 		image: "/game-result/game_result_placeholder.jpg",
 		subtitle: "También en la sección del tiempo: Nublado",
 		description: `Tras meses de hostilidades, la directiva de Chaos Inc. y el sindicato han firmado un armisticio por puro agotamiento. La empresa retomará su actividad 
-        habitual mientras los sindicalistas ya buscan una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido obsequiados 
-        con una porción de pizza y un refresco. En otro orden de cosas, se informa de que el departamento de limpieza explotó repentinamente durante el conflicto, resultando 
-        en el fallecimiento del operario de turno. Su familia ha sido debidamente compensada con una porción de pizza y un refresco.`,
+        habitual mientras los sindicalistas ya buscan una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido debidamente 
+		compensados con una porción de pizza y un refresco. En otro orden de cosas, se informa de que el departamento de limpieza explotó repentinamente durante el 
+		conflicto, resultando en el fallecimiento del operario de turno. Su familia ha sido debidamente compensada con una porción de pizza y un refresco.`,
 		winners: [],
 	},
 };
