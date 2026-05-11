@@ -1,7 +1,11 @@
 // src/components/profile/ProfileAchievements.tsx
 
 import { useEffect, useState } from "react";
-import { ACHIEVEMENTS, type Achievement } from "../../data/achievements.ts";
+import {
+	ACHIEVEMENTS,
+	type Achievement,
+	type UnactiveAchievement,
+} from "../../data/achievements.ts";
 import type { UserAchievement } from "../../types/api.ts";
 import styles from "./ProfileAchievements.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
@@ -19,6 +23,12 @@ export default function ProfileAchievements({
 
 	const getImagePath = (path: string) =>
 		path.startsWith("/") ? path : `/${path}`;
+
+	const unactiveAch: UnactiveAchievement = {
+		title: "Proximamente...",
+		technicalDescription: "¡Estamos trabajando en ello!",
+		image: "/achievements/ach_placeholder.png",
+	};
 
 	const unlockedMap = new Map<string, string>();
 	userAchievements.forEach((ach) => {
@@ -69,12 +79,20 @@ export default function ProfileAchievements({
 								<div
 									key={ach.id}
 									className={styles.achStickerContainer}
-									title={ach.technicalDescription}
+									title={
+										ach.active
+											? ach.technicalDescription
+											: unactiveAch.technicalDescription
+									}
 									onClick={() => setSelectedAchievement(ach)}
 								>
 									<img
-										src={getImagePath(ach.image)}
-										alt={ach.title}
+										src={
+											ach.active
+												? getImagePath(displayImage)
+												: getImagePath(unactiveAch.image)
+										}
+										alt={ach.active ? ach.title : unactiveAch.title}
 										className={styles.achSticker}
 									/>
 								</div>
@@ -85,12 +103,23 @@ export default function ProfileAchievements({
 								<div
 									key={`locked-${ach.id}`}
 									className={styles.lockedStickerContainer}
-									title={ach.technicalDescription}
+									title={
+										ach.active
+											? ach.technicalDescription
+											: unactiveAch.technicalDescription
+									}
 									onClick={() => setSelectedAchievement(ach)}
 								>
 									<img
-										src={displayImage}
-										alt="Bloqueado"
+										src={
+											ach.active
+												? getImagePath(displayImage)
+												: unactiveAch.image
+										}
+										alt={
+											(ach.active ? ach.title : unactiveAch.title) +
+											"(Sin desbloquear)"
+										}
 										className={styles.lockedSticker}
 									/>
 									<div className={styles.lockedOverlay}>
@@ -120,31 +149,41 @@ export default function ProfileAchievements({
 										src={getImagePath(selectedAchievement.image)}
 										alt={selectedAchievement.title}
 										className={
-											isAchievementUnlocked(selectedAchievement.id)
+											isAchievementUnlocked(selectedAchievement.id) || !selectedAchievement.active
 												? styles.modalIcon
-												: `${styles.modalIcon} ${styles.lockedSticker}`
+												: `${styles.lockedSticker}`
 										}
 									/>
 								</div>
 								<div className={styles.modalTextInfo}>
 									<h3 className={styles.modalTitle}>
-										{selectedAchievement.title}
+										{selectedAchievement.active
+											? selectedAchievement.title
+											: unactiveAch.title}
 									</h3>
 									<p className={styles.modalDescription}>
-										{selectedAchievement.technicalDescription}
+										{selectedAchievement.active
+											? selectedAchievement.technicalDescription
+											: unactiveAch.technicalDescription}
 									</p>
 								</div>
 							</div>
 
-							<div className={styles.modalBody}>
-								<p className={styles.modalLore}>"{selectedAchievement.lore}"</p>
-								<p className={styles.modalDate}>
-									REGISTRADO:{" "}
-									{isAchievementUnlocked(selectedAchievement.id)
-										? formatUnlockDate(unlockedMap.get(selectedAchievement.id))
-										: "Sin desbloquear"}
-								</p>
-							</div>
+							{selectedAchievement.active && (
+								<div className={styles.modalBody}>
+									<p className={styles.modalLore}>
+										"{selectedAchievement.lore}"
+									</p>
+									<p className={styles.modalDate}>
+										DESBLOQUEADO:{" "}
+										{isAchievementUnlocked(selectedAchievement.id)
+											? formatUnlockDate(
+													unlockedMap.get(selectedAchievement.id),
+												)
+											: "Por descubrir"}
+									</p>
+								</div>
+							)}
 						</div>
 					</div>
 				)}

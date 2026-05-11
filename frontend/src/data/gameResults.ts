@@ -47,7 +47,7 @@ export const RESULT_CONFIG: Record<
 	},
 	canceled: {
 		headline: "¡NUNCA PASA NADA!",
-		image: "/game-result/game_result_placeholder.jpg",
+		image: "/game-result/game_result_cancelled.jpg",
 		subtitle: "También en la sección del tiempo: Nublado",
 		description: `Tras meses de hostilidades, la directiva de Chaos Inc. y el sindicato han firmado un armisticio por puro agotamiento. La empresa retomará su actividad 
         habitual mientras los sindicalistas ya buscan una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido debidamente 
