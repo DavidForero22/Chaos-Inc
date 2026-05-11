@@ -10,7 +10,7 @@ interface ModalProps {
 
 export function Modal({ children, maxWidth = "max-w-2xl" }: ModalProps) {
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center bg-[#030712]/80 backdrop-blur-md animate-fade-in p-4">
+		<div className="fixed inset-0 z-51 flex items-center justify-center bg-[#030712]/80 backdrop-blur-md animate-fade-in p-4">
 			{/* CARCASA EXTERIOR (Plástico del Monitor) */}
 			<div className={`${styles.monitorCasing} ${maxWidth} w-full text-left`}>
 				{/* CRISTAL DE LA PANTALLA */}

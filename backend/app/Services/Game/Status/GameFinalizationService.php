@@ -63,6 +63,15 @@ class GameFinalizationService
 
         foreach ($playerIds as $playerId) {
             $pInfo  = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
+            $isDead = (isset($pInfo['is_dead']) && $pInfo['is_dead'] == '1');
+            $isOnline = CastHelper::toBool($pInfo['is_online'] ?? 1);
+
+            // Si está desconectado y vivo, abandonó prematuramente
+            // Saltar esta iteración para no guardar sus estadísticas ni contarle la partida
+            if (!$isOnline && !$isDead) {
+                continue;
+            }
+
             $pStats = Redis::hgetall("room:{$roomId}:player:{$playerId}:stats");
             $cardUsage = Redis::hgetall("room:{$roomId}:player:{$playerId}:card_usage");
 
@@ -74,9 +83,9 @@ class GameFinalizationService
             $role  = $pInfo['role'] ?? 'intern';
             $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
-            $isDead = (isset($pInfo['is_dead']) && $pInfo['is_dead'] == '1');
+            
             $isActingBoss = (isset($pInfo['acting_boss']) && $pInfo['acting_boss'] == '1');
-            $isGuest = \App\Support\CastHelper::toBool($pInfo['is_guest'] ?? 1);
+            $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
             $displayName = $pInfo['username'] ?? "Player_{$playerId}";
             $userId = $pInfo['user_id'] ?? $playerId;
 

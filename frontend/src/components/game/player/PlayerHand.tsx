@@ -77,7 +77,6 @@ export function PlayerHand() {
                     </div>
                 ) : (
                     me.cards.map((card) => {
-                        console.log(card)
                         const { isSelectable, canUseDodgeNow } = evaluateCard(card);
                         const isSelected = selectedCardId === card.id;
                         const isMarkedForDiscard = cardsToDiscard.includes(card.id);

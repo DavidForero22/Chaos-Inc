@@ -181,6 +181,7 @@ class LiveGameService
                 'acting_boss'     => 0,
                 'is_online'       => 1,
                 'is_dead'         => 0,
+                'killer_name'     => null,
                 'is_guest'        => $user ? ($user->is_guest ? 1 : 0) : 1,
             ]);
 

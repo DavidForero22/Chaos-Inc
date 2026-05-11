@@ -58,6 +58,7 @@ class MyDataResource extends JsonResource
             'stress'                   => $currentStress,
             'max_stress'               => $maxStress,
             'is_dead'                  => CastHelper::toBool($myData['is_dead'] ?? 0),
+            'killer_name'              => $myData['killer_name'] ?? null,
             'is_online'                => CastHelper::toBool($myData['is_online'] ?? 1),
 
             // Recursos

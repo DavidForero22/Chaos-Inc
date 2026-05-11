@@ -69,6 +69,7 @@ class GameDataResource extends JsonResource
                 // :info
                 'stress'      => (int) ($pInfo['stress'] ?? 0),
                 'is_dead'     => CastHelper::toBool($pInfo['is_dead'] ?? 0),
+                'killer_name' => $pInfo['killer_name'] ?? null,
                 'role'        => (($pInfo['role'] ?? '') === 'boss') ? 'boss' : 'hidden',
                 'is_online'   => CastHelper::toBool($pInfo['is_online'] ?? 1),
 

@@ -63,10 +63,21 @@ export function useGameEventParser() {
 
 		const sourceName = resolveName(sourceId);
 		const targetName = resolveName(targetId);
+		/**
+		 * Obtiene el objeto completo del target para comprobar su estado de muerte
+		 */
+		const targetObj = targetId
+			? String(targetId) === String(myId)
+				? me
+				: opponents.find((o) => String(o.id) === String(targetId))
+			: null;
 
 		let message = "";
 		const isMeSource = String(sourceId) === String(myId);
 		const isMeTarget = targetId ? String(targetId) === String(myId) : false;
+		// Comprobar si este ataque concreto ha sido el causante de la muerte
+		const isLethal =
+			targetObj?.is_dead && targetObj?.killer_name === sourceName;
 
 		switch (cardInfo.type) {
 			case "attack":
@@ -75,9 +86,17 @@ export function useGameEventParser() {
 						? `Has usado ${cardInfo.name}`
 						: `¡${sourceName} te ha atacado con ${cardInfo.name}!`;
 				} else {
-					if (isMeTarget) message = `¡${sourceName} te ha atacado!`;
-					else if (isMeSource) message = `Has atacado a ${targetName}`;
-					else message = `${sourceName} atacó a ${targetName}`;
+					if (isLethal) {
+						// Si hay muerte
+						if (isMeTarget) message = `¡${sourceName} te ha eliminado!`;
+						else if (isMeSource) message = `¡Has eliminado a ${targetName}!`;
+						else message = `¡${sourceName} ha eliminado a ${targetName}!`;
+					} else {
+						// Si el ataque fue normal
+						if (isMeTarget) message = `¡${sourceName} te ha atacado!`;
+						else if (isMeSource) message = `Has atacado a ${targetName}`;
+						else message = `${sourceName} atacó a ${targetName}`;
+					}
 				}
 				break;
 

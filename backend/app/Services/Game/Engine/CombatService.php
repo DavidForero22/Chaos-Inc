@@ -19,6 +19,7 @@ class CombatService
         $targetInfoKey    = "room:{$roomId}:player:{$targetId}:info";
         $targetStatsKey   = "room:{$roomId}:player:{$targetId}:stats";
         $attackerStatsKey = "room:{$roomId}:player:{$attackerId}:stats";
+        $attackerInfoKey  = "room:{$roomId}:player:{$attackerId}:info";
 
         $role      = Redis::hget($targetInfoKey, 'role');
         $maxStress = ($role === 'boss') ? 5 : 4;
@@ -32,6 +33,10 @@ class CombatService
         if ($newStress >= $maxStress) {
             Redis::hset($targetInfoKey, 'is_dead', 1);
             Redis::hincrby($attackerStatsKey, 'eliminations', 1);
+
+            //  Guardar nombre de quien mató al jugador
+            $killerName = Redis::hget($attackerInfoKey, 'username') ?: 'Desconocido';
+            Redis::hset($targetInfoKey, 'killer_name', $killerName);
 
             $this->checkVictory($roomId, $targetId);
         }

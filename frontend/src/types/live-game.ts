@@ -50,6 +50,7 @@ export interface BasePlayer {
 	stress: number;
 	max_stress: number;
 	is_dead: boolean;
+	killer_name?: string | null;
 	is_online: boolean;
 	conditions: Pick<PlayerConditions, "acting_boss" | "is_blocked">;
 	perks: PlayerPerks;

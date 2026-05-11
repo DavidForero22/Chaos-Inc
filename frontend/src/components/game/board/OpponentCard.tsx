@@ -66,7 +66,7 @@ export function OpponentCard({
 	let isUnclickable = false;
 
 	if (player.is_dead) {
-		tooltipMessage = "Este jugador ya está muerto..";
+		tooltipMessage = "Este jugador ya está muerto.";
 		isUnclickable = true;
 	} else if (!player.is_online) {
 		tooltipMessage = "Este jugador está desconectado.";
@@ -166,9 +166,9 @@ export function OpponentCard({
 			className={`
                 ${styles.cardBase}
                 ${isThisOpponentTurn ? "ring-4 ring-[#cbbe34] shadow-[0_0_20px_rgba(203,190,52,0.6)] -translate-y-2" : ""}
-                ${!player.is_online ? "opacity-50 grayscale scale-95" : ""}
-                ${player.is_dead ? "opacity-40 grayscale scale-95 border-red-900 shadow-none" : ""}
-                ${isUnclickable && !player.is_dead && player.is_online ? "opacity-50 grayscale scale-95" : ""}
+                ${player.is_dead ? "scale-95 border-2 border-red-900 bg-red-50/20 shadow-none opacity-80" : ""}
+                ${!player.is_online && !player.is_dead ? "scale-95 border-gray-400 shadow-none opacity-90" : ""}
+                ${isUnclickable && !player.is_dead && player.is_online ? "scale-95 opacity-80" : ""}
                 ${canBeTargeted ? "cursor-crosshair hover:scale-110 ring-4 ring-blue-500 shadow-[0_0_25px_rgba(59,130,246,0.8)]" : isUnclickable ? "cursor-not-allowed" : "cursor-default"}
             `}
 			title={tooltipMessage || undefined}
@@ -186,7 +186,7 @@ export function OpponentCard({
 			{/* --- RANURA DEL LANYARD (Tarjeta) --- */}
 			<div className="w-12 h-2 bg-gray-900/10 rounded-full border border-gray-300/50 mb-3 shadow-inner relative z-20"></div>
 
-			{/* --- INDICADORES VISUALES FLOTANTES --- */}
+			{/* --- INDICADOR DE RANGO --- */}
 			{!player.is_dead && player.is_online && (
 				<div
 					className="absolute top-3 left-2 text-[11px] text-[#393e42] font-black bg-gray-200 px-1.5 py-0.5 rounded shadow-sm border border-gray-300"
@@ -196,15 +196,19 @@ export function OpponentCard({
 				</div>
 			)}
 
-			{!player.is_online && (
-				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-lg z-50 rotate-[-15deg] uppercase border border-red-800 whitespace-nowrap">
-					En descanso
-				</div>
-			)}
-
-			{player.is_dead && (
-				<div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black text-red-600 text-sm font-black px-4 py-2 rounded shadow-lg z-50 rotate-20 uppercase border-2 border-red-800 whitespace-nowrap">
-					CESADO 💀
+			{/* --- INDICADORES VISUALES FLOTANTES DE ESTADO--- */}
+			{(player.is_dead || !player.is_online) && (
+				<div className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none z-50">
+					{player.is_dead && (
+						<div className="bg-black text-red-600 text-sm font-black px-4 py-2 rounded shadow-xl rotate-12 uppercase border-2 border-red-800 whitespace-nowrap">
+							DERROTADO
+						</div>
+					)}
+					{!player.is_online && (
+						<div className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded shadow-xl -rotate-[8deg] uppercase border border-red-800 whitespace-nowrap">
+							En descanso
+						</div>
+					)}
 				</div>
 			)}
 
@@ -218,7 +222,9 @@ export function OpponentCard({
 			)}
 
 			{/* --- FOTO DE EMPLEADO --- */}
-			<div className={styles.photoBox}>
+			<div
+				className={`${styles.photoBox} ${player.is_dead || !player.is_online ? "grayscale contrast-125" : ""}`}
+			>
 				{showAvatar ? (
 					<img
 						src={avatarUrl}
@@ -235,12 +241,12 @@ export function OpponentCard({
 			</div>
 
 			{/* --- INFORMACIÓN DEL EMPLEADO --- */}
-			<h3 className="font-black text-[#393e42] text-sm truncate w-full uppercase mb-4">
+			<h3 className="font-black text-[#393e42] text-sm truncate w-full uppercase mb-4 relative z-10">
 				{player.name}
 			</h3>
 
 			{/* --- MÉTRICAS IMPORTANTES --- */}
-			<div className="flex w-full justify-between items-center mb-3 px-1">
+			<div className="flex w-full justify-between items-center mb-3 px-1 relative z-10">
 				<div className="flex flex-col items-center">
 					<span className="text-[9px] uppercase font-bold text-gray-500 mb-0.5">
 						Cartas
@@ -263,7 +269,7 @@ export function OpponentCard({
 			</div>
 
 			{/* --- BANDEJA DE EQUIPAMIENTO --- */}
-			<div className="w-full bg-[#393e42]/5 border-t border-gray-300 pt-2 flex justify-center gap-2">
+			<div className="w-full bg-[#393e42]/5 border-t border-gray-300 pt-2 flex justify-center gap-2 relative z-10">
 				{opponentPerks.map(renderPerkSlot)}
 			</div>
 

@@ -3,9 +3,11 @@ import { useGameStore } from "../../../store/useGameStore.ts";
 import { RoleRevealModal } from "./RoleRevealModal.tsx";
 import { GameOverModal } from "./GameOverModal.tsx";
 import { LuckChallengeModal } from "./LuckChallengeModal.tsx";
+import { DeathModal } from "./DeathModal.tsx";
 import type { MyData, GameData } from "../../../types/live-game.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { ActingBossModal } from "./ActingBossModal.tsx";
+import { useEffect, useState } from "react";
 
 interface GameOverlayManagerProps {
 	roomId: string;
@@ -42,6 +44,19 @@ export function GameOverlayManager({
 		navigate("/");
 	};
 
+	const [showDeathModal, setShowDeathModal] = useState(false);
+	useEffect(() => {
+		if (me.is_dead) {
+			const deathModalKey = `death_modal_shown:${roomId}`;
+			const hasShownDeathModal = localStorage.getItem(deathModalKey);
+
+			if (!hasShownDeathModal) {
+				setShowDeathModal(true);
+				localStorage.setItem(deathModalKey, "1");
+			}
+		}
+	}, [me.is_dead, roomId]);
+
 	return (
 		<>
 			{isFirstLoad && (
@@ -50,6 +65,13 @@ export function GameOverlayManager({
 
 			{showActingBossModal && (
 				<ActingBossModal onClose={() => setShowActingBossModal(false)} />
+			)}
+
+			{showDeathModal && (
+				<DeathModal
+					onClose={() => setShowDeathModal(false)}
+					killerName={me.killer_name ?? undefined}
+				/>
 			)}
 
 			{gameOver && (
