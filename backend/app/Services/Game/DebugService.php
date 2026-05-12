@@ -77,16 +77,28 @@ class DebugService
         if (!empty($mods['add_cards'])) {
             $this->addCardsToPlayer($roomId, $playerId, $mods['add_cards']);
         }
+
+        if (array_key_exists('set_is_dead', $mods)) {
+            $this->setIsDead($roomId, $playerId, (bool) $mods['set_is_dead']);
+        }
     }
+
+    private function setIsDead(string $roomId, string $playerId, bool $isDead): void
+    {
+        $infoKey = "room:{$roomId}:player:{$playerId}:info";
+        Redis::hset($infoKey, 'is_dead', $isDead ? '1' : '0');
+    }
+
 
     private function setStress(string $roomId, string $playerId, int $stress): void
     {
         $infoKey = "room:{$roomId}:player:{$playerId}:info";
         $role    = Redis::hget($infoKey, 'role') ?? 'union';
-        $max     = self::MAX_STRESS[$role] ?? 4;
+        $max     = (self::MAX_STRESS[$role] ?? 4) - 1;
 
         Redis::hset($infoKey, 'stress', max(0, min($stress, $max)));
     }
+
 
     private function setRole(string $roomId, string $playerId, string $newRole): void
     {
@@ -142,10 +154,20 @@ class DebugService
             $results['force_win'] = $actions['force_win'];
         }
 
-        if (isset($actions['remove_ghost'])) {
-            $this->removeGhost($roomId, $actingPlayerId, $actions['remove_ghost']);
-            $results['removed_ghost'] = $actions['remove_ghost'];
+        if (isset($actions['remove_ghosts']) && is_array($actions['remove_ghosts'])) {
+            $removedGhosts = [];
+            foreach ($actions['remove_ghosts'] as $ghostId) {
+                try {
+                    $this->removeGhost($roomId, $actingPlayerId, $ghostId);
+                    $removedGhosts[] = $ghostId;
+                } catch (\Exception $e) {
+                    // Si falla uno, continuar con los demás
+                    $results['errors'][] = "Error eliminando {$ghostId}: " . $e->getMessage();
+                }
+            }
+            $results['removed_ghosts'] = $removedGhosts;
         }
+
 
         return $results;
     }
@@ -154,12 +176,12 @@ class DebugService
     {
         Redis::hmset("room:{$roomId}:state", [
             'game_over'   => 1,
-            'winner_role' => $outcome === 'cancel' ? '' : $outcome,
+            'winner_role' => $outcome === 'cancelled' ? '' : $outcome,
             'status'      => 'finished',
         ]);
 
-        $message = $outcome === 'cancel'
-            ? "La partida ha sido cancelada por el sistema."
+        $message = $outcome === 'cancelled'
+            ? "La partida ha sido cancelledada por el sistema."
             : "Partida finalizada de forma forzada.";
 
         event(new RoomStateUpdated($roomId, $message));

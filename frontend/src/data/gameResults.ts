@@ -1,5 +1,6 @@
+import type { PlayerRole } from "../types/live-game";
+
 export type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
-export type PlayerRole = "boss" | "secretary" | "intern" | "union";
 export type ConfigKey = "boss" | "union" | "intern" | "canceled";
 
 export const RESULT_CONFIG: Record<
@@ -62,4 +63,5 @@ export const ROLE_LABELS: Record<PlayerRole, string> = {
 	secretary: "Secretariado",
 	intern: "Becario",
 	union: "Sindicalista",
+	none: "Ninguno"
 };

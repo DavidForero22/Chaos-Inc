@@ -5,16 +5,16 @@ import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../../store/useGameUIStore";
 import { useGameBoard } from "../../../../hooks/game/useGameBoard";
 import { FaBug } from "react-icons/fa";
-import { RiGhostLine, RiSwordLine, RiUserStarLine } from "react-icons/ri";
+import { RiGhostLine, RiSwordLine } from "react-icons/ri";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";
-import { DebugCardSelector } from "./DebugCardSelector";
+import { PlayerRemoveSelector } from "./PlayerRemoveSelector";
+import { PlayerModifier } from "./PlayerModifier";
 
 interface DebugToolsProps {
 	roomId: string;
 }
 const ROLES = ["boss", "secretary", "intern", "union"];
-const STRESS_LEVELS = [0, 1, 2, 3, 4, 5];
 
 export function DebugTools({ roomId }: DebugToolsProps) {
 	const activeModal = useGameUIStore((state) => state.activeModal);
@@ -30,12 +30,18 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		message,
 		cardCatalog,
 		isLoadingCatalog,
+		updateIsDead,
 		updateCardQuantity,
 		updateModification,
 		updateRoomAction,
 		updateSpawnGhost,
 		handleSubmit,
+		isRemoveMode,
+		playersToRemove,
+		toggleRemoveMode,
+		togglePlayerToRemove,
 	} = useDebug(roomId, board.me?.id || "");
+
 	useEffect(() => {
 		if (activeModal === "debug") {
 			setIsRendered(true);
@@ -101,88 +107,18 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-${styles.customScroll}`}
 			>
 				{/* ─── MODIFICACIONES DE JUGADOR ─── */}
-				<section className="space-y-3 bg-white/40 p-3 rounded-lg">
-					<h3 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-						<RiUserStarLine className="w-4 h-4" /> Modificar Jugador
-					</h3>
-
-					{/* Estrés */}
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Nivel de Estrés
-						</label>
-						<div className="flex gap-2 flex-wrap">
-							{STRESS_LEVELS.map((level) => (
-								<button
-									key={level}
-									onClick={() => updateModification("set_stress", level)}
-									className={`px-2 py-1 text-xs rounded border transition-colors ${
-										debugState.playerModifications.set_stress === level
-											? "bg-red-500 text-white border-red-600"
-											: "bg-white text-gray-700 border-gray-300 hover:bg-red-100"
-									}`}
-								>
-									{level}
-								</button>
-							))}
-							<button
-								onClick={() => updateModification("set_stress", undefined)}
-								className="px-2 py-1 text-xs rounded border bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"
-							>
-								✕
-							</button>
-						</div>
-					</div>
-
-					{/* Añadir cartas */}
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Añadir Cartas
-						</label>
-						<DebugCardSelector
-							cardCatalog={cardCatalog}
-							isLoading={isLoadingCatalog}
-							selectedCards={debugState.playerModifications.add_cards || {}}
-							onUpdateQuantity={updateCardQuantity}
-						/>
-					</div>
-
-					{/* Cambiar rol */}
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Cambiar Rol
-						</label>
-						<div className="flex gap-2 flex-wrap">
-							{ROLES.map((role) => (
-								<button
-									key={role}
-									onClick={() => updateModification("set_role", role)}
-									className={`px-2 py-1 text-xs rounded border capitalize transition-colors ${
-										debugState.playerModifications.set_role === role
-											? "bg-purple-500 text-white border-purple-600"
-											: "bg-white text-gray-700 border-gray-300 hover:bg-purple-100"
-									}`}
-								>
-									{role}
-								</button>
-							))}
-							<button
-								onClick={() => updateModification("set_role", undefined)}
-								className="px-2 py-1 text-xs rounded border bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"
-							>
-								✕
-							</button>
-						</div>
-					</div>
-
-					<button
-						onClick={() => handleSubmit("modify_player")}
-						disabled={isSubmitting}
-						className="w-full mt-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
-					>
-						{isSubmitting ? "Aplicando..." : "Aplicar Modificaciones"}
-					</button>
-				</section>
+				<PlayerModifier
+					playerRole={board.me?.role || "union"}
+					debugState={debugState}
+					isSubmitting={isSubmitting}
+					cardCatalog={cardCatalog}
+					isLoadingCatalog={isLoadingCatalog}
+					onUpdateStress={(level) => updateModification("set_stress", level)}
+					onUpdateCardQuantity={updateCardQuantity}
+					onUpdateRole={(role) => updateModification("set_role", role)}
+					onUpdateIsDead={updateIsDead}
+					onSubmit={() => handleSubmit("modify_player")}
+				/>
 
 				{/* ─── ACCIONES DE SALA ─── */}
 				<section className="space-y-3 bg-white/40 p-3 rounded-lg">
@@ -196,7 +132,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 							Forzar Victoria
 						</label>
 						<div className="flex gap-2 flex-wrap">
-							{[...ROLES, "cancel"].map(
+							{[...ROLES, "cancelled"].map(
 								(option) =>
 									option != "secretary" && (
 										<button
@@ -215,36 +151,31 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 													: "bg-white text-gray-700 border-gray-300 hover:bg-yellow-100"
 											}`}
 										>
-											{option === "cancel" ? "Cancelar" : option}
+											{option === "cancelled" ? "Cancelada" : option}
 										</button>
 									),
 							)}
 						</div>
 					</div>
 
-					{/* Eliminar fantasma */}
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Eliminar Fantasma (ID)
-						</label>
-						<input
-							type="text"
-							placeholder="ID del fantasma..."
-							value={debugState.roomActions.remove_ghost || ""}
-							onChange={(e) =>
-								updateRoomAction("remove_ghost", e.target.value || undefined)
-							}
-							className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:border-red-400"
-						/>
-					</div>
-
 					<button
 						onClick={() => handleSubmit("room_action")}
-						disabled={isSubmitting}
+						disabled={!debugState.roomActions.force_win}
 						className="w-full mt-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
 					>
 						{isSubmitting ? "Ejecutando..." : "Ejecutar Acción"}
 					</button>
+
+					{/* Eliminar fantasma */}
+					<PlayerRemoveSelector
+						opponents={board.game?.opponents || []}
+						isRemoveMode={isRemoveMode}
+						playersToRemove={playersToRemove}
+						isSubmitting={isSubmitting}
+						onToggleRemoveMode={toggleRemoveMode}
+						onTogglePlayer={togglePlayerToRemove}
+						onConfirmRemove={() => handleSubmit("room_action")}
+					/>
 				</section>
 
 				{/* ─── CREAR FANTASMA ─── */}

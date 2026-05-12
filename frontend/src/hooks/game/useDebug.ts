@@ -2,28 +2,18 @@
 
 import { useState, useCallback, useEffect } from "react";
 import api from "../../api/axios";
-
-export interface CardCatalogItem {
-	id: number;
-	type: string;
-	target: string;
-	base_name: string;
-	display_name: string;
-	description: string;
-	lore: string;
-	icons: string[];
-	image_path: string | null;
-}
+import type { CardCatalogItem } from "../../types/api";
 
 interface DebugState {
 	playerModifications: {
 		set_stress?: number;
 		add_cards?: Record<number, number>;
 		set_role?: string;
+		set_is_dead?: boolean;
 	};
 	roomActions: {
 		force_win?: string;
-		remove_ghost?: string;
+		remove_ghosts?: string[];
 	};
 	spawnGhost: {
 		username: string;
@@ -45,6 +35,10 @@ export function useDebug(roomId: string, playerId: string) {
 	// Estado del catálogo de cartas
 	const [cardCatalog, setCardCatalog] = useState<CardCatalogItem[]>([]);
 	const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
+
+	// Estado para modo eliminación de jugadores
+	const [isRemoveMode, setIsRemoveMode] = useState(false);
+	const [playersToRemove, setPlayersToRemove] = useState<string[]>([]);
 
 	useEffect(() => {
 		const fetchCatalog = async () => {
@@ -97,6 +91,16 @@ export function useDebug(roomId: string, playerId: string) {
 		});
 	}, []);
 
+	const updateIsDead = useCallback((isDead: boolean | undefined) => {
+		setDebugState((prev) => ({
+			...prev,
+			playerModifications: {
+				...prev.playerModifications,
+				set_is_dead: isDead,
+			},
+		}));
+	}, []);
+
 	const updateRoomAction = useCallback(
 		(key: keyof DebugState["roomActions"], value: any) => {
 			setDebugState((prev) => ({
@@ -122,6 +126,24 @@ export function useDebug(roomId: string, playerId: string) {
 		},
 		[],
 	);
+
+	// Handlers para el modo eliminación
+	const toggleRemoveMode = useCallback(() => {
+		setIsRemoveMode((prev) => {
+			if (prev) {
+				setPlayersToRemove([]); // Limpiar al cancelar
+			}
+			return !prev;
+		});
+	}, []);
+
+	const togglePlayerToRemove = useCallback((playerId: string) => {
+		setPlayersToRemove((prev) =>
+			prev.includes(playerId)
+				? prev.filter((id) => id !== playerId)
+				: [...prev, playerId],
+		);
+	}, []);
 
 	const handleSubmit = async (action: string) => {
 		setIsSubmitting(true);
@@ -173,15 +195,22 @@ export function useDebug(roomId: string, playerId: string) {
 			} else if (action === "room_action") {
 				if (
 					!debugState.roomActions.force_win &&
-					!debugState.roomActions.remove_ghost
+					(!playersToRemove || playersToRemove.length === 0)
 				) {
 					setMessage("Selecciona una acción de sala");
 					setIsSubmitting(false);
 					return;
 				}
 				payload.room_actions = { ...debugState.roomActions };
+				if (playersToRemove.length > 0) {
+					payload.room_actions.remove_ghosts = playersToRemove;
+				}
 				Object.keys(payload.room_actions).forEach((key) => {
-					if (!payload.room_actions[key]) {
+					if (
+						!payload.room_actions[key] ||
+						(Array.isArray(payload.room_actions[key]) &&
+							payload.room_actions[key].length === 0)
+					) {
 						delete payload.room_actions[key];
 					}
 				});
@@ -196,9 +225,9 @@ export function useDebug(roomId: string, playerId: string) {
 
 			await api.post(`/rooms/${roomId}/debug`, payload);
 			setMessage("Acción ejecutada correctamente");
-
-			// Resetear el estado para que los contadores de cartas vuelvan a 0
-			setDebugState(initialState);
+			setIsRemoveMode(false);
+			setPlayersToRemove([]);
+			setDebugState(initialState); // Resetear el estado para que los contadores de cartas vuelvan a 0
 		} catch (error: any) {
 			const errorMsg =
 				error.response?.data?.message || error.message || "Error desconocido";
@@ -215,10 +244,15 @@ export function useDebug(roomId: string, playerId: string) {
 		message,
 		cardCatalog,
 		isLoadingCatalog,
+		updateIsDead,
 		updateModification,
 		updateCardQuantity,
 		updateRoomAction,
 		updateSpawnGhost,
+		isRemoveMode,
+		playersToRemove,
+		toggleRemoveMode,
+		togglePlayerToRemove,
 		handleSubmit,
 	};
 }

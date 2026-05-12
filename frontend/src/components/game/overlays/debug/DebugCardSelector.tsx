@@ -1,6 +1,6 @@
 // src/components/game/overlays/debug/DebugCardSelector.tsx
 
-import type { CardCatalogItem } from "../../../../hooks/game/useDebug";
+import type { CardCatalogItem } from "../../../../types/api";
 
 interface DebugCardSelectorProps {
 	cardCatalog: CardCatalogItem[];
