@@ -9,6 +9,7 @@ import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 
+
 interface OpponentCardProps {
 	player: Opponent;
 	isMyTurn: boolean;
@@ -221,7 +222,7 @@ export function OpponentCard({
 				</div>
 			)}
 
-			{/* --- FOTO DE EMPLEADO --- */}
+			{/* --- FOTO DE OPONENTE --- */}
 			<div
 				className={`${styles.photoBox} ${player.is_dead || !player.is_online ? "grayscale contrast-125" : ""}`}
 			>
@@ -240,10 +241,26 @@ export function OpponentCard({
 				)}
 			</div>
 
-			{/* --- INFORMACIÓN DEL EMPLEADO --- */}
+			{/* --- INFORMACIÓN DEL OPONENTE --- */}
 			<h3 className="font-black text-[#393e42] text-sm truncate w-full uppercase mb-4 relative z-10">
 				{player.name}
 			</h3>
+
+			{/* --- ROL DEL OPONENTE (para salas de pruebas) --- */}
+			{player.role !== "none" && player.role !== "boss" && (
+				<span className="text-[10px] font-bold text-[#295c60] bg-[#295c60]/10 px-2 py-0.5 rounded mb-3 relative z-10 uppercase">
+					{player.role === "secretary"
+						? "Secretaria"
+						: player.role === "intern"
+							? "Becario"
+							: "Sindicato"}
+				</span>
+			)}
+			{player.role === "boss" && (
+				<span className="text-[10px] font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded mb-3 relative z-10 uppercase">
+					Jefe
+				</span>
+			)}
 
 			{/* --- MÉTRICAS IMPORTANTES --- */}
 			<div className="flex w-full justify-between items-center mb-3 px-1 relative z-10">

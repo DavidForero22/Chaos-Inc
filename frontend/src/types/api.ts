@@ -18,6 +18,7 @@ export interface RoomData {
 	status: string;
 	players: RoomPlayer[];
 	is_private?: string;
+	is_debug?: string;
 }
 
 /**
@@ -90,4 +91,16 @@ export interface RoomRecord {
 	owner_name: string;
 	max_players: string;
 	players: string[];
+}
+
+export interface CardCatalogItem {
+    id: number;
+    type: string;
+    target: string;
+    base_name: string;
+    display_name: string;
+    description: string;
+    lore: string;
+    icons: string[];
+    image_url: string | null;
 }

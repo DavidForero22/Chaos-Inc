@@ -27,6 +27,14 @@ class LiveRoomService
 
     public function joinRoom(string $roomId, string $playerId, string $playerName, ?string $password = null): array
     {
+
+        $alreadyInRoom = Redis::sismember("room:{$roomId}:players", $playerId);
+
+        // Si es una sala de pruebas y el jugador es nuevo
+        if (Redis::hget("room:{$roomId}:info", 'is_debug') === '1' && !$alreadyInRoom) {
+            throw new \Exception('No puedes unirte a una partida de pruebas.', 403);
+        }
+
         $currentRoom = Redis::get("player:{$playerId}:room");
 
         // Si el jugador ya está en otra sala distinta a la que intenta entrar
@@ -55,8 +63,6 @@ class LiveRoomService
             'roomInfo keys' => array_keys($roomInfo),
             'owner_id from roomInfo' => $roomInfo['owner_id'] ?? 'NO EXISTE',
         ]);
-
-        $alreadyInRoom = Redis::sismember("room:{$roomId}:players", $playerId);
 
         // Si es un jugador nuevo entrando...
         if (!$alreadyInRoom) {
@@ -108,6 +114,18 @@ class LiveRoomService
         Log::info("LiveRoomService.php::leaveRoom - El jugador {$playerName} ({$playerId}) abandonó la sala {$roomId}\n");
 
         $room = array_merge(Redis::hgetall($roomInfoKey), Redis::hgetall($roomStateKey));
+
+        if (($room['is_debug'] ?? '0') === '1') {
+            Log::info("LiveRoomService.php::leaveRoom - La sala {$roomId} es de pruebas. Destrucción inmediata.");
+
+            // Si está en juego, cancelar cualquier disconnect pendiente
+            if ($room['status'] === 'in_game') {
+                Redis::del("room:{$roomId}:disconnecting:{$playerId}");
+            }
+
+            $this->finalizationService->destroyRoom($roomId);
+            return;
+        }
 
         if ($room['status'] === 'in_game') {
             $disconnectKey = "room:{$roomId}:disconnecting:{$playerId}";

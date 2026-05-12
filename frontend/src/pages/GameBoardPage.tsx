@@ -15,6 +15,7 @@ import { OrientationWarning } from "../components/game/ui/OrientationWarning.tsx
 import { IconGuide } from "../components/game/board/IconGuide.tsx";
 import { LeaveMatch } from "../components/game/board/LeaveMatch.tsx";
 import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
+import { DebugTools } from "../components/game/overlays/debug/DebugTools.tsx";
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -107,6 +108,7 @@ export default function GameBoardPage() {
 				<LeaveMatch />
 				<GameLog />
 				<IconGuide />
+				<DebugTools roomId={id || ""} />
 			</div>
 
 			{/* BOTÓN CANCELAR APUNTADO FLOTANTE (Solo en Móvil) */}

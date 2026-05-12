@@ -2,12 +2,17 @@
 
 import { create } from "zustand";
 
-export type ActiveModalType = "none" | "log" | "guide" | "card_detail";
+export type ActiveModalType =
+	| "none"
+	| "log"
+	| "guide"
+	| "card_detail"
+	| "debug";
 
 interface GameUIState {
 	selectedCardId: string | null;
 	isDiscardMode: boolean;
-	isInfoMode: boolean; 
+	isInfoMode: boolean;
 	cardsToDiscard: string[];
 	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
@@ -16,7 +21,7 @@ interface GameUIState {
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
-	setIsInfoMode: (active: boolean) => void; 
+	setIsInfoMode: (active: boolean) => void;
 	toggleDiscardCard: (id: string, maxCards?: number) => void;
 	toggleDiscardPerk: (id: string, maxCards?: number) => void;
 	clearDiscardSelection: () => void;
@@ -29,7 +34,7 @@ interface GameUIState {
 export const useGameUIStore = create<GameUIState>((set) => ({
 	selectedCardId: null,
 	isDiscardMode: false,
-	isInfoMode: false, 
+	isInfoMode: false,
 	cardsToDiscard: [],
 	perksToDiscard: [],
 	luckResult: null,
@@ -41,15 +46,13 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	setIsDiscardMode: (active) =>
 		set({
 			isDiscardMode: active,
-			isInfoMode: false, 
+			isInfoMode: false,
 			cardsToDiscard: [],
 			perksToDiscard: [],
 			selectedCardId: null,
 		}),
 
-	setIsInfoMode: (
-		active, 
-	) =>
+	setIsInfoMode: (active) =>
 		set({
 			isInfoMode: active,
 			isDiscardMode: false,
@@ -86,7 +89,7 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	clearDiscardSelection: () =>
 		set({
 			isDiscardMode: false,
-			isInfoMode: false, 
+			isInfoMode: false,
 			cardsToDiscard: [],
 			perksToDiscard: [],
 			selectedCardId: null,

@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Lobby\DebugController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
 use Illuminate\Support\Facades\Route;
@@ -17,17 +18,18 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
-    // ESCUDO AUTH: Máximo 5 intentos por minuto
+    // Rutas de autenticacion (5 por minuto)
     Route::middleware(['throttle:auth'])->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/guest-login', [AuthController::class, 'guestLogin']);
     });
 
-    // ESCUDO API (Público): Listado de salas (120 por minuto)
+    // Rutas publicas (120 por minuto)
     Route::middleware(['throttle:api'])->group(function () {
         Route::get('/rooms', [RoomController::class, 'index']);
         Route::get('/rooms/{id}', [RoomController::class, 'show']);
+        Route::get('/cards', [GameController::class, 'getCards']);
     });
 
     /*
@@ -60,6 +62,12 @@ Route::prefix('v1')->group(function () {
             Route::post('/rooms/{id}/luck-challenge', [LiveGameController::class, 'resolveLuckChallenge']);
             Route::post('/rooms/{id}/react-multi', [LiveGameController::class, 'reactMulti']);
             Route::post('/rooms/{room}/discard-perks', [LiveGameController::class, 'discardPerks']);
+
+            Route::post('/rooms/{id}/debug', [DebugController::class, 'handle'])
+                ->middleware([
+                    \App\Http\Middleware\IsAdmin::class,
+                    \App\Http\Middleware\IsDebugRoom::class,
+                ]);
         });
 
         // ==========================================================

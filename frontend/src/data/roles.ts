@@ -40,4 +40,12 @@ export const ROLE_CONFIG: Record<
 			"El sistema está corrupto y tú eres la cura. Coordínate en secreto, expón las prácticas ilegales y acaba con la Dirección actual para tomar el control de la empresa.",
 		titleLabel: "Tu rol en esta partida",
 	},
+	none: {
+		label: "Entorno de pruebas",
+		image: "/roles/role_reveal_debug.jpeg",
+		objective:
+			"Esta es una partida de pruebas. No se te ha asignado ningún rol. Usa el panel de control para configurar los jugadores, asignar roles, modificar el estado de la partida y probar mecánicas antes de jugar en una partida real.",
+		titleLabel: "Modo de prueba activo",
+		isWarning: true,
+	},
 };

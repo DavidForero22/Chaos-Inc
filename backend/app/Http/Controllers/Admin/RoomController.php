@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\StoreRoomRequest;
 use App\Services\Admin\RoomService;
+use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
@@ -16,9 +17,26 @@ class RoomController extends Controller
         $this->roomService = $roomService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json($this->roomService->getAllRooms());
+        $allRooms = $this->roomService->getAllRooms();
+
+        // Verificar si el usuario es administrador
+        $isAdmin = $request->user() && $request->user()->role === 'admin';
+
+        // Si ES admin, devolver todas las salas sin filtrar
+        if ($isAdmin) {
+            return response()->json($allRooms);
+        }
+
+        // Si NO ES admin, filtrar las salas para quitar las de prueba
+        $filteredRooms = array_filter($allRooms, function ($room) {
+            $isDebug = isset($room['is_debug']) && ($room['is_debug'] === '1');
+
+            return !$isDebug;
+        });
+
+        return response()->json(array_values($filteredRooms));
     }
 
     public function show(string $id)
@@ -32,12 +50,13 @@ class RoomController extends Controller
     {
         try {
             $user = $request->user();
-            
+
 
             $roomData = $this->roomService->createRoom(
                 $request->validated(),
                 (string) $user->id,
-                $user->username
+                $user->username,
+                $user->role === 'admin'
             );
 
             return response()->json($roomData, 201);

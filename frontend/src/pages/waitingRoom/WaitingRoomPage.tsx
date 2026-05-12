@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../../hooks/room/useRoom.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
-import { FaShareAlt, FaCheck } from "react-icons/fa";
+import { FaShareAlt, FaCheck, FaFlask } from "react-icons/fa";
 
 import GuestNameModal from "../../components/lobby/GuestNameModal.tsx";
 import BoardPlayerList from "../../components/lobby/BoardPlayerList.tsx";
@@ -42,6 +42,7 @@ export default function WaitingRoomPage() {
 
 	// Ref para evitar llamar a attemptJoin múltiples veces
 	const authResolved = useRef(false);
+	const isDebugRoom = room?.is_debug === "1";
 
 	useEffect(() => {
 		// --- CASO A: YA HAY USUARIO ---
@@ -52,9 +53,7 @@ export default function WaitingRoomPage() {
 			// Si viene de registrarse y no ha intentado entrar a la sala, forzar la entrada
 			if (!authResolved.current) {
 				authResolved.current = true;
-				if (!room && !isJoining) {
-					attemptJoin();
-				}
+				if (!room && !isJoining) attemptJoin();
 			}
 			return;
 		}
@@ -66,11 +65,7 @@ export default function WaitingRoomPage() {
 			const fallback = setTimeout(() => setIsSocialAuthPending(false), 4000);
 			return () => clearTimeout(fallback);
 		}
-
-		// --- CASO C: FLUJO NORMAL SIN USUARIO ---
-		if (!isJoining && !showGuestModal) {
-			setShowGuestModal(true);
-		}
+		if (!isJoining && !showGuestModal) setShowGuestModal(true);
 	}, [isJoining, user, showGuestModal, isSocialAuthPending, room, attemptJoin]);
 
 	const onLeaveClick = async () => {
@@ -84,9 +79,7 @@ export default function WaitingRoomPage() {
 
 	const onKickClick = async (playerIdToKick: string) => {
 		const playerObj = room?.players.find((p) => p.id === playerIdToKick);
-		const playerName = playerObj?.name || "jugador";
-
-		startLoading(`Expulsando a ${playerName}...`);
+		startLoading(`Expulsando a ${playerObj?.name ?? "jugador"}...`);
 		try {
 			await kickPlayer(playerIdToKick);
 		} finally {
@@ -99,17 +92,17 @@ export default function WaitingRoomPage() {
 			await navigator.clipboard.writeText(window.location.href);
 			setCopied(true);
 			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			console.error("No se pudo copiar el enlace", err);
+		} catch {
+			// clipboard no disponible
 		}
 	};
 
-	// 0. Estado de Intercepción: Verificando OAuth
+	// --- Estados de carga ---
 	if (isSocialAuthPending) {
 		return (
 			<WallLayout boardWidth="500px">
 				<div className="flex flex-col items-center justify-center text-center">
-					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4" />
 					<p
 						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
@@ -126,7 +119,7 @@ export default function WaitingRoomPage() {
 		return (
 			<WallLayout boardWidth="500px">
 				<div className="flex flex-col items-center justify-center text-center">
-					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4" />
 					<p
 						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
@@ -187,11 +180,89 @@ export default function WaitingRoomPage() {
 		);
 	}
 
-	const missingPlayers = 3 - (room?.players.length || 0);
+	const isOwner = String(room.owner_id) === String(currentUserId);
 
-	const isOwner = String(room?.owner_id) === String(currentUserId);
+	// --- UI: Sala de pruebas ---
+	if (isDebugRoom) {
+		return (
+			<WallLayout boardWidth="500px">
+				{/* Cabecera debug */}
+				<div className="flex flex-col items-center gap-2 mb-8">
+					<h1 className={`${styles.title} ${styles.markerBlack}`}>
+						SALA: <span className={styles.markerBlue}>{room.name}</span>
+					</h1>
+					<span
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "6px",
+							background: "#fef3c7",
+							border: "2px solid #b45309",
+							color: "#b45309",
+							fontWeight: "bold",
+							fontSize: "0.75rem",
+							letterSpacing: "0.1em",
+							padding: "4px 12px",
+							textTransform: "uppercase",
+						}}
+					>
+						<FaFlask />
+						Partida de Prueba
+					</span>
+				</div>
 
-	// 5. Estado: Pizarra Principal de la Sala
+				{/* Descripción del modo */}
+				<div
+					style={{
+						background: "#fffbeb",
+						border: "2px dashed #b45309",
+						padding: "16px 20px",
+						marginBottom: "32px",
+						fontSize: "0.85rem",
+						color: "#78350f",
+						lineHeight: "1.6",
+					}}
+				>
+					<p style={{ fontWeight: "bold", marginBottom: "6px" }}>
+						Entorno de testing activo
+					</p>
+					<p>
+						Esta sala está en modo de pruebas. No se pueden unir otros
+						jugadores. Al iniciar la partida, podrás crear jugadores fantasma,
+						asignar roles y modificar el estado del juego desde el panel de
+						control.
+					</p>
+				</div>
+
+				{/* Acciones */}
+				<div className="flex justify-between items-center border-t-2 border-gray-300 pt-6">
+					<button
+						onClick={onLeaveClick}
+						className={`${styles.btnBase} ${styles.btnLeave}`}
+					>
+						Abandonar Sala
+					</button>
+
+					<button
+						onClick={startGame}
+						disabled={!isOwner}
+						className={`${styles.btnBase} ${styles.btnStart}`}
+						title={
+							!isOwner
+								? "Solo el administrador puede iniciar la partida"
+								: "Iniciar partida de prueba"
+						}
+					>
+						{isOwner ? "Iniciar Prueba" : "Esperando al admin..."}
+					</button>
+				</div>
+			</WallLayout>
+		);
+	}
+
+	// --- UI: Sala normal ---
+	const missingPlayers = 3 - (room.players.length || 0);
+
 	return (
 		<WallLayout>
 			<h1 className={`${styles.title} ${styles.markerBlack}`}>
@@ -260,7 +331,7 @@ export default function WaitingRoomPage() {
 						!isOwner
 							? "Solo el líder puede iniciar la partida"
 							: missingPlayers > 0
-								? `Faltan ${missingPlayers} para poder empezar la partida`
+								? `Faltan ${missingPlayers} para poder empezar`
 								: "Comenzar la partida"
 					}
 				>

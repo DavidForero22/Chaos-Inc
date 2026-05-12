@@ -200,6 +200,17 @@ class DisconnectionService
             return;
         }
 
+        // Verificar si es sala de pruebas
+        $roomInfoKey = "room:{$roomId}:info";
+        $isDebug = Redis::hget($roomInfoKey, 'is_debug') ?? '0';
+
+        if ($isDebug === '1') {
+            Log::info("DisconnectionService.php::processInGameDisconnection - Sala de pruebas {$roomId}. Destrucción inmediata.");
+            $this->finalizationService->destroyRoom($roomId);
+            return;
+        }
+
+
         $playerInfoKey = "room:{$roomId}:player:{$playerId}:info";
 
         Redis::hset($playerInfoKey, 'is_online', 0);

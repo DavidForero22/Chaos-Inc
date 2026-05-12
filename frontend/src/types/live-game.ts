@@ -3,7 +3,7 @@
 /**
  * Roles disponibles en el juego
  */
-export type PlayerRole = "boss" | "secretary" | "intern" | "union";
+export type PlayerRole = "boss" | "secretary" | "intern" | "union" | "none";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
 /**
@@ -60,7 +60,7 @@ export interface BasePlayer {
  * Tipado de los oponentes (Hereda de BasePlayer)
  */
 export interface Opponent extends BasePlayer {
-	role: "boss" | "hidden";
+	role: PlayerRole;
 	cards_count: number;
 	distance: number;
 	is_in_range: boolean;

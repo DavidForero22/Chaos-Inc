@@ -150,7 +150,7 @@ class RoomService
         return $room;
     }
 
-    public function createRoom(array $data, string $ownerId, string $ownerName): array
+    public function createRoom(array $data, string $ownerId, string $ownerName, bool $isAdmin = false): array
     {
         // Usar el ID para comprobar si el jugador ya está en una sala
         $currentRoom = Redis::get("player:{$ownerId}:room");
@@ -169,6 +169,7 @@ class RoomService
             'password' => $data['is_private'] ? Hash::make($data['password']) : '',
             'max_players' => $data['max_players'],
             'turn_timeout' => $data['turn_timeout'],
+            'is_debug'    => ($isAdmin && !empty($data['is_debug'])) ? '1' : '0',
         ];
 
         $stateData = [

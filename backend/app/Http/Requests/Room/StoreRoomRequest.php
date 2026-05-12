@@ -19,6 +19,7 @@ class StoreRoomRequest extends FormRequest
             'is_private' => 'required|boolean',
             'password' => 'exclude_unless:is_private,true|required|string|min:8|max:128',
             'turn_timeout' => 'required|integer|min:60|max:120',
+            'is_debug' => ['sometimes', 'boolean'],
         ];
     }
 

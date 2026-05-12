@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\StoreGameRequest;
+use App\Http\Resources\CardCatalogResource;
 use App\Http\Resources\GameResource;
 use App\Models\User;
 use App\Services\Admin\GameService;
@@ -53,5 +54,11 @@ class GameController extends Controller
     {
         $games = $user->games()->with(['participants', 'cardUsages'])->latest()->get();
         return GameResource::collection($games);
+    }
+
+    public function getCards()
+    {
+        $cards = config('cards.cards', []);
+        return CardCatalogResource::collection(collect($cards));
     }
 }

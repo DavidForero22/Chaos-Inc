@@ -42,32 +42,41 @@ class LiveGameService
             throw new RoomException(RoomException::NOT_LEADER, "Solo el líder puede iniciar la partida.", 403);
         }
 
-        $playerIds = Redis::smembers("room:{$roomId}:players");
+        $isDebug    = Redis::hget($roomInfoKey, 'is_debug') === '1';
+        $playerIds  = Redis::smembers("room:{$roomId}:players");
         $playersCount = count($playerIds);
 
-        if ($playersCount < 3) {
-            throw new RoomException(RoomException::NOT_ENOUGH_PLAYERS, "No hay suficientes jugadores (al menos 3).", 409);
+        // En debug basta con 1 jugador (el admin); en normal se requieren al menos 3
+        $minPlayers = $isDebug ? 1 : 3;
+        if ($playersCount < $minPlayers) {
+            throw new RoomException(
+                RoomException::NOT_ENOUGH_PLAYERS,
+                $isDebug
+                    ? "Se necesita al menos 1 jugador para iniciar la prueba."
+                    : "No hay suficientes jugadores (mínimo 3).",
+                409
+            );
         }
 
-        // Obtener los modelos User de la BD y e indexar por ID
-        $users = User::whereIn('id', $playerIds)
-            ->get()
-            ->keyBy('id');
+        // Ghost IDs no existen en la BD; whereIn los ignora de forma segura
+        $users = User::whereIn('id', $playerIds)->get()->keyBy('id');
 
         $this->initializeRoomState($roomId, $playerIds);
 
-        $roles = LiveGameHelper::generateRolesDistribution($playersCount);
-        $deck = $this->deckService->buildDeck();
+        // En debug no se generan roles: se asigna 'none' a todos
+        $roles = $isDebug ? [] : LiveGameHelper::generateRolesDistribution($playersCount);
+        $deck  = $this->deckService->buildDeck();
 
-        $bossPlayerId = $this->assignRolesAndCards(
+        $currentTurnPlayerId = $this->assignRolesAndCards(
             $roomId,
             $playerIds,
             $roles,
             $deck,
-            $users
+            $users,
+            $isDebug
         );
 
-        $this->finalizeGameSetup($roomId, $bossPlayerId, $deck, $playerIds);
+        $this->finalizeGameSetup($roomId, $currentTurnPlayerId, $deck, $playerIds);
 
         event(new RoomListUpdated($roomId));
         event(new RoomStateUpdated($roomId));
@@ -154,35 +163,37 @@ class LiveGameService
         array $playerIds,
         array $roles,
         array &$deck,
-        $users
+        $users,
+        bool $isDebug = false
     ): string {
 
-        $bossPlayerId = '';
+        // En debug, el admin (primer jugador) actúa como referencia de turno inicial
+        $currentTurnPlayerId = $isDebug ? ($playerIds[0] ?? '') : '';
 
         foreach ($playerIds as $index => $playerId) {
 
             $user = $users->firstWhere('id', (int) $playerId);
 
-            $playerRole = $roles[$index];
+            // En debug todos arrancan sin rol; el admin los asignará desde el panel
+            $playerRole = $isDebug ? 'none' : $roles[$index];
 
-            if ($playerRole === 'boss') {
-                $bossPlayerId = $playerId;
+            if (!$isDebug && $playerRole === 'boss') {
+                $currentTurnPlayerId = $playerId;
             }
 
             $playerCards = array_splice($deck, 0, 3);
-
-            $baseKey = "room:{$roomId}:player:{$playerId}";
+            $baseKey     = "room:{$roomId}:player:{$playerId}";
 
             Redis::hmset("{$baseKey}:info", [
-                'user_id'         => $playerId,
-                'username'        => $user?->username ?? '',
-                'role'            => $playerRole,
-                'stress'          => 0,
-                'acting_boss'     => 0,
-                'is_online'       => 1,
-                'is_dead'         => 0,
-                'killer_name'     => null,
-                'is_guest'        => $user ? ($user->is_guest ? 1 : 0) : 1,
+                'user_id'     => $playerId,
+                'username'    => $user?->username ?? '',
+                'role'        => $playerRole,
+                'stress'      => 0,
+                'acting_boss' => 0,
+                'is_online'   => 1,
+                'is_dead'     => 0,
+                'killer_name' => null,
+                'is_guest'    => $user ? ($user->is_guest ? 1 : 0) : 1,
             ]);
 
             Redis::hmset("{$baseKey}:stats", [
@@ -197,7 +208,7 @@ class LiveGameService
             ]);
 
             Redis::hmset("{$baseKey}:turn_state", [
-                'skip_next_turn'                => 0,
+                'skip_next_turn'               => 0,
                 'single_attack_used_this_turn' => 0,
                 'multi_attack_used_this_turn'  => 0,
                 'must_discard'                 => 0,
@@ -223,7 +234,7 @@ class LiveGameService
             Redis::expire("{$baseKey}:card_usage", 86400);
         }
 
-        return $bossPlayerId;
+        return $currentTurnPlayerId;
     }
 
     private function finalizeGameSetup(
@@ -235,17 +246,18 @@ class LiveGameService
         $roomInfoKey  = "room:{$roomId}:info";
         $roomStateKey = "room:{$roomId}:state";
 
+        $isDebug = Redis::hget($roomInfoKey, 'is_debug') === '1';
         $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
         $turnId  = uniqid('turn_', true);
 
         Redis::hset($roomStateKey, 'current_turn_player_id', $bossPlayerId);
         Redis::hset($roomStateKey, 'current_turn_id', $turnId);
 
-        // El frontend ve el tiempo estricto
+        // En debug no hay temporizador real
         Redis::hset(
             $roomStateKey,
             'turn_expires_at',
-            now()->addSeconds($timeout)->timestamp
+            $isDebug ? 0 : now()->addSeconds($timeout)->timestamp
         );
 
         Redis::setex(
@@ -260,12 +272,14 @@ class LiveGameService
             json_encode($deck)
         );
 
-        // El Job le da 3 segundos de gracia para tolerar latencia
-        AutoEndTurnJob::dispatch(
-            $roomId,
-            $bossPlayerId,
-            $turnId
-        )->delay(now()->addSeconds($timeout + 3));
+        // El Job le da 3 segundos de gracia para tolerar latencia. En debug, no se aplica.
+        if (!$isDebug) {
+            AutoEndTurnJob::dispatch(
+                $roomId,
+                $bossPlayerId,
+                $turnId
+            )->delay(now()->addSeconds($timeout + 3));
+        }
 
         if ($bossPlayerId !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerId, 2);
