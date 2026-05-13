@@ -42,17 +42,18 @@ export function usePlayerActions() {
 
 	const isMyTurn = String(game.current_turn) === String(myId);
 	const isTurnFrozen = game.ending_soon || game.effectively_over;
-	const hasPendingAttack = me.combat_state.is_attacking_single;
 	const hasPendingMultiAttack = me.combat_state.is_defending_multi;
-	const isAttackerWaiting = me.combat_state.is_attacking_multi;
-	const hasPendingSabotage =
-		!!game.player_pending_sabotage &&
-		String(game.player_pending_sabotage) !== String(myId);
 
 	const currentCardsCount = me.cards.length;
 	const projectedCardsCount = currentCardsCount - cardsToDiscard.length;
 	const isOverLimit = currentCardsCount > me.max_hand_size;
 	const willBeOverLimit = projectedCardsCount > me.max_hand_size;
+	const isSomeoneWaitingForReaction =
+		game.pending_single_attack_target !== null ||
+		(game.pending_multi_attack_targets &&
+			game.pending_multi_attack_targets.length > 0) ||
+		game.player_pending_sabotage !== null ||
+		game.player_in_luck_challenge !== null;
 
 	const hasEquippedPerks =
 		me.perks.has_shield ||
@@ -79,18 +80,16 @@ export function usePlayerActions() {
 		selectedCardId !== null &&
 		isSelfTargetCard &&
 		!isTurnFrozen &&
-		!isAttackerWaiting &&
+		!isSomeoneWaitingForReaction &&
 		!isInfoMode &&
 		!isGlobalLoading;
 
 	const canEndTurn =
 		isMyTurn &&
-		!hasPendingAttack &&
 		!isTurnFrozen &&
-		!isAttackerWaiting &&
+		!isSomeoneWaitingForReaction &&
 		!isOverLimit &&
 		!me.conditions.must_discard &&
-		!hasPendingSabotage &&
 		!isDiscardMode &&
 		!isInfoMode &&
 		selectedCardId === null &&
@@ -99,10 +98,8 @@ export function usePlayerActions() {
 	const canDiscard =
 		isMyTurn &&
 		!isTurnFrozen &&
-		!isAttackerWaiting &&
-		!hasPendingAttack &&
+		!isSomeoneWaitingForReaction &&
 		!me.conditions.must_discard &&
-		!hasPendingSabotage &&
 		!isInfoMode &&
 		(currentCardsCount > 0 || hasEquippedPerks) &&
 		!isGlobalLoading;
