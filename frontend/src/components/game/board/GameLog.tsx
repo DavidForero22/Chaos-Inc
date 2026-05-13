@@ -5,6 +5,7 @@ import { useGameUIStore } from "../../../store/useGameUIStore";
 import { createPortal } from "react-dom";
 import styles from "./GameLog.module.css";
 import { useNotificationStore } from "../../../store/useNotificationStore";
+import { useFocusTrap } from "../../../hooks/game/useFocusTrap";
 
 export function GameLog() {
 	const logs = useNotificationStore((state) => state.logs);
@@ -16,12 +17,18 @@ export function GameLog() {
 	// Estados para la animación diferida (Solo versión móvil)
 	const [isMobileRendered, setIsMobileRendered] = useState(false);
 	const [isMobileExiting, setIsMobileExiting] = useState(false);
-
 	const [hasNew, setHasNew] = useState(false);
 
 	const prevLengthRef = useRef(logs.length);
 	const mobileScrollRef = useRef<HTMLDivElement>(null);
 	const desktopScrollRef = useRef<HTMLDivElement>(null);
+
+	// --- ACCESIBILIDAD: Referencia para guardar el elemento que abrió el modal ---
+	const previousFocusRef = useRef<HTMLElement | null>(null);
+	const closeButtonMobileRef = useRef<HTMLButtonElement>(null);
+	const closeButtonDesktopRef = useRef<HTMLButtonElement>(null);
+	const mobileContainerRef = useRef<HTMLDivElement>(null);
+	useFocusTrap([mobileContainerRef], isMobileRendered && !isMobileExiting);
 
 	const scrollToBottom = () => {
 		if (mobileScrollRef.current) {
@@ -33,7 +40,7 @@ export function GameLog() {
 		}
 	};
 
-	// Efecto  para la notificación
+	// Efecto para la notificación
 	useEffect(() => {
 		if (isOpen) {
 			prevLengthRef.current = logs.length;
@@ -48,13 +55,39 @@ export function GameLog() {
 		if (isOpen || isMobileRendered) {
 			setTimeout(scrollToBottom, 100);
 		}
+		// Foco en escritorio al abrir
+		if (isOpen) {
+			setTimeout(() => closeButtonDesktopRef.current?.focus(), 50);
+		}
 	}, [isOpen, isMobileRendered]);
+
+	useEffect(() => {
+		if (!isOpen && previousFocusRef.current) {
+			previousFocusRef.current.focus();
+			previousFocusRef.current = null;
+		}
+	}, [isOpen]);
+
+	// --- ACCESIBILIDAD: Cerrar con la tecla Escape ---
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && isOpen) {
+				setActiveModal("none");
+			}
+		};
+
+		if (isOpen) {
+			window.addEventListener("keydown", handleKeyDown);
+		}
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isOpen, setActiveModal]);
 
 	// Efecto para la animación diferida de salida en móvil
 	useEffect(() => {
 		if (activeModal === "log") {
 			setIsMobileRendered(true);
 			setIsMobileExiting(false);
+			setTimeout(() => closeButtonMobileRef.current?.focus(), 50);
 		} else if (isMobileRendered) {
 			setIsMobileExiting(true);
 			const timer = setTimeout(() => {
@@ -63,9 +96,12 @@ export function GameLog() {
 			}, 250);
 			return () => clearTimeout(timer);
 		}
-	}, [activeModal]);
+	}, [activeModal, isMobileRendered]);
 
 	const toggleLog = () => {
+		if (!isOpen) {
+			previousFocusRef.current = document.activeElement as HTMLElement;
+		}
 		setActiveModal(isOpen ? "none" : "log");
 	};
 
@@ -79,6 +115,9 @@ export function GameLog() {
 		<div
 			ref={scrollRef}
 			className="flex-1 overflow-y-auto flex flex-col gap-3 p-4 no-scrollbar bg-[#0f1115]"
+			role="log"
+			aria-live="polite"
+			aria-atomic="false"
 		>
 			{logs.length === 0 ? (
 				<p className="text-gray-600 text-xs text-center py-4 italic mt-auto mb-auto">
@@ -88,13 +127,13 @@ export function GameLog() {
 				logs.map((entry) => (
 					<div key={entry.id} className="w-full">
 						<div className="flex flex-col bg-gray-800/50 px-3 py-2 rounded-lg rounded-tl-none border border-gray-700/50">
-							{/* El texto del mensaje */}
 							<p className="text-gray-300 text-xs leading-relaxed font-sans">
 								{entry.message}
 							</p>
-
-							{/* La hora del mensaje, alineada abajo a la derecha */}
-							<span className="text-blue-500/50 text-[10px] font-mono self-end mt-1">
+							<span
+								className="text-blue-500/50 text-[10px] font-mono self-end mt-1"
+								aria-hidden="true"
+							>
 								{entry.timestamp}
 							</span>
 						</div>
@@ -111,12 +150,20 @@ export function GameLog() {
 				onClick={toggleLog}
 				className={`lg:hidden ${styles.mobileLogButton}`}
 				title="Mostrar eventos"
+				aria-label={
+					hasNew
+						? "Mostrar eventos de partida (Hay mensajes nuevos)"
+						: "Mostrar eventos de partida"
+				}
+				aria-haspopup="dialog"
+				aria-expanded={isOpen}
 			>
 				<svg
 					className="w-5 h-5"
 					fill="none"
 					stroke="currentColor"
 					viewBox="0 0 24 24"
+					aria-hidden="true"
 				>
 					<path
 						strokeLinecap="round"
@@ -136,6 +183,7 @@ export function GameLog() {
 			{isMobileRendered &&
 				createPortal(
 					<div
+						ref={mobileContainerRef}
 						className={`lg:hidden fixed inset-0 z-200 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 ${
 							isMobileExiting
 								? "opacity-0 transition-opacity duration-250 ease-in"
@@ -146,13 +194,20 @@ export function GameLog() {
 						<div
 							className={styles.tabletChassis}
 							onClick={(e) => e.stopPropagation()}
+							role="dialog"
+							aria-modal="true"
+							aria-label="Registro de eventos de la partida"
 						>
-							{/* Altavoz superior de la tablet */}
-							<div className="absolute top-5 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-black rounded-full z-10"></div>
+							<div
+								className="absolute top-5 left-1/2 transform -translate-x-1/2 w-20 h-1.5 bg-black rounded-full z-10"
+								aria-hidden="true"
+							></div>
 
-							{/* Pantalla de la Tablet */}
 							<div className="w-full h-full bg-black rounded-2xl overflow-hidden relative flex flex-col border-2 border-black">
-								<div className="bg-gray-800 text-center py-3 px-4 border-b border-gray-700 shrink-0">
+								<div
+									className="bg-gray-800 text-center py-3 px-4 border-b border-gray-700 shrink-0"
+									aria-hidden="true"
+								>
 									<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">
 										Slack Empresarial
 									</p>
@@ -163,11 +218,13 @@ export function GameLog() {
 								{renderLogMessages(mobileScrollRef)}
 							</div>
 
-							{/* Botón Home de la Tablet */}
 							<button
+								ref={closeButtonMobileRef}
 								className={styles.homeButton}
 								onClick={handleClose}
 								title="Cerrar eventos de la partida"
+								aria-label="Cerrar registro de eventos"
+								disabled={isMobileExiting}
 							></button>
 						</div>
 					</div>,
@@ -179,14 +236,23 @@ export function GameLog() {
             ========================================== */}
 			<div
 				className={`hidden lg:block ${styles.phoneWrapper} ${isOpen ? styles.phoneWrapperOpen : ""}`}
+				aria-hidden={!isOpen}
 			>
-				<div className={styles.phoneChassis}>
-					{/* Altavoz superior de la pantalla */}
-					<div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-16 h-1.5 bg-black rounded-full z-10"></div>
+				<div
+					className={styles.phoneChassis}
+					role="complementary"
+					aria-label="Registro de eventos de la partida"
+				>
+					<div
+						className="absolute top-6 left-1/2 transform -translate-x-1/2 w-16 h-1.5 bg-black rounded-full z-10"
+						aria-hidden="true"
+					></div>
 
-					{/* Pantalla del Teléfono */}
 					<div className="w-full h-full bg-black rounded-2xl overflow-hidden relative flex flex-col border-2 border-black">
-						<div className="bg-gray-800 text-center py-3 border-b border-gray-700 shrink-0">
+						<div
+							className="bg-gray-800 text-center py-3 border-b border-gray-700 shrink-0"
+							aria-hidden="true"
+						>
 							<p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">
 								Slack Empresarial
 							</p>
@@ -195,11 +261,14 @@ export function GameLog() {
 						{renderLogMessages(desktopScrollRef)}
 					</div>
 
-					{/* Botón Home del Teléfono */}
 					<button
+						ref={closeButtonDesktopRef}
 						className={styles.homeButton}
 						onClick={handleClose}
 						title="Cerrar eventos de la partida"
+						aria-label="Cerrar registro de eventos"
+						tabIndex={isOpen ? 0 : -1}
+						disabled={!isOpen}
 					></button>
 				</div>
 			</div>

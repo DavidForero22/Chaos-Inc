@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
+import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
@@ -39,6 +40,10 @@ export function PlayerActions() {
 		canUseCard,
 		handleUseCard,
 	} = actionLogic;
+
+	const selectedCardId = useGameUIStore((state) => state.selectedCardId);
+	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
+	const isTargetingMode = selectedCard?.target === "opponent";
 
 	// Sincronización inteligente de limpieza de modos
 	useEffect(() => {
@@ -118,6 +123,7 @@ export function PlayerActions() {
 					<>
 						{/* --- BOTÓN INFO (SOLO MÓVIL) --- */}
 						<button
+							tabIndex={isTargetingMode ? -1 : 0}
 							onClick={() => {
 								if (isInfoDisabled) return;
 								setIsInfoMode?.(!isInfoMode);
@@ -133,6 +139,7 @@ export function PlayerActions() {
 						{/* Botones Modo Descarte */}
 						{isDiscardMode && !me!.conditions.must_discard ? (
 							<button
+								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={clearDiscardSelection}
 								disabled={isGlobalLoading}
 								className={`${styles.inkStamp} ${styles.stampOrange}`}
@@ -141,6 +148,7 @@ export function PlayerActions() {
 							</button>
 						) : !isDiscardMode ? (
 							<button
+								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={() => setIsDiscardMode?.(true)}
 								disabled={!canDiscard || isInteractionBlockedByInfo}
 								className={`${styles.inkStamp} ${styles.stampOrange} ${!canDiscard || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
@@ -152,6 +160,7 @@ export function PlayerActions() {
 						{/* Botón Principal (Confirmar Descarte, Usar carta o Terminar Turno) */}
 						{isDiscardMode ? (
 							<button
+								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={handleConfirmDiscard}
 								disabled={isConfirmDisabled}
 								className={`${styles.inkStamp} ${styles.stampRed} ${isConfirmDisabled ? styles.stampDisabled : ""}`}
@@ -160,6 +169,7 @@ export function PlayerActions() {
 							</button>
 						) : canUseCard ? (
 							<button
+								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={handleUseCard}
 								disabled={!canUseCard || isInteractionBlockedByInfo}
 								className={`${styles.inkStamp} ${styles.stampBlue} ${!canUseCard || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
@@ -169,6 +179,7 @@ export function PlayerActions() {
 						) : (
 							<button
 								onClick={endTurn}
+								tabIndex={isTargetingMode ? -1 : 0}
 								disabled={!canEndTurn || isInteractionBlockedByInfo}
 								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 								title={

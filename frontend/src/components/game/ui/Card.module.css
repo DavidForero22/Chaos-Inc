@@ -25,7 +25,8 @@
 .interactable {
 	cursor: pointer;
 }
-.cardWrapper.interactable:hover {
+.cardWrapper.interactable:hover,
+.cardWrapper.interactable:focus-within {
 	transform: translateY(-10px); /* Un poco menos de hover ya que es más baja */
 }
 .notInteractable {

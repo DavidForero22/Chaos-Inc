@@ -126,6 +126,7 @@ export function OpponentCard({
 				title={
 					canCleanGlobally ? `[Click para descartar] ${slot.title}` : slot.title
 				}
+				tabIndex={canCleanGlobally ? 0 : -1}
 				onClick={(e) => {
 					e.stopPropagation();
 					if (canCleanGlobally) {
@@ -157,6 +158,21 @@ export function OpponentCard({
 
 	return (
 		<div
+			tabIndex={canBeTargeted ? 0 : -1}
+			onKeyDown={(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					if (
+						isUnclickable ||
+						isNonOpponentTarget ||
+						selectedCard?.card_id === 12
+					)
+						return;
+					onAction(player.id, player.is_online);
+				}
+			}}
+			aria-label={canBeTargeted ? `Atacar a ${player.name}` : player.name}
+			role={canBeTargeted ? "button" : undefined}
 			onClick={() => {
 				if (isUnclickable) return;
 				if (isNonOpponentTarget) return;
@@ -246,7 +262,7 @@ export function OpponentCard({
 			</h3>
 
 			{/* --- ROL DEL OPONENTE (para salas de pruebas) --- */}
-			{player.role !== "none" && player.role !== "boss" && (
+			{player.role !== "boss" && (
 				<span className="text-[10px] font-bold text-[#295c60] bg-[#295c60]/10 px-2 py-0.5 rounded mb-3 relative z-10 uppercase">
 					{player.role === "secretary"
 						? "Secretario"

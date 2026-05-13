@@ -153,14 +153,14 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 				>
 					<button
 						onClick={() => handleTabClick("stats")}
+						tabIndex={isTargetingMode ? -1 : 0}
 						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""}`}
 					>
-						<div className="flex items-center gap-1.5">
-							Expediente
-						</div>
+						<div className="flex items-center gap-1.5">Expediente</div>
 					</button>
 					<button
 						onClick={() => handleTabClick("hand")}
+						tabIndex={isTargetingMode ? -1 : 0}
 						className={`${styles.mobileTab} ${activeTab === "hand" ? styles.activeTab : ""}`}
 					>
 						Mano ({me.cards.length})

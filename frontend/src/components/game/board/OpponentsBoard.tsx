@@ -1,6 +1,6 @@
 // src/components/game/board/OpponentsBoard.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
@@ -120,6 +120,38 @@ export function OpponentsBoard({
 
 	const containerClasses = `${scaleClass} ${translateClass} ${gapClass}`;
 
+	const opponentRefs = useRef<(HTMLDivElement | null)[]>([]);
+	const isTargetingMode = selectedCard?.target === "opponent";
+
+	useEffect(() => {
+		if (!isTargetingMode) return;
+
+		const isCleanMode = selectedCard?.card_id === 12;
+
+		const firstValidIndex = opponents.findIndex((p) => {
+			if (p.is_dead || !p.is_online) return false;
+			if (isCleanMode) return true;
+			// Validar rango para carta de ataque
+			if (selectedCard?.card_id === 1 && !p.is_in_range) return false;
+			// Para robo, necesita tener cartas
+			if (selectedCard?.card_id === 4 && p.cards_count === 0) return false;
+			// Para sabotaje, necesita tener cartas
+			if (selectedCard?.card_id === 9 && p.cards_count === 0) return false;
+			// Para bloqueo, no debe estar ya bloqueado
+			if (selectedCard?.card_id === 6 && (p.conditions?.is_blocked ?? false))
+				return false;
+			return true;
+		});
+
+		if (firstValidIndex !== -1) {
+			setTimeout(() => {
+				const wrapper = opponentRefs.current[firstValidIndex];
+				const focusable = wrapper?.querySelector<HTMLElement>('[tabindex="0"]');
+				focusable?.focus();
+			}, 50);
+		}
+	}, [isTargetingMode]);
+
 	return (
 		<div className="absolute inset-0 pointer-events-none z-20">
 			{/* Mensaje flotante de apuntado */}
@@ -161,6 +193,9 @@ export function OpponentsBoard({
 					return (
 						<div
 							key={player.id}
+							ref={(el) => {
+								opponentRefs.current[index] = el;
+							}}
 							className={`relative pointer-events-auto ${isBoss ? "z-50" : "z-10"}`}
 							style={inlineStyles}
 						>

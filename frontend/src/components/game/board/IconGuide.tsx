@@ -1,11 +1,12 @@
 // src/components/game/board/IconGuide.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../store/useGameUIStore";
 import { FaQuestion } from "react-icons/fa";
 import { GUIDE_ITEMS } from "../../../data/iconGuide";
 import styles from "./IconGuide.module.css";
+import { useFocusTrap } from "../../../hooks/game/useFocusTrap";
 
 export function IconGuide() {
 	const activeModal = useGameUIStore((state) => state.activeModal);
@@ -15,27 +16,66 @@ export function IconGuide() {
 	const [isRendered, setIsRendered] = useState(false);
 	const [isExiting, setIsExiting] = useState(false);
 
-	// El useEffect reacciona a los cambios del estado global de Zustand
+	// Referencia para devolver el foco al botón flotante cuando se cierre el modal
+	const triggerButtonRef = useRef<HTMLButtonElement>(null);
+	const closedByUserRef = useRef(false);
+
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const mobileContainerRef = useRef<HTMLDivElement>(null);
+	const desktopContainerRef = useRef<HTMLDivElement>(null);
+
+	useFocusTrap(
+		[mobileContainerRef, desktopContainerRef],
+		activeModal === "guide",
+	);
+
 	useEffect(() => {
 		if (activeModal === "guide") {
 			setIsRendered(true);
 			setIsExiting(false);
+			setTimeout(() => closeButtonRef.current?.focus(), 50);
 		} else if (isRendered) {
 			setIsExiting(true);
+			const shouldRestoreFocus = closedByUserRef.current;
+			closedByUserRef.current = false;
+
 			const timer = setTimeout(() => {
 				setIsRendered(false);
 				setIsExiting(false);
+				// Solo restaurar foco si lo cerró el usuario, no si abrió otro modal
+				if (shouldRestoreFocus) {
+					triggerButtonRef.current?.focus();
+				}
 			}, 250);
 
 			return () => clearTimeout(timer);
 		}
-	}, [activeModal]);
+	}, [activeModal, isRendered]);
+
+	// ACCESIBILIDAD: Cerrar con la tecla Escape
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && activeModal === "guide") {
+				closedByUserRef.current = true;
+				setActiveModal("none");
+			}
+		};
+
+		if (activeModal === "guide") {
+			window.addEventListener("keydown", handleKeyDown);
+		}
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [activeModal, setActiveModal]);
 
 	const toggleGuide = () => {
+		if (activeModal === "guide") {
+			closedByUserRef.current = true;
+		}
 		setActiveModal(activeModal === "guide" ? "none" : "guide");
 	};
 
 	const handleClose = () => {
+		closedByUserRef.current = true;
 		setActiveModal("none");
 	};
 
@@ -43,31 +83,42 @@ export function IconGuide() {
 	if (!isRendered) {
 		return (
 			<button
+				ref={triggerButtonRef}
 				onClick={toggleGuide}
 				className={styles.guideButton}
 				title="Guía de Iconos"
+				// --- ARIA: Atributos del disparador ---
+				aria-label="Abrir guía de iconos"
+				aria-haspopup="dialog"
+				aria-expanded="false"
 			>
-				<FaQuestion className="w-5 h-5" />
+				<FaQuestion className="w-5 h-5" aria-hidden="true" />
 			</button>
 		);
 	}
 
 	// Contenido del Post-it (Chuleta rápida)
 	const guideContent = (
-		<div className="flex flex-col flex-1 min-h-0 w-full relative pt-4">
-			{/* El trozo de celo en la parte superior */}
-			<div className={styles.tape}></div>
+		<div
+			className="flex flex-col flex-1 min-h-0 w-full relative pt-4"
+			// --- ARIA: Semántica de Modal ---
+			role="dialog"
+			aria-modal="true"
+			aria-label="Guía de Iconos"
+		>
+			<div className={styles.tape} aria-hidden="true"></div>
 
-			{/* Botón de cerrar camuflado en la esquina */}
 			<button
+				ref={closeButtonRef}
 				onClick={handleClose}
-				className="absolute top-2 right-2 text-gray-500 hover:text-black font-black text-xl p-2 transition-colors leading-none z-10"
+				disabled={isExiting}
+				className="absolute top-2 right-2 text-gray-500 hover:text-black font-black text-xl p-2 transition-colors leading-none z-10 disabled:opacity-50"
 				title="Quitar nota"
+				aria-label="Cerrar guía de iconos"
 			>
 				✕
 			</button>
 
-			{/* Cabecera estilo manuscrito */}
 			<div className="px-5 pt-4 pb-2 shrink-0">
 				<h2
 					className={`${styles.handwrittenTitle} text-xl text-gray-800 tracking-tight transform -rotate-1 text-center`}
@@ -76,48 +127,51 @@ export function IconGuide() {
 				</h2>
 			</div>
 
-			{/* Cuadrícula de iconos con scroll personalizado */}
-			<div
+			{/* ACCESIBILIDAD: Cambiado de <div> a <ul> para estructura semántica */}
+			<ul
 				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-4 ${styles.customScroll}`}
 			>
 				{GUIDE_ITEMS.map((item, idx) => (
-					<div key={idx} className="flex gap-3 items-start p-1 min-w-0">
-						{/* El icono como si fuera una pegatina o un sello */}
+					<li key={idx} className="flex gap-3 items-start p-1 min-w-0">
 						<div
 							className={`w-7 h-7 rounded-full bg-white/50 shadow-sm flex items-center justify-center shrink-0 border border-black/10 text-gray-800 transform rotate-${idx % 2 === 0 ? "3" : "[-3]"}`}
+							aria-hidden="true"
 						>
 							<item.icon className="w-4 h-4 drop-shadow-sm" />
 						</div>
 						<div className="mt-0.5 min-w-0 flex-1">
-							{/* Título como si estuviera escrito a boli azul oscuro */}
 							<p className="text-sm font-bold text-blue-900 leading-none mb-1 truncate">
 								{item.name}
 							</p>
-							{/* Descripción a lápiz/boli negro */}
 							<p className="text-xs text-gray-700 leading-tight warp-break-word">
 								{item.desc}
 							</p>
 						</div>
-					</div>
+					</li>
 				))}
-			</div>
+			</ul>
 		</div>
 	);
 
 	return (
 		<>
 			<button
+				ref={triggerButtonRef}
 				onClick={toggleGuide}
 				className={styles.guideButton}
 				title="Guía de Iconos"
+				aria-label="Cerrar guía de iconos"
+				aria-haspopup="dialog"
+				aria-expanded="true"
 			>
-				<FaQuestion className="w-5 h-5" />
+				<FaQuestion className="w-5 h-5" aria-hidden="true" />
 			</button>
 
 			{createPortal(
 				<>
-					{/* VERSIÓN MÓVIL (< lg) - Centrado con Overlay */}
+					{/* VERSIÓN MÓVIL (< lg) */}
 					<div
+						ref={mobileContainerRef}
 						className={`lg:hidden fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 ${
 							isExiting ? "opacity-0 transition-opacity" : ""
 						}`}
@@ -131,15 +185,14 @@ export function IconGuide() {
 						</div>
 					</div>
 
-					{/* VERSIÓN ESCRITORIO (>= lg) - Desliza desde izquierda sin Overlay */}
+					{/* VERSIÓN ESCRITORIO (>= lg) */}
 					<div
+						ref={desktopContainerRef}
 						className={`hidden lg:block ${styles.desktopWrapper} ${
 							isExiting ? styles.slideOutLeft : styles.slideInLeft
 						}`}
 					>
-						<div
-							className={`${styles.postIt} w-150 h-[45vh] max-h-[75vh]`}
-						>
+						<div className={`${styles.postIt} w-150 h-[45vh] max-h-[75vh]`}>
 							{guideContent}
 						</div>
 					</div>

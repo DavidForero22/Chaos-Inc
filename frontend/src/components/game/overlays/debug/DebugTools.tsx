@@ -1,6 +1,6 @@
 // src/components/game/board/DebugTools.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../../store/useGameUIStore";
 import { useGameStore } from "../../../../store/useGameStore";
@@ -9,6 +9,7 @@ import { RiSwordLine } from "react-icons/ri";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";
 import { PlayerModifier } from "./PlayerModifier";
+import { useFocusTrap } from "../../../../hooks/game/useFocusTrap";
 
 interface DebugToolsProps {
 	roomId: string;
@@ -20,12 +21,10 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	const activeModal = useGameUIStore((state) => state.activeModal);
 	const setActiveModal = useGameUIStore((state) => state.setActiveModal);
 
-	// Extraemos tus propios datos del store
 	const me = useGameStore((state) => state.gameData?.me);
 
 	const [isRendered, setIsRendered] = useState(false);
 	const [isExiting, setIsExiting] = useState(false);
-
 	const {
 		debugState,
 		isSubmitting,
@@ -38,25 +37,47 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		handleSubmit,
 	} = useDebug(roomId, me?.id);
 
+	const triggerButtonRef = useRef<HTMLButtonElement>(null);
+	const closedByUserRef = useRef(false);
+	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const mobileContainerRef = useRef<HTMLDivElement>(null);
+	const desktopContainerRef = useRef<HTMLDivElement>(null);
+
+	useFocusTrap(
+		[mobileContainerRef, desktopContainerRef],
+		activeModal === "debug",
+	);
+
 	useEffect(() => {
 		if (activeModal === "debug") {
 			setIsRendered(true);
 			setIsExiting(false);
+			setTimeout(() => closeButtonRef.current?.focus(), 50);
 		} else if (isRendered) {
 			setIsExiting(true);
+			const shouldRestoreFocus = closedByUserRef.current;
+			closedByUserRef.current = false;
+
 			const timer = setTimeout(() => {
 				setIsRendered(false);
 				setIsExiting(false);
+				if (shouldRestoreFocus) {
+					triggerButtonRef.current?.focus();
+				}
 			}, 300);
 			return () => clearTimeout(timer);
 		}
 	}, [activeModal, isRendered]);
 
 	const toggleDebug = () => {
+		if (activeModal === "debug") {
+			closedByUserRef.current = true;
+		}
 		setActiveModal(activeModal === "debug" ? "none" : "debug");
 	};
 
 	const handleClose = () => {
+		closedByUserRef.current = true;
 		setActiveModal("none");
 	};
 
@@ -76,6 +97,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 			<>
 				<button
 					onClick={toggleDebug}
+					ref={triggerButtonRef}
 					className={styles.debugButton}
 					title="Herramientas de Debug"
 				>
@@ -92,6 +114,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 
 			{/* Botón cerrar */}
 			<button
+				ref={closeButtonRef}
 				onClick={handleClose}
 				className="absolute top-2 right-2 text-gray-500 hover:text-black font-black text-xl p-2 transition-colors leading-none z-10"
 				title="Cerrar debug"
@@ -183,6 +206,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	return (
 		<>
 			<button
+				ref={triggerButtonRef}
 				onClick={toggleDebug}
 				className={styles.debugButton}
 				title="Herramientas de Debug"
@@ -194,6 +218,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				<>
 					{/* VERSIÓN MÓVIL - Pantalla completa con overlay */}
 					<div
+						ref={mobileContainerRef}
 						className={`lg:hidden fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 ${
 							isExiting ? "opacity-0 transition-opacity" : ""
 						}`}
@@ -209,6 +234,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 
 					{/* VERSIÓN ESCRITORIO - Desliza desde la izquierda */}
 					<div
+						ref={desktopContainerRef}
 						className={`hidden lg:block ${styles.desktopWrapper} ${
 							isExiting ? styles.slideOutRight : styles.slideInRight
 						}`}
