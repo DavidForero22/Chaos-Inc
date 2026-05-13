@@ -24,7 +24,10 @@ class DebugController extends Controller
             return response()->json(['message' => $e->getMessage()], $status);
         }
 
-        $gameState = (new GameDataResource(['roomId' => $id]))->toArray($request);
+        $gameState = (new GameDataResource([
+            'roomId'     => $id,
+            'myPlayerId' => (string) $request->input('player_id'),
+        ]))->toArray($request);
 
         return response()->json([
             'applied'    => $applied,

@@ -1,0 +1,23 @@
+/* src/components/ui/Toast.module.css */
+.toastContainer {
+	position: fixed;
+	bottom: 1.5rem; /* Separación desde abajo */
+	right: 1.5rem; /* Separación desde la derecha */
+	left: auto; /* Asegura que no se estire a la izquierda */
+	z-index: 9999;
+	transition:
+		transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+		opacity 0.4s ease;
+}
+
+.show {
+	transform: translateX(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.hide {
+	transform: translateX(150%);
+	opacity: 0;
+	pointer-events: none;
+}

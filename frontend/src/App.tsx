@@ -25,6 +25,7 @@ import { AchievementNotification } from "./components/ui/AchievementNotification
 import AdminGuard from "./components/admin/AdminGuard.tsx";
 import UnauthorizedPage from "./pages/errors/UnauthorizedPage.tsx";
 import PageNotFoundPage from "./pages/errors/PageNotFoundPage.tsx";
+import { Toast } from "./components/ui/Toast/Toast.tsx";
 
 function App() {
 	useSessionGuard();
@@ -63,9 +64,10 @@ function App() {
 				/>
 				<Route path="*" element={<PageNotFoundPage />} />
 			</Routes>
-
+			{/* ── COMPONENTES GLOBALES ── */}
 			<GlobalLoader />
 			<AchievementNotification />
+			<Toast /> 
 		</Router>
 	);
 }

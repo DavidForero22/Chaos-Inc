@@ -29,7 +29,6 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	const {
 		debugState,
 		isSubmitting,
-		message,
 		cardCatalog,
 		isLoadingCatalog,
 		updateIsDead,
@@ -61,15 +60,28 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		setActiveModal("none");
 	};
 
+	// Interceptor para el submit (cierra el modal en móviles para ver la notificación)
+	const handleActionSubmit = async (
+		actionType: "modify_player" | "room_action",
+	) => {
+		await handleSubmit(actionType);
+		// Si la pantalla es menor a 1024px (breakpoint lg), cerrar el modal
+		if (window.innerWidth < 1024) {
+			handleClose();
+		}
+	};
+
 	if (!isRendered) {
 		return (
-			<button
-				onClick={toggleDebug}
-				className={styles.debugButton}
-				title="Herramientas de Debug"
-			>
-				<FaBug className="w-5 h-5" />
-			</button>
+			<>
+				<button
+					onClick={toggleDebug}
+					className={styles.debugButton}
+					title="Herramientas de Debug"
+				>
+					<FaBug className="w-5 h-5" />
+				</button>
+			</>
 		);
 	}
 
@@ -113,7 +125,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					onUpdateStress={(level) => updateModification("set_stress", level)}
 					onUpdateCardQuantity={updateCardQuantity}
 					onUpdateIsDead={updateIsDead}
-					onSubmit={() => handleSubmit("modify_player")}
+					onSubmit={() => handleActionSubmit("modify_player")}
 				/>
 
 				<hr className="my-4 border-gray-300" />
@@ -157,26 +169,13 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					</div>
 
 					<button
-						onClick={() => handleSubmit("room_action")}
+						onClick={() => handleActionSubmit("room_action")}
 						disabled={!debugState.roomActions.force_win || isSubmitting}
 						className="w-full mt-2 px-3 py-2 mb-7 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
 					>
 						{isSubmitting ? "Cargando..." : "Confirmar victoria"}
 					</button>
 				</section>
-
-				{/* Mensaje de feedback */}
-				{message && (
-					<div
-						className={`px-3 py-2 rounded text-xs font-bold text-center mt-4 ${
-							message.startsWith("✅")
-								? "bg-green-100 text-green-800 border border-green-300"
-								: "bg-red-100 text-red-800 border border-red-300"
-						}`}
-					>
-						{message}
-					</div>
-				)}
 			</div>
 		</div>
 	);

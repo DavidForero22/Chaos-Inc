@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../../api/axios";
 import type { CardCatalogItem } from "../../types/api";
+import { useToastStore } from "../../store/useToastStore"; 
 
 interface DebugState {
 	playerModifications: {
@@ -23,9 +24,8 @@ const initialState: DebugState = {
 export function useDebug(roomId: string, myPlayerId?: string) {
 	const [debugState, setDebugState] = useState<DebugState>(initialState);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [message, setMessage] = useState<string | null>(null);
+	const showToast = useToastStore((state) => state.showToast);
 
-	// Estado del catálogo de cartas
 	const [cardCatalog, setCardCatalog] = useState<CardCatalogItem[]>([]);
 	const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
 
@@ -105,12 +105,11 @@ export function useDebug(roomId: string, myPlayerId?: string) {
 
 	const handleSubmit = async (action: string) => {
 		if (!myPlayerId) {
-			setMessage("Error: No se pudo identificar al jugador local.");
+			showToast("No se pudo identificar al jugador local.", "danger");
 			return;
 		}
 
 		setIsSubmitting(true);
-		setMessage(null);
 
 		try {
 			const payload: any = {
@@ -120,7 +119,6 @@ export function useDebug(roomId: string, myPlayerId?: string) {
 			if (action === "modify_player") {
 				payload.player_modifications = { ...debugState.playerModifications };
 
-				// Transformar el mapa {1: 2, 5: 1} en array plano [1, 1, 5] antes de enviarlo
 				if (payload.player_modifications.add_cards) {
 					const flatCardsArray: number[] = [];
 					Object.entries(payload.player_modifications.add_cards).forEach(
@@ -151,13 +149,13 @@ export function useDebug(roomId: string, myPlayerId?: string) {
 				});
 
 				if (Object.keys(payload.player_modifications).length === 0) {
-					setMessage("Selecciona al menos una modificación");
+					showToast("Selecciona al menos una modificación", "warn");
 					setIsSubmitting(false);
 					return;
 				}
 			} else if (action === "room_action") {
 				if (!debugState.roomActions.force_win) {
-					setMessage("Selecciona una acción de sala");
+					showToast("Selecciona una acción de sala", "warn");
 					setIsSubmitting(false);
 					return;
 				}
@@ -176,23 +174,23 @@ export function useDebug(roomId: string, myPlayerId?: string) {
 			}
 
 			await api.post(`/rooms/${roomId}/debug`, payload);
-			setMessage("Acción ejecutada correctamente");
 
-			setDebugState(initialState); // Resetear el estado para limpiar UI
+			// Éxito:
+			showToast("Acción ejecutada correctamente", "success");
+			setDebugState(initialState);
 		} catch (error: any) {
+			// Error:
 			const errorMsg =
 				error.response?.data?.message || error.message || "Error desconocido";
-			setMessage(`Error: ${errorMsg}`);
+			showToast(errorMsg, "danger");
 		} finally {
 			setIsSubmitting(false);
-			setTimeout(() => setMessage(null), 4000);
 		}
 	};
 
 	return {
 		debugState,
 		isSubmitting,
-		message,
 		cardCatalog,
 		isLoadingCatalog,
 		updateIsDead,
