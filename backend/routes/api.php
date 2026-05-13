@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Lobby\DebugController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
+use App\Http\Controllers\SocialAuthController;
 use App\Http\Middleware\IsDebugRoom;
 use Illuminate\Support\Facades\Route;
 
@@ -65,7 +66,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/rooms/{room}/discard-perks', [LiveGameController::class, 'discardPerks']);
 
             Route::post('/rooms/{id}/debug', [DebugController::class, 'handle'])
-                ->middleware([ IsDebugRoom::class,]);
+                ->middleware([IsDebugRoom::class,]);
         });
 
         // ==========================================================
@@ -83,7 +84,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/users/{user}', [UserController::class, 'update']);
             Route::post('/users/{user}/avatar', [UserController::class, 'updateAvatar']);
             Route::get('/users/{user}/games', [GameController::class, 'userGames']);
-            Route::delete('/users/{user}/social/{provider}', [UserController::class, 'unlinkSocialAccount']);
+            Route::delete('/users/{user}/social/{provider}', [SocialAuthController::class, 'unlinkSocialAccount']);
             Route::delete('/users/{user}', [UserController::class, 'destroy']);
 
             Route::get('/games', [GameController::class, 'index']);

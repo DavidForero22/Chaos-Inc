@@ -120,6 +120,7 @@ class UserService
             'password' => 'anonimized',
         ]);
 
+        $user->socialAccounts()->delete();
         return $user->delete();
     }
 

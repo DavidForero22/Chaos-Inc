@@ -7,6 +7,10 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
+use App\Models\User;
+use App\Http\Resources\UserResource;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Gate;
 
 class SocialAuthController extends Controller
 {
@@ -66,5 +70,40 @@ class SocialAuthController extends Controller
 
         // Redirigir al frontend a la sala correspondiente (o al menú)
         return redirect("{$frontendUrl}{$returnTo}?login=success");
+    }
+
+    /**
+     * Desvincula una cuenta social de un usuario.
+     */
+    public function unlinkSocialAccount(Request $request, User $user, string $provider, SocialAuthService $socialAuthService): JsonResponse
+    {
+        // Solo el propio usuario (o un admin) puede desvincular sus cuentas
+        Gate::authorize('update', $user);
+
+        // Validar la contraseña si viene en la request
+        $request->validate([
+            'password' => 'sometimes|required|string|min:8'
+        ]);
+
+        try {
+            $socialAuthService->unlinkSocialAccount($user, $provider, $request->input('password'));
+        } catch (\Exception $e) {
+            if ($e->getMessage() === "PASSWORD_REQUIRED") {
+                return response()->json([
+                    'error_code' => 'PASSWORD_REQUIRED',
+                    'message' => 'Para desvincular tu último método de acceso, primero debes establecer una contraseña.'
+                ], 428); // 428 Precondition Required
+            }
+
+            return response()->json(['message' => 'Error al desvincular la cuenta.'], 500);
+        }
+
+        // Recargamos relaciones para el Resource
+        $user->load('socialAccounts');
+
+        return response()->json([
+            'message' => 'Cuenta desvinculada correctamente.',
+            'user' => new UserResource($user)
+        ], 200);
     }
 }

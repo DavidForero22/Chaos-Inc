@@ -113,40 +113,4 @@ class UserController extends Controller
         $this->userService->deleteUser($id);
         return response()->noContent();
     }
-
-    public function unlinkSocialAccount(Request $request, $id, $provider)
-    {
-        $targetUser = $this->userService->getUserById($id);
-
-        // Solo el propio usuario (o un admin) puede desvincular sus cuentas
-        Gate::authorize('update', $targetUser);
-
-        // Validar la contraseña si viene en la request
-        $request->validate([
-            'password' => 'sometimes|required|string|min:8'
-        ]);
-
-        try {
-            // Pasar la contraseña al servicio (será null si no viene)
-            $user = $this->userService->unlinkSocialAccount($id, $provider, $request->input('password'));
-        } catch (\Exception $e) {
-            if ($e->getMessage() === "PASSWORD_REQUIRED") {
-                return response()->json([
-                    'error_code' => 'PASSWORD_REQUIRED',
-                    'message' => 'Para desvincular tu último método de acceso, primero debes establecer una contraseña.'
-                ], 428); // 428 Precondition Required
-            }
-
-            // Cualquier otro error
-            return response()->json(['message' => 'Error al desvincular la cuenta.'], 500);
-        }
-
-        // Recargamos relaciones para el Resource
-        $user->load('socialAccounts');
-
-        return response()->json([
-            'message' => 'Cuenta desvinculada correctamente.',
-            'user' => new UserResource($user)
-        ], 200);
-    }
 }

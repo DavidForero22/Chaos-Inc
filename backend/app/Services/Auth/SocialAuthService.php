@@ -6,6 +6,7 @@ namespace App\Services\Auth;
 use App\Models\User;
 use App\Models\SocialAccount;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Socialite\Contracts\User as SocialUser;
 
 class SocialAuthService
@@ -88,6 +89,33 @@ class SocialAuthService
             'provider_id'     => $socialUser->getId(),
             'provider_avatar' => $socialUser->getAvatar(),
         ]);
+    }
+
+    /**
+     * Desvincula un proveedor social, requiriendo contraseña si es la última forma de acceso.
+     */
+    public function unlinkSocialAccount(User $user, string $provider, ?string $password): User
+    {
+        return DB::transaction(function () use ($user, $provider, $password) {
+            $hasPassword = !is_null($user->password);
+            $socialAccountsCount = $user->socialAccounts()->count();
+
+            // Si no tiene contraseña y solo le queda esta cuenta social, debe crear una
+            if (!$hasPassword && $socialAccountsCount === 1) {
+                if (!$password) {
+                    throw new \Exception("PASSWORD_REQUIRED");
+                }
+
+                $user->update([
+                    'password' => Hash::make($password)
+                ]);
+            }
+
+            // Eliminar la cuenta social específica
+            $user->socialAccounts()->where('provider_name', $provider)->delete();
+
+            return $user;
+        });
     }
 
     private function generateUsername(string $displayName): string
