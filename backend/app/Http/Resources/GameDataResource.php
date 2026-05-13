@@ -16,7 +16,7 @@ class GameDataResource extends JsonResource
     public function toArray(Request $request): array
     {
         $roomId       = $this['roomId'];
-        $myPlayerId   = $this['myPlayerId'];
+        $myPlayerId   = (string) $this['myPlayerId'];
 
         $roomInfo  = Redis::hgetall("room:{$roomId}:info");
         $roomState = Redis::hgetall("room:{$roomId}:state");
