@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../../store/useGameUIStore";
 import { useGameStore } from "../../../../store/useGameStore";
 import { FaBug } from "react-icons/fa";
-import { RiSwordLine } from "react-icons/ri";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";
 import { PlayerModifier } from "./PlayerModifier";
@@ -81,12 +80,10 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		setActiveModal("none");
 	};
 
-	// Interceptor para el submit (cierra el modal en móviles para ver la notificación)
 	const handleActionSubmit = async (
 		actionType: "modify_player" | "room_action",
 	) => {
 		await handleSubmit(actionType);
-		// Si la pantalla es menor a 1024px (breakpoint lg), cerrar el modal
 		if (window.innerWidth < 1024) {
 			handleClose();
 		}
@@ -94,49 +91,60 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 
 	if (!isRendered) {
 		return (
-			<>
-				<button
-					onClick={toggleDebug}
-					ref={triggerButtonRef}
-					className={styles.debugButton}
-					title="Herramientas de Debug"
-				>
-					<FaBug className="w-5 h-5" />
-				</button>
-			</>
+			<button
+				onClick={toggleDebug}
+				ref={triggerButtonRef}
+				className={styles.debugButton}
+				title="Consola de Depuración"
+				aria-label="Abrir terminal de depuración"
+				aria-haspopup="dialog"
+				aria-expanded="false"
+			>
+				<FaBug
+					className="w-4 h-4 md:w-5 md:h-5"
+					aria-hidden="true"
+				/>
+			</button>
 		);
 	}
 
 	const debugContent = (
-		<div className="flex flex-col flex-1 min-h-0 w-full relative pt-4">
-			{/* Cinta adhesiva */}
-			<div className={styles.tape}></div>
-
-			{/* Botón cerrar */}
+		<div
+			className="flex flex-col flex-1 min-h-0 w-full relative pt-2 font-mono"
+			// --- ACCESIBILIDAD ---
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="terminal-title"
+		>
+			{/* Botón cerrar estilo consola [X] */}
 			<button
 				ref={closeButtonRef}
 				onClick={handleClose}
-				className="absolute top-2 right-2 text-gray-500 hover:text-black font-black text-xl p-2 transition-colors leading-none z-10"
-				title="Cerrar debug"
+				className="absolute top-2 right-3 text-green-600 hover:text-green-300 font-bold text-lg p-1 transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-green-500"
+				title="Cerrar terminal"
+				aria-label="Cerrar terminal de depuración"
+				disabled={isExiting}
 			>
-				✕
+				[X]
 			</button>
 
-			{/* Cabecera */}
-			<div className="px-5 pt-4 pb-2 shrink-0">
+			{/* Cabecera Terminal */}
+			<div className="px-5 pt-4 pb-3 shrink-0 border-b border-green-800/50">
 				<h2
-					className={`${styles.handwrittenTitle} text-xl text-gray-800 tracking-tight transform -rotate-1 text-center`}
+					id="terminal-title"
+					className="text-lg text-green-500 tracking-tight flex items-center gap-2"
 				>
-					🛠️ Debug Tools
+					<span>Herramientas de Depuración</span>
 				</h2>
-				<p className="text-xs text-gray-600 text-center mt-1">
-					Modificando a: <strong>{me?.name || "Desconocido"}</strong>
+				<p className="text-xs text-green-700 mt-1">
+					Usuario:{" "}
+					<strong className="text-green-400">{me?.name || "UNKNOWN"}</strong>
 				</p>
 			</div>
 
 			{/* Contenido scrolleable */}
 			<div
-				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-${styles.customScroll}`}
+				className={`p-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-6 ${styles.customScroll}`}
 			>
 				{/* ─── MODIFICACIONES DE JUGADOR ─── */}
 				<PlayerModifier
@@ -151,20 +159,25 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					onSubmit={() => handleActionSubmit("modify_player")}
 				/>
 
-				<hr className="my-4 border-gray-300" />
+				<hr className="my-2 border-green-900/50 border-dashed" />
 
 				{/* ─── ACCIONES DE SALA ─── */}
-				<section className="space-y-3 bg-white/40 p-3 rounded-lg">
-					<h3 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-						<RiSwordLine className="w-4 h-4" /> Acciones de Sala
+				<section className="space-y-4 bg-[#0a0f0a] border border-green-900/50 p-4 rounded text-green-500">
+					<h3 className="font-bold text-sm flex items-center gap-2 text-green-400">
+						<span className="uppercase tracking-widest">
+							Acciones de Sala
+						</span>
 					</h3>
 
-					{/* Forzar victoria */}
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Forzar Victoria
+					<div className="space-y-2">
+						<label className="text-xs font-semibold text-green-700 uppercase">
+							 Seleccionar Victoria 
 						</label>
-						<div className="flex gap-2 flex-wrap">
+						<div
+							className="flex gap-2 flex-wrap"
+							role="group"
+							aria-label="Opciones de victoria forzada"
+						>
 							{[...ROLES, "cancelled"].map(
 								(option) =>
 									option !== "secretary" && (
@@ -178,10 +191,11 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 														: option,
 												)
 											}
-											className={`px-2 py-1 text-xs rounded border capitalize transition-colors ${
+											aria-pressed={debugState.roomActions.force_win === option}
+											className={`px-3 py-1.5 text-xs font-bold capitalize transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 ${
 												debugState.roomActions.force_win === option
-													? "bg-yellow-500 text-white border-yellow-600"
-													: "bg-white text-gray-700 border-gray-300 hover:bg-yellow-100"
+													? "bg-green-500 text-black border border-green-500"
+													: "bg-transparent text-green-600 border border-green-800 hover:bg-green-900/40 hover:text-green-400 hover:border-green-600"
 											}`}
 										>
 											{option === "cancelled" ? "Cancelada" : option}
@@ -194,9 +208,9 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					<button
 						onClick={() => handleActionSubmit("room_action")}
 						disabled={!debugState.roomActions.force_win || isSubmitting}
-						className="w-full mt-2 px-3 py-2 mb-7 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
+						className="w-full mt-4 px-3 py-2.5 bg-green-600 hover:bg-green-500 text-black text-xs font-black uppercase tracking-widest transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-[#0d1117]"
 					>
-						{isSubmitting ? "Cargando..." : "Confirmar victoria"}
+						{isSubmitting ? "Ejecutando..." : "Ejecutar(Victoria)"}
 					</button>
 				</section>
 			</div>
@@ -209,37 +223,42 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				ref={triggerButtonRef}
 				onClick={toggleDebug}
 				className={styles.debugButton}
-				title="Herramientas de Debug"
+				title="Herramientas de Depuración"
+				aria-label="Cerrar herramientas de depuración"
+				aria-haspopup="dialog"
+				aria-expanded="true"
 			>
-				<FaBug className="w-5 h-5" />
+				<FaBug className="w-5 h-5 text-green-500" aria-hidden="true" />
 			</button>
 
 			{createPortal(
 				<>
-					{/* VERSIÓN MÓVIL - Pantalla completa con overlay */}
+					{/* VERSIÓN MÓVIL */}
 					<div
 						ref={mobileContainerRef}
-						className={`lg:hidden fixed inset-0 z-200 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 ${
+						className={`lg:hidden fixed inset-0 z-200 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 ${
 							isExiting ? "opacity-0 transition-opacity" : ""
 						}`}
 						onClick={handleClose}
 					>
 						<div
-							className={`${styles.postIt} w-full h-full max-h-full`}
+							className={`${styles.terminalWindow} w-full h-full max-h-full`}
 							onClick={(e) => e.stopPropagation()}
 						>
 							{debugContent}
 						</div>
 					</div>
 
-					{/* VERSIÓN ESCRITORIO - Desliza desde la izquierda */}
+					{/* VERSIÓN ESCRITORIO */}
 					<div
 						ref={desktopContainerRef}
 						className={`hidden lg:block ${styles.desktopWrapper} ${
-							isExiting ? styles.slideOutRight : styles.slideInRight
+							isExiting ? styles.slideOutLeft : styles.slideInLeft
 						}`}
 					>
-						<div className={`${styles.postIt} w-96 h-[80vh] max-h-[80vh]`}>
+						<div
+							className={`${styles.terminalWindow} w-96 h-[80vh] max-h-[80vh]`}
+						>
 							{debugContent}
 						</div>
 					</div>

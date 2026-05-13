@@ -25,13 +25,17 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 	const previousFocusRef = useRef<HTMLElement | null>(null);
 
 	useEffect(() => {
-		// Guardar mos qué elemento tenía el foco antes de abrir el modal (ej. la carta o el botón '?')
+		// Guardar qué elemento tenía el foco antes de abrir el modal
 		previousFocusRef.current = document.activeElement as HTMLElement;
 
-		// Pasar el foco al botón de cerrar del modal automáticamente
-		closeButtonRef.current?.focus();
+		// Pasar el foco al botón de cerrar con un micro-retraso para asegurar
+		// que el DOM del Portal y la animación están listos.
+		const timer = setTimeout(() => {
+			closeButtonRef.current?.focus();
+		}, 50);
 
 		return () => {
+			clearTimeout(timer);
 			// Cuando el modal se desmonta (se cierra), devolver el foco a la carta original
 			previousFocusRef.current?.focus();
 		};
@@ -57,6 +61,14 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 		}, 250); // Mismo tiempo que dura la animación CSS
 	};
 
+	// --- ACCESIBILIDAD: Trampa de Foco ---
+	const handleTabTrap = (e: React.KeyboardEvent) => {
+		if (e.key === "Tab") {
+			e.preventDefault();
+			closeButtonRef.current?.focus();
+		}
+	};
+
 	// Obtenemos la traducción del tipo, o mostramos el valor original si no existe en el mapa
 	const translatedType = TYPE_MAP[card.type] || card.type;
 
@@ -73,6 +85,7 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 					isExiting ? styles.slideOutRight : styles.slideInRight
 				}`}
 				onClick={(e) => e.stopPropagation()}
+				onKeyDown={handleTabTrap}
 				role="dialog"
 				aria-modal="true"
 				aria-labelledby="card-modal-title"
@@ -99,8 +112,11 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 						<h2 id="card-modal-title" className={styles.title}>
 							{card.name}
 						</h2>
-						<span className="text-xs uppercase font-bold text-gray-500 tracking-wider bg-gray-200/50 px-2 py-1 rounded border border-gray-300">
-							[{translatedType}]
+						<span className="text-xs uppercase font-bold text-gray-500 tracking-wider bg-gray-200/50 px-2 py-1 rounded border border-gray-300 inline-block mt-1">
+							<span className="sr-only">Tipo de carta: </span>
+							<span aria-hidden="true">[</span>
+							{translatedType}
+							<span aria-hidden="true">]</span>
 						</span>
 					</div>
 
