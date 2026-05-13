@@ -88,8 +88,16 @@ export function useLiveGame(roomId: string | undefined) {
 			const status = error.response?.status;
 			const errorType = error.response?.data?.type;
 
+			// --- SOLUCIÓN AQUÍ ---
 			if (errorType === "GAME_NOT_STARTED") {
-				console.warn("Waiting for Redis initialization...");
+				logWithTime(
+					"useLiveGame.ts::handleSync() - La partida no está activa. Volviendo al Lobby...",
+					null,
+					"warn",
+				);
+				isKickedRef.current = true; // Evita bucles
+				useLoadingStore.getState().stopLoading();
+				navigate(`/rooms/${roomId}`, { replace: true }); // Redirigir a la sala de espera
 				return;
 			}
 

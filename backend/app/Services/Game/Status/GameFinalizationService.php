@@ -83,7 +83,7 @@ class GameFinalizationService
             $role  = $pInfo['role'] ?? 'intern';
             $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
-            
+
             $isActingBoss = (isset($pInfo['acting_boss']) && $pInfo['acting_boss'] == '1');
             $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
             $displayName = $pInfo['username'] ?? "Player_{$playerId}";
@@ -247,52 +247,18 @@ class GameFinalizationService
         return true;
     }
 
-    public function finalizeVictory(string $roomId, bool $isDisconnection = false): void
+    public function finalizeVictory(string $roomId, string $winnerRole, bool $isDisconnection = false): void
     {
         $roomStateKey = "room:{$roomId}:state";
-        $playerIds    = Redis::smembers("room:{$roomId}:players");
-        $onlineRoles  = [];
-
-        foreach ($playerIds as $playerId) {
-            $pInfo    = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
-
-            $isOnline = ($pInfo['is_online'] ?? '1') !== '0';
-            $isDead   = filter_var($pInfo['is_dead'] ?? false, FILTER_VALIDATE_BOOLEAN);
-
-            if ($isOnline && !$isDead) {
-                $onlineRoles[] = $pInfo['role'] ?? '';
-            }
-        }
-
         $roundNumber  = (int) Redis::hget($roomStateKey, 'round_number');
-        $hasUnion     = in_array('union', $onlineRoles);
-        $hasBoss      = in_array('boss', $onlineRoles);
-        $hasSecretary = in_array('secretary', $onlineRoles);
-        $hasIntern    = in_array('intern', $onlineRoles);
-
-        if (count($onlineRoles) <= 1) {
-            $soloRole   = $onlineRoles[0] ?? null;
-            $winnerRole = match ($soloRole) {
-                'boss', 'secretary' => 'boss',
-                'intern'            => 'intern',
-                'union'             => 'union',
-                default             => null,
-            };
-        } elseif (!$hasUnion && !$hasIntern) {
-            $winnerRole = 'boss';
-        } elseif (!$hasBoss && !$hasSecretary) {
-            $winnerRole = 'union';
-        } else {
-            // La condición ya no se cumple, alguien se reconectó o sigue vivo
-            Log::info("GameFinalizationService.php::finalizeVictory - condición de victoria no se cumple en {$roomId}");
-            return;
-        }
 
         // Gana SI NO fue por desconexión, O SI fue por desconexión pero ya pasó la ronda 3
         if (!$isDisconnection || $roundNumber >= 3) {
             Redis::hset($roomStateKey, 'game_over', 1);
             Redis::hset($roomStateKey, 'winner_role', $winnerRole);
+
             event(new RoomStateUpdated($roomId));
+
             $this->finalize($roomId);
 
             $cause = $isDisconnection ? "abandono del rival (Ronda $roundNumber)" : "combate";
@@ -329,5 +295,40 @@ class GameFinalizationService
         return count($onlineRoles) <= 1 ||
             (!$hasUnion && !$hasIntern && $hasBossSide) ||
             (!$hasBossSide && $hasUnion);
+    }
+
+    /**
+     * Verifica si hay condiciones de victoria y finaliza la partida si es el caso.
+     */
+    public function checkAndFinalizeVictory(string $roomId): bool
+    {
+        $rolesAlive = ['boss' => false, 'secretary' => false, 'intern' => false, 'union' => false];
+
+        foreach (Redis::smembers("room:{$roomId}:players") as $playerId) {
+            $info = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
+            $isDead = CastHelper::toBool($info['is_dead'] ?? 0);
+            $role = $info['role'] ?? 'none';
+
+            if (!$isDead && $role !== 'none') {
+                $rolesAlive[$role] = true;
+            }
+        }
+
+        $winnerRole = null;
+
+        if ($rolesAlive['boss'] && !$rolesAlive['secretary'] && !$rolesAlive['intern'] && !$rolesAlive['union']) {
+            $winnerRole = 'boss';
+        } elseif (!$rolesAlive['boss'] && $rolesAlive['union']) {
+            $winnerRole = 'union';
+        } elseif (!$rolesAlive['boss'] && !$rolesAlive['union'] && $rolesAlive['intern']) {
+            $winnerRole = 'intern';
+        }
+
+        if ($winnerRole) {
+            $this->finalizeVictory($roomId, $winnerRole, false);
+            return true;
+        }
+
+        return false;
     }
 }

@@ -85,6 +85,10 @@ export const useGameStore = create<GameState>((set, get) => ({
 		const isFirstLoad = id ? !localStorage.getItem(getRoleRevealKey(id)) : true;
 
 		set({ roomId: id, isFirstLoad });
+		logWithTime(
+			"useGameStore.ts::seRoomId() - Guardando ID de sala.",
+			`roomId ahora es ${id}`,
+		);
 	},
 	setGameData: (data) => set({ gameData: data }),
 	setIsConnecting: (isConnecting) => set({ isConnecting }),
@@ -143,7 +147,9 @@ export const useGameStore = create<GameState>((set, get) => ({
 		const wasActingBoss = currentData?.me?.conditions?.acting_boss === true;
 
 		if (isNowActingBoss && !wasActingBoss) {
-			logWithTime("Eres el nuevo Jefe Heredado");
+			logWithTime(
+				"useGameStore.ts::applyGameData - Se ha heredado cargo de jefe.",
+			);
 			set({ showActingBossModal: true });
 		}
 
@@ -180,15 +186,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 			applyGameData(res.data);
 		} catch (error: any) {
-			// Si el backend dice que el juego no ha empezado, es que está en el Lobby .
-			if (
-				error.response?.status === 400 &&
-				error.response?.data?.type === "GAME_NOT_STARTED"
-			) {
-				return;
-			}
-
-			console.error("ERROR en /sync:", error);
 			throw error;
 		} finally {
 			set({ isActionLocked: false });
@@ -213,7 +210,11 @@ export const useGameStore = create<GameState>((set, get) => ({
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
-			logWithTime("useGameStore.ts - Error playing turn. ", error);
+			logWithTime(
+				"useGameStore.ts::playTurn() - Error al jugar el turno. ",
+				error.response,
+				"error",
+			);
 			alert(error.response?.data?.message || "Error al jugar la carta.");
 			return false;
 		}
@@ -233,7 +234,11 @@ export const useGameStore = create<GameState>((set, get) => ({
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
-			logWithTime("useGameStore.ts - Error reacting to attack. ", error);
+			logWithTime(
+				"useGameStore.ts::reactToAttack() - Error al reaccionar al ataque. ",
+				error.response,
+				"error",
+			);
 			alert(error.response?.data?.message || "Error al reaccionar al ataque.");
 			return false;
 		}
@@ -257,7 +262,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 		} catch (error: any) {
 			set({ isActionLocked: false });
 			if (error.response?.status === 422) return false;
-			logWithTime("useGameStore.ts - Error reacting to multi attack. ", error);
+			logWithTime("useGameStore.ts::reactToMultiAttack() - Error al reaccionar al ataque masivo. ", error.response);
 			alert(
 				error.response?.data?.message ||
 					"Error al reaccionar al ataque masivo.",

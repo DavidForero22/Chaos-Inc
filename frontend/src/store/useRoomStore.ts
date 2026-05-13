@@ -62,7 +62,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 			const res = await api.get(`/rooms/${encodeURIComponent(roomId)}`, {
 				hideLoader: true,
 			} as any);
-			const currentRoom = res.data.data ?? res.data;
+			const currentRoom = res.data;
 
 			if (currentRoom) {
 				set({ room: currentRoom });

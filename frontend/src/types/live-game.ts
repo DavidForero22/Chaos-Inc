@@ -3,7 +3,7 @@
 /**
  * Roles disponibles en el juego
  */
-export type PlayerRole = "boss" | "secretary" | "intern" | "union" | "none";
+export type PlayerRole = "boss" | "secretary" | "intern" | "union";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
 /**
@@ -46,6 +46,7 @@ export interface CombatState {
 export interface BasePlayer {
 	id: string;
 	name: string;
+	role: PlayerRole;
 	avatar?: string | null;
 	stress: number;
 	max_stress: number;
@@ -60,7 +61,6 @@ export interface BasePlayer {
  * Tipado de los oponentes (Hereda de BasePlayer)
  */
 export interface Opponent extends BasePlayer {
-	role: PlayerRole;
 	cards_count: number;
 	distance: number;
 	is_in_range: boolean;
@@ -102,7 +102,6 @@ export interface CardInstance {
  * Tipado de mis datos privados (Hereda de BasePlayer)
  */
 export interface MyData extends BasePlayer {
-	role: PlayerRole;
 	cards: CardInstance[];
 	max_hand_size: number;
 	conditions: PlayerConditions;

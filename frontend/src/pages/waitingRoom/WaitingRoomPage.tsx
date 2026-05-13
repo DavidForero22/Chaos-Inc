@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../../hooks/room/useRoom.ts";
 import { useLoadingStore } from "../../store/useLoadingStore.ts";
 import { useAuthStore } from "../../store/useAuthStore.ts";
-import { FaShareAlt, FaCheck, FaFlask } from "react-icons/fa";
+import { FaShareAlt, FaCheck, FaTools } from "react-icons/fa";
 
 import GuestNameModal from "../../components/lobby/GuestNameModal.tsx";
 import BoardPlayerList from "../../components/lobby/BoardPlayerList.tsx";
@@ -181,17 +181,18 @@ export default function WaitingRoomPage() {
 	}
 
 	const isOwner = String(room.owner_id) === String(currentUserId);
+	const missingPlayers = 3 - (room.players.length || 0);
 
-	// --- UI: Sala de pruebas ---
-	if (isDebugRoom) {
-		return (
-			<WallLayout boardWidth="500px">
-				{/* Cabecera debug */}
-				<div className="flex flex-col items-center gap-2 mb-8">
-					<h1 className={`${styles.title} ${styles.markerBlack}`}>
-						SALA: <span className={styles.markerBlue}>{room.name}</span>
-					</h1>
+	return (
+		<WallLayout>
+			<div className="flex flex-col items-center">
+				<h1 className={`${styles.title} ${styles.markerBlack} mb-0`}>
+					SALA: <span className={styles.markerBlue}>{room.name}</span>
+				</h1>
+				{/* --- INDICADOR DE MODO PRUEBA --- */}
+				{isDebugRoom && (
 					<span
+						className="mt-2"
 						style={{
 							display: "inline-flex",
 							alignItems: "center",
@@ -206,71 +207,14 @@ export default function WaitingRoomPage() {
 							textTransform: "uppercase",
 						}}
 					>
-						<FaFlask />
-						Partida de Prueba
+						<FaTools />
+						Partida de Pruebas
 					</span>
-				</div>
-
-				{/* Descripción del modo */}
-				<div
-					style={{
-						background: "#fffbeb",
-						border: "2px dashed #b45309",
-						padding: "16px 20px",
-						marginBottom: "32px",
-						fontSize: "0.85rem",
-						color: "#78350f",
-						lineHeight: "1.6",
-					}}
-				>
-					<p style={{ fontWeight: "bold", marginBottom: "6px" }}>
-						Entorno de testing activo
-					</p>
-					<p>
-						Esta sala está en modo de pruebas. No se pueden unir otros
-						jugadores. Al iniciar la partida, podrás crear jugadores fantasma,
-						asignar roles y modificar el estado del juego desde el panel de
-						control.
-					</p>
-				</div>
-
-				{/* Acciones */}
-				<div className="flex justify-between items-center border-t-2 border-gray-300 pt-6">
-					<button
-						onClick={onLeaveClick}
-						className={`${styles.btnBase} ${styles.btnLeave}`}
-					>
-						Abandonar Sala
-					</button>
-
-					<button
-						onClick={startGame}
-						disabled={!isOwner}
-						className={`${styles.btnBase} ${styles.btnStart}`}
-						title={
-							!isOwner
-								? "Solo el administrador puede iniciar la partida"
-								: "Iniciar partida de prueba"
-						}
-					>
-						{isOwner ? "Iniciar Prueba" : "Esperando al admin..."}
-					</button>
-				</div>
-			</WallLayout>
-		);
-	}
-
-	// --- UI: Sala normal ---
-	const missingPlayers = 3 - (room.players.length || 0);
-
-	return (
-		<WallLayout>
-			<h1 className={`${styles.title} ${styles.markerBlack}`}>
-				SALA: <span className={styles.markerBlue}>{room.name}</span>
-			</h1>
+				)}
+			</div>
 
 			{/* --- BOTÓN DE COMPARTIR --- */}
-			<div className="flex justify-center mb-10 mt-4">
+			<div className="flex justify-center mb-10 mt-6">
 				<button
 					onClick={handleShare}
 					className={`${styles.markerBlack} flex items-center gap-3 px-4 py-2 border-2 border-dashed border-gray-400 rounded hover:bg-gray-100 transition-colors`}

@@ -32,17 +32,17 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 		roomChannel
 			.here((users: any[]) => {
 				logWithTime(
-					`useGameSockets.ts - Hay ${users.length} usuarios en la sala.`,
+					`useGameSockets.ts::.here - Hay ${users.length} usuarios en la sala.`,
 				);
 			})
 			.joining((user: any) => {
 				logWithTime(
-					`useGameSockets.ts - ${user.username} se ha conectado al socket.`,
+					`useGameSockets.ts::.joining - ${user.username} se ha conectado al socket.`,
 				);
 				// Sincronizar si vuelve alguien (reconexión rápida)
 				const state = useGameStore.getState();
 				if (!state.isConnecting && !state.gameOver) {
-					state.syncGame();
+					state.syncGame().catch(() => {});
 				}
 			})
 			.leaving((user: any) => {
@@ -50,7 +50,7 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 				if (state.gameOver) return;
 
 				logWithTime(
-					`useGameSockets.ts - Socket cerrado para ${user.username} (ID: ${user.id}). Avisando al servidor INMEDIATAMENTE.`,
+					`useGameSockets.ts::.leaving - Socket cerrado para ${user.username} (ID: ${user.id}). Avisando al servidor INMEDIATAMENTE.`,
 				);
 
 				api
@@ -160,7 +160,10 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 					if (syncTimeout) clearTimeout(syncTimeout);
 
 					syncTimeout = setTimeout(() => {
-						useGameStore.getState().syncGame();
+						useGameStore
+							.getState()
+							.syncGame()
+							.catch(() => {});
 						syncTimeout = null;
 					}, 100);
 				}

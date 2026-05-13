@@ -9,7 +9,6 @@ import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 
-
 interface OpponentCardProps {
 	player: Opponent;
 	isMyTurn: boolean;
@@ -250,9 +249,9 @@ export function OpponentCard({
 			{player.role !== "none" && player.role !== "boss" && (
 				<span className="text-[10px] font-bold text-[#295c60] bg-[#295c60]/10 px-2 py-0.5 rounded mb-3 relative z-10 uppercase">
 					{player.role === "secretary"
-						? "Secretaria"
+						? "Secretario"
 						: player.role === "intern"
-							? "Becario"
+							? "Becaria"
 							: "Sindicato"}
 				</span>
 			)}

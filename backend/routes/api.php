@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Lobby\DebugController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
+use App\Http\Middleware\IsDebugRoom;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -64,10 +65,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/rooms/{room}/discard-perks', [LiveGameController::class, 'discardPerks']);
 
             Route::post('/rooms/{id}/debug', [DebugController::class, 'handle'])
-                ->middleware([
-                    \App\Http\Middleware\IsAdmin::class,
-                    \App\Http\Middleware\IsDebugRoom::class,
-                ]);
+                ->middleware([ IsDebugRoom::class,]);
         });
 
         // ==========================================================

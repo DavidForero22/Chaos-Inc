@@ -3,11 +3,11 @@ import styles from "./GameOverModal.module.css";
 import { RESULT_CONFIG, ROLE_LABELS } from "../../../data/gameResults.ts";
 import type {
 	WinnerRole,
-	PlayerRole,
 	ConfigKey,
 } from "../../../data/gameResults.ts";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { ACHIEVEMENTS } from "../../../data/achievements.ts";
+import type { PlayerRole } from "../../../types/live-game.ts";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;

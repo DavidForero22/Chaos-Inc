@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Lobby;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Game\DebugRequest;
-use App\Http\Resources\DebugGameDataResource;
+use App\Http\Resources\GameDataResource;
 use App\Services\Game\DebugService;
 use Illuminate\Http\JsonResponse;
 
@@ -24,7 +24,7 @@ class DebugController extends Controller
             return response()->json(['message' => $e->getMessage()], $status);
         }
 
-        $gameState = (new DebugGameDataResource(['roomId' => $id]))->toArray($request);
+        $gameState = (new GameDataResource(['roomId' => $id]))->toArray($request);
 
         return response()->json([
             'applied'    => $applied,

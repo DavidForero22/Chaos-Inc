@@ -3,23 +3,25 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../../store/useGameUIStore";
-import { useGameBoard } from "../../../../hooks/game/useGameBoard";
+import { useGameStore } from "../../../../store/useGameStore";
 import { FaBug } from "react-icons/fa";
-import { RiGhostLine, RiSwordLine } from "react-icons/ri";
+import { RiSwordLine } from "react-icons/ri";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";
-import { PlayerRemoveSelector } from "./PlayerRemoveSelector";
 import { PlayerModifier } from "./PlayerModifier";
 
 interface DebugToolsProps {
 	roomId: string;
 }
+
 const ROLES = ["boss", "secretary", "intern", "union"];
 
 export function DebugTools({ roomId }: DebugToolsProps) {
 	const activeModal = useGameUIStore((state) => state.activeModal);
 	const setActiveModal = useGameUIStore((state) => state.setActiveModal);
-	const board = useGameBoard();
+
+	// Extraemos tus propios datos del store
+	const me = useGameStore((state) => state.gameData?.me);
 
 	const [isRendered, setIsRendered] = useState(false);
 	const [isExiting, setIsExiting] = useState(false);
@@ -34,13 +36,8 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		updateCardQuantity,
 		updateModification,
 		updateRoomAction,
-		updateSpawnGhost,
 		handleSubmit,
-		isRemoveMode,
-		playersToRemove,
-		toggleRemoveMode,
-		togglePlayerToRemove,
-	} = useDebug(roomId, board.me?.id || "");
+	} = useDebug(roomId, me?.id);
 
 	useEffect(() => {
 		if (activeModal === "debug") {
@@ -54,7 +51,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 			}, 300);
 			return () => clearTimeout(timer);
 		}
-	}, [activeModal]);
+	}, [activeModal, isRendered]);
 
 	const toggleDebug = () => {
 		setActiveModal(activeModal === "debug" ? "none" : "debug");
@@ -98,7 +95,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					🛠️ Debug Tools
 				</h2>
 				<p className="text-xs text-gray-600 text-center mt-1">
-					Jugador: {board.me?.name || "Desconocido"}
+					Modificando a: <strong>{me?.name || "Desconocido"}</strong>
 				</p>
 			</div>
 
@@ -108,17 +105,18 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 			>
 				{/* ─── MODIFICACIONES DE JUGADOR ─── */}
 				<PlayerModifier
-					playerRole={board.me?.role || "union"}
+					playerRole={me?.role}
 					debugState={debugState}
 					isSubmitting={isSubmitting}
 					cardCatalog={cardCatalog}
 					isLoadingCatalog={isLoadingCatalog}
 					onUpdateStress={(level) => updateModification("set_stress", level)}
 					onUpdateCardQuantity={updateCardQuantity}
-					onUpdateRole={(role) => updateModification("set_role", role)}
 					onUpdateIsDead={updateIsDead}
 					onSubmit={() => handleSubmit("modify_player")}
 				/>
+
+				<hr className="my-4 border-gray-300" />
 
 				{/* ─── ACCIONES DE SALA ─── */}
 				<section className="space-y-3 bg-white/40 p-3 rounded-lg">
@@ -134,7 +132,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 						<div className="flex gap-2 flex-wrap">
 							{[...ROLES, "cancelled"].map(
 								(option) =>
-									option != "secretary" && (
+									option !== "secretary" && (
 										<button
 											key={option}
 											onClick={() =>
@@ -160,76 +158,17 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 
 					<button
 						onClick={() => handleSubmit("room_action")}
-						disabled={!debugState.roomActions.force_win}
-						className="w-full mt-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
+						disabled={!debugState.roomActions.force_win || isSubmitting}
+						className="w-full mt-2 px-3 py-2 mb-7 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
 					>
-						{isSubmitting ? "Ejecutando..." : "Ejecutar Acción"}
-					</button>
-
-					{/* Eliminar fantasma */}
-					<PlayerRemoveSelector
-						opponents={board.game?.opponents || []}
-						isRemoveMode={isRemoveMode}
-						playersToRemove={playersToRemove}
-						isSubmitting={isSubmitting}
-						onToggleRemoveMode={toggleRemoveMode}
-						onTogglePlayer={togglePlayerToRemove}
-						onConfirmRemove={() => handleSubmit("room_action")}
-					/>
-				</section>
-
-				{/* ─── CREAR FANTASMA ─── */}
-				<section className="space-y-3 bg-white/40 p-3 rounded-lg">
-					<h3 className="font-bold text-sm text-gray-800 flex items-center gap-2">
-						<RiGhostLine className="w-4 h-4" /> Crear Fantasma
-					</h3>
-
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">
-							Nombre
-						</label>
-						<input
-							type="text"
-							placeholder="Username..."
-							value={debugState.spawnGhost.username}
-							onChange={(e) => updateSpawnGhost("username", e.target.value)}
-							className="w-full px-2 py-1 text-xs border border-gray-300 rounded bg-white focus:outline-none focus:border-blue-400"
-							maxLength={50}
-						/>
-					</div>
-
-					<div className="space-y-1">
-						<label className="text-xs font-semibold text-gray-700">Rol</label>
-						<div className="flex gap-2 flex-wrap">
-							{ROLES.map((role) => (
-								<button
-									key={role}
-									onClick={() => updateSpawnGhost("role", role)}
-									className={`px-2 py-1 text-xs rounded border capitalize transition-colors ${
-										debugState.spawnGhost.role === role
-											? "bg-cyan-500 text-white border-cyan-600"
-											: "bg-white text-gray-700 border-gray-300 hover:bg-cyan-100"
-									}`}
-								>
-									{role}
-								</button>
-							))}
-						</div>
-					</div>
-
-					<button
-						onClick={() => handleSubmit("spawn_ghost")}
-						disabled={isSubmitting}
-						className="w-full mt-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
-					>
-						{isSubmitting ? "Creando..." : "Crear Fantasma"}
+						{isSubmitting ? "Cargando..." : "Confirmar victoria"}
 					</button>
 				</section>
 
 				{/* Mensaje de feedback */}
 				{message && (
 					<div
-						className={`px-3 py-2 rounded text-xs font-bold text-center ${
+						className={`px-3 py-2 rounded text-xs font-bold text-center mt-4 ${
 							message.startsWith("✅")
 								? "bg-green-100 text-green-800 border border-green-300"
 								: "bg-red-100 text-red-800 border border-red-300"

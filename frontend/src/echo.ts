@@ -36,7 +36,7 @@ const echoInstance = new Echo({
 						callback(false, response.data);
 					})
 					.catch((error) => {
-						logWithTime("Error autorizando canal de Echo", error, "error");
+						logWithTime("echo.ts::.catch - Error autorizando canal de Echo", error, "error");
 						callback(true, error);
 					});
 			},

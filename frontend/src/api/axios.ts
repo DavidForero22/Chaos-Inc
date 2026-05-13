@@ -60,8 +60,8 @@ api.interceptors.response.use(
 		// ─── MANEJO DE RATE LIMIT (TOO MANY REQUESTS) ───
 		if (status === 429) {
 			logWithTime(
-				"[Rate Limit] Se ha superado el límite de peticiones (429).",
-				null,
+				"axios.ts - [Rate Limit] Se ha superado el límite de peticiones (Error 429).",
+				error.response,
 				"warn",
 			);
 			alert("¡Vas muy rápido! Por favor, espera un momento.");
@@ -87,7 +87,7 @@ api.interceptors.response.use(
 				) {
 					localStorage.removeItem("game_token");
 					logWithTime(
-						"[Sala] Sesión de juego caducada. Limpiando game_token...",
+						"axios.ts - [Sala] Sesión de juego caducada. Limpiando game_token...",
 						null,
 						"warn",
 					);
@@ -95,7 +95,7 @@ api.interceptors.response.use(
 				}
 
 				logWithTime(
-					"[Auth] Sesión caducada o CSRF inválido. Limpiando sesión local...",
+					"axios.ts -  [Auth] Sesión caducada o CSRF inválido. Limpiando sesión local...",
 					null,
 					"warn",
 				);
@@ -112,7 +112,7 @@ api.interceptors.response.use(
 		}
 
 		// Error general
-		logWithTime("Error en la API", error.response, "error");
+		logWithTime("axios.ts - Error en la API", error.response, "error");
 
 		return Promise.reject(error);
 	},

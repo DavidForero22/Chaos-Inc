@@ -8,26 +8,19 @@ interface DebugState {
 	playerModifications: {
 		set_stress?: number;
 		add_cards?: Record<number, number>;
-		set_role?: string;
 		set_is_dead?: boolean;
 	};
 	roomActions: {
 		force_win?: string;
-		remove_ghosts?: string[];
-	};
-	spawnGhost: {
-		username: string;
-		role: string;
 	};
 }
 
 const initialState: DebugState = {
 	playerModifications: {},
 	roomActions: {},
-	spawnGhost: { username: "", role: "intern" },
 };
 
-export function useDebug(roomId: string, playerId: string) {
+export function useDebug(roomId: string, myPlayerId?: string) {
 	const [debugState, setDebugState] = useState<DebugState>(initialState);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
@@ -35,10 +28,6 @@ export function useDebug(roomId: string, playerId: string) {
 	// Estado del catálogo de cartas
 	const [cardCatalog, setCardCatalog] = useState<CardCatalogItem[]>([]);
 	const [isLoadingCatalog, setIsLoadingCatalog] = useState(false);
-
-	// Estado para modo eliminación de jugadores
-	const [isRemoveMode, setIsRemoveMode] = useState(false);
-	const [playersToRemove, setPlayersToRemove] = useState<string[]>([]);
 
 	useEffect(() => {
 		const fetchCatalog = async () => {
@@ -114,44 +103,18 @@ export function useDebug(roomId: string, playerId: string) {
 		[],
 	);
 
-	const updateSpawnGhost = useCallback(
-		(key: keyof DebugState["spawnGhost"], value: any) => {
-			setDebugState((prev) => ({
-				...prev,
-				spawnGhost: {
-					...prev.spawnGhost,
-					[key]: value,
-				},
-			}));
-		},
-		[],
-	);
-
-	// Handlers para el modo eliminación
-	const toggleRemoveMode = useCallback(() => {
-		setIsRemoveMode((prev) => {
-			if (prev) {
-				setPlayersToRemove([]); // Limpiar al cancelar
-			}
-			return !prev;
-		});
-	}, []);
-
-	const togglePlayerToRemove = useCallback((playerId: string) => {
-		setPlayersToRemove((prev) =>
-			prev.includes(playerId)
-				? prev.filter((id) => id !== playerId)
-				: [...prev, playerId],
-		);
-	}, []);
-
 	const handleSubmit = async (action: string) => {
+		if (!myPlayerId) {
+			setMessage("Error: No se pudo identificar al jugador local.");
+			return;
+		}
+
 		setIsSubmitting(true);
 		setMessage(null);
 
 		try {
 			const payload: any = {
-				player_id: playerId,
+				player_id: myPlayerId,
 			};
 
 			if (action === "modify_player") {
@@ -193,18 +156,14 @@ export function useDebug(roomId: string, playerId: string) {
 					return;
 				}
 			} else if (action === "room_action") {
-				if (
-					!debugState.roomActions.force_win &&
-					(!playersToRemove || playersToRemove.length === 0)
-				) {
+				if (!debugState.roomActions.force_win) {
 					setMessage("Selecciona una acción de sala");
 					setIsSubmitting(false);
 					return;
 				}
+
 				payload.room_actions = { ...debugState.roomActions };
-				if (playersToRemove.length > 0) {
-					payload.room_actions.remove_ghosts = playersToRemove;
-				}
+
 				Object.keys(payload.room_actions).forEach((key) => {
 					if (
 						!payload.room_actions[key] ||
@@ -214,20 +173,12 @@ export function useDebug(roomId: string, playerId: string) {
 						delete payload.room_actions[key];
 					}
 				});
-			} else if (action === "spawn_ghost") {
-				if (!debugState.spawnGhost.username || !debugState.spawnGhost.role) {
-					setMessage("Completa todos los campos del fantasma");
-					setIsSubmitting(false);
-					return;
-				}
-				payload.spawn_ghost = { ...debugState.spawnGhost };
 			}
 
 			await api.post(`/rooms/${roomId}/debug`, payload);
 			setMessage("Acción ejecutada correctamente");
-			setIsRemoveMode(false);
-			setPlayersToRemove([]);
-			setDebugState(initialState); // Resetear el estado para que los contadores de cartas vuelvan a 0
+
+			setDebugState(initialState); // Resetear el estado para limpiar UI
 		} catch (error: any) {
 			const errorMsg =
 				error.response?.data?.message || error.message || "Error desconocido";
@@ -248,11 +199,6 @@ export function useDebug(roomId: string, playerId: string) {
 		updateModification,
 		updateCardQuantity,
 		updateRoomAction,
-		updateSpawnGhost,
-		isRemoveMode,
-		playersToRemove,
-		toggleRemoveMode,
-		togglePlayerToRemove,
 		handleSubmit,
 	};
 }

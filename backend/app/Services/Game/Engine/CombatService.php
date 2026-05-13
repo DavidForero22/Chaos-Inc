@@ -37,27 +37,11 @@ class CombatService
             //  Guardar nombre de quien mató al jugador
             $killerName = Redis::hget($attackerInfoKey, 'username') ?: 'Desconocido';
             Redis::hset($targetInfoKey, 'killer_name', $killerName);
+            $targetName = Redis::hget("room:{$roomId}:player:{$targetId}:info", 'username');
+            event(new RoomStateUpdated($roomId, "{$targetName} ha sido eliminado por {$killerName}."));
 
-            $this->checkVictory($roomId, $targetId);
+            $this->finalizationService->checkAndFinalizeVictory($roomId);
         }
-    }
-
-    public function checkVictory(string $roomId, ?int $targetId = null): void
-    {
-        // Si alguien murió por el ataque, avisar por el chat de juego
-        if ($targetId !== null) {
-            $targetName = Redis::hget(
-                "room:{$roomId}:player:{$targetId}:info",
-                'username'
-            ) ?? "Player {$targetId}";
-
-            event(new RoomStateUpdated(
-                $roomId,
-                "{$targetName} ha sido eliminado."
-            ));
-        }
-
-        $this->finalizationService->finalizeVictory($roomId, false);
     }
 
     /**

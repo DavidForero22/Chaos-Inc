@@ -5,12 +5,11 @@ import { DebugCardSelector } from "./DebugCardSelector";
 import type { CardCatalogItem } from "../../../../types/api";
 
 interface PlayerModifierProps {
-	playerRole: string;
+	playerRole: string | undefined;
 	debugState: {
 		playerModifications: {
 			set_stress?: number;
 			add_cards?: Record<number, number>;
-			set_role?: string;
 			set_is_dead?: boolean;
 		};
 	};
@@ -19,12 +18,9 @@ interface PlayerModifierProps {
 	isLoadingCatalog: boolean;
 	onUpdateStress: (level: number | undefined) => void;
 	onUpdateCardQuantity: (cardId: number, change: number) => void;
-	onUpdateRole: (role: string | undefined) => void;
 	onUpdateIsDead: (isDead: boolean | undefined) => void;
 	onSubmit: () => void;
 }
-
-const ROLES = ["boss", "secretary", "intern", "union"];
 
 export function PlayerModifier({
 	playerRole,
@@ -34,13 +30,11 @@ export function PlayerModifier({
 	isLoadingCatalog,
 	onUpdateStress,
 	onUpdateCardQuantity,
-	onUpdateRole,
 	onUpdateIsDead,
 	onSubmit,
 }: PlayerModifierProps) {
 	// Determinar estrés máximo según rol actual
-	const currentRole = debugState.playerModifications.set_role || playerRole;
-	const maxStress = currentRole === "boss" ? 4 : 3;
+	const maxStress = playerRole === "boss" ? 4 : 3;
 	const stressLevels = Array.from({ length: maxStress + 1 }, (_, i) => i);
 
 	return (
@@ -126,34 +120,6 @@ export function PlayerModifier({
 					selectedCards={debugState.playerModifications.add_cards || {}}
 					onUpdateQuantity={onUpdateCardQuantity}
 				/>
-			</div>
-
-			{/* Cambiar rol */}
-			<div className="space-y-1">
-				<label className="text-xs font-semibold text-gray-700">
-					Cambiar Rol
-				</label>
-				<div className="flex gap-2 flex-wrap">
-					{ROLES.map((role) => (
-						<button
-							key={role}
-							onClick={() => onUpdateRole(role)}
-							className={`px-2 py-1 text-xs rounded border capitalize transition-colors ${
-								debugState.playerModifications.set_role === role
-									? "bg-purple-500 text-white border-purple-600"
-									: "bg-white text-gray-700 border-gray-300 hover:bg-purple-100"
-							}`}
-						>
-							{role}
-						</button>
-					))}
-					<button
-						onClick={() => onUpdateRole(undefined)}
-						className="px-2 py-1 text-xs rounded border bg-gray-100 text-gray-500 border-gray-300 hover:bg-gray-200"
-					>
-						✕
-					</button>
-				</div>
 			</div>
 
 			<button

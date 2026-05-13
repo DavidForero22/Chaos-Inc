@@ -8,7 +8,6 @@ import type { MyData, GameData } from "../../../types/live-game.ts";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
 import { ActingBossModal } from "./ActingBossModal.tsx";
 import { useEffect, useState } from "react";
-import { useRoomStore } from "../../../store/useRoomStore.ts";
 
 interface GameOverlayManagerProps {
 	roomId: string;
@@ -38,9 +37,6 @@ export function GameOverlayManager({
 	const luckResult = useGameUIStore((state) => state.luckResult);
 	const handleLuckResult = useGameUIStore((state) => state.handleLuckResult);
 
-	const roomData = useRoomStore((state) => state.room);
-	const isDebugRoom = roomData?.is_debug === "1";
-
 	const handleCloseGameOver = () => {
 		localStorage.removeItem("game_token");
 		useGameStore.getState().setRoomId(null);
@@ -50,8 +46,7 @@ export function GameOverlayManager({
 
 	const [showDeathModal, setShowDeathModal] = useState(false);
 	useEffect(() => {
-		// Solo mostrar si no es sala debug
-		if (me.is_dead && !isDebugRoom) {
+		if (me.is_dead) {
 			const deathModalKey = `death_modal_shown:${roomId}`;
 			const hasShownDeathModal = localStorage.getItem(deathModalKey);
 
@@ -60,7 +55,7 @@ export function GameOverlayManager({
 				localStorage.setItem(deathModalKey, "1");
 			}
 		}
-	}, [me.is_dead, roomId, isDebugRoom]);
+	}, [me.is_dead, roomId]);
 
 	return (
 		<>
@@ -72,7 +67,7 @@ export function GameOverlayManager({
 				<ActingBossModal onClose={() => setShowActingBossModal(false)} />
 			)}
 
-			{showDeathModal && !isDebugRoom && (
+			{showDeathModal && (
 				<DeathModal
 					onClose={() => setShowDeathModal(false)}
 					killerName={me.killer_name ?? undefined}

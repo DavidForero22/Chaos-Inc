@@ -17,26 +17,11 @@ class RoomController extends Controller
         $this->roomService = $roomService;
     }
 
-    public function index(Request $request)
+    public function index()
     {
         $allRooms = $this->roomService->getAllRooms();
 
-        // Verificar si el usuario es administrador
-        $isAdmin = $request->user() && $request->user()->role === 'admin';
-
-        // Si ES admin, devolver todas las salas sin filtrar
-        if ($isAdmin) {
-            return response()->json($allRooms);
-        }
-
-        // Si NO ES admin, filtrar las salas para quitar las de prueba
-        $filteredRooms = array_filter($allRooms, function ($room) {
-            $isDebug = isset($room['is_debug']) && ($room['is_debug'] === '1');
-
-            return !$isDebug;
-        });
-
-        return response()->json(array_values($filteredRooms));
+        return response()->json(array_values($allRooms), 200);
     }
 
     public function show(string $id)

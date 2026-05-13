@@ -174,10 +174,9 @@
 	border-bottom-color: #295c60;
 }
 .hint {
-	font-size: 0.75rem;
+	font-size: 0.80rem;
 	color: #989083;
 	margin-top: 2px;
-	font-style: italic;
 }
 .error {
 	font-size: 0.75rem;

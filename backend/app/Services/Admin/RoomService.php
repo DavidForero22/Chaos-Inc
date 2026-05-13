@@ -169,7 +169,7 @@ class RoomService
             'password' => $data['is_private'] ? Hash::make($data['password']) : '',
             'max_players' => $data['max_players'],
             'turn_timeout' => $data['turn_timeout'],
-            'is_debug'    => ($isAdmin && !empty($data['is_debug'])) ? '1' : '0',
+            'is_debug'    => ($data['is_debug']) ? '1' : '0',
         ];
 
         $stateData = [

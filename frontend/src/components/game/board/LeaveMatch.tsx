@@ -30,11 +30,15 @@ export function LeaveMatch() {
 
 	const handleConfirm = async () => {
 		try {
-			await leaveRoom(); 
+			await leaveRoom();
 			handleClose();
-			navigate("/"); 
+			navigate("/");
 		} catch (error) {
-			logWithTime("Error al abandonar la sala: ", error);
+			logWithTime(
+				"LeaveMatch.tsx::handleConfirm() - Error al abandonar la sala: ",
+				error,
+				"error",
+			);
 			handleClose();
 			navigate("/");
 		}
@@ -60,12 +64,12 @@ export function LeaveMatch() {
 								? "opacity-0 transition-opacity duration-250 ease-in"
 								: "animate-in fade-in duration-250 ease-out"
 						}`}
-						onClick={handleClose} 
+						onClick={handleClose}
 					>
 						{/* Ventana estilo Windows 95/98 */}
 						<div
 							className="bg-[#c0c0c0] w-full max-w-sm border-t-2 border-l-2 border-b-2 border-r-2 border-[#1a1a1a] shadow-[4px_4px_0px_rgba(0,0,0,1)] flex flex-col font-sans"
-							onClick={(e) => e.stopPropagation()} 
+							onClick={(e) => e.stopPropagation()}
 						>
 							{/* Barra de título */}
 							<div className="bg-[#000080] text-white px-2 py-1 flex justify-between items-center">

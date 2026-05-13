@@ -99,12 +99,6 @@ export function useGameTimers() {
 		const initialTime = calculateTimeLeft();
 		setTurnTimeLeft(initialTime);
 
-		if (initialTime > 0) {
-			logWithTime(
-				`useGameTimers.ts - Iniciando reloj para ${currentTurn}. Segundos reales: ${initialTime}`,
-			);
-		}
-
 		const interval = setInterval(() => {
 			const currentSecondsLeft = calculateTimeLeft();
 

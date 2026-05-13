@@ -7,6 +7,8 @@ import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
 import { useGameStore } from "../../store/useGameStore";
 import { useAuth } from "../../hooks/useAuth";
+import { useRoomStore } from "../../store/useRoomStore";
+import { logWithTime } from "../../utils/logger";
 
 interface CreateRoomModalProps {
 	onClose: () => void;
@@ -41,6 +43,20 @@ export default function CreateRoomModal({
 			localStorage.setItem("game_token", response.data.game_token);
 			useGameStore.getState().setRoomId(response.data.room_id);
 
+			const rawRoomData = response.data;
+			logWithTime(
+				"CreateRoomModal.tsx::handleCreateRoom() - Creando sala.",
+				rawRoomData,
+				"info"
+			);
+
+			useRoomStore.setState({
+				roomId: response.data.room_id,
+				hasToken: true,
+				room: rawRoomData,
+				isJoining: false,
+			});
+
 			onClose();
 			navigate(`/rooms/${response.data.room_id}`, {
 				state: { playerName: user },
@@ -51,9 +67,6 @@ export default function CreateRoomModal({
 			setIsLoading(false);
 		}
 	};
-
-	const lockedByDebug = formData.is_debug;
-
 	return (
 		<ModalLayout
 			title="Chaos Inc."
@@ -86,39 +99,26 @@ export default function CreateRoomModal({
 			</div>
 
 			{/* Campo 2: Privacidad */}
-			<div
-				className={styles.fieldRow}
-				style={
-					lockedByDebug ? { opacity: 0.4, pointerEvents: "none" } : undefined
-				}
-			>
+			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>2.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>
-						Privacidad{" "}
-						{lockedByDebug && (
-							<span style={{ color: "#295c60", fontSize: "0.9rem" }}>
-								— (modo prueba)
-							</span>
-						)}
-					</label>
+					<label className={styles.label}>Privacidad </label>
 					<label
 						style={{
 							display: "flex",
 							alignItems: "center",
 							gap: "8px",
 							marginTop: "8px",
-							cursor: lockedByDebug ? "not-allowed" : "pointer",
+							cursor: "pointer",
 						}}
 					>
 						<input
 							type="checkbox"
 							checked={formData.is_private}
-							disabled={lockedByDebug}
 							onChange={(e) =>
 								setFormData({ ...formData, is_private: e.target.checked })
 							}
-							style={{ cursor: lockedByDebug ? "not-allowed" : "pointer" }}
+							style={{ cursor: "pointer" }}
 						/>
 						<span
 							style={{
@@ -141,7 +141,6 @@ export default function CreateRoomModal({
 								required
 								minLength={8}
 								maxLength={128}
-								disabled={lockedByDebug}
 								value={formData.password}
 								onChange={(e) =>
 									setFormData({ ...formData, password: e.target.value })
@@ -154,27 +153,19 @@ export default function CreateRoomModal({
 			</div>
 
 			{/* Campo 3: Aforo */}
-			<div
-				className={styles.fieldRow}
-				style={
-					lockedByDebug ? { opacity: 0.4, pointerEvents: "none" } : undefined
-				}
-			>
+			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>3.</span>
 				<div className={styles.fieldWrap}>
 					<label className={styles.label}>
 						Aforo Máximo Permitido:{" "}
 						<span style={{ color: "#295c60", fontSize: "0.9rem" }}>
-							{lockedByDebug
-								? "— (modo prueba)"
-								: `${formData.max_players} Jugadores`}
+							{`${formData.max_players} Jugadores`}
 						</span>
 					</label>
 					<input
 						type="range"
 						min="3"
 						max="6"
-						disabled={lockedByDebug}
 						style={{ width: "100%", marginTop: "8px", accentColor: "#295c60" }}
 						value={formData.max_players}
 						onChange={(e) =>
@@ -188,26 +179,15 @@ export default function CreateRoomModal({
 			</div>
 
 			{/* Campo 4: Tiempo */}
-			<div
-				className={styles.fieldRow}
-				style={
-					lockedByDebug ? { opacity: 0.4, pointerEvents: "none" } : undefined
-				}
-			>
+			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>4.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>
-						Tiempo Límite de Turno:{" "}
-						<span style={{ color: "#295c60", fontSize: "0.9rem" }}>
-							{lockedByDebug ? "— (modo prueba)" : `${formData.turn_timeout}s`}
-						</span>
-					</label>
+					<label className={styles.label}>Tiempo Límite de Turno: </label>
 					<input
 						type="range"
 						min="60"
 						max="120"
 						step="5"
-						disabled={lockedByDebug}
 						style={{ width: "100%", marginTop: "8px", accentColor: "#295c60" }}
 						value={formData.turn_timeout}
 						onChange={(e) =>
@@ -257,7 +237,7 @@ export default function CreateRoomModal({
 									fontWeight: "bold",
 								}}
 							>
-								Habilitar Partida de Prueba
+								Partida de Pruebas
 							</span>
 						</label>
 						{formData.is_debug && (
@@ -265,8 +245,7 @@ export default function CreateRoomModal({
 								className={styles.hint}
 								style={{ color: "#b45309", marginTop: "6px" }}
 							>
-								Partida exclusiva para testing. No se podrán unir otros
-								jugadores. Los ajustes de aforo y tiempo quedan desactivados.
+								Tendrás acceso al menú de depuración y aparecerán registros por consola.
 							</p>
 						)}
 					</div>
