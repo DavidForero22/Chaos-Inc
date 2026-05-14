@@ -123,6 +123,8 @@ class TurnService
                     // El frontend ve el tiempo estricto
                     Redis::hset($roomStateKey, 'turn_expires_at', now('UTC')->addSeconds($timeout)->timestamp);
 
+                    RoomLogger::info($roomId, "LiveGameService.php::finalizeGameSetup - Iniciando temporizador para jugador {$nextPlayerId} para las {$timeout}");
+
                     // El Job espera el tiempo estricto + 3 segundos de gracia por latencia
                     AutoEndTurnJob::dispatch($roomId, $nextPlayerId, $turnId)
                         ->delay(now('UTC')->addSeconds($timeout + 3));
@@ -240,6 +242,7 @@ class TurnService
         $expireTime = now('UTC')->addSeconds($timeLeft);
         Redis::hset($roomStateKey, 'turn_expires_at', $expireTime->timestamp);
 
+        RoomLogger::info($roomId, "LiveGameService.php::finalizeGameSetup - Continuado temporizador para las {$expireTime}");
         AutoEndTurnJob::dispatch($roomId, $currentTurnId, $newTurnId)->delay($expireTime);
     }
 }

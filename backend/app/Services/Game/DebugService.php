@@ -157,6 +157,6 @@ class DebugService
         $cleanupToken = uniqid('cleanup_', true);
         Redis::hset("room:{$roomId}:state", 'cleanup_token', $cleanupToken);
 
-        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(7));
+        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now('UTC')->addSeconds(7));
     }
 }

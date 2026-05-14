@@ -111,7 +111,7 @@ class LiveRoomController extends Controller
             Redis::setex($disconnectKey, 10, 'pending');
 
             ProcessDisconnectionJob::dispatch($roomId, $targetPlayerId)
-                ->delay(now()->addSeconds(4));
+                ->delay(now('UTC')->addSeconds(4));
         }
 
         return response()->json(['status' => 'pending_grace_period']);

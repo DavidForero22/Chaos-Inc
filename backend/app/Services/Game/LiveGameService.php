@@ -18,6 +18,7 @@ use App\Services\Game\Engine\TurnService;
 use App\Services\Game\Status\DisconnectionService;
 use Illuminate\Support\Facades\Redis;
 use App\Support\LiveGameHelper;
+use App\Support\RoomLogger;
 
 class LiveGameService
 {
@@ -238,16 +239,13 @@ class LiveGameService
         $roomStateKey = "room:{$roomId}:state";
 
         $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
+        $expireAt = now('UTC')->addSeconds($timeout);
         $turnId  = uniqid('turn_', true);
 
         Redis::hset($roomStateKey, 'current_turn_player_id', $bossPlayerId);
         Redis::hset($roomStateKey, 'current_turn_id', $turnId);
 
-        Redis::hset(
-            $roomStateKey,
-            'turn_expires_at',
-            now()->addSeconds($timeout)->timestamp
-        );
+        Redis::hset($roomStateKey, 'turn_expires_at', $expireAt->timestamp);
 
         Redis::setex(
             "room:{$roomId}:turn_order",
@@ -261,12 +259,14 @@ class LiveGameService
             json_encode($deck)
         );
 
+        RoomLogger::info($roomId, "LiveGameService.php::finalizeGameSetup - Iniciando temporizador para jugador {$bossPlayerId} para las {$expireAt}");
+
         // El Job le da 3 segundos de gracia para tolerar latencia.
         AutoEndTurnJob::dispatch(
             $roomId,
             $bossPlayerId,
             $turnId
-        )->delay(now()->addSeconds($timeout + 3));
+        )->delay((clone $expireAt)->addSeconds(3));
 
         if ($bossPlayerId !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerId, 2);

@@ -6,13 +6,11 @@ namespace App\Services\Game\Status;
 use App\Events\RoomStateUpdated;
 use App\Jobs\CheckVictoryJob;
 use App\Jobs\CleanupRoomJob;
-use App\Models\User;
 use App\Services\Admin\GameService;
 use App\Services\Game\Engine\AchievementService;
 use App\Support\CastHelper;
 use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class GameFinalizationService
@@ -128,7 +126,7 @@ class GameFinalizationService
         $cleanupToken = uniqid('cleanup_', true);
         Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
 
-        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
+        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now('UTC')->addSeconds(10));
     }
 
     public function cancelAndCleanup(string $roomId): void
@@ -151,7 +149,7 @@ class GameFinalizationService
         Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
 
         // Programar la destrucción total para dentro de 10 segundos
-        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
+        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now('UTC')->addSeconds(10));
 
         RoomLogger::info($roomId, "GameFinalizationService.php::cancelAndCleanup: Partida marcada como cancelada. Limpieza programada en 10s.");
     }
@@ -241,7 +239,7 @@ class GameFinalizationService
         Redis::set("room:{$roomId}:ending_grace_period", $jobToken);
         Redis::hset($roomStateKey, 'turn_expires_at', 0);
 
-        CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(12));
+        CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now('UTC')->addSeconds(12));
 
         event(new RoomStateUpdated($roomId));
         RoomLogger::info($roomId, "GameFinalizationService.php::checkDisconnectionVictory: Condición de victoria detectada, esperando 12s...");

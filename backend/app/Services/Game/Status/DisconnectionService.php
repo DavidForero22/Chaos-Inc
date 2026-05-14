@@ -9,7 +9,6 @@ use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Support\CastHelper;
 use App\Support\RoomLogger;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class DisconnectionService
@@ -30,7 +29,7 @@ class DisconnectionService
         Redis::set("room:{$roomId}:boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
-        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now()->addSeconds(10));
+        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now('UTC')->addSeconds(10));
     }
 
     /**
@@ -163,7 +162,7 @@ class DisconnectionService
         Redis::set("room:{$roomId}:acting_boss_grace_period", $graceToken);
         Redis::hset("room:{$roomId}:state", 'turn_expires_at', 0);
 
-        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now()->addSeconds(10));
+        InheritBossRoleJob::dispatch($roomId, $graceToken)->delay(now('UTC')->addSeconds(10));
     }
 
     /**

@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Redis;
 use App\Services\Game\Engine\TurnService;
 use App\Events\RoomStateUpdated;
 use App\Support\RoomLogger;
-use Illuminate\Support\Facades\Log;
 
 class AutoEndTurnJob implements ShouldQueue
 {

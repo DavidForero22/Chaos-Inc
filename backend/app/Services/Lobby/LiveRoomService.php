@@ -15,7 +15,6 @@ use App\Services\Game\Status\ReconnectionService;
 use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 class LiveRoomService
 {
@@ -116,7 +115,7 @@ class LiveRoomService
                 Redis::setex($disconnectKey, 10, 'pending');
 
                 ProcessDisconnectionJob::dispatch($roomId, $playerId, $playerName)
-                    ->delay(now()->addSeconds(4));
+                    ->delay(now('UTC')->addSeconds(4));
             }
         } else {
             $this->processLobbyLeave($roomId, $playerId, $room);
