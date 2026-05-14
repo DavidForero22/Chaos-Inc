@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Support\RoomLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +41,7 @@ class GameException extends Exception
         $roomId = $request->route('id') ?? $request->route('room') ?? 'Desconocida';
         $username = $request->user() ? $request->user()->username : 'Desconocido';
 
-        Log::warning("GameException [{$this->errorType}]: {$this->message} | Sala: {$roomId} | Usuario: {$username}");
+        RoomLogger::warning($roomId, "GameException [{$this->errorType}]: {$this->message} | Usuario: {$username}");
 
         return response()->json([
             'error' => $this->getMessage(),

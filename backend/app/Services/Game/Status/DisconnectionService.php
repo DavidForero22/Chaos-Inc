@@ -8,6 +8,7 @@ use App\Jobs\InheritBossRoleJob;
 use App\Services\Game\Engine\PlayerHandService;
 use App\Services\Game\Engine\TurnService;
 use App\Support\CastHelper;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -117,15 +118,14 @@ class DisconnectionService
                 }
             }
 
-            Log::info("DisconnectionService.php::inheritBossRole() - Jugador {$username} ({$playerId}) tiene status de online = [{$isOnline}]");
+            RoomLogger::info($roomId, "DisconnectionService.php::inheritBossRole: Jugador {$username} ({$playerId}) tiene status de online = [{$isOnline}].");
         }
 
         // --- LA BARRERA ANTI-MODALS ---
         // Si solo queda 1 persona (o ninguna), la empresa quiebra.
         // NO ascendemos a nadie, simplemente disparamos el final del juego.
         if ($onlineCount <= 1) {
-            Log::info("DisconnectionService.php - Solo queda 1 jugador. Ignorando herencia y forzando fin de partida.");
-
+            RoomLogger::info($roomId, "DisconnectionService.php: Solo queda 1 jugador. Ignorando herencia y forzando fin de partida.");
             $this->finalizationService->checkDisconnectionVictory($roomId);
 
             return;
@@ -210,9 +210,7 @@ class DisconnectionService
         $isDead    = CastHelper::toBool($playerData['is_dead'] ?? 0);
         $username  = $playerData['username'] ?? "Player {$playerId}";
 
-        Log::info(
-            "DisconnectionService.php::processInGameDisconnection() - {$username} ({$playerId}) abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}"
-        );
+        RoomLogger::info($roomId, "DisconnectionService.php::processInGameDisconnection: {$username} ({$playerId}) abandonó la partida. role={$playerData['role']} acting_boss?={$playerData['acting_boss']} is_dead?={$isDead}.");
 
         // Contar cuántos quedan vivos y online
         $onlineAndAliveCount = 0;
@@ -229,13 +227,12 @@ class DisconnectionService
                 $onlineAndAliveCount++;
             }
 
-            Log::info("DisconnectionService.php::processInGameDisconnection() - Jugador {$pUsername} ({$pId}) tiene status de online = [{$pIsOnline}]");
+            RoomLogger::info($roomId, "DisconnectionService.php::processInGameDisconnection: Jugador {$pUsername} ({$pId}) tiene status de online = [{$pIsOnline}].");
         }
 
         // Si no queda nadie vivo y conectado, destruir la sala al instante
         if ($onlineAndAliveCount === 0) {
-            Log::info("DisconnectionService.php::processInGameDisconnection() - No quedan jugadores vivos/online en la sala {$roomId}. Destrucción instantánea.");
-
+            RoomLogger::info($roomId, "DisconnectionService.php::processInGameDisconnection: No quedan jugadores vivos/online. Destrucción instantánea.");
             $this->finalizationService->destroyRoom($roomId);
 
             return;

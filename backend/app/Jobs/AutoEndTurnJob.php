@@ -11,6 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Services\Game\Engine\TurnService;
 use App\Events\RoomStateUpdated;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 
 class AutoEndTurnJob implements ShouldQueue
@@ -72,7 +73,7 @@ class AutoEndTurnJob implements ShouldQueue
 
             $turnService->advanceTurn($this->roomId);
 
-            Log::info("AutoEndTurnJob.php:: Saltando automáticamente el turno de {$playerName}");
+            RoomLogger::info($this->roomId, "AutoEndTurnJob.php: Saltando automáticamente el turno de {$playerName}");
 
             $mensaje = __('game.time_out', [
                 'player' => $playerName

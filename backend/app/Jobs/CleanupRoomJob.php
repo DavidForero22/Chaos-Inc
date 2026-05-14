@@ -4,6 +4,7 @@
 namespace App\Jobs;
 
 use App\Services\Game\Status\GameFinalizationService;
+use App\Support\RoomLogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -18,7 +19,7 @@ class CleanupRoomJob implements ShouldQueue
 
     public function __construct(
         protected string $roomId,
-        protected string $cleanupToken 
+        protected string $cleanupToken
     ) {}
 
     public function handle(GameFinalizationService $finalizationService): void
@@ -27,14 +28,14 @@ class CleanupRoomJob implements ShouldQueue
 
         // Validar la existencia antes de actuar
         if (!Redis::exists($roomStateKey)) {
-            Log::info("CleanupRoomJob.php: La sala {$this->roomId} ya no existe o ya fue limpiada.");
+            RoomLogger::info($this->roomId, "CleanupRoomJob.php: La sala ya no existe o ya fue limpiada.");
             return;
         }
 
         // Verificar que es el Job autorizado
         $currentCleanupToken = Redis::hget($roomStateKey, 'cleanup_token');
         if ($currentCleanupToken !== $this->cleanupToken) {
-            Log::info("CleanupRoomJob.php: Ignorado. Job zombie o token no coincide para la sala {$this->roomId}.");
+            RoomLogger::info($this->roomId, "CleanupRoomJob.php: Ignorado. Job zombie o token no coincide.");
             return;
         }
 

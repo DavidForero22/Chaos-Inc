@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\TurnService;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 
 class ResolveLuckChallengeJob implements ShouldQueue
@@ -40,7 +41,7 @@ class ResolveLuckChallengeJob implements ShouldQueue
 
         // Si la key no existe, el jugador ya respondió y el sistema limpió la key.
         if (!$challengeDataStr) {
-            Log::info("ResolveLuckChallengeJob.php - Ignorado: {$playerName} ya respondió o la partida terminó.");
+            RoomLogger::info($this->roomId, "ResolveLuckChallengeJob.php: Ignorado: {$playerName} ya respondió o la partida terminó.");
             return;
         }
 
@@ -48,15 +49,14 @@ class ResolveLuckChallengeJob implements ShouldQueue
 
         // Verificar que este Job pertenece a este minijuego exacto
         if (($challengeData['challenge_id'] ?? '') !== $this->challengeId) {
-            Log::info("ResolveLuckChallengeJob.php - Ignorado: Job obsoleto o fantasma para {$playerName}.");
+            RoomLogger::info($this->roomId, "ResolveLuckChallengeJob.php: Ignorado: Job obsoleto o fantasma para {$playerName}.");
             return;
         }
 
         // Si llega aquí, es el Job legítimo y el jugador no ha respondido a tiempo.
         Redis::del($challengeKey);
 
-        Log::info("ResolveLuckChallengeJob.php - Tiempo agotado para {$playerName} en {$this->roomId}. Saltando turno.");
-
+        RoomLogger::info($this->roomId, "ResolveLuckChallengeJob.php: Tiempo agotado para {$playerName}. Saltando turno.");
         $msg = __('game.challenge_timeoit', ['player' => $playerName]);
         event(new RoomStateUpdated($this->roomId, $msg));
 

@@ -10,6 +10,7 @@ use App\Jobs\AutoEndTurnJob;
 use App\Jobs\ResolveLuckChallengeJob;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Support\CastHelper;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -75,7 +76,7 @@ class TurnService
 
                         $playerName = Redis::hget("room:{$roomId}:player:{$nextPlayerId}:info", 'username') ?: "Jugador {$nextPlayerId}";
                         $logMessage = __('game.lucked_sucess', ['player' => $playerName]);
-                        Log::info("TurnService.php::advanceTurn - El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
+                        RoomLogger::info($roomId, "TurnService.php::advanceTurn: El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
                     }
                 }
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);

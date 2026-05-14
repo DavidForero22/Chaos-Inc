@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Actions\GameReactionService;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 
 class ResolveSabotageJob implements ShouldQueue
@@ -45,7 +46,7 @@ class ResolveSabotageJob implements ShouldQueue
         // Verificar que este es el Job correcto
         $currentSabotageId = Redis::hget($turnStateKey, 'sabotage_id');
         if ($currentSabotageId !== $this->sabotageId) {
-            Log::info("ResolveSabotageJob.php - Ignorando sabotaje fantasma/obsoleto para {$playerName}");
+            RoomLogger::info($this->roomId, "ResolveSabotageJob.php: Ignorando sabotaje fantasma/obsoleto para {$playerName}.");
             return;
         }
 
@@ -64,8 +65,7 @@ class ResolveSabotageJob implements ShouldQueue
                 $randomCard['id'] ?? null
             );
 
-            Log::info("ResolveSabotageJob.php - Descarte automático realizado en {$this->roomId} para {$playerName}");
-
+            RoomLogger::info($this->roomId, "ResolveSabotageJob.php: Descarte automático realizado para {$playerName}.");
             event(new RoomStateUpdated($this->roomId));
         } else {
 

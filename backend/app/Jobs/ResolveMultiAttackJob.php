@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\CombatService;
 use App\Services\Game\Engine\TurnService;
+use App\Support\RoomLogger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,7 @@ class ResolveMultiAttackJob implements ShouldQueue
 
         // Evitar ejecución de jobs obsoletos
         if (($pending['attack_token'] ?? '') !== $this->attackToken) {
-            Log::info("ResolveMultiAttackJob.php - Ignorado Job zombie en {$this->roomId}. Este ataque ya pasó.");
+            RoomLogger::info($this->roomId, "ResolveMultiAttackJob.php: Ignorado Job zombie. Este ataque ya pasó.");
             return;
         }
 
@@ -78,8 +79,7 @@ class ResolveMultiAttackJob implements ShouldQueue
 
         $turnService->resumeTurnTimer($this->roomId);
 
-        Log::info("ResolveMultiAttackJob.php - Ataque multiple de {$attackerName} finalizado en {$this->roomId}");
-
+        RoomLogger::info($this->roomId, "ResolveMultiAttackJob.php: Ataque múltiple de {$attackerName} finalizado.");
         event(new RoomStateUpdated($this->roomId, $logMessage));
     }
 }

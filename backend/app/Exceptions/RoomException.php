@@ -3,6 +3,7 @@
 
 namespace App\Exceptions;
 
+use App\Support\RoomLogger;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class RoomException extends Exception
         $roomId = $request->route('id') ?? $request->route('room') ?? 'Unknown';
         $username = $request->user() ? $request->user()->username : 'Unknown';
 
-        Log::warning("RoomException [{$this->errorType}]: {$this->message} | RoomID: {$roomId} | User: {$username}");
+        RoomLogger::warning($roomId, "RoomException [{$this->errorType}]: {$this->message} | User: {$username}");
 
         return response()->json([
             'error' => $this->getMessage(),

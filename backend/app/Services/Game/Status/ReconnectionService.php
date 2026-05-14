@@ -5,6 +5,7 @@ namespace App\Services\Game\Status;
 
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\TurnService;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
@@ -33,8 +34,7 @@ class ReconnectionService
 
         // Si ha vuelto en menos de 3 segundos, lo perdonamos (fue un F5 o navegación)
         if (time() - $disconnectedAt <= 3) {
-            Log::info("ReconnectionService.php::handleReconnection - Reconexión rápida de {$playerName} ({$playerId}) (F5). Sin penalización.\n");
-
+            RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: Reconexión rápida de {$playerName} ({$playerId}) (F5). Sin penalización.");
             // Si era el jefe, cancelamos el timer de herencia que acababa de empezar
             if (($playerData['role'] ?? '') === 'boss') {
                 $this->handleBossReconnection($roomId);
@@ -56,8 +56,7 @@ class ReconnectionService
 
         // 1. Si el Jefe Original vuelve
         if ($role === 'boss') {
-            Log::info("ReconnectionService.php::handleReconnection: El jefe {$playerName} ({$playerId}) se reconectó, ejecutando DisconnectionService::handleBossReconnection\n");
-
+            RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: El jefe {$playerName} ({$playerId}) se reconectó, ejecutando DisconnectionService::handleBossReconnection.");
             $this->handleBossReconnection($roomId);
 
             $needToResumeTimer = true;
@@ -67,8 +66,7 @@ class ReconnectionService
         $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
 
         if ((string) $actingGraceValue === (string) $playerId) {
-            Log::info("ReconnectionService.php::handleReconnection - El jugador (como jefe heredado) {$playerName} ({$playerId}) se reconectó, ejecutando restoreInternGrace\n");
-
+            RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: El jugador (como jefe heredado) {$playerName} ({$playerId}) se reconectó, ejecutando restoreInternGrace.");
             $this->restoreInternGrace($roomId, $playerId, $playerInfoKey);
 
             $needToResumeTimer = true;
@@ -76,8 +74,7 @@ class ReconnectionService
 
         // 3. Si el Secretario vuelve, prioriza sobre el Becario
         if ($role === 'secretary') {
-            Log::info("ReconnectionService.php::handleReconnection - El secretario {$playerName} ({$playerId}) se reconectó, ejecutando evaluateSecretaryReturn\n");
-
+            RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: El secretario {$playerName} ({$playerId}) se reconectó, ejecutando evaluateSecretaryReturn.");
             $this->evaluateSecretaryReturn($roomId, $playerInfoKey);
         }
 
@@ -85,8 +82,7 @@ class ReconnectionService
         if (Redis::exists("room:{$roomId}:ending_grace_period")) {
             Redis::del("room:{$roomId}:ending_grace_period");
 
-            Log::info("ReconnectionService.php::handleReconnection - ending grace period cancelada por reconexión de {$playerName} ({$playerId})");
-
+            RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: ending_grace_period cancelada por reconexión de {$playerName} ({$playerId}).");
             $needToResumeTimer = true;
         }
 
@@ -95,8 +91,7 @@ class ReconnectionService
             $expiresAt = (int) Redis::hget("room:{$roomId}:state", 'turn_expires_at');
 
             if ($expiresAt === 0) {
-                Log::info("ReconnectionService.php: Reactivando el temporizador de turno en sala {$roomId} tras reconexión.");
-
+                RoomLogger::info($roomId, "ReconnectionService.php: Reactivando el temporizador de turno tras reconexión.");
                 $this->turnService->resumeTurnTimer($roomId);
 
                 event(new RoomStateUpdated($roomId));

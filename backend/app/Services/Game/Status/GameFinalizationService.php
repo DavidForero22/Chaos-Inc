@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\Admin\GameService;
 use App\Services\Game\Engine\AchievementService;
 use App\Support\CastHelper;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -152,7 +153,7 @@ class GameFinalizationService
         // Programar la destrucción total para dentro de 10 segundos
         CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now()->addSeconds(10));
 
-        Log::info("GameFinalizationService.php::cancelAndCleanup - Partida {$roomId} marcada como cancelada. Limpieza programada en 10s.\n");
+        RoomLogger::info($roomId, "GameFinalizationService.php::cancelAndCleanup: Partida marcada como cancelada. Limpieza programada en 10s.");
     }
 
     public function destroyRoom(string $roomId): void
@@ -168,7 +169,7 @@ class GameFinalizationService
 
         if (!empty($allRoomKeys)) {
             Redis::del($allRoomKeys);
-            Log::info("GameFinalizationService: Se han borrado " . count($allRoomKeys) . " llaves de la sala {$roomId}.");
+            RoomLogger::info($roomId, "GameFinalizationService.php: Se han borrado " . count($allRoomKeys) . " llaves.");
         }
 
         // Limpieza de metadatos globales
@@ -192,7 +193,7 @@ class GameFinalizationService
             Redis::exists("room:{$roomId}:boss_grace_period") ||
             Redis::exists("room:{$roomId}:acting_boss_grace_period")
         ) {
-            Log::info("GameFinalizationService.php - Ignorando victoria, esperando herencia de jefe.");
+            RoomLogger::info($roomId, "GameFinalizationService.php: Ignorando victoria, esperando herencia de jefe.");
             return false;
         }
 
@@ -232,7 +233,7 @@ class GameFinalizationService
             (!$hasBoss && !$hasSecretary && $hasUnion);
 
         if (!$isVictoryCondition) {
-            Log::info("GameFinalizationService.php::checkDisconnectionVictory - Comprobación de victoria hecha. Todavía no ganó nadie");
+            RoomLogger::info($roomId, "GameFinalizationService.php::checkDisconnectionVictory: Comprobación de victoria hecha. Todavía no ganó nadie.");
             return false;
         }
 
@@ -243,7 +244,7 @@ class GameFinalizationService
         CheckVictoryJob::dispatch($roomId, $jobToken)->delay(now()->addSeconds(12));
 
         event(new RoomStateUpdated($roomId));
-        Log::info("GameFinalizationService.php::checkDisconnectionVictory - Condición de victoria detectada en {$roomId}, esperando 12s...");
+        RoomLogger::info($roomId, "GameFinalizationService.php::checkDisconnectionVictory: Condición de victoria detectada, esperando 12s...");
         return true;
     }
 
@@ -262,9 +263,9 @@ class GameFinalizationService
             $this->finalize($roomId);
 
             $cause = $isDisconnection ? "abandono del rival (Ronda $roundNumber)" : "combate";
-            Log::info("GameFinalizationService.php::finalizeVictory - Victoria confirmada en sala {$roomId} para {$winnerRole} por {$cause}.");
+            RoomLogger::info($roomId, "GameFinalizationService.php::finalizeVictory: Victoria confirmada para {$winnerRole} por {$cause}.");
         } else {
-            Log::info("GameFinalizationService.php::finalizeVictory - Rondas insuficientes para ganar por desconexión ($roundNumber). Cancelando victoria en {$roomId}.");
+            RoomLogger::info($roomId, "GameFinalizationService.php::finalizeVictory: Rondas insuficientes para ganar por desconexión ({$roundNumber}). Cancelando victoria.");
             $this->cancelAndCleanup($roomId);
         }
     }

@@ -6,6 +6,7 @@ namespace App\Jobs;
 use App\Services\Game\Engine\TurnService;
 use App\Services\Game\Status\DisconnectionService;
 use App\Services\Game\Status\GameFinalizationService;
+use App\Support\RoomLogger;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -33,7 +34,7 @@ class InheritBossRoleJob implements ShouldQueue
             Redis::hget($roomStateKey, 'game_over') === '1' ||
             Redis::exists("room:{$this->roomId}:ending_grace_period")
         ) {
-            Log::info("InheritBossRoleJob: Partida terminando en $this->roomId, abortando herencia.\n");
+            RoomLogger::info($this->roomId, "InheritBossRoleJob.php: Partida terminando, abortando herencia.");
             return;
         }
 
@@ -43,7 +44,7 @@ class InheritBossRoleJob implements ShouldQueue
 
         // Verificar si el token coincide con alguno de los dos
         if ($this->graceToken !== $bossToken && $this->graceToken !== $actingToken) {
-            Log::info("InheritBossRoleJob.php: Job obsoleto o jugador reconectado en sala $this->roomId, abortando.\n");
+            RoomLogger::info($this->roomId, "InheritBossRoleJob.php: Job obsoleto o jugador reconectado, abortando.");
             return;
         }
 
@@ -66,13 +67,13 @@ class InheritBossRoleJob implements ShouldQueue
                     'username'
                 );
 
-                Log::info("InheritBossRoleJob.php: acting_boss ya existe en {$playerName} en sala $this->roomId, comprobando victoria.\n");
+                RoomLogger::info($this->roomId, "InheritBossRoleJob.php: acting_boss ya existe en {$playerName}, comprobando victoria.");
                 $finalizationService->checkDisconnectionVictory($this->roomId);
                 return;
             }
         }
 
-        Log::info("InheritBossRoleJob.php: heredando cargo en la sala $this->roomId.\n");
+        RoomLogger::info($this->roomId, "InheritBossRoleJob.php: Heredando cargo.");
         $disconnectionService->inheritBossRole($this->roomId);
 
         // Tras heredar, comprobar si la partida tiene condición de victoria
@@ -80,7 +81,7 @@ class InheritBossRoleJob implements ShouldQueue
 
         // Si el check de victoria no ha destruido la sala ni marcado game_over
         if (Redis::exists($roomStateKey) && Redis::hget($roomStateKey, 'game_over') !== '1') {
-            Log::info("InheritBossRoleJob.php: Reactivando el temporizador de turno en sala $this->roomId tras herencia.");
+            RoomLogger::info($this->roomId, "InheritBossRoleJob.php: Reactivando el temporizador de turno tras herencia.");
             $turnService->resumeTurnTimer($this->roomId);
             event(new \App\Events\RoomStateUpdated($this->roomId));
         }

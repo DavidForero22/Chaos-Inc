@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../../store/useGameUIStore";
 import { useGameStore } from "../../../../store/useGameStore";
+import { useRoomStore } from "../../../../store/useRoomStore";
 import { FaBug } from "react-icons/fa";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";
@@ -21,6 +22,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	const setActiveModal = useGameUIStore((state) => state.setActiveModal);
 
 	const me = useGameStore((state) => state.gameData?.me);
+	const room = useRoomStore((state) => state.room);
 
 	const [isRendered, setIsRendered] = useState(false);
 	const [isExiting, setIsExiting] = useState(false);
@@ -68,6 +70,11 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		}
 	}, [activeModal, isRendered]);
 
+	const isDebug = String(room?.is_debug) === "1";
+	if (!isDebug) {
+		return null;
+	}
+
 	const toggleDebug = () => {
 		if (activeModal === "debug") {
 			closedByUserRef.current = true;
@@ -100,10 +107,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				aria-haspopup="dialog"
 				aria-expanded="false"
 			>
-				<FaBug
-					className="w-4 h-4 md:w-5 md:h-5"
-					aria-hidden="true"
-				/>
+				<FaBug className="w-4 h-4 md:w-5 md:h-5" aria-hidden="true" />
 			</button>
 		);
 	}
@@ -164,14 +168,12 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				{/* ─── ACCIONES DE SALA ─── */}
 				<section className="space-y-4 bg-[#0a0f0a] border border-green-900/50 p-4 rounded text-green-500">
 					<h3 className="font-bold text-sm flex items-center gap-2 text-green-400">
-						<span className="uppercase tracking-widest">
-							Acciones de Sala
-						</span>
+						<span className="uppercase tracking-widest">Acciones de Sala</span>
 					</h3>
 
 					<div className="space-y-2">
 						<label className="text-xs font-semibold text-green-700 uppercase">
-							 Seleccionar Victoria 
+							Seleccionar Victoria
 						</label>
 						<div
 							className="flex gap-2 flex-wrap"

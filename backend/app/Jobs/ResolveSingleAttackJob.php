@@ -10,6 +10,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Redis;
 use App\Events\RoomStateUpdated;
 use App\Services\Game\Engine\CombatService;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Log;
 
 class ResolveSingleAttackJob implements ShouldQueue
@@ -41,7 +42,7 @@ class ResolveSingleAttackJob implements ShouldQueue
 
         // Comprobar si el token coincide
         if (($pendingAttack['attack_token'] ?? '') !== $this->attackToken) {
-            Log::info("ResolveSingleAttackJob.php - Ignorado Job zombie en {$this->roomId}. Este ataque individual ya pasó.");
+            RoomLogger::info($this->roomId, "ResolveSingleAttackJob.php: Ignorado Job zombie. Este ataque individual ya pasó.");
             return;
         }
 
@@ -51,8 +52,7 @@ class ResolveSingleAttackJob implements ShouldQueue
         );
 
         // El jugador no respondió a tiempo. Entra el daño.
-        Log::info("ResolveSingleAttackJob.php - Daño automático aplicado en {$this->roomId} a {$playerName}");
-
+        RoomLogger::info($this->roomId, "ResolveSingleAttackJob.php: Daño automático aplicado a {$playerName}.");
         $combatService->applyDamageAndCheck(
             $this->roomId,
             $this->attackerId,

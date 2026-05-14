@@ -12,6 +12,7 @@ use App\Services\Auth\TokenService;
 use App\Services\Game\Status\DisconnectionService;
 use App\Services\Game\Status\GameFinalizationService;
 use App\Services\Game\Status\ReconnectionService;
+use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -50,8 +51,7 @@ class LiveRoomService
         $roomState = Redis::hgetall($roomStateKey);
         $room      = array_merge($roomInfo, $roomState);
 
-        Log::info("LiveRoomService.php::joinRoom()", [
-            'roomId' => $roomId,
+        RoomLogger::info($roomId, "LiveRoomService.php::joinRoom", [
             'playerId' => $playerId,
             'roomInfo keys' => array_keys($roomInfo),
             'owner_id from roomInfo' => $roomInfo['owner_id'] ?? 'NO EXISTE',
@@ -106,8 +106,7 @@ class LiveRoomService
 
         // Obtener nombre para el log
         $playerName = Redis::hget("room:{$roomId}:player:{$playerId}:info", 'username') ?? "ID_{$playerId}";
-        Log::info("LiveRoomService.php::leaveRoom - El jugador {$playerName} ({$playerId}) abandonó la sala {$roomId}\n");
-
+        RoomLogger::info($roomId, "LiveRoomService.php::leaveRoom: El jugador {$playerName} ({$playerId}) abandonó la sala.");
         $room = array_merge(Redis::hgetall($roomInfoKey), Redis::hgetall($roomStateKey));
 
         if ($room['status'] === 'in_game') {
