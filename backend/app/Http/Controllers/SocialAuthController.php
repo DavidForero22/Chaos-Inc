@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class SocialAuthController extends Controller
 {
@@ -53,12 +54,24 @@ class SocialAuthController extends Controller
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
             // El usuario canceló o hubo un error en el proveedor
+            Log::error("SocialAuthController.php::callback() - Error al conectar con el proveedor (Socialite).", [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             return redirect("{$frontendUrl}/social-error?error=oauth_failed");
         }
 
+        $currentUser = Auth::guard('web')->user();
+
         try {
-            $user = $socialAuthService->findOrCreateUser($socialUser, $provider);
+            $user = $socialAuthService->findOrCreateUser($socialUser, $provider, $currentUser);
         } catch (\Exception $e) {
+            Log::error("SocialAuthController.php::callback() - Error al asociar el proveedor al usuario.", [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
             return redirect("{$frontendUrl}/social-error?error=oauth_failed");
         }
 

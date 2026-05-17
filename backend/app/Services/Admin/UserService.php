@@ -5,6 +5,7 @@ namespace App\Services\Admin;
 
 use App\Models\User;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -111,46 +112,23 @@ class UserService
 
     public function deleteUser($id)
     {
-        $user = User::findOrFail($id);
+        // Usar transacciones evita inconsistencias si algo falla a la mitad
+        return DB::transaction(function () use ($id) {
+            $user = User::findOrFail($id);
 
-        // Limpiar datos personales pero se mantiene la fila para las estadísticas
-        $user->update([
-            'username' => 'DeletedPlayer_' . $user->id,
-            'email' => 'deleted_' . $user->id . '@example.com',
-            'password' => 'anonimized',
-        ]);
+            // Limpiar datos personales 
+            $user->update([
+                'username' => 'DeletedPlayer_' . $user->id,
+                'email'    => 'deleted_' . $user->id . '@example.com',
+                'password' => 'anonimized',
+                'avatar'   => null,
+            ]);
 
-        $user->socialAccounts()->delete();
-        return $user->delete();
-    }
+            // Eliminar todas las vinculaciones sociales 
+            $user->socialAccounts()->delete();
+            $user->delete();
 
-    public function unlinkSocialAccount($id, string $provider, ?string $password = null)
-    {
-        $user = User::findOrFail($id);
-        $socialAccount = $user->socialAccounts()->where('provider_name', $provider)->first();
-
-        if ($socialAccount) {
-            $isLastAccount = $user->socialAccounts()->count() === 1;
-            $hasNoPassword = is_null($user->password);
-
-            if ($isLastAccount && $hasNoPassword) {
-                if (empty($password)) {
-                    throw new Exception("PASSWORD_REQUIRED");
-                }
-                // Si envia la contraseña, guardar antes de desvincular
-                $user->update(['password' => Hash::make($password)]);
-            }
-            // ---------------------------------
-
-            // Comprobar si el usuario estaba usando el avatar de este proveedor
-            if ($user->avatar === $socialAccount->provider_avatar) {
-                $user->update(['avatar' => null]);
-            }
-
-            // Eliminar la vinculación
-            $socialAccount->delete();
-        }
-
-        return $user;
+            return $user;
+        });
     }
 }

@@ -11,8 +11,34 @@ use Laravel\Socialite\Contracts\User as SocialUser;
 
 class SocialAuthService
 {
-    public function findOrCreateUser(SocialUser $socialUser, string $provider): User
+    public function findOrCreateUser(SocialUser $socialUser, string $provider, ?User $currentUser = null): User
     {
+        // CASO A: EL USUARIO YA ESTÁ LOGUEADO
+        if ($currentUser) {
+            // Verificar si esta cuenta social ya está vinculada a otro usuario distinto
+            $socialAccount = SocialAccount::where('provider_name', $provider)
+                ->where('provider_id', $socialUser->getId())
+                ->first();
+
+            if ($socialAccount && $socialAccount->user_id !== $currentUser->id) {
+                // Evita que vinculen una cuenta de Google que ya le pertenece a otra persona
+                throw new \Exception("VND_ALREADY_LINKED_TO_OTHER");
+            }
+
+            if (!$socialAccount) {
+                // Vincular la cuenta de Google/Discord al usuario admin actual
+                $this->linkSocialAccount($currentUser, $socialUser, $provider);
+            }
+
+            // Actualizar avatar si el admin no tiene uno principal
+            if (is_null($currentUser->avatar) && $socialUser->getAvatar()) {
+                $currentUser->update(['avatar' => $socialUser->getAvatar()]);
+            }
+
+            return $currentUser;
+        }
+
+        // CASO B: EL USUARIO NO ESTÁ LOGUEADO
         // Buscar si esta cuenta social específica ya está registrada
         $socialAccount = SocialAccount::where('provider_name', $provider)
             ->where('provider_id', $socialUser->getId())
