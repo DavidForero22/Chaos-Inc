@@ -3,11 +3,13 @@
 
 namespace App\Services\Game\Status;
 
+use App\Events\GameFinalized;
 use App\Events\RoomStateUpdated;
 use App\Jobs\CheckVictoryJob;
 use App\Jobs\CleanupRoomJob;
 use App\Services\Admin\GameService;
 use App\Services\Game\Engine\AchievementService;
+use App\Services\Game\Engine\ExperienceService;
 use App\Support\CastHelper;
 use App\Support\RoomLogger;
 use Illuminate\Support\Facades\Broadcast;
@@ -15,7 +17,11 @@ use Illuminate\Support\Facades\Redis;
 
 class GameFinalizationService
 {
-    public function __construct(protected GameService $gameService, protected AchievementService $achievementService) {}
+    public function __construct(
+        protected GameService $gameService,
+        protected AchievementService $achievementService,
+        private readonly ExperienceService $experienceService,
+    ) {}
 
     public function finalize(string $roomId): void
     {
@@ -109,6 +115,10 @@ class GameFinalizationService
             ];
         }
 
+        // Resolver MVP antes del segundo bucle para no iterar $playersData dos veces
+        $mvpPlayerId = $this->experienceService->resolveMvp($playersData);
+
+
         // EVALUAR LOGROS
         $totalPlayers = count($playerIds);
         $achievementsUnlocked = $this->achievementService->evaluateEndGameAchievements($playersData, $totalPlayers);
@@ -121,8 +131,16 @@ class GameFinalizationService
             'players'            => $playersData,
         ]);
 
-        event(new RoomStateUpdated($roomId, null, null, $achievementsUnlocked));
+        foreach ($playersData as $player) {
+            $xpSummary = $this->experienceService->processPlayer($player, $mvpPlayerId);
 
+            // Guests no tienen canal privado donde recibir el evento
+            if (!$player['is_guest']) {
+                event(new GameFinalized((int) $player['user_id'], $xpSummary));
+            }
+        }
+
+        event(new RoomStateUpdated($roomId, null, null, $achievementsUnlocked));
         $cleanupToken = uniqid('cleanup_', true);
         Redis::hset($roomStateKey, 'cleanup_token', $cleanupToken);
 

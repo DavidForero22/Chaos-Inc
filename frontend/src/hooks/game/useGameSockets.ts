@@ -11,6 +11,7 @@ import api from "../../api/axios.ts";
 import { ACHIEVEMENTS } from "../../data/achievements.ts";
 import { useAchievementNotificationStore } from "../../store/ui/useAchievementNotificationStore.ts";
 import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;
@@ -23,6 +24,7 @@ type AchievementNotificationPayload = {
 
 export function useGameSockets({ roomId }: UseGameSocketsProps) {
 	const { parseAndNotify } = useGameEventParser();
+	const { id: userId, isGuest } = useAuthStore();
 
 	useEffect(() => {
 		if (!roomId) return;
@@ -175,4 +177,22 @@ export function useGameSockets({ roomId }: UseGameSocketsProps) {
 			echo.leave(`room.${roomId}`);
 		};
 	}, [roomId]);
+
+	// Suscripción al canal privado del usuario para recibir el resumen de XP
+	useEffect(() => {
+		if (!userId || isGuest) return;
+
+		const privateChannel = echo.private(`users.${userId}`);
+
+		privateChannel.listen(".GameFinalized", (data: { xp_summary: any }) => {
+			if (data?.xp_summary) {
+				useGameStore.getState().setXpSummary(data.xp_summary);
+			}
+		});
+
+		return () => {
+			privateChannel.stopListening(".GameFinalized");
+			echo.leave(`users.${userId}`);
+		};
+	}, [userId, isGuest]);
 }

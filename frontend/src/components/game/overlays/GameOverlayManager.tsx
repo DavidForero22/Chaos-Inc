@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import { useRoomStore } from "../../../store/room/useRoomStore.ts";
 import { RoleRevealModal } from "./RoleRevealModal.tsx";
-import { GameOverModal } from "./GameOverModal.tsx";
+import { GameOverModal } from "./game-over/GameOverModal.tsx";
 import { LuckChallengeModal } from "./LuckChallengeModal.tsx";
 import { DeathModal } from "./DeathModal.tsx";
 import type { MyData, GameData } from "../../../types/live-game.ts";

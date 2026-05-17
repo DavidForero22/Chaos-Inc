@@ -19,6 +19,7 @@ return new class extends Migration
             $table->enum('role', ['admin', 'user'])->default('user');
             $table->boolean('is_guest')->default(false);
             $table->string('avatar')->nullable();
+            $table->unsignedInteger('total_xp')->default(0);
 
             $table->rememberToken();
             $table->softDeletes();

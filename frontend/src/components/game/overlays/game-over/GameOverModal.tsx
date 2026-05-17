@@ -4,12 +4,14 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
-import { RESULT_CONFIG } from "../../../data/gameResults.ts";
-import type { WinnerRole, ConfigKey } from "../../../data/gameResults.ts";
-import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
-import { ACHIEVEMENTS } from "../../../data/achievements.ts";
-import type { PlayerRole } from "../../../types/live-game.ts";
-import { ROLE_LABELS } from "../../../data/roles.ts";
+import { RESULT_CONFIG } from "../../../../data/gameResults.ts";
+import type { WinnerRole, ConfigKey } from "../../../../data/gameResults.ts";
+import { useGameUIStore } from "../../../../store/game/useGameUIStore.ts";
+import { ACHIEVEMENTS } from "../../../../data/achievements.ts";
+import type { PlayerRole } from "../../../../types/live-game.ts";
+import { ROLE_LABELS } from "../../../../data/roles.ts";
+import { useGameStore } from "../../../../store/game/useGameStore.ts";
+import { XpSummaryCard } from "./XPSummaryCard.tsx";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -25,6 +27,7 @@ export function GameOverModal({
 	const headlineRef = useRef<HTMLHeadingElement>(null);
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const [showArrow, setShowArrow] = useState(false);
+	const xpSummary = useGameStore((s) => s.xpSummary);
 
 	// Resolver configuración
 	const configKey: ConfigKey =
@@ -212,6 +215,8 @@ export function GameOverModal({
 						aria-live="assertive"
 					>
 						{iWon ? "¡HAS GANADO!" : "¡HAS PERDIDO!"}
+
+						{xpSummary && <XpSummaryCard summary={xpSummary} hasWon={iWon} />}
 					</div>
 				)}
 

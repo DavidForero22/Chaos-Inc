@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import api from "../../api/axios";
 import type { GameData } from "../../types/live-game";
+import type { XpSummary } from "../../types/xp";
 import { useNotificationStore } from "../ui/useNotificationStore";
 import { useRoomStore } from "../room/useRoomStore";
 
@@ -17,6 +18,7 @@ interface GameState {
 	gameData: GameData | null;
 	isConnecting: boolean;
 	gameOver: boolean;
+	xpSummary: XpSummary | null;
 
 	// --- ACCIONES ---
 	setGameData: (data: GameData | null) => void;
@@ -25,6 +27,7 @@ interface GameState {
 	applyGameData: (newGameData: GameData) => void;
 	syncGame: () => Promise<void>;
 	resetGameData: () => void;
+	setXpSummary: (summary: XpSummary) => void;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -32,6 +35,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 	gameData: null,
 	isConnecting: true,
 	gameOver: false,
+	xpSummary: null,
 
 	// --- ACCIONES SIMPLES ---
 	setGameData: (data) => set({ gameData: data }),
@@ -98,14 +102,14 @@ export const useGameStore = create<GameState>((set, get) => ({
 			throw error;
 		}
 	},
+	setXpSummary: (summary) => set({ xpSummary: summary }),
 
 	resetGameData: () => {
-		// Solo resetea los datos del juego, no toca localStorage
-		// El useRoomStore se encarga de limpiar el resto cuando sea necesario
 		set({
 			gameData: null,
 			isConnecting: true,
 			gameOver: false,
+			xpSummary: null,
 		});
 	},
 }));

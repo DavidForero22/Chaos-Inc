@@ -81,6 +81,7 @@ export interface UserRecord {
 	isGuest: boolean;
 	joinedAt: string;
 	achievements?: UserAchievement[];
+	totalXp?: number;
 }
 
 export interface RoomRecord {
@@ -94,13 +95,13 @@ export interface RoomRecord {
 }
 
 export interface CardCatalogItem {
-    id: number;
-    type: string;
-    target: string;
-    base_name: string;
-    display_name: string;
-    description: string;
-    lore: string;
-    icons: string[];
-    image_url: string | null;
+	id: number;
+	type: string;
+	target: string;
+	base_name: string;
+	display_name: string;
+	description: string;
+	lore: string;
+	icons: string[];
+	image_url: string | null;
 }

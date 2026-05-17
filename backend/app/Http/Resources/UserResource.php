@@ -29,6 +29,7 @@ class UserResource extends JsonResource
             'role'     => $this->role,
             'isGuest'  => $this->is_guest,
             'avatar'   => $this->avatar,
+            'totalXp'  => $this->total_xp,
 
             'socialAccounts' => $this->whenLoaded('socialAccounts', function () {
                 return $this->socialAccounts->map(function ($account) {

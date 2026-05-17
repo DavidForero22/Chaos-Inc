@@ -13,15 +13,7 @@ import type {
 import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 import { useEffect } from "react";
-
-
-const ACCOUNT_ROLE_CONFIG: Record<
-	string,
-	{ label: string; badgeClass: string }
-> = {
-	admin: { label: "ADMINISTRADOR (NIVEL 5)", badgeClass: styles.roleAdmin },
-	user: { label: "EMPLEADO ESTÁNDAR (NIVEL 1)", badgeClass: styles.roleUser },
-};
+import LevelProgressBar from "./LevelProgressBar";
 
 interface UserInfoProps {
 	userId?: number | null;
@@ -83,9 +75,6 @@ export default function UserInfo({
 		avatar,
 		socialAccounts,
 	});
-
-	const roleConfig =
-		ACCOUNT_ROLE_CONFIG[displayRole ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
 
 	// Anunciar carga de información del usuario
 	useEffect(() => {
@@ -167,7 +156,7 @@ export default function UserInfo({
 						<label id="user-name-label" htmlFor="user-name">
 							NOMBRE DEL SUJETO:
 						</label>
-						<div className={styles.formValue}>
+						<div className={`${styles.formValue} flex items-center gap-2`}>
 							<h1
 								id="user-name"
 								className={styles.employeeName}
@@ -175,18 +164,32 @@ export default function UserInfo({
 							>
 								{displayUser}
 							</h1>
+							{displayRole && (
+								<span
+									className={`text-xs font-black font-mono uppercase px-2 py-0.5 border border-black rounded-sm ${
+										displayRole === "admin"
+											? "bg-black text-white"
+											: "bg-gray-100 text-gray-700"
+									}`}
+									aria-label={`Rol: ${displayRole}`}
+								>
+									{displayRole === "admin" ? "Admin" : "Usuario"}
+								</span>
+							)}
 						</div>
 					</div>
 
 					<div className={styles.formRow}>
 						<div className={styles.formGroup}>
-							<label id="user-role-label">NIVEL DEL EMPLEADO:</label>
-							<div
-								className={`${styles.roleBadge} ${roleConfig.badgeClass}`}
-								role="status"
-								aria-labelledby="user-role-label"
-							>
-								{roleConfig.label}
+							<label id="user-level-label">NIVEL DEL EMPLEADO:</label>
+							<div aria-labelledby="user-level-label" className="mt-1">
+								{userRecord && !userRecord.isGuest ? (
+									<LevelProgressBar totalXp={userRecord.totalXp ?? 0} />
+								) : (
+									<p className="text-xs font-mono text-gray-500 italic">
+										Crea una cuenta para guardar tu progreso
+									</p>
+								)}
 							</div>
 						</div>
 					</div>

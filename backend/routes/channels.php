@@ -16,3 +16,8 @@ Broadcast::channel('room.{roomId}', function ($user, $roomId) {
         'username' => $user->username,
     ];
 });
+
+Broadcast::channel('users.{id}', function ($user, $id) {
+    // Solo puedes suscribirte a tu propio canal
+    return (int) $user->id === (int) $id;
+});

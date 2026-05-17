@@ -22,7 +22,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             AchievementSeeder::class,
-            // Aquí puedes dejar los otros seeders de prueba de usuarios que tuvieras
         ]);
     }
 }
