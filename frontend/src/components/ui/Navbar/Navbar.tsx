@@ -79,6 +79,25 @@ export default function Navbar() {
 		};
 	}, [isMenuOpen]);
 
+	// Cerrar menú con tecla Escape
+	useEffect(() => {
+		if (!isMenuOpen) return;
+
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setIsMenuOpen(false);
+				// Devolver foco al botón del menú
+				const menuButton = document.querySelector(`.${styles.mobileMenuTab}`);
+				if (menuButton instanceof HTMLElement) {
+					menuButton.focus();
+				}
+			}
+		};
+
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	}, [isMenuOpen]);
+
 	return (
 		<>
 			<nav
@@ -111,11 +130,21 @@ export default function Navbar() {
 						role="menu"
 						aria-label="Menú de navegación móvil"
 						aria-hidden={!isMenuOpen}
+						inert={!isMenuOpen ? true : undefined}
 					>
 						<NavLinks
 							{...navProps}
 							isMobile={true}
-							onItemClick={() => setIsMenuOpen(false)}
+							onItemClick={() => {
+								setIsMenuOpen(false);
+								// Volver el foco al botón del menú
+								const menuButton = document.querySelector(
+									`.${styles.mobileMenuTab}`,
+								);
+								if (menuButton instanceof HTMLElement) {
+									menuButton.focus();
+								}
+							}}
 						/>
 					</div>
 				</div>

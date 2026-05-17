@@ -36,7 +36,8 @@
 	position: relative;
 }
 
-.bookmark:hover {
+.bookmark:hover,
+.bookmark:focus-visible {
 	padding-bottom: 24px;
 	filter: brightness(1.12);
 	box-shadow: 2px -6px 16px rgba(0, 0, 0, 0.25);
@@ -240,7 +241,8 @@
 	padding-left: 30px;
 }
 
-.mobileItem:hover {
+.mobileItem:hover,
+.mobileItem:focus-visible {
 	background-color: rgba(57, 62, 66, 0.158);
 }
 
