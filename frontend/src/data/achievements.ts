@@ -29,7 +29,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		title: "Lamebotas Profesional",
 		technicalDescription: "Gana una partida como Secretario.",
 		lore: "Ser la mascota del profesor no te hacía mejor estudiante en la escuela, que lo sepas.",
-		image: "/achievements/ach_2_sketch.png",
+		image: "/achievements/ach_2.png",
 		active: true,
 	},
 	{
@@ -37,7 +37,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		title: "Jefazo del Año",
 		technicalDescription: "Gana una partida como Jefe.",
 		lore: "¿Evasión de impuestos, jornadas de 14 horas, maltrato laboral? No pienso hablar sin mi abogado.",
-		image: "/achievements/ach_3_sketch.png",
+		image: "/achievements/ach_3.png",
 		active: true,
 	},
 	{
@@ -45,7 +45,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		title: "Abajo con el Trabajo",
 		technicalDescription: "Gana una partida como Sindicalista.",
 		lore: "Casualmente a nadie le parecia buena idea hacer una huelga japonesa. Se nota la cultura española...",
-		image: "/achievements/ach_placeholder.png",
+		image: "/achievements/ach_4_sketch.png",
 		active: true,
 	},
 	{
@@ -72,8 +72,8 @@ export const ACHIEVEMENTS: Achievement[] = [
 		technicalDescription:
 			"Gana una partida sin haber equipado ninguna habilidad pasiva.",
 		lore: "Las pasivas están sobrevaloradas, no necesitas mas que habilidad y mentalidad de tiburon.",
-		image: "/achievements/ach_placeholder.png",
-		active: false,
+		image: "/achievements/ach_7_sketch.png",
+		active: true,
 	},
 	{
 		id: "ach_triple_kill",
