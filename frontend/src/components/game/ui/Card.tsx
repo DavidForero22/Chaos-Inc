@@ -73,11 +73,6 @@ export function Card({
 	onClick,
 }: CardProps) {
 	const [showInfo, setShowInfo] = useState(false);
-	const [isHovered, setIsHovered] = useState(false);
-
-	// Estado ara saber si la carta tiene el foco del teclado
-	const [isFocused, setIsFocused] = useState(false);
-
 	const { isDiscardMode, isInfoMode } = usePlayerActions();
 
 	let stateClass = "";
@@ -121,15 +116,6 @@ export function Card({
 		<>
 			<div
 				className={`${styles.cardWrapper} ${interactableClass} ${stateClass}`}
-				onMouseEnter={() => setIsHovered(true)}
-				onMouseLeave={() => setIsHovered(false)}
-				// --- ACCESIBILIDAD: Mantener vivo el botón '?' si el foco está dentro del wrapper ---
-				onFocus={() => setIsFocused(true)}
-				onBlur={(e) => {
-					if (!e.currentTarget.contains(e.relatedTarget)) {
-						setIsFocused(false);
-					}
-				}}
 			>
 				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
 				<div
@@ -199,21 +185,6 @@ export function Card({
 						</div>
 					)}
 				</div>
-
-				{(isHovered || isSelected || isFocused) && !isInfoMode && (
-					<button
-						tabIndex={isTargetingMode ? -1 : 0}
-						onClick={(e) => {
-							e.stopPropagation();
-							setShowInfo(true);
-						}}
-						className="hidden lg:flex absolute top-1 left-1 w-6 h-6 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black rounded-full items-center justify-center z-50 transition cursor-help hover:scale-110 shadow-md border border-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-1 focus:ring-offset-black"
-						title="Ver detalles del documento"
-						aria-label={`Ver detalles de ${card.name}`}
-					>
-						?
-					</button>
-				)}
 			</div>
 
 			{showInfo && (

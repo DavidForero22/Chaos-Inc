@@ -16,7 +16,8 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 		notes: [
 			"Esta semana no he tocado tanto el proyecto, por eso no hay tantos cambios en esta versión. Venía un poco quemado de tanto picar código, así que gran parte del tiempo me lo pasé dibujando. La verdad es que estar a las 2 de la madrugada dibujando con Los Delinqüentes en Spotify es peak.",
 			"Por algún motivo no había pensado antes lo útil que me vendría un menú de depuración para equiparme cartas, manipular las victorias... Todas las pruebas las estaba haciendo a mano; no me he sentido más imbécil en mi vida. Al implementar este nuevo menú se me fue la pinza con las funciones que tendría y al final acabé creando un monstruo que no sabía ni cómo gestionar, así que tuve que simplificarlo bastante. Recordad, chavales: menos es más. Consejito de David.",
-			"Quería meter los niveles de los jugadores y las cartas legendarias en esta versión, pero recientemente he empezado a jugar al Ball x Pit y, bueno, me ha dado pereza, ¿qué quieres que te diga? Estoy un poco viciado XD.",
+			"Quería meter los niveles de los jugadores y las cartas legendarias en esta versión, pero recientemente he empezado a jugar al Ball x Pit y, bueno, me ha dado pereza la verdad, estoy un poco viciado XD.",
+			"También tuvimos que censurar cierto detalle en la ilustración del rol del jefe... Si algún día este juego se hace famoso (lo dudo), esto será tema para un iceberg de internet.",
 		],
 		changes: [
 			"Agregado registro de versiones en 'Saber más'.",

@@ -6,7 +6,6 @@ import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 
-
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
 
@@ -138,7 +137,7 @@ export function PlayerActions() {
 					</button>
 				) : (
 					<>
-						{/* --- BOTÓN INFO (SOLO MÓVIL) --- */}
+						{/* --- BOTÓN INFO --- */}
 						<button
 							tabIndex={isTargetingMode ? -1 : 0}
 							onClick={() => {
@@ -152,7 +151,7 @@ export function PlayerActions() {
 									? "Cerrar panel de información"
 									: "Abrir panel de información"
 							}
-							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${
+							className={`${styles.inkStamp} ${styles.stampBlue} ${
 								isInfoDisabled ? styles.stampDisabled : ""
 							}`}
 						>
