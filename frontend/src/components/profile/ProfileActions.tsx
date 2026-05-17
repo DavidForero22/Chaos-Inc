@@ -7,7 +7,6 @@ import viewStyles from "./RegisteredProfileView.module.css";
 import EditProfileModal from "./EditProfileModal";
 import type { UserRecord } from "../../types/api";
 
-
 interface ProfileActionsProps {
 	user?: UserRecord | null;
 	onLogout: () => void;
@@ -120,7 +119,6 @@ export default function ProfileActions({
 					aria-label="Editar información del perfil"
 					aria-haspopup="dialog"
 				>
-					<span aria-hidden="true">✏️</span>
 					EDITAR PERFIL
 				</button>
 
@@ -130,7 +128,6 @@ export default function ProfileActions({
 					onClick={handleLogout}
 					aria-label="Cerrar sesión de tu cuenta"
 				>
-					<span aria-hidden="true">🚪</span>
 					CERRAR SESIÓN
 				</button>
 
@@ -141,7 +138,6 @@ export default function ProfileActions({
 						onClick={() => setConfirmDelete(true)}
 						aria-label="Borrar cuenta permanentemente - Acción irreversible"
 					>
-						<span aria-hidden="true">⚠️</span>
 						BORRAR CUENTA
 					</button>
 				) : (

@@ -154,9 +154,9 @@ export default function UserInfo({
 				<div className={styles.employeeData}>
 					<div className={styles.formGroup}>
 						<label id="user-name-label" htmlFor="user-name">
-							NOMBRE DEL SUJETO:
+							NOMBRE:
 						</label>
-						<div className={`${styles.formValue} flex items-center gap-2`}>
+						<div className={`${styles.formValue} flex items-center gap-4`}>
 							<h1
 								id="user-name"
 								className={styles.employeeName}
@@ -165,23 +165,23 @@ export default function UserInfo({
 								{displayUser}
 							</h1>
 							{displayRole && (
-								<span
-									className={`text-xs font-black font-mono uppercase px-2 py-0.5 border border-black rounded-sm ${
-										displayRole === "admin"
-											? "bg-black text-white"
-											: "bg-gray-100 text-gray-700"
-									}`}
-									aria-label={`Rol: ${displayRole}`}
-								>
-									{displayRole === "admin" ? "Admin" : "Usuario"}
-								</span>
+								<div className="justify-center">
+									<span
+										className={`text-xs font-black font-mono uppercase px-2 py-0 border border-black rounded-sm text-black ${
+											displayRole === "admin" ? "bg-amber-300 " : "bg-blue-300"
+										}`}
+										aria-label={`Rol: ${displayRole}`}
+									>
+										{displayRole === "admin" ? "Admin" : "Usuario"}
+									</span>
+								</div>
 							)}
 						</div>
 					</div>
 
-					<div className={styles.formRow}>
+					<div>
 						<div className={styles.formGroup}>
-							<label id="user-level-label">NIVEL DEL EMPLEADO:</label>
+							<label id="user-level-label">NIVEL DEL USUARIO:</label>
 							<div aria-labelledby="user-level-label" className="mt-1">
 								{userRecord && !userRecord.isGuest ? (
 									<LevelProgressBar totalXp={userRecord.totalXp ?? 0} />
@@ -194,13 +194,15 @@ export default function UserInfo({
 						</div>
 					</div>
 
-					<div className={styles.formGroupInline}>
-						<label id="join-date-label">FECHA DE REGISTRO:</label>
-						<strong aria-labelledby="join-date-label">
-							{displayJoinedAt
-								? new Date(displayJoinedAt).toLocaleDateString("es-ES")
-								: "REGISTRO DESCONOCIDO"}
-						</strong>
+					<div className={styles.formRow}>
+						<div className={styles.formGroup}>
+							<label id="join-date-label">FECHA DE REGISTRO:</label>
+							<strong aria-labelledby="join-date-label">
+								{displayJoinedAt
+									? new Date(displayJoinedAt).toLocaleDateString("es-ES")
+									: "REGISTRO DESCONOCIDO"}
+							</strong>
+						</div>
 					</div>
 
 					{/* ── CUENTAS VINCULADAS ── */}

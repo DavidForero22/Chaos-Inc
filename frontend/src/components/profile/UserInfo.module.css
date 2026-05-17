@@ -98,10 +98,10 @@
 }
 
 .formGroup label {
-	font-size: 0.65rem;
+	font-size: 0.95rem;
 	font-weight: 900;
 	color: #555;
-	margin-bottom: 4px;
+	margin-bottom: 2px;
 }
 
 .formGroupInline {
