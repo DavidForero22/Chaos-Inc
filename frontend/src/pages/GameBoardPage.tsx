@@ -18,6 +18,9 @@ import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
 import { DebugTools } from "../components/game/overlays/debug/DebugTools.tsx";
 import { useInfoModeGuard } from "../hooks/game/useInfoModeGuard.ts";
 
+import srOnlyStyles from "../styles/sr-only.module.css";
+
+
 export default function GameBoardPage() {
 	const { id } = useParams();
 	const roomId = id!;
@@ -33,11 +36,12 @@ export default function GameBoardPage() {
 
 	if (isConnecting || !board.gameData || !board.me || !board.game) {
 		return (
-			<div
+			<main
 				className="flex flex-col items-center justify-center h-screen bg-[#393e42] text-white"
-				// --- ACCESIBILIDAD: Anunciar estado de carga ---
 				role="status"
 				aria-live="polite"
+				aria-label="Conectando al juego"
+				aria-busy="true"
 			>
 				<div
 					className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#cbbe34] mb-4"
@@ -46,7 +50,7 @@ export default function GameBoardPage() {
 				<h2 className="text-xl font-mono animate-pulse">
 					Conectando a la mesa...
 				</h2>
-			</div>
+			</main>
 		);
 	}
 
@@ -62,7 +66,7 @@ export default function GameBoardPage() {
 				backgroundSize: "cover",
 				backgroundPosition: "center",
 			}}
-			aria-label="Tablero de juego"
+			aria-label="Tablero de juego - Sala de caos"
 		>
 			<GameOverlayManager
 				roomId={roomId}
@@ -106,7 +110,7 @@ export default function GameBoardPage() {
 					>
 						{board.game.deck_count}
 					</span>
-					<span className="sr-only">
+					<span className={srOnlyStyles.srOnly}>
 						Mazo: {board.game.deck_count} cartas restantes
 					</span>
 				</div>
@@ -116,7 +120,7 @@ export default function GameBoardPage() {
 					className="bg-[#c19a6b] border-x-2 border-b-2 border-[#a68256] px-4 py-1 pb-2 rounded-b-md shadow-md flex flex-col items-center justify-center relative"
 					title={`Sala ${roomId}, Ronda ${board.game.round_number}`}
 				>
-					{/* Textura de cartón para la pestaña */}
+					{/* Textura de cartón para la pestaña - decorativa */}
 					<div
 						className="absolute inset-0 opacity-20 pointer-events-none rounded-b-md"
 						aria-hidden="true"
@@ -137,7 +141,7 @@ export default function GameBoardPage() {
 					>
 						Ronda {board.game.round_number}
 					</span>
-					<span className="sr-only">
+					<span className={srOnlyStyles.srOnly}>
 						Sala {roomId}, Ronda {board.game.round_number}
 					</span>
 				</div>

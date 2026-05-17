@@ -1,9 +1,11 @@
 // src/components/game/player/PlayerActions.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
@@ -50,7 +52,7 @@ export function PlayerActions() {
 		if (!actionLogic.isReady || !actionLogic.me) return;
 
 		const isMustDiscard = actionLogic.me.conditions.must_discard;
-		const isOverLimit =
+		const isCurrentlyOverLimit =
 			actionLogic.currentCardsCount > actionLogic.me.max_hand_size;
 		const isDefending =
 			actionLogic.me.combat_state.is_defending_single ||
@@ -63,7 +65,7 @@ export function PlayerActions() {
 
 		// Actualizar las referencias para el próximo ciclo de React
 		prevMustDiscard.current = isMustDiscard;
-		prevIsOverLimit.current = isOverLimit;
+		prevIsOverLimit.current = isCurrentlyOverLimit;
 	}, [
 		actionLogic.isReady,
 		actionLogic.me?.is_dead,
@@ -84,15 +86,28 @@ export function PlayerActions() {
 
 	// ¿Deberían estar deshabilitados los botones por el modo Info?
 	const isInteractionBlockedByInfo = isInfoMode || isDead;
+	const isCurrentlyOverLimit = isDiscardMode ? willBeOverLimit : isOverLimit;
 
 	return (
-		<div className="fixed bottom-4 right-4 z-60 flex flex-col items-end gap-2 pointer-events-auto lg:static lg:w-full lg:flex-row lg:justify-between lg:items-end lg:mb-6 lg:px-2 lg:z-40">
+		<section
+			aria-label="Controles principales del turno"
+			className="fixed bottom-4 right-4 z-60 flex flex-col items-end gap-2 pointer-events-auto lg:static lg:w-full lg:flex-row lg:justify-between lg:items-end lg:mb-6 lg:px-2 lg:z-40"
+		>
 			{/* Contador de Cartas - Solo se ve en PC */}
 			<div
-				className={`hidden lg:inline-block ${styles.dymoTape} ${(isDiscardMode ? willBeOverLimit : isOverLimit) ? styles.dymoTapeRed : ""}`}
+				role="status"
+				aria-live="polite"
+				className={`hidden lg:inline-block ${styles.dymoTape} ${isCurrentlyOverLimit ? styles.dymoTapeRed : ""}`}
 			>
-				CARTAS: {isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
+				{/* Texto exclusivo para lector de pantalla que explica el error visual (color rojo) */}
+				<span className={srOnlyStyles.srOnly}>
+					{isCurrentlyOverLimit ? "Límite excedido. " : ""}
+					Tienes
+				</span>
+				<span aria-hidden="true">CARTAS: </span>
+				{isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
 				{me!.max_hand_size}
+				<span className={srOnlyStyles.srOnly}> cartas en mano.</span>
 			</div>
 
 			{/* Botones de Reacción Defensiva y Acción (Sellos) */}
@@ -104,6 +119,7 @@ export function PlayerActions() {
 							setIsInfoMode?.(false);
 						}}
 						disabled={isGlobalLoading}
+						aria-busy={isGlobalLoading}
 						className={`${styles.inkStamp} ${styles.stampRed}`}
 					>
 						ASUMIR DAÑO
@@ -115,6 +131,7 @@ export function PlayerActions() {
 							setIsInfoMode(false);
 						}}
 						disabled={isGlobalLoading}
+						aria-busy={isGlobalLoading}
 						className={`${styles.inkStamp} ${styles.stampRed}`}
 					>
 						ASUMIR DAÑO
@@ -129,6 +146,12 @@ export function PlayerActions() {
 								setIsInfoMode?.(!isInfoMode);
 							}}
 							disabled={isInfoDisabled}
+							aria-expanded={isInfoMode}
+							aria-label={
+								isInfoMode
+									? "Cerrar panel de información"
+									: "Abrir panel de información"
+							}
 							className={`lg:hidden ${styles.inkStamp} ${styles.stampBlue} ${
 								isInfoDisabled ? styles.stampDisabled : ""
 							}`}
@@ -163,6 +186,7 @@ export function PlayerActions() {
 								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={handleConfirmDiscard}
 								disabled={isConfirmDisabled}
+								aria-busy={isGlobalLoading}
 								className={`${styles.inkStamp} ${styles.stampRed} ${isConfirmDisabled ? styles.stampDisabled : ""}`}
 							>
 								{isGlobalLoading ? "DESCARTANDO..." : "CONFIRMAR"}
@@ -181,12 +205,17 @@ export function PlayerActions() {
 								onClick={endTurn}
 								tabIndex={isTargetingMode ? -1 : 0}
 								disabled={!canEndTurn || isInteractionBlockedByInfo}
-								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
+								aria-label={
+									isOverLimit
+										? "No puedes terminar tu turno. Debes descartar cartas primero."
+										: "Terminar turno"
+								}
 								title={
 									isOverLimit
 										? "Debes descartar cartas antes de terminar tu turno"
 										: "Terminar turno"
 								}
+								className={`${styles.inkStamp} ${styles.stampBlack} ${!canEndTurn || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 							>
 								TERMINAR TURNO
 							</button>
@@ -194,6 +223,6 @@ export function PlayerActions() {
 					</>
 				)}
 			</div>
-		</div>
+		</section>
 	);
 }

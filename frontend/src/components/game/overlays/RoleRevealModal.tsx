@@ -1,10 +1,12 @@
 // src/components/game/RoleRevealModal.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, useRef, useEffect } from "react";
 import type { UIEvent } from "react";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./RoleRevealModal.module.css";
 import { ROLE_CONFIG } from "../../../data/roles.ts";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 interface RoleRevealModalProps {
 	role: MyData["role"];
@@ -116,7 +118,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 
 							{/* La Foto Adjunta */}
 							<div className="shrink-0 w-full mb-6 flex justify-center">
-								<div className="bg-[#f8f9f8] p-2 md:p-4 pb-6 md:pb-12 shadow-lg border border-gray-300 rotate-1 w-full max-w-125 relative">
+								<div className="bg-[#f8f9f8] p-2 md:p-4 pb-6 md:pb-12 shadow-lg border border-gray-300 rotate-1 w-full md:max-w-lg lg:max-w-xl relative">
 									<div
 										className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-5 md:w-16 md:h-6 bg-white/40 backdrop-blur-sm rotate-3 shadow-sm border border-white/20"
 										aria-hidden="true"
@@ -143,7 +145,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 
 							{/* Texto del objetivo */}
 							<div className="grow">
-								<h3 className="sr-only">Objetivo Principal</h3>
+								<h3 className={srOnlyStyles.srOnly}>Objetivo Principal</h3>
 								<p
 									className="text-xs uppercase font-bold mb-1 opacity-70"
 									aria-hidden="true"

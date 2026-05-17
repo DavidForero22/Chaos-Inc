@@ -1,4 +1,5 @@
 // src/components/profile/EditProfileModal.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, type FormEvent } from "react";
 import ModalLayout from "../ui/ModalLayout";
@@ -69,65 +70,95 @@ export default function EditProfileModal({
 			isLoading={isLoading}
 			submitText="GUARDAR CAMBIOS"
 		>
+			{generalError && (
+				<div
+					className={`${styles.warningBox} ${styles.criticalWarning} mb-6`}
+					role="alert"
+					aria-live="assertive"
+					aria-atomic="true"
+				>
+					<p className={styles.warningText}>
+						<strong>ERROR:</strong> {generalError}
+					</p>
+				</div>
+			)}
+
 			<div className={styles.formGroup}>
-				<label className={styles.label}>NOMBRE DE USUARIO</label>
+				<label htmlFor="username-input" className={styles.label}>
+					NOMBRE DE USUARIO
+				</label>
 				<input
+					id="username-input"
 					type="text"
 					className={`${styles.input} ${fieldErrors.username ? styles.inputError : ""}`}
 					value={username}
 					onChange={(e) => setUsername(e.target.value)}
 					placeholder="Nuevo nombre de usuario"
 					required
+					aria-required="true"
+					aria-invalid={!!fieldErrors.username}
+					aria-describedby={fieldErrors.username ? "username-error" : undefined}
 				/>
 				{fieldErrors.username && (
-					<p className={styles.errorText}>{fieldErrors.username[0]}</p>
+					<p id="username-error" className={styles.errorText} role="alert">
+						{fieldErrors.username[0]}
+					</p>
 				)}
 			</div>
 
 			<div className={styles.formGroup}>
-				<label className={styles.label}>CORREO ELECTRÓNICO</label>
+				<label htmlFor="email-input" className={styles.label}>
+					CORREO ELECTRÓNICO
+				</label>
 				<input
+					id="email-input"
 					type="email"
 					className={`${styles.input} ${isOAuthUser ? styles.inputDisabled : ""} ${fieldErrors.email ? styles.inputError : ""}`}
 					value={email}
 					onChange={(e) => setEmail(e.target.value)}
 					placeholder="ejemplo@correo.com"
 					disabled={isOAuthUser}
+					aria-required="true"
+					aria-invalid={!!fieldErrors.email}
+					aria-describedby={`${fieldErrors.email ? "email-error" : ""} ${isOAuthUser ? "email-oauth-warning" : ""}`.trim()}
 				/>
 				{isOAuthUser && (
-					<p className={styles.oauthWarning}>
+					<p id="email-oauth-warning" className={styles.oauthWarning}>
 						[BLOQUEADO] Tu cuenta está vinculada a un proveedor externo. La
 						modificación de correo no está permitida.
 					</p>
 				)}
 				{fieldErrors.email && (
-					<p className={styles.errorText}>{fieldErrors.email[0]}</p>
+					<p id="email-error" className={styles.errorText} role="alert">
+						{fieldErrors.email[0]}
+					</p>
 				)}
 			</div>
 
 			<div className={styles.formGroup}>
-				<label className={styles.label}>NUEVA CONTRASEÑA</label>
+				<label htmlFor="password-input" className={styles.label}>
+					NUEVA CONTRASEÑA
+				</label>
 				<input
+					id="password-input"
 					type="password"
 					className={`${styles.input} ${fieldErrors.password ? styles.inputError : ""}`}
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 					placeholder="Deja en blanco para mantener la actual"
 					minLength={8}
+					aria-invalid={!!fieldErrors.password}
+					aria-describedby={`${fieldErrors.password ? "password-error" : ""} password-hint`.trim()}
 				/>
+				<p id="password-hint" className={styles.hint}>
+					Mínimo 8 caracteres. Deja en blanco para mantener la actual.
+				</p>
 				{fieldErrors.password && (
-					<p className={styles.errorText}>{fieldErrors.password[0]}</p>
+					<p id="password-error" className={styles.errorText} role="alert">
+						{fieldErrors.password[0]}
+					</p>
 				)}
 			</div>
-
-			{/* ERROR GENERAL */}
-			{generalError && (
-				<div className={`${styles.warningBox} ${styles.criticalWarning} mt-4`}>
-					<p className={styles.warningText}>
-						<strong>ERROR:</strong> {generalError}
-					</p>
-				</div>
-			)}
 		</ModalLayout>
 	);
 }

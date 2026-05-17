@@ -1,4 +1,6 @@
 // src/components/game/ui/Card.tsx
+// Accesibilidad comprobada: SI
+
 import { useState } from "react";
 import type { CardInstance, CardIconType } from "../../../types/live-game";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";

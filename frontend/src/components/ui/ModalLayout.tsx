@@ -1,3 +1,5 @@
+// Accesibilidad comprobada: SI
+
 import type { ReactNode } from "react";
 import styles from "./ModalLayout.module.css";
 
@@ -34,23 +36,50 @@ export default function ModalLayout({
 		}
 	};
 
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.key === "Escape" && !disableBackdropClick) {
+			onClose();
+		}
+	};
+
 	return (
-		<div className={styles.overlay} onClick={handleBackdropClick}>
+		<div
+			className={styles.overlay}
+			onClick={handleBackdropClick}
+			onKeyDown={handleKeyDown}
+			role="dialog"
+			aria-modal="true"
+			aria-labelledby="modal-title"
+			aria-describedby="modal-description"
+		>
 			<div className={styles.card} onClick={(e) => e.stopPropagation()}>
 				{/* Cabecera dinámica (Fija) */}
 				<div className={styles.header}>
 					<div>
 						<p className={styles.headerTitle}>
-							{title}
-							<span className={styles.headerSub}>{subtitle}</span>
+							<span id="modal-title" className={styles.headerTitleText}>
+								{title}
+							</span>
+							<span id="modal-description" className={styles.headerSub}>
+								{subtitle}
+							</span>
 						</p>
 					</div>
-					<button className={styles.closeBtn} onClick={onClose} title="Cerrar">
+					<button
+						className={styles.closeBtn}
+						onClick={onClose}
+						title="Cerrar"
+						aria-label="Cerrar modal"
+					>
 						✕
 					</button>
 				</div>
 
-				<form className={styles.formWrapper} onSubmit={onSubmit}>
+				<form
+					className={styles.formWrapper}
+					onSubmit={onSubmit}
+					aria-label={title}
+				>
 					{/* Cuerpo dinámico (Con Scroll) */}
 					<div className={styles.body}>{children}</div>
 
@@ -65,6 +94,7 @@ export default function ModalLayout({
 										type="button"
 										className={styles.btnSecondary}
 										onClick={onClose}
+										aria-label="Cancelar y cerrar modal"
 									>
 										Cancelar
 									</button>
@@ -72,6 +102,8 @@ export default function ModalLayout({
 										type="submit"
 										className={styles.btnPrimary}
 										disabled={isLoading}
+										aria-label={isLoading ? loadingText : submitText}
+										aria-disabled={isLoading}
 									>
 										{isLoading ? loadingText : submitText}
 									</button>

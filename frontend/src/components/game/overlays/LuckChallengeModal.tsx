@@ -4,6 +4,7 @@ import { useState } from "react";
 import api from "../../../api/axios.ts";
 import { Modal } from "../ui/GameModal.tsx";
 import { useTimerStore } from "../../../store/useTimerStore.ts";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 // Estilos de las puertas (más oscuros para dar sensación de pasillo cerrado)
 const COLOR_STYLES: Record<string, string> = {
@@ -56,7 +57,11 @@ export function LuckChallengeModal({
 	};
 
 	return (
-		<Modal maxWidth="max-w-md">
+		<Modal
+			maxWidth="max-w-md"
+			ariaLabelledBy="luck-challenge-title"
+			ariaDescribedBy="luck-challenge-desc"
+		>
 			<p
 				className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-2 text-center"
 				aria-hidden="true"
@@ -84,8 +89,12 @@ export function LuckChallengeModal({
 					className="bg-red-900/40 border border-red-700/50 text-red-300 px-3 py-3 rounded-lg mb-8 text-center flex flex-col items-center justify-center"
 					role="timer"
 					aria-atomic="true"
-					aria-label={`Tiempo de decisión restante: ${luckChallengeSecondsLeft} segundos`}
 				>
+					{/* Texto exclusivo para lectores de pantalla */}
+					<span className={srOnlyStyles.srOnly}>
+						Tiempo de decisión restante: {luckChallengeSecondsLeft} segundos
+					</span>
+
 					<span
 						className="text-xs uppercase font-bold tracking-wider mb-1"
 						aria-hidden="true"
@@ -109,10 +118,11 @@ export function LuckChallengeModal({
 				{colors.map((color) => (
 					<button
 						key={color}
+						type="button"
 						onClick={() => handleChoose(color)}
 						disabled={!!chosen || loading || luckChallengeSecondsLeft === null}
-						aria-label={`Puerta ${COLOR_NAMES[color] || color}`}
-						className={`flex-1 rounded-t-md rounded-b-sm border-b-8 border-x-4 border-t-4 transition-all duration-200 relative overflow-hidden shadow-lg focus:outline-none focus:ring-4 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900 ${COLOR_STYLES[color]} ${
+						aria-label={`Seleccionar puerta ${COLOR_NAMES[color] || color}`}
+						className={`flex-1 rounded-t-md rounded-b-sm border-b-8 border-x-4 border-t-4 transition-all duration-200 relative overflow-hidden shadow-lg focus:outline-none focus-visible:ring-4 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 ${COLOR_STYLES[color]} ${
 							chosen === color
 								? "translate-y-4 border-b-0 brightness-125 shadow-none"
 								: "hover:-translate-y-1"
@@ -122,10 +132,6 @@ export function LuckChallengeModal({
 								: "cursor-pointer"
 						}`}
 					>
-						<span className="sr-only">
-							Seleccionar puerta {COLOR_NAMES[color] || color}
-						</span>
-
 						{/* Pequeño detalle visual (simula el pomo de una puerta) */}
 						<div
 							className="absolute top-1/2 right-2 w-2 h-5 bg-black/40 rounded-sm"

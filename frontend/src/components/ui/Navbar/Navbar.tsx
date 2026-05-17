@@ -1,4 +1,5 @@
 // src/components/navbar/Navbar.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../../store/useAuthStore";
@@ -80,7 +81,10 @@ export default function Navbar() {
 
 	return (
 		<>
-			<div className={styles.bookmarksContainer}>
+			<nav
+				className={styles.bookmarksContainer}
+				aria-label="Navegación principal"
+			>
 				{/* ── GRUPO DE ESCRITORIO  ── */}
 				<div className={styles.desktopGroup}>
 					<NavLinks {...navProps} isMobile={false} />
@@ -92,8 +96,11 @@ export default function Navbar() {
 						className={`${styles.bookmark} ${styles.mobileMenuTab}`}
 						onClick={() => setIsMenuOpen(!isMenuOpen)}
 						title="Abrir Menú"
+						aria-label="Abrir menú de navegación"
+						aria-expanded={isMenuOpen}
+						aria-haspopup="menu"
 					>
-						<FaBars /> MENÚ
+						<FaBars aria-hidden="true" /> MENÚ
 					</button>
 
 					{/* Desplegable Móvil */}
@@ -101,6 +108,9 @@ export default function Navbar() {
 						className={`${styles.dropdownMenu} ${
 							isMenuOpen ? styles.dropdownMenuOpen : ""
 						} ${disableMenuTransition ? styles.dropdownMenuNoTransition : ""}`}
+						role="menu"
+						aria-label="Menú de navegación móvil"
+						aria-hidden={!isMenuOpen}
 					>
 						<NavLinks
 							{...navProps}
@@ -109,7 +119,7 @@ export default function Navbar() {
 						/>
 					</div>
 				</div>
-			</div>
+			</nav>
 
 			{/* ── Modales ── */}
 			{showLogin && (

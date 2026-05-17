@@ -1,8 +1,12 @@
 // src/components/game/overlays/CardInfoModal.tsx
+// Accesibilidad comprobada: SI
+
 import { useState, useEffect, useRef } from "react";
 import type { CardInstance } from "../../../types/live-game.ts";
 import { createPortal } from "react-dom";
 import styles from "./CardInfoModal.module.css";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 // Mapa de traducción para los tipos de carta
 const TYPE_MAP: Record<string, string> = {
@@ -113,7 +117,7 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 							{card.name}
 						</h2>
 						<span className="text-xs uppercase font-bold text-gray-500 tracking-wider bg-gray-200/50 px-2 py-1 rounded border border-gray-300 inline-block mt-1">
-							<span className="sr-only">Tipo de carta: </span>
+							<span className={srOnlyStyles.srOnly}>Tipo de carta: </span>
 							<span aria-hidden="true">[</span>
 							{translatedType}
 							<span aria-hidden="true">]</span>

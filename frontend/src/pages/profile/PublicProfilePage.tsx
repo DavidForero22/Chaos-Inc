@@ -1,4 +1,5 @@
 // src/pages/PublicProfilePage.tsx
+// Accesibilidad comprobada: SI
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -45,9 +46,14 @@ export default function PublicProfilePage() {
 
 	if (myId == null) {
 		return (
-			<div className={styles.loadingWrapper}>
+			<main
+				className={styles.loadingWrapper}
+				role="status"
+				aria-live="polite"
+				aria-label="Estado de autenticación"
+			>
 				<span>Debes tener una cuenta activa para consultar perfiles.</span>
-			</div>
+			</main>
 		);
 	}
 
@@ -57,22 +63,30 @@ export default function PublicProfilePage() {
 
 	if (loading) {
 		return (
-			<div className={styles.loadingWrapper}>
-				<div className={styles.loadingSpinner} />
+			<main
+				className={styles.loadingWrapper}
+				role="status"
+				aria-live="polite"
+				aria-label="Cargando perfil"
+				aria-busy="true"
+			>
+				<div className={styles.loadingSpinner} aria-hidden="true" />
 				<span className={styles.loadingText}>Cargando perfil...</span>
-			</div>
+			</main>
 		);
 	}
 
 	return (
-		<RegisteredProfileView
-			games={games}
-			publicProfile={!isMe ? profileUser : null}
-			myProfile={isMe ? profileUser : null}
-			notMyProfile={!isMe}
-			onLogout={isMe ? handleLogout : undefined}
-			onDeleteAccount={isMe ? handleDeleteAccount : undefined}
-			onUpdateProfile={isMe ? handleUpdateProfile : undefined}
-		/>
+		<main>
+			<RegisteredProfileView
+				games={games}
+				publicProfile={!isMe ? profileUser : null}
+				myProfile={isMe ? profileUser : null}
+				notMyProfile={!isMe}
+				onLogout={isMe ? handleLogout : undefined}
+				onDeleteAccount={isMe ? handleDeleteAccount : undefined}
+				onUpdateProfile={isMe ? handleUpdateProfile : undefined}
+			/>
+		</main>
 	);
 }

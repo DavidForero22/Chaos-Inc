@@ -1,4 +1,6 @@
 // src/components/ui/Toast.tsx
+// Accesibilidad comprobada: SI
+
 import {
 	FaInfoCircle,
 	FaCheckCircle,
@@ -15,16 +17,15 @@ export function Toast() {
 
 	if (typeof document === "undefined") return null;
 
-	// --- ACCESIBILIDAD: Ocultar iconos a lectores de pantalla ---
+	// Íconos con accesibilidad básica
 	const icons = {
-		info: <FaInfoCircle className="text-gray-500" aria-hidden="true" />,
-		success: <FaCheckCircle className="text-green-600" aria-hidden="true" />,
-		warn: (
-			<FaExclamationTriangle className="text-yellow-600" aria-hidden="true" />
-		),
-		danger: <FaTimesCircle className="text-red-600" aria-hidden="true" />,
+		info: <FaInfoCircle aria-hidden="true" />,
+		success: <FaCheckCircle aria-hidden="true" />,
+		warn: <FaExclamationTriangle aria-hidden="true" />,
+		danger: <FaTimesCircle aria-hidden="true" />,
 	};
 
+	// Colores de fondo (sin cambios funcionales)
 	const bgColors = {
 		info: "bg-gray-100 border-gray-400 text-gray-800",
 		success: "bg-green-100 border-green-500 text-green-800",
@@ -32,8 +33,20 @@ export function Toast() {
 		danger: "bg-red-100 border-red-500 text-red-800",
 	};
 
-	// --- ACCESIBILIDAD: Roles dinámicos según severidad ---
-	// Los errores/advertencias interrumpen (alert/assertive). La info es suave (status/polite).
+	// Roles y etiquetas según el tipo de notificación
+	const getAriaLabel = () => {
+		switch (type) {
+			case "danger":
+				return "Error: ";
+			case "warn":
+				return "Advertencia: ";
+			case "success":
+				return "Éxito: ";
+			default:
+				return "Información: ";
+		}
+	};
+
 	const isAlert = type === "danger" || type === "warn";
 	const ariaRole = isAlert ? "alert" : "status";
 	const ariaLive = isAlert ? "assertive" : "polite";
@@ -41,24 +54,31 @@ export function Toast() {
 	return createPortal(
 		<div
 			className={`${styles.toastContainer} ${isVisible ? styles.show : styles.hide}`}
-			// --- ACCESIBILIDAD: Ocultar todo el nodo al lector si no está activo ---
 			aria-hidden={!isVisible}
+			aria-live="off" // El contenedor no anuncia, solo el contenido interno
 		>
 			<div
 				className={`flex items-start gap-3 px-4 py-3 rounded shadow-xl border-l-4 min-w-70 max-w-sm ${bgColors[type]}`}
 				role={ariaRole}
 				aria-live={ariaLive}
 				aria-atomic="true"
+				aria-label={`${getAriaLabel()}${message}`}
 			>
-				<div className="text-xl mt-0.5">{icons[type]}</div>
+				{/* Ícono decorativo */}
+				<div className="text-xl mt-0.5" aria-hidden="true">
+					{icons[type]}
+				</div>
+
+				{/* Mensaje principal */}
 				<span className="flex-1 font-medium text-sm leading-tight">
 					{message}
 				</span>
+
+				{/* Botón de cerrar */}
 				<button
 					onClick={hideToast}
-					className="text-black/40 hover:text-black/80 transition-colors p-1 focus:outline-none focus:ring-2 focus:ring-black/50 rounded"
+					className="text-black/40 hover:text-black/80 transition-colors p-1 rounded"
 					title="Cerrar notificación"
-					// --- ACCESIBILIDAD: Prevenir el foco por Tab cuando está oculto ---
 					tabIndex={isVisible ? 0 : -1}
 					disabled={!isVisible}
 					aria-label="Cerrar notificación"

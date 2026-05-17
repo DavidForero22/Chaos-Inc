@@ -63,8 +63,14 @@ function NotificationItem({ notif }: { notif: GameNotification }) {
 			className={`flex items-center gap-3 px-4 py-3 rounded-xl border-2 transform ${colorStyle} ${
 				isExiting ? styles.notificationExit : styles.notificationEnter
 			}`}
+			role="status"
+			aria-live="polite"
+			aria-atomic="true"
 		>
-			<div className="shrink-0 flex items-center justify-center opacity-90">
+			<div
+				className="shrink-0 flex items-center justify-center opacity-90"
+				aria-hidden="true"
+			>
 				<Icon size={18} />
 			</div>
 			<p className="text-sm font-bold leading-tight font-sans">
@@ -78,7 +84,11 @@ export function NotificationStack() {
 	const notifications = useNotificationStore((state) => state.notifications);
 
 	return (
-		<div className="fixed top-24 right-4 z-50 flex flex-col gap-3 pointer-events-none w-64 items-end overflow-visible">
+		<div
+			className="fixed top-24 right-4 z-50 flex flex-col gap-3 pointer-events-none w-64 items-end overflow-visible"
+			role="region"
+			aria-label="Notificaciones del juego"
+		>
 			{notifications.map((notif) => (
 				<NotificationItem key={notif.id} notif={notif} />
 			))}

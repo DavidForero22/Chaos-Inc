@@ -1,4 +1,5 @@
 // src/pages/WaitingRoomPage.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -101,15 +102,24 @@ export default function WaitingRoomPage() {
 	if (isSocialAuthPending) {
 		return (
 			<WallLayout boardWidth="500px">
-				<div className="flex flex-col items-center justify-center text-center">
-					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4" />
+				<main
+					className="flex flex-col items-center justify-center text-center"
+					role="status"
+					aria-live="polite"
+					aria-label="Validando credenciales"
+					aria-busy="true"
+				>
+					<div
+						className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"
+						aria-hidden="true"
+					/>
 					<p
 						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
 					>
 						Validando credenciales corporativas...
 					</p>
-				</div>
+				</main>
 			</WallLayout>
 		);
 	}
@@ -118,8 +128,17 @@ export default function WaitingRoomPage() {
 	if (isJoining) {
 		return (
 			<WallLayout boardWidth="500px">
-				<div className="flex flex-col items-center justify-center text-center">
-					<div className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4" />
+				<main
+					className="flex flex-col items-center justify-center text-center"
+					role="status"
+					aria-live="polite"
+					aria-label="Conectando a la sala"
+					aria-busy="true"
+				>
+					<div
+						className="animate-spin inline-block w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"
+						aria-hidden="true"
+					/>
 					<p
 						className={`${styles.markerBlue} animate-pulse font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
@@ -133,7 +152,7 @@ export default function WaitingRoomPage() {
 							Esperando identificación...
 						</p>
 					)}
-				</div>
+				</main>
 			</WallLayout>
 		);
 	}
@@ -168,14 +187,20 @@ export default function WaitingRoomPage() {
 	if (!room) {
 		return (
 			<WallLayout boardWidth="500px">
-				<div className="text-center">
+				<main
+					className="text-center"
+					role="status"
+					aria-live="polite"
+					aria-label="Cargando datos de la sala"
+					aria-busy="true"
+				>
 					<p
 						className={`${styles.markerBlack} font-bold text-xl`}
 						style={{ fontFamily: "'Kalam', cursive" }}
 					>
 						Cargando datos de la sala...
 					</p>
-				</div>
+				</main>
 			</WallLayout>
 		);
 	}
@@ -185,109 +210,128 @@ export default function WaitingRoomPage() {
 
 	return (
 		<WallLayout>
-			<div className="flex flex-col items-center">
-				<h1 className={`${styles.title} ${styles.markerBlack} mb-0`}>
-					SALA: <span className={styles.markerBlue}>{room.name}</span>
-				</h1>
-				{/* --- INDICADOR DE MODO PRUEBA --- */}
-				{isDebugRoom && (
-					<span
-						className="mt-2"
-						style={{
-							display: "inline-flex",
-							alignItems: "center",
-							gap: "6px",
-							background: "#fef3c7",
-							border: "2px solid #b45309",
-							color: "#b45309",
-							fontWeight: "bold",
-							fontSize: "0.75rem",
-							letterSpacing: "0.1em",
-							padding: "4px 12px",
-							textTransform: "uppercase",
-						}}
-					>
-						<FaTools />
-						Partida de Pruebas
-					</span>
-				)}
-			</div>
-
-			{/* --- BOTÓN DE COMPARTIR --- */}
-			<div className="flex justify-center mb-10 mt-6">
-				<button
-					onClick={handleShare}
-					className={`${styles.markerBlack} flex items-center gap-3 px-4 py-2 border-2 border-dashed border-gray-400 rounded hover:bg-gray-100 transition-colors`}
-					title="Copiar enlace de la sala"
-				>
-					<span className={styles.subtitle} style={{ marginBottom: 0 }}>
-						CÓDIGO: <span className={styles.markerRed}>{id}</span>
-					</span>
-
-					{copied ? (
-						<span className="flex items-center gap-1 text-green-600 text-sm font-bold">
-							<FaCheck /> ¡Copiado!
-						</span>
-					) : (
-						<span className="flex items-center gap-1 text-gray-500 text-sm hover:text-blue-600 transition-colors">
-							<FaShareAlt /> Compartir
+			<main className="flex flex-col items-center">
+				<header className="text-center">
+					<h1 className={`${styles.title} ${styles.markerBlack} mb-0`}>
+						SALA: <span className={styles.markerBlue}>{room.name}</span>
+					</h1>
+					{/* --- INDICADOR DE MODO PRUEBA --- */}
+					{isDebugRoom && (
+						<span
+							className="mt-2"
+							style={{
+								display: "inline-flex",
+								alignItems: "center",
+								gap: "6px",
+								background: "#fef3c7",
+								border: "2px solid #b45309",
+								color: "#b45309",
+								fontWeight: "bold",
+								fontSize: "0.75rem",
+								letterSpacing: "0.1em",
+								padding: "4px 12px",
+								textTransform: "uppercase",
+							}}
+							aria-label="Partida de pruebas - modo debug"
+						>
+							<FaTools aria-hidden="true" />
+							Partida de Pruebas
 						</span>
 					)}
-				</button>
-			</div>
+				</header>
 
-			<div className="flex justify-between items-end mb-2">
-				<h3
-					className={`${styles.markerBlack} font-black text-lg underline decoration-2`}
-				>
-					JUGADORES
-				</h3>
-				<span
-					className={`${styles.markerBlue} font-bold`}
-					style={{ fontFamily: "'Kalam', cursive", fontSize: "1.2rem" }}
-				>
-					{room.players.length} / {room.max_players}
-				</span>
-			</div>
+				{/* --- BOTÓN DE COMPARTIR --- */}
+				<div className="flex justify-center mb-10 mt-6">
+					<button
+						onClick={handleShare}
+						className={`${styles.markerBlack} flex items-center gap-3 px-4 py-2 border-2 border-dashed border-gray-400 rounded hover:bg-gray-100 transition-colors`}
+						title="Copiar enlace de la sala"
+						aria-label="Compartir enlace de la sala"
+						aria-live="polite"
+					>
+						<span className={styles.subtitle} style={{ marginBottom: 0 }}>
+							CÓDIGO: <span className={styles.markerRed}>{id}</span>
+						</span>
 
-			{/* Listado de jugadores */}
-			<BoardPlayerList
-				players={room.players}
-				maxPlayers={room.max_players}
-				ownerId={room.owner_id}
-				currentUserId={currentUserId}
-				onKickClick={onKickClick}
-			/>
+						{copied ? (
+							<span className="flex items-center gap-1 text-green-600 text-sm font-bold">
+								<FaCheck aria-hidden="true" /> ¡Copiado!
+							</span>
+						) : (
+							<span className="flex items-center gap-1 text-gray-500 text-sm hover:text-blue-600 transition-colors">
+								<FaShareAlt aria-hidden="true" /> Compartir
+							</span>
+						)}
+					</button>
+				</div>
 
-			<div className="flex justify-between items-center mt-12 border-t-2 border-gray-300 pt-6">
-				<button
-					onClick={onLeaveClick}
-					className={`${styles.btnBase} ${styles.btnLeave}`}
-				>
-					Abandonar Sala
-				</button>
+				{/* Sección de jugadores */}
+				<section aria-label="Lista de jugadores en la sala">
+					<div className="flex justify-between items-end mb-2">
+						<h3
+							className={`${styles.markerBlack} font-black text-lg underline decoration-2`}
+						>
+							JUGADORES
+						</h3>
+						<span
+							className={`${styles.markerBlue} font-bold`}
+							style={{ fontFamily: "'Kalam', cursive", fontSize: "1.2rem" }}
+							aria-label={`${room.players.length} de ${room.max_players} jugadores`}
+						>
+							{room.players.length} / {room.max_players}
+						</span>
+					</div>
 
-				<button
-					onClick={startGame}
-					disabled={missingPlayers > 0 || !isOwner}
-					className={`${styles.btnBase} ${styles.btnStart}`}
-					title={
-						!isOwner
-							? "Solo el líder puede iniciar la partida"
-							: missingPlayers > 0
-								? `Faltan ${missingPlayers} para poder empezar`
-								: "Comenzar la partida"
-					}
-				>
-					{missingPlayers > 0
-						? missingPlayers === 1
-							? "Falta 1 jugador"
-							: `Faltan ${missingPlayers} jugadores`
-						: !isOwner
-							? "Esperando al líder..."
-							: "Empezar partida"}
-				</button>
-			</div>
+					{/* Listado de jugadores */}
+					<BoardPlayerList
+						players={room.players}
+						maxPlayers={room.max_players}
+						ownerId={room.owner_id}
+						currentUserId={currentUserId}
+						onKickClick={onKickClick}
+					/>
+				</section>
+
+				{/* Acciones de la sala */}
+				<footer className="flex justify-between items-center mt-12 border-t-2 border-gray-300 pt-6">
+					<button
+						onClick={onLeaveClick}
+						className={`${styles.btnBase} ${styles.btnLeave}`}
+						aria-label="Abandonar la sala"
+					>
+						Abandonar Sala
+					</button>
+
+					<button
+						onClick={startGame}
+						disabled={missingPlayers > 0 || !isOwner}
+						className={`${styles.btnBase} ${styles.btnStart}`}
+						title={
+							!isOwner
+								? "Solo el líder puede iniciar la partida"
+								: missingPlayers > 0
+									? `Faltan ${missingPlayers} para poder empezar`
+									: "Comenzar la partida"
+						}
+						aria-label={
+							!isOwner
+								? "Iniciar partida - Solo el líder puede hacerlo"
+								: missingPlayers > 0
+									? `Iniciar partida - Faltan ${missingPlayers} jugador${missingPlayers !== 1 ? "es" : ""}`
+									: "Iniciar partida"
+						}
+						aria-disabled={missingPlayers > 0 || !isOwner}
+					>
+						{missingPlayers > 0
+							? missingPlayers === 1
+								? "Falta 1 jugador"
+								: `Faltan ${missingPlayers} jugadores`
+							: !isOwner
+								? "Esperando al líder..."
+								: "Empezar partida"}
+					</button>
+				</footer>
+			</main>
 		</WallLayout>
 	);
 }

@@ -62,7 +62,7 @@ class ReconnectionService
             $needToResumeTimer = true;
         }
 
-        // 2. Si el Becario (Jefe Heredado) vuelve antes de que expire su gracia
+        // 2. Si el Becaria (Jefe Heredado) vuelve antes de que expire su gracia
         $actingGraceValue = Redis::get("room:{$roomId}:acting_boss_grace_period");
 
         if ((string) $actingGraceValue === (string) $playerId) {
@@ -72,7 +72,7 @@ class ReconnectionService
             $needToResumeTimer = true;
         }
 
-        // 3. Si el Secretario vuelve, prioriza sobre el Becario
+        // 3. Si el Secretario vuelve, prioriza sobre el Becaria
         if ($role === 'secretary') {
             RoomLogger::info($roomId, "ReconnectionService.php::handleReconnection: El secretario {$playerName} ({$playerId}) se reconectó, ejecutando evaluateSecretaryReturn.");
             $this->evaluateSecretaryReturn($roomId, $playerInfoKey);
@@ -156,7 +156,7 @@ class ReconnectionService
                     ($pData['role'] ?? '') === 'intern' &&
                     ($pData['acting_boss'] ?? '0') === '1'
                 ) {
-                    // Quitar el cargo al becario
+                    // Quitar el cargo al becaria
                     Redis::hset($pInfoKey, 'acting_boss', 0);
                 }
             }

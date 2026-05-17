@@ -1,6 +1,7 @@
 // src/components/profile/ProfileAchievements.tsx
+// Accesibilidad comprobada: SI
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
 	ACHIEVEMENTS,
 	type Achievement,
@@ -21,11 +22,14 @@ export default function ProfileAchievements({
 	const [selectedAchievement, setSelectedAchievement] =
 		useState<Achievement | null>(null);
 
+	// Referencia para el botón que abrió el modal (para restaurar el foco al cerrar)
+	const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+
 	const getImagePath = (path: string) =>
 		path.startsWith("/") ? path : `/${path}`;
 
 	const unactiveAch: UnactiveAchievement = {
-		title: "Proximamente...",
+		title: "Próximamente...",
 		technicalDescription: "¡Estamos trabajando en ello!",
 		image: "/achievements/ach_placeholder.png",
 	};
@@ -51,50 +55,88 @@ export default function ProfileAchievements({
 
 	useEffect(() => {
 		if (selectedAchievement) {
+			// Guardar el elemento que tenía el foco
+			lastFocusedElementRef.current = document.activeElement as HTMLElement;
 			document.body.style.overflow = "hidden";
+			// Añadir atributo ARIA para lectores de pantalla
+			document.body.setAttribute("aria-hidden", "true");
 		} else {
 			document.body.style.overflow = "auto";
+			document.body.removeAttribute("aria-hidden");
+			// Restaurar el foco al elemento que abrió el modal
+			if (lastFocusedElementRef.current) {
+				lastFocusedElementRef.current.focus();
+			}
 		}
 
 		return () => {
 			document.body.style.overflow = "auto";
+			document.body.removeAttribute("aria-hidden");
 		};
 	}, [selectedAchievement]);
 
 	// Función para cerrar el modal
 	const closeModal = () => setSelectedAchievement(null);
 
+	// Manejar tecla Escape para cerrar el modal
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Escape" && selectedAchievement) {
+			closeModal();
+		}
+	};
+
 	return (
-		<>
-			<h1 className={viewStyles.sectionLabel}>LOGROS</h1>
+		<section aria-labelledby="achievements-heading" onKeyDown={handleKeyDown}>
+			<h1 id="achievements-heading" className={viewStyles.sectionLabel}>
+				LOGROS
+			</h1>
+
 			<div className={styles.achievementsSection}>
-				<div className={styles.stickersGrid}>
+				<div
+					className={styles.stickersGrid}
+					role="list"
+					aria-label="Lista de logros"
+				>
 					{ACHIEVEMENTS.map((ach) => {
 						const isUnlocked = isAchievementUnlocked(ach.id);
 						const displayImage = getImagePath(ach.image);
+						const isActive = ach.active;
+
+						const title = isActive ? ach.title : unactiveAch.title;
+						const description = isActive
+							? ach.technicalDescription
+							: unactiveAch.technicalDescription;
+						const statusText = isUnlocked ? "desbloqueado" : "bloqueado";
 
 						if (isUnlocked) {
 							return (
 								/* ── PEGATINA DESBLOQUEADA ── */
 								<div
 									key={ach.id}
+									role="listitem"
 									className={styles.achStickerContainer}
-									title={
-										ach.active
-											? ach.technicalDescription
-											: unactiveAch.technicalDescription
-									}
-									onClick={() => setSelectedAchievement(ach)}
 								>
-									<img
-										src={
-											ach.active
-												? getImagePath(displayImage)
-												: getImagePath(unactiveAch.image)
-										}
-										alt={ach.active ? ach.title : unactiveAch.title}
-										className={styles.achSticker}
-									/>
+									<button
+										onClick={() => setSelectedAchievement(ach)}
+										className={styles.achStickerButton}
+										aria-label={`Ver detalles de ${title}, ${statusText}`}
+										aria-describedby={`achievement-desc-${ach.id}`}
+										title={description}
+									>
+										<img
+											src={getImagePath(displayImage)}
+											alt=""
+											aria-hidden="true"
+											className={styles.achSticker}
+										/>
+										<span className="visually-hidden">{title}</span>
+									</button>
+									<div
+										id={`achievement-desc-${ach.id}`}
+										className="visually-hidden"
+									>
+										{description}
+									</div>
 								</div>
 							);
 						} else {
@@ -102,29 +144,30 @@ export default function ProfileAchievements({
 								/* ── PEGATINA BLOQUEADA ── */
 								<div
 									key={`locked-${ach.id}`}
+									role="listitem"
 									className={styles.lockedStickerContainer}
-									title={
-										ach.active
-											? ach.technicalDescription
-											: unactiveAch.technicalDescription
-									}
-									onClick={() => setSelectedAchievement(ach)}
 								>
-									<img
-										src={
-											ach.active
-												? getImagePath(displayImage)
-												: unactiveAch.image
-										}
-										alt={
-											(ach.active ? ach.title : unactiveAch.title) +
-											"(Sin desbloquear)"
-										}
-										className={styles.lockedSticker}
-									/>
-									<div className={styles.lockedOverlay}>
-										<span>?</span>
-									</div>
+									<button
+										onClick={() => setSelectedAchievement(ach)}
+										className={styles.lockedStickerButton}
+										aria-label={`${title}, ${statusText}. ${description}`}
+										title={description}
+									>
+										<img
+											src={
+												isActive
+													? getImagePath(displayImage)
+													: unactiveAch.image
+											}
+											alt=""
+											aria-hidden="true"
+											className={styles.lockedSticker}
+										/>
+										<div className={styles.lockedOverlay} aria-hidden="true">
+											<span>🔒</span>
+										</div>
+										<span className="visually-hidden">{title} (bloqueado)</span>
+									</button>
 								</div>
 							);
 						}
@@ -133,35 +176,49 @@ export default function ProfileAchievements({
 
 				{/* ── MODAL DE DETALLES DEL LOGRO ── */}
 				{selectedAchievement && (
-					<div className={styles.modalOverlay} onClick={closeModal}>
-						{/* e.stopPropagation() evita que al hacer clic dentro del modal, este se cierre */}
+					<div
+						className={styles.modalOverlay}
+						onClick={closeModal}
+						role="dialog"
+						aria-modal="true"
+						aria-labelledby="modal-title"
+						aria-describedby="modal-description"
+					>
 						<div
 							className={styles.modalContent}
 							onClick={(e) => e.stopPropagation()}
+							role="document"
 						>
-							<button className={styles.closeButton} onClick={closeModal}>
-								✖
+							<button
+								className={styles.closeButton}
+								onClick={closeModal}
+								aria-label="Cerrar diálogo de logro"
+							>
+								<span aria-hidden="true">✖</span>
+								<span className="visually-hidden">Cerrar</span>
 							</button>
 
 							<div className={styles.modalHeader}>
 								<div className={styles.modalIconWrapper}>
 									<img
 										src={getImagePath(selectedAchievement.image)}
-										alt={selectedAchievement.title}
+										alt=""
+										aria-hidden="true"
 										className={
-											isAchievementUnlocked(selectedAchievement.id) || !selectedAchievement.active
+											isAchievementUnlocked(selectedAchievement.id) ||
+											!selectedAchievement.active
 												? styles.modalIcon
 												: `${styles.lockedSticker}`
 										}
 									/>
 								</div>
 								<div className={styles.modalTextInfo}>
-									<h3 className={styles.modalTitle}>
+									<h3 id="modal-title" className={styles.modalTitle}>
 										{selectedAchievement.active
 											? selectedAchievement.title
 											: unactiveAch.title}
 									</h3>
-									<p className={styles.modalDescription}>
+									<p id="modal-description" className={styles.modalDescription}>
 										{selectedAchievement.active
 											? selectedAchievement.technicalDescription
 											: unactiveAch.technicalDescription}
@@ -175,7 +232,7 @@ export default function ProfileAchievements({
 										"{selectedAchievement.lore}"
 									</p>
 									<p className={styles.modalDate}>
-										DESBLOQUEADO:{" "}
+										<strong>DESBLOQUEADO:</strong>{" "}
 										{isAchievementUnlocked(selectedAchievement.id)
 											? formatUnlockDate(
 													unlockedMap.get(selectedAchievement.id),
@@ -188,6 +245,6 @@ export default function ProfileAchievements({
 					</div>
 				)}
 			</div>
-		</>
+		</section>
 	);
 }

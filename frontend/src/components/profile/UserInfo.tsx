@@ -1,4 +1,5 @@
 // src/components/profile/UserInfo.tsx
+// Accesibilidad comprobada: SI
 
 import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
@@ -11,6 +12,7 @@ import type {
 } from "../../types/api";
 import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
+import { useEffect } from "react";
 
 const ACCOUNT_ROLE_CONFIG: Record<
 	string,
@@ -84,23 +86,55 @@ export default function UserInfo({
 	const roleConfig =
 		ACCOUNT_ROLE_CONFIG[displayRole ?? "user"] ?? ACCOUNT_ROLE_CONFIG.user;
 
+	// Anunciar carga de información del usuario
+	useEffect(() => {
+		const announcement = document.createElement("div");
+		announcement.setAttribute("role", "status");
+		announcement.setAttribute("aria-live", "polite");
+		announcement.className = "visually-hidden";
+		announcement.textContent = `Información del usuario ${displayUser} cargada`;
+		document.body.appendChild(announcement);
+		setTimeout(() => announcement.remove(), 2000);
+	}, [displayUser]);
+
 	return (
 		<>
 			<h1 className={viewStyles.sectionTitle}>INFORMACIÓN DEL USUARIO</h1>
 			<div className={styles.header}>
 				{/* ── FOTO TIPO POLAROID ── */}
 				<div className={styles.photoAttachment}>
-					<div className={styles.clip} />
+					<div className={styles.clip} aria-hidden="true" />
 					<div
 						className={styles.avatarContainer}
 						onClick={handleAvatarClick}
+						onKeyDown={(e) => {
+							if (!notMyProfile && (e.key === "Enter" || e.key === " ")) {
+								e.preventDefault();
+								handleAvatarClick();
+							}
+						}}
+						role={!notMyProfile ? "button" : undefined}
+						tabIndex={!notMyProfile ? 0 : undefined}
+						aria-label={
+							!notMyProfile
+								? "Actualizar foto de avatar"
+								: `Avatar de ${displayUser}`
+						}
 						title={
-							notMyProfile ? (displayUser ?? "") : "Actualizar foto de avatar"
+							!notMyProfile
+								? "Actualizar foto de avatar"
+								: `Avatar de ${displayUser}`
 						}
 						style={notMyProfile ? { cursor: "default" } : undefined}
 					>
 						{isUploading ? (
-							<div className={styles.avatarFallback}>⏳</div>
+							<div
+								className={styles.avatarFallback}
+								aria-label="Cargando avatar"
+								role="status"
+							>
+								⏳
+							</div>
 						) : avatarUrl ? (
 							<img
 								src={avatarUrl}
@@ -109,10 +143,15 @@ export default function UserInfo({
 								referrerPolicy="no-referrer"
 							/>
 						) : (
-							<div className={styles.avatarFallback}>{initials}</div>
+							<div
+								className={styles.avatarFallback}
+								aria-label={`Avatar iniciales ${initials}`}
+							>
+								{initials}
+							</div>
 						)}
 						{!notMyProfile && (
-							<div className={styles.avatarOverlay}>
+							<div className={styles.avatarOverlay} aria-hidden="true">
 								ACTUALIZAR
 								<br />
 								FOTO
@@ -124,24 +163,36 @@ export default function UserInfo({
 				{/* ── DATOS DEL EMPLEADO ── */}
 				<div className={styles.employeeData}>
 					<div className={styles.formGroup}>
-						<label>NOMBRE DEL SUJETO:</label>
+						<label id="user-name-label" htmlFor="user-name">
+							NOMBRE DEL SUJETO:
+						</label>
 						<div className={styles.formValue}>
-							<h1 className={styles.employeeName}>{displayUser}</h1>
+							<h1
+								id="user-name"
+								className={styles.employeeName}
+								aria-labelledby="user-name-label"
+							>
+								{displayUser}
+							</h1>
 						</div>
 					</div>
 
 					<div className={styles.formRow}>
 						<div className={styles.formGroup}>
-							<label>NIVEL DEL EMPLEADO:</label>
-							<div className={`${styles.roleBadge} ${roleConfig.badgeClass}`}>
+							<label id="user-role-label">NIVEL DEL EMPLEADO:</label>
+							<div
+								className={`${styles.roleBadge} ${roleConfig.badgeClass}`}
+								role="status"
+								aria-labelledby="user-role-label"
+							>
 								{roleConfig.label}
 							</div>
 						</div>
 					</div>
 
 					<div className={styles.formGroupInline}>
-						<label>FECHA DE REGISTRO:</label>
-						<strong>
+						<label id="join-date-label">FECHA DE REGISTRO:</label>
+						<strong aria-labelledby="join-date-label">
 							{displayJoinedAt
 								? new Date(displayJoinedAt).toLocaleDateString("es-ES")
 								: "REGISTRO DESCONOCIDO"}
@@ -151,18 +202,22 @@ export default function UserInfo({
 					{/* ── CUENTAS VINCULADAS ── */}
 					{!notMyProfile && (
 						<div className={styles.linkedAccountsSection}>
-							<label>CUENTAS VINCULADAS:</label>
-							<div className={styles.providerContainer}>
+							<label id="linked-accounts-label">CUENTAS VINCULADAS:</label>
+							<div
+								className={styles.providerContainer}
+								role="group"
+								aria-labelledby="linked-accounts-label"
+							>
 								<button
 									type="button"
 									onClick={() =>
 										handleProviderClick("discord", isDiscordLinked)
 									}
 									className={`${styles.providerBadge} ${styles.badgeDiscord} ${!isDiscordLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
-									title={
+									aria-label={
 										isDiscordLinked
-											? "Desvincular Discord"
-											: "Conectar con Discord"
+											? "Desvincular cuenta de Discord"
+											: "Conectar cuenta de Discord"
 									}
 								>
 									DISCORD
@@ -171,10 +226,10 @@ export default function UserInfo({
 									type="button"
 									onClick={() => handleProviderClick("google", isGoogleLinked)}
 									className={`${styles.providerBadge} ${styles.badgeGoogle} ${!isGoogleLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
-									title={
+									aria-label={
 										isGoogleLinked
-											? "Desvincular Google"
-											: "Conectar con Google"
+											? "Desvincular cuenta de Google"
+											: "Conectar cuenta de Google"
 									}
 								>
 									GOOGLE
@@ -191,6 +246,8 @@ export default function UserInfo({
 						style={{ display: "none" }}
 						accept="image/jpeg, image/png, image/webp"
 						onChange={handleFileChange}
+						aria-hidden="true"
+						tabIndex={-1}
 					/>
 				)}
 			</div>
@@ -222,26 +279,36 @@ export default function UserInfo({
 					submitText="Subir foto manual"
 				>
 					<div className="flex flex-col gap-3 py-2">
-						<p className="text-sm font-bold text-gray-600 mb-2 font-mono">
+						<p
+							className="text-sm font-bold text-gray-600 mb-2 font-mono"
+							id="avatar-options-label"
+						>
 							Opciones disponibles:
 						</p>
 
-						{socialAccounts?.map((acc) => (
-							<button
-								key={acc.provider}
-								type="button"
-								onClick={() =>
-									handleSelectProviderAvatar(acc.provider, acc.avatar)
-								}
-								className={`w-full py-3 px-4 font-black text-white text-sm uppercase tracking-wider rounded border flex justify-center items-center gap-2 transition-transform hover:scale-[1.02] ${
-									acc.provider === "discord"
-										? "bg-[#5865f2] border-[#4752c4]"
-										: "bg-[#db4437] border-[#b0362c]"
-								}`}
-							>
-								Usar avatar de {acc.provider}
-							</button>
-						))}
+						<div
+							className="flex flex-col gap-3"
+							role="group"
+							aria-labelledby="avatar-options-label"
+						>
+							{socialAccounts?.map((acc) => (
+								<button
+									key={acc.provider}
+									type="button"
+									onClick={() =>
+										handleSelectProviderAvatar(acc.provider, acc.avatar)
+									}
+									className={`w-full py-3 px-4 font-black text-white text-sm uppercase tracking-wider rounded border flex justify-center items-center gap-2 transition-transform hover:scale-[1.02] ${
+										acc.provider === "discord"
+											? "bg-[#5865f2] border-[#4752c4]"
+											: "bg-[#db4437] border-[#b0362c]"
+									}`}
+									aria-label={`Usar avatar de ${acc.provider}`}
+								>
+									Usar avatar de {acc.provider}
+								</button>
+							))}
+						</div>
 					</div>
 				</ModalLayout>
 			)}
@@ -280,7 +347,11 @@ export default function UserInfo({
 					loadingText="Procesando..."
 				>
 					<div className="flex flex-col gap-4 py-2">
-						<div className={`border-2 border-[#d32f2f] bg-[#d32f2f]/10 p-3`}>
+						<div
+							className={`border-2 border-[#d32f2f] bg-[#d32f2f]/10 p-3`}
+							role="alert"
+							aria-live="assertive"
+						>
 							<p className="text-sm font-bold text-[#b71c1c] text-justify font-mono leading-tight">
 								ALERTA: Esta es tu última cuenta vinculada y no tienes una
 								contraseña establecida. Si desvinculas{" "}
@@ -290,8 +361,11 @@ export default function UserInfo({
 						</div>
 
 						<div className={styles.formGroup}>
-							<label className={styles.label}>NUEVA CONTRASEÑA</label>
+							<label className={styles.label} htmlFor="security-password">
+								NUEVA CONTRASEÑA
+							</label>
 							<input
+								id="security-password"
 								type="password"
 								className={`${styles.input} ${unlinkPasswordError ? "border-[#d32f2f]" : ""}`}
 								value={unlinkPassword}
@@ -299,9 +373,16 @@ export default function UserInfo({
 								placeholder="Mínimo 8 caracteres"
 								required
 								minLength={8}
+								aria-describedby={
+									unlinkPasswordError ? "password-error" : undefined
+								}
 							/>
 							{unlinkPasswordError && (
-								<p className="text-[#d32f2f] text-xs font-bold mt-1 font-mono">
+								<p
+									id="password-error"
+									className="text-[#d32f2f] text-xs font-bold mt-1 font-mono"
+									role="alert"
+								>
 									{unlinkPasswordError}
 								</p>
 							)}

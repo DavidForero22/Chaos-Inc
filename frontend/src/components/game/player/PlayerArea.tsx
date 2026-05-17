@@ -1,4 +1,5 @@
 // src/components/game/player/PlayerArea.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useState, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
@@ -118,62 +119,78 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		isDiscardMode && !me.conditions.must_discard && activePerks.length > 0;
 
 	return (
-		<div
+		<section
+			aria-label="Área del Jugador"
 			className={`${styles.folderWrapper} ${isFolderExpanded ? styles.folderExpanded : styles.folderClosed}`}
 		>
 			{/* HOJA FLOTANTE PARA DESCARTAR PASIVAS */}
 			<div
+				aria-hidden={!showPerksDiscardSheet}
 				className={`lg:hidden absolute right-4 lg:right-10 z-0 transition-all duration-500 origin-bottom flex flex-col items-center
-                ${showPerksDiscardSheet ? "-top-17.5 lg:-top-27.5" : "top-2 pointer-events-none"}`}
+                ${showPerksDiscardSheet ? "-top-17.5 lg:-top-27.5" : "top-2 pointer-events-none opacity-0"}`}
 			>
-				{/* El papelito */}
 				<div className="bg-[#f8f9f8] border border-[#c7c9c7] px-4 py-3 rounded-sm shadow-md flex flex-col items-center gap-2 transform rotate-3">
 					<span className="text-[10px] uppercase font-bold text-red-600 border-b border-red-600/30 w-full text-center pb-1">
 						Pasivas activas
 					</span>
-					<div className="flex gap-2">
+					<ul className="flex gap-2 m-0 p-0 list-none">
 						{activePerks.map((perk) => (
-							<PerkSlot
-								key={`discard-${perk.id}`}
-								id={perk.id}
-								icon={perk.icon}
-								title={perk.title}
-								isUnderSabotage={false}
-							/>
+							<li key={`discard-${perk.id}`}>
+								<PerkSlot
+									id={perk.id}
+									icon={perk.icon}
+									title={perk.title}
+									isUnderSabotage={false}
+								/>
+							</li>
 						))}
-					</div>
-				</div>{" "}
+					</ul>
+				</div>
 			</div>
 
 			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
 			<div className={styles.folderBackground}>
-				{/* Pestañas para MÓVIL - Se DESHABILITAN visualmente en modo apuntado */}
+				{/* Pestañas para MÓVIL */}
 				<div
+					role="tablist"
+					aria-label="Vistas del jugador"
 					className={`absolute -top-8 left-4 z-0 flex gap-2 lg:hidden transition-opacity ${isTargetingMode ? "opacity-30 cursor-not-allowed" : "opacity-100"}`}
 				>
 					<button
+						role="tab"
+						id="tab-stats"
+						aria-controls="panel-stats"
+						aria-selected={activeTab === "stats"}
+						disabled={isTargetingMode}
 						onClick={() => handleTabClick("stats")}
-						tabIndex={isTargetingMode ? -1 : 0}
-						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""}`}
+						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-[#393e42]`}
 					>
-						<div className="flex items-center gap-1.5">Expediente</div>
+						Expediente
 					</button>
 					<button
+						role="tab"
+						id="tab-hand"
+						aria-controls="panel-hand"
+						aria-selected={activeTab === "hand"}
+						disabled={isTargetingMode}
 						onClick={() => handleTabClick("hand")}
-						tabIndex={isTargetingMode ? -1 : 0}
-						className={`${styles.mobileTab} ${activeTab === "hand" ? styles.activeTab : ""}`}
+						className={`${styles.mobileTab} ${activeTab === "hand" ? styles.activeTab : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-[#393e42]`}
 					>
 						Mano ({me.cards.length})
 					</button>
 				</div>
+
 				<PlayerTimer
 					turnTimeLeft={turnTimeLeft}
 					isTurnPaused={isTurnPaused}
 					className="absolute -top-7 left-62 z-50 lg:hidden"
 				/>
 
-				<div className={`${styles.tabRight} hidden lg:block`}></div>
-				<div className={styles.texture} />
+				<div
+					className={`${styles.tabRight} hidden lg:block`}
+					aria-hidden="true"
+				></div>
+				<div className={styles.texture} aria-hidden="true" />
 			</div>
 
 			{/* --- CONTENIDO DE LA CARPETA --- */}
@@ -182,10 +199,22 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					<PlayerBanners me={me} />
 				</div>
 
+				{/* Panel 1: Estadísticas (Expediente) */}
 				<div
+					id="panel-stats"
+					role="tabpanel"
+					aria-labelledby="tab-stats"
+					hidden={
+						activeTab !== "stats" &&
+						typeof window !== "undefined" &&
+						window.innerWidth < 1024
+					} 
 					className={`shrink-0 z-40 w-full lg:w-65 h-[99%] lg:-mt-6 transform lg:rotate-2 relative ${activeTab === "stats" ? "block" : "hidden lg:block"}`}
 				>
-					<div className="hidden lg:block absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2"></div>
+					<div
+						aria-hidden="true"
+						className="hidden lg:block absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2"
+					></div>
 					<PlayerStats
 						me={me}
 						turnTimeLeft={turnTimeLeft}
@@ -194,13 +223,22 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					/>
 				</div>
 
+				{/* Panel 2: Acciones y Mano */}
 				<div
+					id="panel-hand"
+					role="tabpanel"
+					aria-labelledby="tab-hand"
+					hidden={
+						activeTab !== "hand" &&
+						typeof window !== "undefined" &&
+						window.innerWidth < 1024
+					}
 					className={`flex-1 min-w-0 h-full relative z-20 flex-col justify-start pb-2 pt-2 lg:pt-6 ${activeTab === "hand" ? "flex" : "hidden lg:flex"}`}
 				>
 					<PlayerActions />
 					<PlayerHand />
 				</div>
 			</div>
-		</div>
+		</section>
 	);
 }

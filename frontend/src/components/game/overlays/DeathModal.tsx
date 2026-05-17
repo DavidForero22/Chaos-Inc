@@ -1,4 +1,5 @@
 // src/components/game/modals/DeathModal.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +17,7 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 	// Referencia para el foco inicial
 	const spectatorBtnRef = useRef<HTMLButtonElement>(null);
 
-	// Mover el foco al botón principal al abrir 
+	// Mover el foco al botón principal al abrir
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			spectatorBtnRef.current?.focus();
@@ -33,13 +34,12 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 	};
 
 	return (
-		<Modal maxWidth="max-w-md">
-			<div
-				role="alert"
-				aria-live="assertive"
-				aria-labelledby="death-title"
-				aria-describedby="death-desc"
-			>
+		<Modal
+			maxWidth="max-w-md"
+			ariaLabelledBy="death-title"
+			ariaDescribedBy="death-desc"
+		>
+			<div>
 				<div className="text-center border-b border-gray-700 pb-4 mb-4">
 					<h2
 						id="death-title"
@@ -68,14 +68,14 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 							ref={spectatorBtnRef}
 							type="button"
 							onClick={onClose}
-							className="px-5 py-2.5 rounded bg-blue-600 text-white font-bold uppercase tracking-wider transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-[#1a1a1a] shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+							className="px-5 py-2.5 rounded bg-blue-600 text-white font-bold uppercase tracking-wider transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a] shadow-[0_0_15px_rgba(37,99,235,0.4)]"
 						>
 							Quedarse de espectador
 						</button>
 						<button
 							type="button"
 							onClick={handleLeaveGame}
-							className="px-5 py-2.5 rounded border border-red-600 bg-transparent text-red-500 font-bold uppercase tracking-wider transition-colors hover:bg-red-600/10 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a]"
+							className="px-5 py-2.5 rounded border border-red-600 bg-transparent text-red-500 font-bold uppercase tracking-wider transition-colors hover:bg-red-600/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]"
 						>
 							Abandonar partida
 						</button>

@@ -18,8 +18,8 @@ export function usePlayerStats(me: MyData) {
 	const roleConfig = {
 		boss: { color: "text-yellow-400", label: "JEFE" },
 		secretary: { color: "text-blue-400", label: "SECRETARIO" },
-		intern: { color: "text-green-400", label: "BECARIO" },
-		union: { color: "text-red-400", label: "SINDICALISTA" },
+		intern: { color: "text-green-400", label: "BECARIA" },
+		union: { color: "text-red-400", label: "SINDICATO" },
 	}[me.role] || { color: "text-gray-400", label: "DESCONOCIDO" };
 
 	const displayPerks = useMemo(() => {

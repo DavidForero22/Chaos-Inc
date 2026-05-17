@@ -1,6 +1,8 @@
 // src/components/game/player/PlayerTimer.tsx
+// Accesibilidad comprobada: SI
 
 import { useGameStore } from "../../../store/useGameStore.ts";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 interface PlayerTimerProps {
 	turnTimeLeft?: number | null;
@@ -40,6 +42,9 @@ export function PlayerTimer({
 
 	return (
 		<div
+			// Atributos semánticos clave para temporizadores
+			role="timer"
+			aria-atomic="true"
 			className={`px-3 py-1 font-bold text-sm shadow-md transform transition-colors border ${
 				isTurnPaused
 					? "bg-gray-300 border-gray-400 text-gray-700"
@@ -48,7 +53,19 @@ export function PlayerTimer({
 						: "bg-[#cbbe34] border-[#a89d2b] text-black"
 			} ${className}`}
 		>
-			{isTurnPaused ? "PAUSA" : `⏳ ${turnTimeLeft}s`}
+			{/* TEXTO PARA LECTOR DE PANTALLA */}
+			<span className={srOnlyStyles.srOnly}>
+				{isTurnPaused
+					? "El turno está en pausa."
+					: isLowTime
+						? `¡Poco tiempo! Quedan ${turnTimeLeft} segundos.`
+						: `Tiempo restante: ${turnTimeLeft} segundos.`}
+			</span>
+
+			{/* CONTENIDO VISUAL (Oculto a la voz para evitar redundancia y ruido de emojis) */}
+			<span aria-hidden="true">
+				{isTurnPaused ? "PAUSA" : `⏳ ${turnTimeLeft}s`}
+			</span>
 		</div>
 	);
 }

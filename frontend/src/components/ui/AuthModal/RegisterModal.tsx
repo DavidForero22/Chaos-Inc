@@ -1,3 +1,5 @@
+// Accesibilidad comprobada: SI
+
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import ModalLayout from "../ModalLayout.tsx";
@@ -84,10 +86,16 @@ export default function RegisterModal({
 				)
 			}
 		>
+			{/* Campo: Nombre de Usuario */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>1.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					1.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={`${styles.label} ${styles.labelFirst}`}>
+					<label
+						className={`${styles.label} ${styles.labelFirst}`}
+						id="username-label"
+					>
 						Nombre de Usuario *
 					</label>
 					<input
@@ -102,14 +110,25 @@ export default function RegisterModal({
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, username: e.target.value }))
 						}
+						aria-labelledby="username-label"
+						aria-required="true"
+						aria-describedby="username-hint"
 					/>
+					<p id="username-hint" className={styles.hint} aria-live="polite">
+						3-30 caracteres.
+					</p>
 				</div>
 			</div>
 
+			{/* Campo: Correo Electrónico */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>2.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					2.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Correo Electrónico *</label>
+					<label className={styles.label} id="email-label">
+						Correo Electrónico *
+					</label>
 					<input
 						className={styles.input}
 						type="email"
@@ -121,14 +140,21 @@ export default function RegisterModal({
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, email: e.target.value }))
 						}
+						aria-labelledby="email-label"
+						aria-required="true"
 					/>
 				</div>
 			</div>
 
+			{/* Campo: Contraseña */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>3.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					3.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Contraseña *</label>
+					<label className={styles.label} id="password-label">
+						Contraseña *
+					</label>
 					<input
 						className={styles.input}
 						type="password"
@@ -140,15 +166,25 @@ export default function RegisterModal({
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, password: e.target.value }))
 						}
+						aria-labelledby="password-label"
+						aria-required="true"
+						aria-describedby="password-hint"
 					/>
-					<p className={styles.hint}>Mínimo 8 caracteres.</p>
+					<p id="password-hint" className={styles.hint} aria-live="polite">
+						Mínimo 8 caracteres.
+					</p>
 				</div>
 			</div>
 
+			{/* Campo: Confirmar Contraseña */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>4.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					4.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Confirmar Contraseña *</label>
+					<label className={styles.label} id="confirm-password-label">
+						Confirmar Contraseña *
+					</label>
 					<input
 						className={styles.input}
 						type="password"
@@ -160,15 +196,17 @@ export default function RegisterModal({
 						onChange={(e) =>
 							setForm((prev) => ({ ...prev, confirmPassword: e.target.value }))
 						}
+						aria-labelledby="confirm-password-label"
+						aria-required="true"
 					/>
 				</div>
 			</div>
 
 			{/* Separador OAuth */}
-			<div className={styles.socialDivider}>
-				<div className={styles.socialDividerLine} />
+			<div className={styles.socialDivider} role="separator">
+				<div className={styles.socialDividerLine} aria-hidden="true" />
 				<span className={styles.socialDividerText}>o regístrate con</span>
-				<div className={styles.socialDividerLine} />
+				<div className={styles.socialDividerLine} aria-hidden="true" />
 			</div>
 
 			{/* Botones OAuth */}
@@ -177,21 +215,28 @@ export default function RegisterModal({
 					type="button"
 					className={`${styles.btnSocial} ${styles.btnGoogle}`}
 					onClick={() => handleSocialLogin("google")}
+					aria-label="Registrarse con Google"
 				>
-					<GoogleIcon />
+					<GoogleIcon aria-hidden="true" />
 					Google
 				</button>
 				<button
 					type="button"
 					className={`${styles.btnSocial} ${styles.btnDiscord}`}
 					onClick={() => handleSocialLogin("discord")}
+					aria-label="Registrarse con Discord"
 				>
-					<DiscordIcon />
+					<DiscordIcon aria-hidden="true" />
 					Discord
 				</button>
 			</div>
 
-			{error && <p className={styles.error}>⚠ {error}</p>}
+			{/* Mensaje de error */}
+			{error && (
+				<p className={styles.error} role="alert">
+					⚠ {error}
+				</p>
+			)}
 		</ModalLayout>
 	);
 }

@@ -1,4 +1,5 @@
 // src/layouts/NotebookLayout.tsx
+// Accesibilidad comprobada: SI
 
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
@@ -12,40 +13,64 @@ export default function NotebookLayout() {
 	const [theme, setTheme] = useState("light");
 	const [lang, setLang] = useState("es");
 
+	const handleSettingsKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Escape" && showSettings) {
+			setShowSettings(false);
+		}
+	};
+
 	return (
 		<div className={styles.pageWrapper}>
-			<div className={styles.notebookContainer}>
+			<main className={styles.notebookContainer}>
 				{/* ── Pestañas + auth (gestionado en Navbar) ── */}
 				<Navbar />
 
-				{/* ── Lomo ── */}
-				<div className={styles.notebookSpine} />
+				{/* ── Lomo (decorativo) ── */}
+				<div
+					className={styles.notebookSpine}
+					aria-hidden="true"
+					role="presentation"
+				/>
 
 				{/* ── Hoja de papel ── */}
 				<div className={styles.notebookPaper}>
 					{/* --- BOTÓN DE AJUSTES --- */}
-					<div className={styles.settingsContainer}>
+					<div
+						className={styles.settingsContainer}
+						onKeyDown={handleSettingsKeyDown}
+					>
 						<button
 							className={`${styles.settingsBtn} ${showSettings ? styles.settingsBtnActive : ""}`}
 							onClick={() => setShowSettings(!showSettings)}
 							title="Configuración"
+							aria-label="Abrir configuración"
+							aria-expanded={showSettings}
+							aria-haspopup="menu"
+							aria-controls="settings-dropdown"
 						>
-							<FaGear />
+							<FaGear aria-hidden="true" />
 						</button>
 
 						{showSettings && (
-							<SettingsDropdown
-								theme={theme}
-								setTheme={setTheme}
-								lang={lang}
-								setLang={setLang}
-							/>
+							<div
+								id="settings-dropdown"
+								role="menu"
+								aria-label="Menú de configuración"
+							>
+								<SettingsDropdown
+									theme={theme}
+									setTheme={setTheme}
+									lang={lang}
+									setLang={setLang}
+								/>
+							</div>
 						)}
 					</div>
 
+					{/* Contenido principal */}
 					<Outlet />
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }

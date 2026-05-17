@@ -1,4 +1,5 @@
 // src/components/game/board/GameLog.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
 import { useGameUIStore } from "../../../store/useGameUIStore";

@@ -1,4 +1,5 @@
 // src/components/game/ui/GameBanners.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
@@ -19,10 +20,12 @@ function AnimatedBanner({
 	show,
 	message,
 	colorClass = "",
+	isAlert = false, // Permite distinguir entre alertas críticas y notificaciones
 }: {
 	show: boolean;
 	message: string;
 	colorClass?: string;
+	isAlert?: boolean;
 }) {
 	const [shouldRender, setShouldRender] = useState(show);
 	const [isExiting, setIsExiting] = useState(false);
@@ -32,9 +35,7 @@ function AnimatedBanner({
 			setShouldRender(true);
 			setIsExiting(false);
 		} else if (shouldRender) {
-			// Empezar la animación de salida
 			setIsExiting(true);
-			// 300ms es el tiempo que dura la animación CSS (pullUp)
 			const timer = setTimeout(() => {
 				setShouldRender(false);
 			}, 300);
@@ -46,9 +47,15 @@ function AnimatedBanner({
 
 	return (
 		<div
+			// --- ACCESIBILIDAD: Live Region dinámica ---
+			role={isAlert ? "alert" : "status"}
+			aria-live={isAlert ? "assertive" : "polite"}
 			className={`${styles.shoutRow} ${isExiting ? styles.slideOutTop : styles.slideInTop}`}
 		>
-			<div className={styles.megaphone}>📢</div>
+			{/* Ocultar el emoji al lector de pantalla */}
+			<div className={styles.megaphone} aria-hidden="true">
+				📢
+			</div>
 			<div className={`${styles.shoutBubble} ${colorClass}`}>{message}</div>
 		</div>
 	);
@@ -68,10 +75,6 @@ export function GameBanners({
 	if (!gameData) return null;
 	const { game, me } = gameData;
 
-	/**
-	 * Helper para obtener el nombre a partir de un ID
-	 * Buscar en la lista de oponentes o comprueba si soy yo.
-	 */
 	const getName = (id: string | null | undefined) => {
 		if (!id) return "Alguien";
 		if (String(id) === String(myId)) return me.name;
@@ -100,8 +103,10 @@ export function GameBanners({
 	);
 
 	return (
-		<div className={styles.bannersContainer}>
-			{/* NUEVOS BANNERS INFORMATIVOS */}
+		<section
+			aria-label="Anuncios de la partida"
+			className={styles.bannersContainer}
+		>
 			<AnimatedBanner
 				show={isSomeoneElseDefendingSingle}
 				message={`¡${getName(game.pending_single_attack_target)} ESTÁ DECIDIENDO SI ASUMIR EL ATAQUE!`}
@@ -112,6 +117,7 @@ export function GameBanners({
 				show={isSomeoneElseDefendingMulti}
 				message={`¡ALERTA! ¡ATAQUE MASIVO EN CURSO EN LA OFICINA!`}
 				colorClass={styles.bgAlert}
+				isAlert={true} // Urgente
 			/>
 
 			<AnimatedBanner
@@ -123,22 +129,26 @@ export function GameBanners({
 			<AnimatedBanner
 				show={showActingBossWaiting}
 				message={`¡EL JEFE EN FUNCIONES NO RESPONDE! ESPERANDO RECONEXIÓN...`}
+				isAlert={true} // Urgente
 			/>
 
 			<AnimatedBanner
 				show={showBossWaiting}
 				message={`¡EL JEFE SE HA DESCONECTADO! ESPERANDO SUCESIÓN...`}
+				isAlert={true} // Urgente
 			/>
 
 			<AnimatedBanner
 				show={showInheritanceBanner}
 				message={`¡EL TIEMPO EXPIRÓ! ALGUIEN HA HEREDADO EL CARGO EN SECRETO.`}
+				isAlert={true} // Urgente
 			/>
 
 			<AnimatedBanner
 				show={showEndingWaiting}
 				message={`¡LA PARTIDA SE CANCELARÁ POR ABANDONO EN 10 SEGUNDOS!`}
 				colorClass={styles.bgCritical}
+				isAlert={true} // Súper urgente
 			/>
 
 			<AnimatedBanner
@@ -157,7 +167,8 @@ export function GameBanners({
 				colorClass={
 					luckResult === "success" ? styles.bgSuccess : styles.bgCritical
 				}
+				isAlert={true} // Resultado crítico de tu acción
 			/>
-		</div>
+		</section>
 	);
 }

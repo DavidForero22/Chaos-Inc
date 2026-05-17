@@ -1,3 +1,6 @@
+// src/components/profile/GraphsProfile.tsx
+// Accesibilidad comprobada: SI
+
 import { useState } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
@@ -6,6 +9,8 @@ import { useProfileStats } from "../../hooks/profile/useProfileStats.ts";
 import { CARD_MAP } from "../../data/cards.ts";
 import styles from "./GraphsProfile.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
+
+import srOnlyStyles from "../../styles/sr-only.module.css";
 
 // ── Paleta temática ──────────────────────────────────────────────────────────
 const C = {
@@ -19,17 +24,17 @@ const C = {
 
 // ── Tipografía base para todos los gráficos ───────────────────────────────────
 const FONT = "'Courier New', Courier, monospace";
-const FONT_SM = 11; // etiquetas de ejes
-const FONT_XS = 10; // secundarias / unidades
-const FONT_LG = 13; // valores destacados sobre barras
-const FONT_TT = 13; // tooltips — más grande para ser legibles
+const FONT_SM = 11;
+const FONT_XS = 10;
+const FONT_LG = 13;
+const FONT_TT = 13;
 
 // ── Traducción de roles ───────────────────────────────────────────────────────
 const ROLE_MAP: Record<string, string> = {
-	intern: "BECARIO",
+	intern: "BECARIA",
 	boss: "JEFE",
 	secretary: "SECRETARIO",
-	union: "SINDICALISTA",
+	union: "SINDICATO",
 };
 const tr = (role: string) => ROLE_MAP[role.toLowerCase()] ?? role.toUpperCase();
 
@@ -47,7 +52,6 @@ const ECHARTS_BASE: Partial<EChartsOption> = {
 	textStyle: { fontFamily: FONT, color: C.dark, fontSize: FONT_SM },
 };
 
-// CSS seguro para tooltips (sin comillas internas que rompan el string)
 const TOOLTIP_CSS = `
 	font-family: Courier New, Courier, monospace;
 	font-size: ${FONT_TT}px;
@@ -60,13 +64,76 @@ const TOOLTIP_CSS = `
 	line-height: 1.7;
 `;
 
-// Configuración base de tooltip: monta en <body> para no quedar recortado
 const TOOLTIP_BASE = {
 	confine: false,
 	appendToBody: true,
 	textStyle: { fontFamily: FONT, fontSize: FONT_TT, color: C.dark },
 	extraCssText: TOOLTIP_CSS,
 };
+
+/* ── Helpers para descripciones accesibles de cada gráfico ───────────────── */
+
+function radarDescription(
+	stats: ReturnType<typeof useProfileStats>["basicStats"],
+) {
+	return [
+		`Daño infligido: ${stats.damage}`,
+		`Pasivas equipadas: ${stats.passives}`,
+		`Cartas robadas: ${stats.cardsStolen}`,
+		`Curación realizada: ${stats.healing}`,
+		`Ataques esquivados: ${stats.dodgedAttacks}`,
+	].join(". ");
+}
+
+function doughnutDescription(
+	data: { role: string; count: number }[],
+	total: number,
+) {
+	if (data.length === 0) return "Sin datos de roles jugados.";
+	return (
+		"Distribución de roles: " +
+		data
+			.map((d) => {
+				const pct = total > 0 ? ((d.count / total) * 100).toFixed(0) : 0;
+				return `${tr(d.role)}: ${d.count} partidas (${pct}%)`;
+			})
+			.join("; ")
+	);
+}
+
+function winrateDescription(
+	data: { role: string; winrate: number; total: number }[],
+) {
+	if (data.length === 0) return "Sin datos de eficacia por rol.";
+	return (
+		"Eficacia por rol: " +
+		data
+			.map((d) => `${tr(d.role)}: ${d.winrate}% en ${d.total} partidas`)
+			.join("; ")
+	);
+}
+
+function topCardsDescription(cards: { id: number; count: number }[]) {
+	if (cards.length === 0) return "Sin datos de cartas más usadas.";
+	return (
+		"Cartas más usadas: " +
+		cards
+			.map((c) => {
+				const name = CARD_MAP[c.id] ?? `Carta #${c.id}`;
+				return `${name}: ${c.count} usos`;
+			})
+			.join("; ")
+	);
+}
+
+function aliveDeadDescription(alive: number, dead: number, total: number) {
+	if (total === 0) return "Sin datos de supervivencia.";
+	const alivePct = ((alive / total) * 100).toFixed(0);
+	const deadPct = ((dead / total) * 100).toFixed(0);
+	return `Tasa de supervivencia: ${alive} victorias (${alivePct}%), ${dead} derrotas (${deadPct}%).`;
+}
+
+/* ── Componente principal ─────────────────────────────────────────────────── */
 
 interface GraphsProfileProps {
 	games: GameRecord[];
@@ -86,15 +153,13 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 		totalGames,
 	} = stats;
 
-	// ── Opciones ECharts ─────────────────────────────────────────────────────
+	// ── Opciones ECharts (sin cambios) ────────────────────────────────────
 
 	const radarOption: EChartsOption = {
 		...ECHARTS_BASE,
 		tooltip: {
 			...TOOLTIP_BASE,
-			// En series radar, trigger "item" recibe params como objeto único
 			trigger: "item",
-			// Tooltip del radar — mostrar valores reales
 			formatter: () => {
 				const rows: [string, number][] = [
 					["DAÑO INFLIGIDO", basicStats.damage],
@@ -140,7 +205,6 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 						itemStyle: { color: C.navy },
 						symbol: "circle",
 						symbolSize: 6,
-						// Sin labels inline: los valores normalizados confundían al usuario
 						label: { show: false },
 					},
 				],
@@ -365,72 +429,81 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 		],
 	};
 
-	// ── Render ───────────────────────────────────────────────────────────────
+	// ── Render principal ────────────────────────────────────────────────────
 	return (
-		<>
-			<h1 className={viewStyles.sectionTitle}>ESTADÍSTICAS DEL JUGADOR</h1>
-			<div className={viewStyles.section}>
-				{/* ── KPIs ── */}
-				<div className={styles.statsGrid}>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>PARTIDAS JUGADAS:</span>
-						<span className={styles.statValue}>{totalGames}</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>VICTORIAS REGISTRADAS:</span>
-						<span
-							className={`${styles.statValue} ${styles.statValueHighlight}`}
-						>
-							{basicStats.wins}
-						</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>DERROTAS REGISTRADAS:</span>
-						<span className={styles.statValue}>
-							{totalGames - basicStats.wins}
-						</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>JUGADORES ELIMINADOS:</span>
-						<span className={styles.statValue}>{basicStats.eliminations}</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>DAÑO INFLIGIDO (TOTAL):</span>
-						<span className={styles.statValue}>{basicStats.damage}</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>DAÑO RECIBIDO (TOTAL):</span>
-						<span className={styles.statValue}>{basicStats.received}</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>PRODUCTIVIDAD (CARTAS):</span>
-						<span className={styles.statValue}>{basicStats.cards}</span>
-					</div>
-					<div className={styles.statRow}>
-						<span className={styles.statLabel}>CURACIÓN APLICADA (TOTAL):</span>
-						<span className={styles.statValue}>{basicStats.healing}</span>
-					</div>
-				</div>
+		<section aria-labelledby="stats-title">
+			<h1 className={viewStyles.sectionTitle} id="stats-title">
+				ESTADÍSTICAS DEL JUGADOR
+			</h1>
 
-				{/* ── Botón expansión ── */}
+			<div className={viewStyles.section}>
+				{/* ── KPIs como lista de definición ── */}
+				<dl className={styles.statsGrid}>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>PARTIDAS JUGADAS:</dt>
+						<dd className={styles.statValue}>{totalGames}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>VICTORIAS REGISTRADAS:</dt>
+						<dd className={`${styles.statValue} ${styles.statValueHighlight}`}>
+							{basicStats.wins}
+						</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>DERROTAS REGISTRADAS:</dt>
+						<dd className={styles.statValue}>{totalGames - basicStats.wins}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>JUGADORES ELIMINADOS:</dt>
+						<dd className={styles.statValue}>{basicStats.eliminations}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>DAÑO INFLIGIDO (TOTAL):</dt>
+						<dd className={styles.statValue}>{basicStats.damage}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>DAÑO RECIBIDO (TOTAL):</dt>
+						<dd className={styles.statValue}>{basicStats.received}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>PRODUCTIVIDAD (CARTAS):</dt>
+						<dd className={styles.statValue}>{basicStats.cards}</dd>
+					</div>
+					<div className={styles.statRow}>
+						<dt className={styles.statLabel}>CURACIÓN APLICADA (TOTAL):</dt>
+						<dd className={styles.statValue}>{basicStats.healing}</dd>
+					</div>
+				</dl>
+
+				{/* ── Botón de expansión con aria ── */}
 				<button
 					className={styles.expandBtn}
 					onClick={() => setIsExpanded((v) => !v)}
+					aria-expanded={isExpanded}
+					aria-controls="advanced-stats"
 				>
 					{isExpanded
 						? "[-] CERRAR ESTADÍSTICAS AVANZADAS"
 						: "[+] ABRIR ESTADÍSTICAS AVANZADAS"}
 				</button>
 
-				{/* ── Contenedor expandible ── */}
+				{/* ── Contenedor expandible con rol region y aria-hidden ── */}
 				<div
+					id="advanced-stats"
 					className={`${styles.expandableWrapper} ${isExpanded ? styles.open : ""}`}
+					role="region"
+					aria-label="Estadísticas avanzadas"
+					aria-hidden={!isExpanded}
 				>
 					<div className={styles.expandedContentInner}>
 						{isExpanded && (
 							<div className={styles.chartsContainer}>
 								{totalGames === 0 ? (
-									<div className={styles.noData}>
+									<div
+										className={styles.noData}
+										role="status"
+										aria-live="polite"
+									>
 										<span className={styles.noDataStamp}>SIN DATOS</span>
 										<p className={styles.noDataText}>
 											HISTORIAL VACÍO. NO SE HAN REGISTRADO PARTIDAS PARA
@@ -449,21 +522,31 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— PERFIL DE JUGADOR —
 												</p>
-												<ReactECharts
-													option={radarOption}
-													style={{ height: 260 }}
-													opts={{ renderer: "svg" }}
-												/>
+												{/* Descripción accesible */}
+												<div className={srOnlyStyles.srOnly}>
+													{radarDescription(basicStats)}
+												</div>
+												<div aria-hidden="true">
+													<ReactECharts
+														option={radarOption}
+														style={{ height: 260 }}
+														opts={{ renderer: "svg" }}
+													/>
+												</div>
 											</div>
+
 											<div className={styles.chartBlock}>
-												<p className={styles.chartTitle}>
-													— ROLES JUGADOS —
-												</p>
-												<ReactECharts
-													option={doughnutOption}
-													style={{ height: 260 }}
-													opts={{ renderer: "svg" }}
-												/>
+												<p className={styles.chartTitle}>— ROLES JUGADOS —</p>
+												<div className={srOnlyStyles.srOnly}>
+													{doughnutDescription(roleDistribution, totalGames)}
+												</div>
+												<div aria-hidden="true">
+													<ReactECharts
+														option={doughnutOption}
+														style={{ height: 260 }}
+														opts={{ renderer: "svg" }}
+													/>
+												</div>
 											</div>
 										</div>
 
@@ -473,30 +556,45 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— EFICACIA POR ROL —
 												</p>
-												<ReactECharts
-													option={winrateOption}
-													style={{
-														height: Math.max(
-															180,
-															winrateByRole.length * 38 + 60,
-														),
-													}}
-													opts={{ renderer: "svg" }}
-												/>
+												<div className={srOnlyStyles.srOnly}>
+													{winrateDescription(winrateByRole)}
+												</div>
+												<div aria-hidden="true">
+													<ReactECharts
+														option={winrateOption}
+														style={{
+															height: Math.max(
+																180,
+																winrateByRole.length * 38 + 60,
+															),
+														}}
+														opts={{ renderer: "svg" }}
+													/>
+												</div>
 											</div>
+
 											<div className={styles.chartBlock}>
 												<p className={styles.chartTitle}>
 													— TASA DE SUPERVIVENCIA —
 												</p>
-												<ReactECharts
-													option={aliveDeadOption}
-													style={{ height: 220 }}
-													opts={{ renderer: "svg" }}
-												/>
+												<div className={srOnlyStyles.srOnly}>
+													{aliveDeadDescription(
+														aliveDeadData.alive,
+														aliveDeadData.dead,
+														totalGames,
+													)}
+												</div>
+												<div aria-hidden="true">
+													<ReactECharts
+														option={aliveDeadOption}
+														style={{ height: 220 }}
+														opts={{ renderer: "svg" }}
+													/>
+												</div>
 											</div>
 										</div>
 
-										{/* Fila 3: Top 5 cartas (ancho completo) */}
+										{/* Fila 3: Top 5 cartas */}
 										{topCards.length > 0 && (
 											<div
 												className={`${styles.chartBlock} ${styles.chartFull}`}
@@ -504,13 +602,18 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— CARTAS MÁS USADAS —
 												</p>
-												<ReactECharts
-													option={topCardsOption}
-													style={{
-														height: Math.max(200, topCards.length * 42 + 60),
-													}}
-													opts={{ renderer: "svg" }}
-												/>
+												<div className={srOnlyStyles.srOnly}>
+													{topCardsDescription(topCards)}
+												</div>
+												<div aria-hidden="true">
+													<ReactECharts
+														option={topCardsOption}
+														style={{
+															height: Math.max(200, topCards.length * 42 + 60),
+														}}
+														opts={{ renderer: "svg" }}
+													/>
+												</div>
 											</div>
 										)}
 									</>
@@ -519,7 +622,14 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 						)}
 					</div>
 				</div>
+
+				{/* Anuncio de cambio de estado cuando se expande/colapsa */}
+				<div className={srOnlyStyles.srOnly} aria-live="polite" aria-atomic="true">
+					{isExpanded
+						? "Sección de estadísticas avanzadas abierta."
+						: "Sección de estadísticas avanzadas cerrada."}
+				</div>
 			</div>
-		</>
+		</section>
 	);
 }

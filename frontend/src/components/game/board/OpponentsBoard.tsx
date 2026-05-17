@@ -1,4 +1,5 @@
 // src/components/game/board/OpponentsBoard.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "../../../store/useGameStore.ts";
@@ -24,7 +25,7 @@ export function OpponentsBoard({
 	const { selectedCardId, setSelectedCardId, isFolderExpanded } =
 		useGameUIStore();
 
-	// Guardamos el ancho para los rangos manuales. PC ahora es estrictamente >= 1050
+	// Guardar el ancho para los rangos manuales. PC ahora es estrictamente >= 1050
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 	const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1050);
 	const [isShortScreen, setIsShortScreen] = useState(window.innerHeight < 565);
@@ -32,7 +33,7 @@ export function OpponentsBoard({
 	useEffect(() => {
 		const handleResize = () => {
 			setScreenWidth(window.innerWidth);
-			setIsDesktop(window.innerWidth >= 1050); // Forzado a 1000px, adiós al salto raro de Tailwind
+			setIsDesktop(window.innerWidth >= 1050);
 			setIsShortScreen(window.innerHeight < 565);
 		};
 
@@ -69,12 +70,12 @@ export function OpponentsBoard({
 	let gapClass = "gap-3 sm:gap-6";
 
 	if (!isDesktop) {
-		// Reducimos el espacio entre cartas si hay muchos oponentes o es pantalla estrecha
+		// Reducir el espacio entre cartas si hay muchos oponentes o es pantalla estrecha
 		if (opponents.length >= 4 || screenWidth < 800) {
 			gapClass = "gap-1 sm:gap-2";
 		}
 
-		// 1. Definimos el escalado base exacto según tus medidas (cubriendo todos los rangos)
+		// Definir el escalado base exacto 
 		let currentScaleClosed = "scale-100";
 		let currentScaleOpen = "scale-75";
 
@@ -120,7 +121,8 @@ export function OpponentsBoard({
 
 	const containerClasses = `${scaleClass} ${translateClass} ${gapClass}`;
 
-	const opponentRefs = useRef<(HTMLDivElement | null)[]>([]);
+	// Cambiado a un array genérico de HTMLElement para soportar tanto divs como list items
+	const opponentRefs = useRef<(HTMLElement | null)[]>([]);
 	const isTargetingMode = selectedCard?.target === "opponent";
 
 	useEffect(() => {
@@ -146,27 +148,32 @@ export function OpponentsBoard({
 		if (firstValidIndex !== -1) {
 			setTimeout(() => {
 				const wrapper = opponentRefs.current[firstValidIndex];
-				const focusable = wrapper?.querySelector<HTMLElement>('[tabindex="0"]');
+				const focusable = wrapper?.querySelector<HTMLButtonElement>(
+					"button:not([disabled])",
+				);
 				focusable?.focus();
 			}, 50);
 		}
-	}, [isTargetingMode]);
+	}, [isTargetingMode, opponents, selectedCard]);
 
 	return (
 		<div className="absolute inset-0 pointer-events-none z-20">
 			{/* Mensaje flotante de apuntado */}
 			{isMyTurn && isTargetingCard && (
-				<div className="absolute top-16 lg:top-10 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-2 rounded shadow-lg font-bold animate-bounce z-30 border-2 border-black pointer-events-auto text-sm lg:text-base whitespace-nowrap">
+				<div
+					role="alert"
+					aria-live="assertive"
+					className="absolute top-16 lg:top-10 left-1/2 -translate-x-1/2 bg-yellow-500/90 text-black px-6 py-2 rounded shadow-lg font-bold animate-bounce z-30 border-2 border-black pointer-events-auto text-sm lg:text-base whitespace-nowrap"
+				>
 					{selectedCard?.card_id === 12
 						? "¡Elige una pasiva de un rival!"
 						: "¡Elige a un jugador objetivo!"}
 				</div>
 			)}
 
-			<div
-				// Aquí eliminé las clases 'lg:top-12', 'lg:inset-0' y 'lg:h-[50vh]' de Tailwind.
-				// Ahora el contenedor aplica sus estilos estrictamente si isDesktop (>= 1050) es true.
-				className={`w-full absolute flex items-center justify-center transition-all duration-500 origin-center pointer-events-none ${
+			<ul
+				aria-label="Tablero de oponentes"
+				className={`w-full absolute m-0 p-0 list-none flex items-center justify-center transition-all duration-500 origin-center pointer-events-none ${
 					isDesktop ? "top-12 inset-0 h-[50vh]" : "top-0 h-[calc(100dvh-25vh)]"
 				} ${containerClasses}`}
 			>
@@ -191,7 +198,7 @@ export function OpponentsBoard({
 					}
 
 					return (
-						<div
+						<li
 							key={player.id}
 							ref={(el) => {
 								opponentRefs.current[index] = el;
@@ -207,10 +214,10 @@ export function OpponentsBoard({
 								turnTimeLeft={turnTimeLeft}
 								isTurnPaused={isTurnPaused}
 							/>
-						</div>
+						</li>
 					);
 				})}
-			</div>
+			</ul>
 		</div>
 	);
 }

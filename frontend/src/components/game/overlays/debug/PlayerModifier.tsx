@@ -1,4 +1,5 @@
 // src/components/game/board/PlayerModifier.tsx
+// Accesibilidad comprobada: SI
 
 import { RiHeartLine, RiSkullLine } from "react-icons/ri";
 import { DebugCardSelector } from "./DebugCardSelector";
@@ -37,19 +38,25 @@ export function PlayerModifier({
 	const stressLevels = Array.from({ length: maxStress + 1 }, (_, i) => i);
 
 	return (
-		<section className="space-y-4 bg-[#0a0f0a] border border-green-900/50 p-4 rounded text-green-500">
-			<h3 className="font-bold text-sm flex items-center gap-2 text-green-400 uppercase tracking-widest">
+		<section
+			aria-labelledby="modifier-title"
+			className="space-y-4 bg-[#0a0f0a] border border-green-900/50 p-4 rounded text-green-500"
+		>
+			<h3
+				id="modifier-title"
+				className="font-bold text-sm flex items-center gap-2 text-green-400 uppercase tracking-widest m-0"
+			>
 				Modificar Jugador
 			</h3>
 
 			{/* Estrés */}
 			<div className="space-y-2">
-				<label
+				<span
 					id="label-stress"
-					className="text-xs font-semibold text-green-700 uppercase"
+					className="text-xs font-semibold text-green-700 uppercase block"
 				>
 					Nivel de Estrés (máx: {maxStress})
-				</label>
+				</span>
 				<div
 					className="flex gap-2 flex-wrap"
 					role="group"
@@ -58,9 +65,10 @@ export function PlayerModifier({
 					{stressLevels.map((level) => (
 						<button
 							key={level}
+							type="button"
 							onClick={() => onUpdateStress(level)}
 							aria-pressed={debugState.playerModifications.set_stress === level}
-							className={`px-3 py-1.5 text-xs font-bold rounded-sm border transition-colors focus:outline-none focus:ring-2 focus:ring-green-400 ${
+							className={`px-3 py-1.5 text-xs font-bold rounded-sm border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 ${
 								debugState.playerModifications.set_stress === level
 									? "bg-green-500 text-black border-green-500"
 									: "bg-transparent text-green-600 border-green-800 hover:bg-green-900/40 hover:text-green-400 hover:border-green-600"
@@ -70,28 +78,30 @@ export function PlayerModifier({
 						</button>
 					))}
 					<button
+						type="button"
 						onClick={() => onUpdateStress(undefined)}
 						aria-label="Restaurar estrés por defecto"
-						className="px-3 py-1.5 text-xs font-bold rounded-sm border bg-transparent text-green-800 border-green-900 hover:bg-red-900/30 hover:text-red-500 hover:border-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+						className="px-3 py-1.5 text-xs font-bold rounded-sm border bg-transparent text-green-800 border-green-900 hover:bg-red-900/30 hover:text-red-500 hover:border-red-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
 					>
-						X
+						<span aria-hidden="true">X</span>
 					</button>
 				</div>
 			</div>
 
 			{/* Vida / Muerte */}
 			<div className="space-y-2">
-				<label
+				<span
 					id="label-vital"
-					className="text-xs font-semibold text-green-700 uppercase"
+					className="text-xs font-semibold text-green-700 uppercase block"
 				>
 					ESTADO
-				</label>
+				</span>
 				<div className="flex gap-2" role="group" aria-labelledby="label-vital">
 					<button
+						type="button"
 						onClick={() => onUpdateIsDead(false)}
 						aria-pressed={debugState.playerModifications.set_is_dead === false}
-						className={`flex-1 px-3 py-2 text-xs font-bold rounded-sm border transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-400 ${
+						className={`flex-1 px-3 py-2 text-xs font-bold rounded-sm border transition-colors flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 ${
 							debugState.playerModifications.set_is_dead === false
 								? "bg-green-500 text-black border-green-500"
 								: "bg-transparent text-green-600 border-green-800 hover:bg-green-900/40 hover:text-green-400 hover:border-green-600"
@@ -101,9 +111,10 @@ export function PlayerModifier({
 						VIVO
 					</button>
 					<button
+						type="button"
 						onClick={() => onUpdateIsDead(true)}
 						aria-pressed={debugState.playerModifications.set_is_dead === true}
-						className={`flex-1 px-3 py-2 text-xs font-bold rounded-sm border transition-colors flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-green-400 ${
+						className={`flex-1 px-3 py-2 text-xs font-bold rounded-sm border transition-colors flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 ${
 							debugState.playerModifications.set_is_dead === true
 								? "bg-red-600 text-black border-red-600"
 								: "bg-transparent text-red-700 border-red-900 hover:bg-red-900/20 hover:text-red-500 hover:border-red-800"
@@ -113,34 +124,42 @@ export function PlayerModifier({
 						MUERTO
 					</button>
 					<button
+						type="button"
 						onClick={() => onUpdateIsDead(undefined)}
 						aria-label="Restaurar estado vital por defecto"
-						className="px-3 py-2 text-xs font-bold rounded-sm border bg-transparent text-green-800 border-green-900 hover:bg-red-900/30 hover:text-red-500 hover:border-red-800 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+						className="px-3 py-2 text-xs font-bold rounded-sm border bg-transparent text-green-800 border-green-900 hover:bg-red-900/30 hover:text-red-500 hover:border-red-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
 					>
-						X
+						<span aria-hidden="true">X</span>
 					</button>
 				</div>
 			</div>
 
 			{/* Añadir cartas */}
 			<div className="space-y-2">
-				<label className="text-xs font-semibold text-green-700 uppercase">
+				<span
+					id="label-cards"
+					className="text-xs font-semibold text-green-700 uppercase block"
+				>
 					Agregar Cartas
-				</label>
-				<DebugCardSelector
-					cardCatalog={cardCatalog}
-					isLoading={isLoadingCatalog}
-					selectedCards={debugState.playerModifications.add_cards || {}}
-					onUpdateQuantity={onUpdateCardQuantity}
-				/>
+				</span>
+				<div aria-labelledby="label-cards">
+					<DebugCardSelector
+						cardCatalog={cardCatalog}
+						isLoading={isLoadingCatalog}
+						selectedCards={debugState.playerModifications.add_cards || {}}
+						onUpdateQuantity={onUpdateCardQuantity}
+					/>
+				</div>
 			</div>
 
 			<button
+				type="button"
 				onClick={onSubmit}
 				disabled={isSubmitting}
-				className="w-full mt-4 px-3 py-2.5 bg-green-600 hover:bg-green-500 text-black text-xs font-black uppercase tracking-widest rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-[#0d1117]"
+				aria-busy={isSubmitting}
+				className="w-full mt-4 px-3 py-2.5 bg-green-600 hover:bg-green-500 text-black text-xs font-black uppercase tracking-widest rounded-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d1117]"
 			>
-				{isSubmitting ? "Ejecutando..." : "Ejecutar(Jugador)"}
+				{isSubmitting ? "Ejecutando..." : "Ejecutar (Jugador)"}
 			</button>
 		</section>
 	);

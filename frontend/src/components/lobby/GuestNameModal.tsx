@@ -1,3 +1,5 @@
+// Accesibilidad comprobada: SI
+
 import { useState } from "react";
 import api, { getCsrfCookie } from "../../api/axios";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -94,27 +96,39 @@ export default function GuestNameModal({
 				disableBackdropClick={true}
 			>
 				<div className={styles.fieldRow}>
-					<span className={styles.annexNum}>1.</span>
+					<span className={styles.annexNum} aria-hidden="true">
+						1.
+					</span>
 					<div className={styles.fieldWrap}>
-						<label className={`${styles.label} ${styles.labelFirst}`}>
+						<label
+							htmlFor="guest-username"
+							className={`${styles.label} ${styles.labelFirst}`}
+						>
 							Nombre Temporal
 						</label>
 						<input
+							id="guest-username"
 							className={styles.input}
 							type="text"
 							placeholder="Ingresa tu nombre..."
 							value={username}
 							onChange={(e) => setUsername(e.target.value)}
 							required
+							aria-required="true"
+							aria-describedby="guest-hint"
 							autoFocus
 							maxLength={15}
 						/>
-						<p className={styles.hint}>
+						<p id="guest-hint" className={styles.hint}>
 							Los progresos no se guardarán al finalizar la jornada.
 						</p>
 					</div>
 				</div>
-				{error && <p className={styles.error}>⚠ {error}</p>}
+				{error && (
+					<p className={styles.error} role="alert" aria-live="polite">
+						⚠ {error}
+					</p>
+				)}
 			</ModalLayout>
 		);
 	}
@@ -140,6 +154,7 @@ export default function GuestNameModal({
 					<button
 						type="button"
 						onClick={() => setView("login")}
+						aria-label="Iniciar sesión con cuenta existente"
 						className="flex-1 px-4 py-3 bg-[#393e42] hover:bg-[#2a2d30] text-[#d2d4d1] font-bold uppercase text-sm transition-all rounded-sm text-center"
 					>
 						Iniciar Sesión
@@ -147,47 +162,58 @@ export default function GuestNameModal({
 					<button
 						type="button"
 						onClick={() => setView("register")}
+						aria-label="Crear nueva cuenta"
 						className="flex-1 px-4 py-3 bg-[#393e42] hover:bg-[#2a2d30] text-[#d2d4d1] font-bold uppercase text-sm transition-all rounded-sm text-center"
 					>
 						Crear Cuenta
 					</button>
 				</div>
 
-				
-				<div className={styles.socialDivider}>
-					<div className={styles.socialDividerLine} />
+				<div
+					className={styles.socialDivider}
+					role="separator"
+					aria-label="o registrate con"
+				>
+					<div className={styles.socialDividerLine} aria-hidden="true" />
 					<span className={styles.socialDividerText}>o registrate con </span>
-					<div className={styles.socialDividerLine} />
+					<div className={styles.socialDividerLine} aria-hidden="true" />
 				</div>
 
 				<div className={styles.socialButtons}>
 					<button
 						type="button"
+						aria-label="Iniciar sesión con Google"
 						className={`${styles.btnSocial} ${styles.btnGoogle}`}
 						onClick={() => handleSocialLogin("google")}
 					>
-						<GoogleIcon />
+						<GoogleIcon aria-hidden="true" />
 						Google
 					</button>
 					<button
 						type="button"
+						aria-label="Iniciar sesión con Discord"
 						className={`${styles.btnSocial} ${styles.btnDiscord}`}
 						onClick={() => handleSocialLogin("discord")}
 					>
-						<DiscordIcon />
+						<DiscordIcon aria-hidden="true" />
 						Discord
 					</button>
 				</div>
 
-				<div className={styles.socialDivider}>
-					<div className={styles.socialDividerLine} />
+				<div
+					className={styles.socialDivider}
+					role="separator"
+					aria-label="o si lo prefieres"
+				>
+					<div className={styles.socialDividerLine} aria-hidden="true" />
 					<span className={styles.socialDividerText}>o si lo prefieres</span>
-					<div className={styles.socialDividerLine} />
+					<div className={styles.socialDividerLine} aria-hidden="true" />
 				</div>
 
 				<button
 					type="button"
 					onClick={() => setView("guest_input")}
+					aria-label="Entrar como invitado temporal sin crear cuenta"
 					className="px-6 py-3 bg-transparent border-2 border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42] font-bold uppercase text-sm transition-all rounded-sm w-full"
 				>
 					Entrar como Invitado Temporal

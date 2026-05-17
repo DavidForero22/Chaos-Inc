@@ -1,4 +1,5 @@
 // src/pages/MainMenuPage.tsx
+// Accesibilidad comprobada: SI
 
 export default function MainMenuPage() {
 	return (
@@ -36,14 +37,14 @@ export default function MainMenuPage() {
 				<p>
 					El objetivo principal de esta compañía no es la eficiencia productiva,
 					sino la gestión controlada de las dinámicas de poder en la oficina. Su
-					papel, ya sea como Jefe, Secretario, Becario o miembro del Sindicato,
+					papel, ya sea como Jefe, Secretario, Becaria o miembro del Sindicato,
 					requerirá astucia, cartas de acción y una tolerancia por encima de la
 					media al estrés laboral.
 				</p>
 
 				<p>
 					Las salas de reuniones (pestaña azul) son el campo de batalla. En
-					ellas, se le asignará un rol oculto. No confíe en nadie. El Becario
+					ellas, se le asignará un rol oculto. No confíe en nadie. El Becaria
 					podría estar planeando una revolución y el Sindicato podría estar
 					negociando a sus espaldas.
 				</p>

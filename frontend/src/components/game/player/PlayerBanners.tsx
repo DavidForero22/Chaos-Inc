@@ -1,6 +1,10 @@
+// src/components/game/player/PlayerBanners.tsx
+// Accesibilidad comprobada: SI
+
 import { useTimerStore } from "../../../store/useTimerStore.ts";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./PlayerBanners.module.css";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 interface PlayerBannersProps {
 	me: MyData;
@@ -19,16 +23,36 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 	);
 
 	return (
-		<div className={styles.bannersContainer}>
+		<aside
+			aria-label="Notificaciones críticas"
+			className={styles.bannersContainer}
+		>
 			{/* Ataque simple entrante */}
 			{me.combat_state.is_defending_single &&
 				singleAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
-						<div className={styles.header}>URGENTE</div>
+						{/* LA ALERTA: Se lee una sola vez al aparecer */}
+						<div role="alert" className={srOnlyStyles.srOnly}>
+							¡Alerta Urgente! Ataque entrante. Tienes tiempo limitado.
+						</div>
+
+						{/* LO VISUAL: Se oculta a la voz para evitar spam */}
+						<div aria-hidden="true" className={styles.header}>
+							URGENTE
+						</div>
 						<div className={styles.content}>
-							<span>¡Ataque entrante!</span>
-							<span className={styles.timerStamp}>
-								{singleAttackSecondsLeft}s
+							<span aria-hidden="true">¡Ataque entrante!</span>
+
+							{/* EL RELOJ: Manejado de forma independiente */}
+							<span
+								role="timer"
+								aria-atomic="true"
+								className={styles.timerStamp}
+							>
+								<span className={srOnlyStyles.srOnly}>
+									Tiempo restante: {singleAttackSecondsLeft} segundos
+								</span>
+								<span aria-hidden="true">{singleAttackSecondsLeft}s</span>
 							</span>
 						</div>
 					</div>
@@ -38,11 +62,24 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 			{me.combat_state.is_defending_multi &&
 				multiAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
-						<div className={styles.header}>URGENTE</div>
+						<div role="alert" className={srOnlyStyles.srOnly}>
+							¡Alerta Urgente! Ataque masivo entrante.
+						</div>
+
+						<div aria-hidden="true" className={styles.header}>
+							URGENTE
+						</div>
 						<div className={styles.content}>
-							<span>¡Ataque masivo entrante!</span>
-							<span className={styles.timerStamp}>
-								{multiAttackSecondsLeft}s
+							<span aria-hidden="true">¡Ataque masivo entrante!</span>
+							<span
+								role="timer"
+								aria-atomic="true"
+								className={styles.timerStamp}
+							>
+								<span className={srOnlyStyles.srOnly}>
+									Tiempo restante: {multiAttackSecondsLeft} segundos
+								</span>
+								<span aria-hidden="true">{multiAttackSecondsLeft}s</span>
 							</span>
 						</div>
 					</div>
@@ -51,17 +88,31 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 			{/* Sabotaje pendiente */}
 			{me.conditions.must_discard && sabotageSecondsLeft !== null && (
 				<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
-					<div className={`${styles.header} ${styles.headerOrange}`}>
+					<div role="alert" className={srOnlyStyles.srOnly}>
+						Notificación de sabotaje. ¡Descarta una carta inmediatamente!
+					</div>
+
+					<div
+						aria-hidden="true"
+						className={`${styles.header} ${styles.headerOrange}`}
+					>
 						NOTIFICACIÓN
 					</div>
 					<div className={styles.content}>
-						<span>¡Descarta una carta!</span>
-						<span className={`${styles.timerStamp} ${styles.timerStampOrange}`}>
-							{sabotageSecondsLeft}s
+						<span aria-hidden="true">¡Descarta una carta!</span>
+						<span
+							role="timer"
+							aria-atomic="true"
+							className={`${styles.timerStamp} ${styles.timerStampOrange}`}
+						>
+							<span className={srOnlyStyles.srOnly}>
+								Tiempo restante: {sabotageSecondsLeft} segundos
+							</span>
+							<span aria-hidden="true">{sabotageSecondsLeft}s</span>
 						</span>
 					</div>
 				</div>
 			)}
-		</div>
+		</aside>
 	);
 }

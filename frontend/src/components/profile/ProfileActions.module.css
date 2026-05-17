@@ -164,3 +164,49 @@
 .btnConfirmDelete:hover {
 	background-color: #b71c1c;
 }
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Mejoras de focus para todos los botones */
+button:focus-visible {
+	outline: 3px solid #0066cc;
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Estilo específico para el warning box cuando recibe foco */
+.warningBox:focus-visible {
+	outline: 3px solid #ff0000;
+	outline-offset: 2px;
+}
+
+/* Reducir movimiento para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+	* {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Alto contraste para texto */
+@media (prefers-contrast: high) {
+	button {
+		border: 2px solid currentColor;
+	}
+
+	.warningBox {
+		border: 3px solid #ff0000;
+	}
+}

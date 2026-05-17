@@ -1,4 +1,5 @@
 // src/components/game/board/IconGuide.tsx
+// Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";

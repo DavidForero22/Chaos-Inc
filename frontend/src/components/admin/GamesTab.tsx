@@ -9,8 +9,8 @@ const PAGE_SIZE = 20;
 
 const roleTranslations: Record<string, string> = {
 	boss: "Jefe",
-	intern: "Becario",
-	union: "Sindicalista",
+	intern: "Becaria",
+	union: "Sindicato",
 	secretary: "Secretario",
 };
 

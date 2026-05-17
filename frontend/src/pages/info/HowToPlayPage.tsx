@@ -35,12 +35,12 @@ export default function HowToPlayPage() {
 					<li>
 						<strong>Cartas de Acción:</strong> Utilice los recursos de la
 						oficina sabiamente. Puede robar informes, desviar la culpa o
-						sabotear el café del becario.
+						sabotear el café del becaria.
 					</li>
 					<li>
 						<strong>Condición de Victoria:</strong> El último empleado que
 						conserve su cordura (puntos de vida) se considerará el Empleado del
-						Mes. Si el becario abandona la sala, el Sindicato gana
+						Mes. Si el becaria abandona la sala, el Sindicato gana
 						automáticamente.
 					</li>
 				</ul>

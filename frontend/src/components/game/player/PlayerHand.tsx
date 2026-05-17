@@ -1,4 +1,6 @@
 // frontend/src/components/game/player/PlayerHand.tsx
+// Accesibilidad comprobada: SI
+
 import { useRef, useState } from "react";
 import { Card } from "../ui/Card.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
@@ -32,24 +34,27 @@ export function PlayerHand() {
     );
 
     // --- REFERENCIAS PARA EL SCROLL POR ARRASTRE ---
-    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const scrollContainerRef = useRef<HTMLUListElement>(null);
     const isDragging = useRef(false);
     const startX = useRef(0);
     const scrollLeft = useRef(0);
-    const dragDistance = useRef(0); // Para diferenciar entre un clic y un arrastre
+    const dragDistance = useRef(0); 
     
-    // Estado solo para la UI del cursor (grab vs grabbing)
     const [isGrabbing, setIsGrabbing] = useState(false);
 
     if (!gameData || !id) return null;
     const { me } = gameData;
+
+    // --- TU LÓGICA DE TARGETING REINCORPORADA ---
+    const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
+    const isTargetingMode = selectedCard?.target === "opponent";
 
     // --- LÓGICA DE ARRASTRE (DRAG TO SCROLL) ---
     const handleMouseDown = (e: React.MouseEvent) => {
         if (!scrollContainerRef.current) return;
         isDragging.current = true;
         setIsGrabbing(true);
-        dragDistance.current = 0; // Reiniciar distancia
+        dragDistance.current = 0;
         startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
         scrollLeft.current = scrollContainerRef.current.scrollLeft;
     };
@@ -66,14 +71,13 @@ export function PlayerHand() {
 
     const handleMouseMove = (e: React.MouseEvent) => {
         if (!isDragging.current || !scrollContainerRef.current) return;
-        e.preventDefault(); // Evita que seleccione texto/imágenes accidentalmente
+        e.preventDefault(); 
 
         const x = e.pageX - scrollContainerRef.current.offsetLeft;
         const walk = (x - startX.current) ; 
         
         // Acumular la distancia total movida en valor absoluto
         dragDistance.current += Math.abs(x - startX.current);
-        
         scrollContainerRef.current.scrollLeft = scrollLeft.current - walk;
     };
 
@@ -81,7 +85,7 @@ export function PlayerHand() {
     const handleClickCapture = (e: React.MouseEvent) => {
         // Si el usuario movió el ratón más de 10 píxeles, se considera un "scroll"
         if (dragDistance.current > 10) {
-            e.stopPropagation(); // Evita que el evento onClick llegue a la carta
+            e.stopPropagation(); 
             e.preventDefault();
         }
     };
@@ -119,11 +123,17 @@ export function PlayerHand() {
     };
 
     return (
-        <div className={styles.handContainer}>
-            {/* El contenedor escrolleable y oscuro del bolsillo */}
-            <div 
+        <section 
+            className={styles.handContainer}
+            // Si isTargetingMode es true, todo este bloque se vuelve "fantasma" para el teclado
+            // y los lectores de pantalla, evitando que la UI móvil se rompa por un focus forzado.
+            // @ts-ignore
+            inert={isTargetingMode ? "" : undefined}
+            aria-hidden={isTargetingMode}
+        >
+            <ul 
                 ref={scrollContainerRef}
-                className={`${styles.cardsScrollArea} ${isGrabbing ? 'cursor-grabbing' : 'cursor-grab'}`}
+                className={`${styles.cardsScrollArea} m-0 p-0 list-none flex ${isGrabbing ? 'cursor-grabbing' : 'cursor-grab'}`}
                 
                 // Eventos de arrastre
                 onMouseDown={handleMouseDown}
@@ -132,16 +142,14 @@ export function PlayerHand() {
                 onMouseMove={handleMouseMove}
                 onClickCapture={handleClickCapture}
 
-                // ARIA para Accesibilidad
-                role="region"
                 aria-label="Tu mano de cartas"
             >
                 {me.cards.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#3b2f24] rounded-lg text-[#3b2f24] opacity-60 h-auto m-7 pointer-events-none">
+                    <li className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-[#3b2f24] rounded-lg text-[#3b2f24] opacity-60 h-auto m-7 pointer-events-none">
                         <p className="italic text-xl font-bold uppercase tracking-widest">
                             Sin Cartas
                         </p>
-                    </div>
+                    </li>
                 ) : (
                     me.cards.map((card) => {
                         const { isSelectable, canUseDodgeNow } = evaluateCard(card);
@@ -149,22 +157,23 @@ export function PlayerHand() {
                         const isMarkedForDiscard = cardsToDiscard.includes(card.id);
 
                         return (
-                            <Card
-                                key={card.id}
-                                card={card}
-                                isSelectable={isSelectable}
-                                isSelected={!isDiscardMode && isSelected}
-                                isHighlighted={!isDiscardMode && canUseDodgeNow}
-                                isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
-                                onClick={() => {
-                                    if (!isSelectable) return;
-                                    handleCardClick(card);
-                                }}
-                            />
+                            <li key={card.id} className="shrink-0">
+                                <Card
+                                    card={card}
+                                    isSelectable={isSelectable}
+                                    isSelected={!isDiscardMode && isSelected}
+                                    isHighlighted={!isDiscardMode && canUseDodgeNow}
+                                    isMarkedForDiscard={isDiscardMode && isMarkedForDiscard}
+                                    onClick={() => {
+                                        if (!isSelectable) return;
+                                        handleCardClick(card);
+                                    }}
+                                />
+                            </li>
                         );
                     })
                 )}
-            </div>
-        </div>
+            </ul>
+        </section>
     );
 }

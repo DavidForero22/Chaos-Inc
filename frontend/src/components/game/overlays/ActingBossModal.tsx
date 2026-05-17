@@ -1,4 +1,5 @@
 // src/components/game/modals/ActingBossModal.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useRef } from "react";
 import { Modal } from "../ui/GameModal.tsx";
@@ -20,14 +21,12 @@ export function ActingBossModal({ onClose }: ActingBossModalProps) {
 	}, []);
 
 	return (
-		<Modal maxWidth="max-w-md">
-			<div
-				className="flex flex-col gap-4 text-center"
-				role="alert"
-				aria-live="assertive"
-				aria-labelledby="acting-boss-title"
-				aria-describedby="acting-boss-desc"
-			>
+		<Modal
+			maxWidth="max-w-md"
+			ariaLabelledBy="acting-boss-title"
+			ariaDescribedBy="acting-boss-desc"
+		>
+			<div className="flex flex-col gap-4 text-center">
 				<h2
 					id="acting-boss-title"
 					className="text-2xl font-black text-amber-400"
@@ -43,9 +42,9 @@ export function ActingBossModal({ onClose }: ActingBossModalProps) {
 				<div className="mt-2 flex justify-center">
 					<button
 						ref={confirmBtnRef}
+						type="button"
 						onClick={onClose}
-						className="px-6 py-2 rounded-md bg-amber-400 text-black font-black transition-colors hover:bg-amber-300 focus:outline-none focus:ring-4 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-[#1a1a1a]"
-						aria-label="Cerrar aviso de nuevo cargo temporal"
+						className="px-6 py-2 rounded-md bg-amber-400 text-black font-black transition-colors hover:bg-amber-300 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]"
 					>
 						ENTENDIDO
 					</button>

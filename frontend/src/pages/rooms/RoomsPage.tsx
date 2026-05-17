@@ -1,4 +1,5 @@
 // src/pages/RoomsPage.tsx
+// Accesibilidad comprobada: SI
 
 import { useState } from "react";
 import { useLobby } from "../../hooks/useLobby";
@@ -8,6 +9,7 @@ import GuestNameModal from "../../components/lobby/GuestNameModal";
 import ActiveGameWarning from "../../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
 import { useAuthStore } from "../../store/useAuthStore";
+import srOnlyStyles from "../../styles/sr-only.module.css";
 
 export default function RoomsPage() {
 	const {
@@ -69,10 +71,9 @@ export default function RoomsPage() {
 	}
 
 	return (
-		<div className="pl-6 pb-10">
+		<main className="pl-6 pb-10">
 			{/* ── CABECERA ── */}
-			<div className="mb-6">
-				{/* Títulos ocupando todo el ancho */}
+			<header className="mb-6">
 				<h1
 					className="text-4xl mb-6 font-black"
 					style={{ color: "var(--color-lomo)" }}
@@ -87,6 +88,9 @@ export default function RoomsPage() {
 				<div className={styles.controlsGrid}>
 					{/* Buscador */}
 					<div className={styles.searchBlock}>
+						<label htmlFor="room-name-search" className={srOnlyStyles.srOnly}>
+							Buscar sala por nombre
+						</label>
 						<input
 							id="room-name-search"
 							type="text"
@@ -94,11 +98,16 @@ export default function RoomsPage() {
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
 							className={styles.searchInput}
+							aria-label="Buscar sala por nombre"
 						/>
 					</div>
 
 					{/* Filtros */}
-					<div className={styles.filters}>
+					<div
+						className={styles.filters}
+						role="group"
+						aria-label="Filtros de estado de sala"
+					>
 						{(["all", "waiting", "in_game"] as const).map((f) => (
 							<button
 								key={f}
@@ -110,6 +119,8 @@ export default function RoomsPage() {
 											? styles.filterWaiting
 											: styles.filterInGame
 								} ${filterStatus === f ? styles.filterActive : ""}`}
+								aria-label={`Mostrar salas ${f === "all" ? "todas" : f === "waiting" ? "en espera" : "en partida"}`}
+								aria-pressed={filterStatus === f}
 							>
 								{f === "all"
 									? "Todas"
@@ -120,18 +131,20 @@ export default function RoomsPage() {
 						))}
 					</div>
 				</div>
-			</div>
+			</header>
 
 			{/* ── LISTA DE SALAS ── */}
-			<RoomList
-				rooms={filteredRooms}
-				selectedRoom={selectedRoom}
-				onSelectRoom={setSelectedRoom}
-				isLoading={isLoadingRooms}
-			/>
+			<section aria-label="Lista de salas disponibles">
+				<RoomList
+					rooms={filteredRooms}
+					selectedRoom={selectedRoom}
+					onSelectRoom={setSelectedRoom}
+					isLoading={isLoadingRooms}
+				/>
+			</section>
 
 			{/* ── PIE: CREAR + UNIRSE ── */}
-			<div className={styles.listFooter}>
+			<footer className={styles.listFooter}>
 				<div>
 					{/* Si está validando la sala con el servidor, no mostrar el botón activado aún */}
 					{isValidatingRoom ? (
@@ -140,6 +153,8 @@ export default function RoomsPage() {
 								disabled
 								className={styles.createBtnLocked}
 								style={{ opacity: 0.5 }}
+								aria-label="Crear sala no disponible, validando conexión"
+								aria-disabled="true"
 							>
 								+ Crear Sala
 							</button>
@@ -148,6 +163,7 @@ export default function RoomsPage() {
 						<button
 							onClick={() => setShowCreateModal(true)}
 							className={styles.createBtn}
+							aria-label="Crear nueva sala"
 						>
 							+ Crear Sala
 						</button>
@@ -162,10 +178,14 @@ export default function RoomsPage() {
 										: "No tienes permisos"
 								}
 								style={{ cursor: "not-allowed" }}
+								aria-label={lockedMessage}
+								aria-disabled="true"
 							>
 								+ Crear Sala
 							</button>
-							<p className={styles.lockedNote}>{lockedMessage}</p>
+							<p className={styles.lockedNote} role="status" aria-live="polite">
+								{lockedMessage}
+							</p>
 						</div>
 					)}
 				</div>
@@ -176,12 +196,18 @@ export default function RoomsPage() {
 					title={joinTitle}
 					className={isJoinDisabled ? styles.joinBtnDisabled : styles.joinBtn}
 					style={isAlreadyInRoom ? { cursor: "not-allowed" } : {}}
+					aria-label={
+						!user && !isJoinDisabled
+							? "Entrar como Invitado"
+							: "Unirse a la Sala"
+					}
+					aria-disabled={isJoinDisabled}
 				>
 					{!user && !isJoinDisabled
 						? "Entrar como Invitado"
 						: "Unirse a la Sala"}
 				</button>
-			</div>
+			</footer>
 
 			{/* ── MODALES Y AVISOS ── */}
 			{showCreateModal && user && (
@@ -201,6 +227,6 @@ export default function RoomsPage() {
 			{!isValidatingRoom && activeRoomId && (
 				<ActiveGameWarning roomId={activeRoomId} />
 			)}
-		</div>
+		</main>
 	);
 }

@@ -19,7 +19,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{
 		id: "ach_win_intern",
 		title: "El Lobo de Chaos INC",
-		technicalDescription: "Gana una partida siendo Becario.",
+		technicalDescription: "Gana una partida como Becaria.",
 		lore: "Ya no tendrás que revisar cada dia si te han puesto pegamento ultra fuerte en tu taza de café.",
 		image: "/achievements/ach_1.png",
 		active: true,
@@ -27,7 +27,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{
 		id: "ach_win_secretary",
 		title: "Lamebotas Profesional",
-		technicalDescription: "Gana una partida siendo Secretario.",
+		technicalDescription: "Gana una partida como Secretario.",
 		lore: "Ser la mascota del profesor no te hacía mejor estudiante en la escuela, que lo sepas.",
 		image: "/achievements/ach_2_sketch.png",
 		active: true,
@@ -35,7 +35,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{
 		id: "ach_win_boss",
 		title: "Jefazo del Año",
-		technicalDescription: "Gana una partida siendo Jefe.",
+		technicalDescription: "Gana una partida como Jefe.",
 		lore: "¿Evasión de impuestos, jornadas de 14 horas, maltrato laboral? No pienso hablar sin mi abogado.",
 		image: "/achievements/ach_3_sketch.png",
 		active: true,
@@ -43,7 +43,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{
 		id: "ach_win_unionist",
 		title: "Abajo con el Trabajo",
-		technicalDescription: "Gana una partida siendo Sindicalista.",
+		technicalDescription: "Gana una partida como Sindicalista.",
 		lore: "Casualmente a nadie le parecia buena idea hacer una huelga japonesa. Se nota la cultura española...",
 		image: "/achievements/ach_placeholder.png",
 		active: true,

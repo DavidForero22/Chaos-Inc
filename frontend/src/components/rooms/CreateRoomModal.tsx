@@ -1,4 +1,5 @@
 // src/components/rooms/CreateRoomModal.tsx
+// Accesibilidad comprobada: SI
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -47,7 +48,7 @@ export default function CreateRoomModal({
 			logWithTime(
 				"CreateRoomModal.tsx::handleCreateRoom() - Creando sala.",
 				rawRoomData,
-				"info"
+				"info",
 			);
 
 			useRoomStore.setState({
@@ -67,6 +68,7 @@ export default function CreateRoomModal({
 			setIsLoading(false);
 		}
 	};
+
 	return (
 		<ModalLayout
 			title="Chaos Inc."
@@ -81,10 +83,14 @@ export default function CreateRoomModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>1.</span>
 				<div className={styles.fieldWrap}>
-					<label className={`${styles.label} ${styles.labelFirst}`}>
+					<label
+						className={`${styles.label} ${styles.labelFirst}`}
+						htmlFor="room-name"
+					>
 						Nombre de la Sala
 					</label>
 					<input
+						id="room-name"
 						className={styles.input}
 						type="text"
 						placeholder="Escribe el nombre..."
@@ -102,7 +108,9 @@ export default function CreateRoomModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>2.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Privacidad </label>
+					<label className={styles.label} id="privacy-label">
+						Privacidad
+					</label>
 					<label
 						style={{
 							display: "flex",
@@ -119,6 +127,7 @@ export default function CreateRoomModal({
 								setFormData({ ...formData, is_private: e.target.checked })
 							}
 							style={{ cursor: "pointer" }}
+							aria-labelledby="privacy-label"
 						/>
 						<span
 							style={{
@@ -134,6 +143,7 @@ export default function CreateRoomModal({
 					{formData.is_private && (
 						<div>
 							<input
+								id="room-password"
 								className={styles.input}
 								style={{ marginTop: "8px" }}
 								type="password"
@@ -145,6 +155,7 @@ export default function CreateRoomModal({
 								onChange={(e) =>
 									setFormData({ ...formData, password: e.target.value })
 								}
+								aria-label="Contraseña de la sala"
 							/>
 							<p className={styles.hint}>Mínimo 8 caracteres.</p>
 						</div>
@@ -156,13 +167,14 @@ export default function CreateRoomModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>3.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>
+					<label className={styles.label} htmlFor="max-players">
 						Aforo Máximo Permitido:{" "}
 						<span style={{ color: "#295c60", fontSize: "0.9rem" }}>
 							{`${formData.max_players} Jugadores`}
 						</span>
 					</label>
 					<input
+						id="max-players"
 						type="range"
 						min="3"
 						max="6"
@@ -182,8 +194,11 @@ export default function CreateRoomModal({
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum}>4.</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Tiempo Límite de Turno: </label>
+					<label className={styles.label} htmlFor="turn-timeout">
+						Tiempo Límite de Turno:
+					</label>
 					<input
+						id="turn-timeout"
 						type="range"
 						min="60"
 						max="120"
@@ -205,7 +220,9 @@ export default function CreateRoomModal({
 				<div className={styles.fieldRow}>
 					<span className={styles.annexNum}>5.</span>
 					<div className={styles.fieldWrap}>
-						<label className={styles.label}>Opciones de Administrador</label>
+						<label className={styles.label} id="debug-label">
+							Opciones de Administrador
+						</label>
 						<label
 							style={{
 								display: "flex",
@@ -229,6 +246,7 @@ export default function CreateRoomModal({
 									});
 								}}
 								style={{ cursor: "pointer", accentColor: "#b45309" }}
+								aria-labelledby="debug-label"
 							/>
 							<span
 								style={{
@@ -245,14 +263,19 @@ export default function CreateRoomModal({
 								className={styles.hint}
 								style={{ color: "#b45309", marginTop: "6px" }}
 							>
-								Tendrás acceso al menú de depuración y aparecerán registros por consola.
+								Tendrás acceso al menú de depuración y aparecerán registros por
+								consola.
 							</p>
 						)}
 					</div>
 				</div>
 			)}
 
-			{error && <p className={styles.error}>⚠ {error}</p>}
+			{error && (
+				<p className={styles.error} role="alert">
+					⚠ {error}
+				</p>
+			)}
 		</ModalLayout>
 	);
 }

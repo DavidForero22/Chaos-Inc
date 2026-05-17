@@ -1,9 +1,21 @@
 // src/components/profile/GuestProfileView.tsx
+// Accesibilidad comprobada: SI
 
 import { useAuthStore } from "../../store/useAuthStore";
 import styles from "./GuestProfileView.module.css";
 import sharedStyles from "./Profile.module.css";
 
+const SR_ONLY = {
+	position: "absolute",
+	width: "1px",
+	height: "1px",
+	padding: 0,
+	margin: "-1px",
+	overflow: "hidden",
+	clip: "rect(0 0 0 0)",
+	whiteSpace: "nowrap",
+	border: 0,
+} as const;
 
 interface GuestProfileViewProps {
 	onLogout: () => void;
@@ -13,10 +25,18 @@ export default function GuestProfileView({ onLogout }: GuestProfileViewProps) {
 	const { user } = useAuthStore();
 
 	return (
-		<div className={styles.guestWrapper}>
+		<section
+			className={styles.guestWrapper}
+			role="region"
+			aria-labelledby="guest-profile-title"
+			aria-describedby="guest-profile-desc"
+		>
 			{/* Nombre */}
-			<h1 className={styles.guestTitle}>{user}</h1>
-			<p className={styles.guestSubtitle}>
+			<h1 id="guest-profile-title" className={styles.guestTitle}>
+				{user}
+			</h1>
+
+			<p id="guest-profile-desc" className={styles.guestSubtitle}>
 				Acceso temporal — Sin expediente permanente
 			</p>
 
@@ -28,9 +48,17 @@ export default function GuestProfileView({ onLogout }: GuestProfileViewProps) {
 					permanente, regístrese con una cuenta.
 				</p>
 
-				{/* Aviso de caducidad */}
-				<div className={styles.guestWarning}>
-					<span className={styles.guestWarningIcon}>⚠</span>
+				{/* Aviso de caducidad (alerta, anunciable inmediatamente) */}
+				<div
+					className={styles.guestWarning}
+					role="alert"
+					aria-live="assertive"
+					aria-atomic="true"
+					id="guest-warning"
+				>
+					<span className={styles.guestWarningIcon} aria-hidden="true">
+						⚠
+					</span>
 					<p className={styles.guestWarningText}>
 						<strong>Aviso:</strong> Las cuentas de invitado y todos sus datos
 						asociados son eliminados automáticamente{" "}
@@ -42,10 +70,19 @@ export default function GuestProfileView({ onLogout }: GuestProfileViewProps) {
 
 			{/* Acción */}
 			<div className={styles.guestActions}>
-				<button className={sharedStyles.actionBtnLogout} onClick={onLogout}>
+				<button
+					className={sharedStyles.actionBtnLogout}
+					onClick={onLogout}
+					type="button"
+					aria-label="Cerrar sesión - eliminar cuenta de invitado"
+					aria-describedby="guest-warning"
+				>
+					<span style={SR_ONLY}>
+						Cerrar sesión y eliminar cuenta de invitado:{" "}
+					</span>
 					Cerrar sesión
 				</button>
 			</div>
-		</div>
+		</section>
 	);
 }

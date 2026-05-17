@@ -259,43 +259,43 @@
    ÍNDICE DE NAVEGACIÓN (TABS)
    ======================================== */
 .navMenu {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-    position: relative;
-    z-index: 1;
-    flex-wrap: wrap; /* Por si estamos en móvil */
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+	position: relative;
+	z-index: 1;
+	flex-wrap: wrap; /* Por si estamos en móvil */
 }
 
 .navBtn {
-    font-family: "Courier New", Courier, monospace;
-    font-size: 0.85rem;
-    font-weight: 900;
-    color: #2b2b2b;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    padding: 6px 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    letter-spacing: 1px;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	font-weight: 900;
+	color: #2b2b2b;
+	background: transparent;
+	border: none;
+	border-bottom: 3px solid transparent;
+	padding: 6px 10px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	letter-spacing: 1px;
 }
 
 .navBtn:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    border-bottom-color: #2b2b2b;
+	background-color: rgba(0, 0, 0, 0.05);
+	border-bottom-color: #2b2b2b;
 }
 
 /* El efecto "Rotulador Fosforito" para la pestaña activa */
 .navBtnActive {
-    background-color: #fff065; /* Amarillo rotulador */
-    color: #000;
-    border-bottom-color: #000;
-    box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+	background-color: #fff065; /* Amarillo rotulador */
+	color: #000;
+	border-bottom-color: #000;
+	box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
-.sectionLabel, .sectionTitle {
-	
+.sectionLabel,
+.sectionTitle {
 	text-transform: uppercase;
 	letter-spacing: 2px;
 	color: #2b2b2b;
@@ -313,4 +313,24 @@
 .sectionLabel {
 	font-size: 0.85rem;
 	font-weight: 900;
+}
+
+/* Asegurar que los paneles ocultos no sean accesibles */
+[hidden] {
+	display: none !important;
+}
+
+/* Mejora el focus visible para los paneles */
+[role="tabpanel"]:focus-visible {
+	outline: 2px solid #0066cc;
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Estilo para pestañas activas con alto contraste */
+@media (prefers-contrast: high) {
+	[aria-selected="true"] {
+		border-bottom: 3px solid currentColor;
+		font-weight: bold;
+	}
 }

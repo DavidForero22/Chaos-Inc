@@ -51,17 +51,9 @@ export const RESULT_CONFIG: Record<
 		image: "/game-result/game_result_cancelled.jpg",
 		subtitle: "También en la sección del tiempo: Nublado",
 		description: `Tras meses de hostilidades, la directiva de Chaos Inc. y el sindicato han firmado un armisticio por puro agotamiento. La empresa retomará su actividad 
-        habitual mientras los sindicalistas ya buscan una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido debidamente 
+        habitual mientras el sindicato ya busca una nueva organización a la que asediar hasta el cierre. Para calmar los ánimos, los huelguistas han sido debidamente 
 		compensados con una porción de pizza y un refresco. En otro orden de cosas, se informa de que el departamento de limpieza explotó repentinamente durante el 
 		conflicto, resultando en el fallecimiento del operario de turno. Su familia ha sido debidamente compensada con una porción de pizza y un refresco.`,
 		winners: [],
 	},
-};
-
-export const ROLE_LABELS: Record<PlayerRole, string> = {
-	boss: "Jefe",
-	secretary: "Secretariado",
-	intern: "Becario",
-	union: "Sindicalista",
-	none: "Ninguno"
 };

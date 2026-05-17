@@ -38,7 +38,7 @@ class AchievementService
                 $role = $player['role'];
                 $isActingBoss = $player['acting_boss'] ?? false;
 
-                // 1. Becario (Si ganó y no fue ascendido a jefe)
+                // 1. Becaria (Si ganó y no fue ascendido a jefe)
                 if ($role === 'intern' && !$isActingBoss) {
                     $achievementsToUnlock[] = 'ach_win_intern';
                 }
@@ -53,7 +53,7 @@ class AchievementService
                     $achievementsToUnlock[] = 'ach_win_boss';
                 }
 
-                // 4. Sindicalista
+                // 4. Sindicato
                 if ($role === 'union') {
                     $achievementsToUnlock[] = 'ach_win_unionist';
                 }
@@ -63,7 +63,7 @@ class AchievementService
                     $achievementsToUnlock[] = 'ach_last_unionist';
                 }
 
-                // 6. Heredero del Poder (Becario o Secretario que terminó como Jefe)
+                // 6. Heredero del Poder (Becaria o Secretario que terminó como Jefe)
                 if ($isActingBoss) {
                     $achievementsToUnlock[] = 'ach_inherited_boss';
                 }

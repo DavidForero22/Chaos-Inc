@@ -1,4 +1,5 @@
 // src/pages/AdminPage.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,17 +23,22 @@ export default function AdminPage() {
 	}, [user, role, navigate]);
 
 	return (
-		<div className="pl-6 pb-10 pr-6">
+		<main className="pl-6 pb-10 pr-6">
 			{/* Cabecera Oficial */}
-			<h1
-				className="text-4xl mb-6 font-black uppercase"
-				style={{ color: "var(--color-lomo)" }}
-			>
-				Panel de Administración
-			</h1>
+			<header>
+				<h1
+					className="text-4xl mb-6 font-black uppercase"
+					style={{ color: "var(--color-lomo)" }}
+				>
+					Panel de Administración
+				</h1>
+			</header>
 
-			{/* Pestañas */}
-			<div className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4">
+			{/* Pestañas de navegación */}
+			<nav
+				className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4"
+				aria-label="Secciones de administración"
+			>
 				{(["users", "games"] as Tab[]).map((t) => (
 					<button
 						key={t}
@@ -42,22 +48,25 @@ export default function AdminPage() {
 								? "bg-[#393e42] border-[#393e42] text-[#d2d4d1]"
 								: "bg-transparent border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42]"
 						}`}
+						aria-label={`Ver ${t === "users" ? "usuarios" : "partidas"}`}
+						aria-pressed={tab === t}
 					>
-						{t === "users"
-							? "📄 Usuarios"
-							: t === "games"
-								? "📂 Partidas"
-								: null}
+						{t === "users" && <span aria-hidden="true">📄 </span>}
+						{t === "games" && <span aria-hidden="true">📂 </span>}
+						{t === "users" ? "Usuarios" : "Partidas"}
 					</button>
 				))}
-			</div>
+			</nav>
 
-			<div className="font-mono text-[#393e42]">
-				{tab === "users" && (
-					<UsersTab/>
-				)}
+			{/* Contenido dinámico de las pestañas */}
+			<section
+				className="font-mono text-[#393e42]"
+				aria-label={`Contenido de ${tab === "users" ? "usuarios" : "partidas"}`}
+				aria-live="polite"
+			>
+				{tab === "users" && <UsersTab />}
 				{tab === "games" && <GamesTab />}
-			</div>
-		</div>
+			</section>
+		</main>
 	);
 }

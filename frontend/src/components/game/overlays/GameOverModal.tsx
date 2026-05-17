@@ -1,13 +1,16 @@
 // src/components/game/GameOverModal.tsx
+// Accesibilidad comprobada: SI
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
-import { RESULT_CONFIG, ROLE_LABELS } from "../../../data/gameResults.ts";
+import { RESULT_CONFIG } from "../../../data/gameResults.ts";
 import type { WinnerRole, ConfigKey } from "../../../data/gameResults.ts";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import { ACHIEVEMENTS } from "../../../data/achievements.ts";
 import type { PlayerRole } from "../../../types/live-game.ts";
+import { ROLE_LABELS } from "../../../data/roles.ts";
+import srOnlyStyles from "../../../styles/sr-only.module.css";
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -20,7 +23,9 @@ export function GameOverModal({
 	myRole,
 	onClose,
 }: GameOverModalProps) {
-	const exitButtonRef = useRef<HTMLButtonElement>(null);
+	const headlineRef = useRef<HTMLHeadingElement>(null);
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const [showArrow, setShowArrow] = useState(false);
 
 	// Resolver configuración
 	const configKey: ConfigKey =
@@ -45,12 +50,46 @@ export function GameOverModal({
 		day: "numeric",
 	});
 
+	// --- GESTIÓN DE FOCO ---
 	useEffect(() => {
 		const timer = setTimeout(() => {
-			exitButtonRef.current?.focus();
+			headlineRef.current?.focus({ preventScroll: true });
 		}, 50);
 		return () => clearTimeout(timer);
 	}, []);
+
+	// --- LÓGICA DE SCROLL Y FLECHA MEJORADA ---
+	const checkScroll = () => {
+		if (scrollRef.current) {
+			const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+			// Mostramos la flecha si falta más de 50px para llegar al final
+			const isBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 50;
+			setShowArrow(scrollHeight > clientHeight + 10 && !isBottom);
+		}
+	};
+
+	const handleScroll = () => {
+		checkScroll();
+	};
+
+	// Comprobar desbordamiento (con soporte para carga de imágenes)
+	useEffect(() => {
+		checkScroll(); // Primera comprobación
+
+		// Segunda comprobación poco después, para cuando las imágenes hayan renderizado
+		const timer = setTimeout(checkScroll, 300);
+
+		// ResizeObserver para detectar si la ventana cambia de tamaño
+		const observer = new ResizeObserver(() => checkScroll());
+		if (scrollRef.current) {
+			observer.observe(scrollRef.current);
+		}
+
+		return () => {
+			clearTimeout(timer);
+			observer.disconnect();
+		};
+	}, [achievementItems.length]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -69,14 +108,20 @@ export function GameOverModal({
 			aria-modal="true"
 			aria-labelledby="gameover-headline"
 		>
-			{/* EL PERIÓDICO */}
-			<div className={styles.newspaper}>
+			<div
+				className={`${styles.newspaper} max-w-4xl px-6 md:px-12`}
+				ref={scrollRef}
+				onScroll={handleScroll}
+				tabIndex={-1}
+			>
 				{/* Cabecera del Periódico */}
 				<div className={styles.masthead} aria-hidden="true">
 					<h1 className={styles.newspaperName}>LA Agencia Preguntas</h1>
 				</div>
 
-				<span className="sr-only">Noticia de fin de partida.</span>
+				<span className={srOnlyStyles.srOnly}>
+					Noticia de fin de partida: {config.headline}
+				</span>
 
 				<div className={styles.subhead} aria-hidden="true">
 					<span>Edición Especial de Cierre</span>
@@ -84,7 +129,12 @@ export function GameOverModal({
 					<span>GRATUITO</span>
 				</div>
 
-				<h2 id="gameover-headline" className={styles.headline}>
+				<h2
+					id="gameover-headline"
+					ref={headlineRef}
+					tabIndex={-1}
+					className={`${styles.headline} focus:outline-none`}
+				>
 					{config.headline}
 				</h2>
 
@@ -94,11 +144,8 @@ export function GameOverModal({
 						src={config.image}
 						alt={`Ilustración del resultado: ${config.headline}`}
 						className={styles.photoImage}
-						onError={(e) => {
-							e.currentTarget.style.display = "none";
-						}}
+						onLoad={checkScroll} // Recalcular la flecha cuando la imagen cargue
 					/>
-					{/* El pie de foto estilo periódico */}
 					{config.subtitle && (
 						<p className="text-sm italic text-gray-700 mt-2 mb-4 text-center border-b border-gray-300 pb-2 font-serif">
 							{config.subtitle}
@@ -127,14 +174,13 @@ export function GameOverModal({
 					)}
 				</div>
 
-				{/* Logros obtenidos en la partida (se muestran siempre si existen) */}
+				{/* Logros obtenidos */}
 				{achievementItems.length > 0 && (
 					<div className={styles.achievementsSection}>
 						<h3 className={styles.achievementsTitle}>Logros obtenidos</h3>
-						{/* ACCESIBILIDAD: Convertido a <ul> para anunciar cantidad de logros */}
 						<ul
 							className={styles.achievementsGrid}
-							aria-label="Logros desbloqueados en esta partida"
+							aria-label="Logros desbloqueados"
 						>
 							{achievementItems.map((ach) => (
 								<li key={ach!.id} className={styles.medalCard}>
@@ -144,6 +190,7 @@ export function GameOverModal({
 											alt=""
 											aria-hidden="true"
 											className={styles.medalImage}
+											onLoad={checkScroll} // Recalcular cuando la medalla cargue
 										/>
 									</div>
 									<div className={styles.medalText}>
@@ -169,15 +216,28 @@ export function GameOverModal({
 					</div>
 				)}
 
-				{/* Botón Inferior para volver */}
 				<button
-					ref={exitButtonRef}
 					onClick={onClose}
-					className={`${styles.exitButton} focus:outline-none focus:ring-4 focus:ring-black focus:ring-offset-2 focus:ring-offset-[#fdfbf2]`}
+					className={`${styles.exitButton} focus:outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-[#fdfbf2]`}
 					aria-label="Cerrar resultados y volver al menú principal"
 				>
 					Volver al Menú Principal
 				</button>
+			</div>
+
+			{/* FLECHA INDICADORA */}
+			<div
+				className={`${styles.arrow} ${showArrow ? styles.arrowVisible : styles.arrowHidden}`}
+				aria-hidden="true"
+			>
+				<svg
+					viewBox="0 0 24 24"
+					fill="currentColor"
+					className="w-12 h-12"
+				>
+					{/* Flecha sólida estilo tipográfico con remates marcados */}
+					<path d="M12 21l-9-9h5v-9h8v9h5z" />
+				</svg>
 			</div>
 		</div>,
 		document.body,

@@ -1,3 +1,5 @@
+// Accesibilidad comprobada: SI
+
 import { useEffect, useMemo, useState } from "react";
 import { ACHIEVEMENTS } from "../../data/achievements";
 import { useAchievementNotificationStore } from "../../store/useAchievementNotificationStore";
@@ -32,6 +34,10 @@ function AchievementNotificationItem({
 			className={`pointer-events-auto w-80 rounded-xl border-2 border-amber-400 bg-amber-50/95 px-4 py-3 shadow-lg ${
 				isExiting ? styles.toastExit : styles.toastEnter
 			}`}
+			role="alert"
+			aria-live="polite"
+			aria-atomic="true"
+			aria-label={`Logro desbloqueado: ${title}. ${description}`}
 		>
 			<h4 className="text-xs font-black uppercase tracking-wide text-amber-700">
 				¡Logro desbloqueado!
@@ -57,8 +63,18 @@ export function AchievementNotification() {
 		(state) => state.notifications,
 	);
 
+	// Agrupar notificaciones para mejor accesibilidad
+	const hasNotifications = notifications.length > 0;
+
 	return (
-		<div className="fixed bottom-4 right-4 z-101 flex flex-col items-end gap-3 pointer-events-none">
+		<div
+			className="fixed bottom-4 right-4 z-101 flex flex-col items-end gap-3 pointer-events-none"
+			aria-live="polite"
+			aria-atomic="false"
+			aria-label={
+				hasNotifications ? "Notificaciones de logros" : "Sin notificaciones"
+			}
+		>
 			{notifications.map((notif) => (
 				<AchievementNotificationItem
 					key={notif.id}

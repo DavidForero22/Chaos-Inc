@@ -1,4 +1,5 @@
 // src/components/navbar/NavLinks.tsx
+// Accesibilidad comprobada: SI
 
 import { NavLink } from "react-router-dom";
 import { FaRegUser, FaQuestion, FaBook, FaFolder } from "react-icons/fa";
@@ -41,56 +42,70 @@ export function NavLinks({
 				end
 				className={getLinkClass(styles.tabHome)}
 				onClick={onItemClick}
+				aria-label="Ir a la página de inicio"
 			>
-				<IoHome /> Inicio
+				<IoHome aria-hidden="true" /> Inicio
 			</NavLink>
 
 			<NavLink
 				to="/rooms"
 				className={getLinkClass(styles.tabRooms)}
 				onClick={onItemClick}
+				aria-label="Ver todas las salas disponibles"
 			>
-				<IoGameController /> Salas
+				<IoGameController aria-hidden="true" /> Salas
 			</NavLink>
 
 			<NavLink
 				to="/how-to-play"
 				className={getLinkClass(styles.tabHowTo)}
 				onClick={onItemClick}
+				aria-label="Ver instrucciones y reglas del juego"
 			>
-				<FaBook /> Cómo Jugar
+				<FaBook aria-hidden="true" /> Cómo Jugar
 			</NavLink>
 
 			<NavLink
 				to="/know-more"
 				className={getLinkClass(styles.tabKnow)}
 				onClick={onItemClick}
+				aria-label="Más información sobre Chaos Inc."
 			>
-				<FaQuestion /> Saber Más
+				<FaQuestion aria-hidden="true" /> Saber Más
 			</NavLink>
 
 			{/* ── Zona de Perfil o Autenticación ── */}
 			{user ? (
-				<div className={isMobile ? styles.mobileUserGroup : styles.userGroup}>
+				<div
+					className={isMobile ? styles.mobileUserGroup : styles.userGroup}
+					role="group"
+					aria-label="Acciones de usuario"
+				>
 					{role === "admin" && !isGuest && (
 						<NavLink
 							to="/admin"
 							className={getLinkClass(styles.tabAdmin)}
 							onClick={onItemClick}
+							aria-label="Panel de administración"
 						>
-							<FaFolder /> Admin
+							<FaFolder aria-hidden="true" /> Admin
 						</NavLink>
 					)}
 					<NavLink
 						to="/profile"
 						className={getLinkClass(styles.tabProfile)}
 						onClick={onItemClick}
+						aria-label={isGuest ? "Perfil de invitado" : "Ver mi perfil"}
 					>
-						<FaRegUser /> {isGuest ? "Invitado" : "Perfil"}
+						<FaRegUser aria-hidden="true" /> {isGuest ? "Invitado" : "Perfil"}
 					</NavLink>
 				</div>
 			) : (
-				<div className={isMobile ? styles.mobileUserGroup : styles.authGroup}>
+				<div
+					className={isMobile ? styles.mobileUserGroup : styles.authGroup}
+					role="group"
+					aria-label="Opciones de autenticación"
+				>
 					<button
 						onClick={() => {
 							setShowRegister(true);
@@ -101,6 +116,7 @@ export function NavLinks({
 								? styles.mobileItem
 								: `${styles.bookmark} ${styles.tabRegister}`
 						}
+						aria-label="Crear una nueva cuenta"
 					>
 						Registrarse
 					</button>
@@ -114,6 +130,7 @@ export function NavLinks({
 								? styles.mobileItem
 								: `${styles.bookmark} ${styles.tabLogin}`
 						}
+						aria-label="Iniciar sesión con cuenta existente"
 					>
 						Iniciar Sesión
 					</button>

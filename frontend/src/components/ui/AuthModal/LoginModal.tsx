@@ -1,3 +1,5 @@
+// Accesibilidad comprobada: SI
+
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import ModalLayout from "../ModalLayout";
@@ -8,7 +10,7 @@ interface LoginModalProps {
 	onClose: () => void;
 	onSwitchToRegister?: () => void;
 	onSuccess?: () => void; // Para auto-unirse a la sala
-	isGuestFlow?: boolean; //  Para saber de dónde viene el user
+	isGuestFlow?: boolean; // Para saber de dónde viene el user
 }
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -68,10 +70,16 @@ export default function LoginModal({
 				)
 			}
 		>
+			{/* Campo: Usuario o Correo */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>1.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					1.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={`${styles.label} ${styles.labelFirst}`}>
+					<label
+						className={`${styles.label} ${styles.labelFirst}`}
+						id="login-label"
+					>
 						Usuario o Correo
 					</label>
 					<input
@@ -84,14 +92,21 @@ export default function LoginModal({
 						onChange={(e) =>
 							setCredentials((prev) => ({ ...prev, login: e.target.value }))
 						}
+						aria-labelledby="login-label"
+						aria-required="true"
 					/>
 				</div>
 			</div>
 
+			{/* Campo: Contraseña */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}>2.</span>
+				<span className={styles.annexNum} aria-hidden="true">
+					2.
+				</span>
 				<div className={styles.fieldWrap}>
-					<label className={styles.label}>Contraseña</label>
+					<label className={styles.label} id="password-label">
+						Contraseña
+					</label>
 					<input
 						className={styles.input}
 						type="password"
@@ -103,13 +118,15 @@ export default function LoginModal({
 						onChange={(e) =>
 							setCredentials((prev) => ({ ...prev, password: e.target.value }))
 						}
+						aria-labelledby="password-label"
+						aria-required="true"
 					/>
 				</div>
 			</div>
 
-			{/* Recordar sesion */}
+			{/* Recordar sesión */}
 			<div className={styles.fieldRow}>
-				<span className={styles.annexNum}></span>
+				<span className={styles.annexNum} aria-hidden="true"></span>
 				<div
 					className={styles.fieldWrap}
 					style={{
@@ -143,10 +160,10 @@ export default function LoginModal({
 			</div>
 
 			{/* Separador OAuth */}
-			<div className={styles.socialDivider}>
-				<div className={styles.socialDividerLine} />
+			<div className={styles.socialDivider} role="separator">
+				<div className={styles.socialDividerLine} aria-hidden="true" />
 				<span className={styles.socialDividerText}>o continúa con</span>
-				<div className={styles.socialDividerLine} />
+				<div className={styles.socialDividerLine} aria-hidden="true" />
 			</div>
 
 			{/* Botones OAuth */}
@@ -155,21 +172,28 @@ export default function LoginModal({
 					type="button"
 					className={`${styles.btnSocial} ${styles.btnGoogle}`}
 					onClick={() => handleSocialLogin("google")}
+					aria-label="Iniciar sesión con Google"
 				>
-					<GoogleIcon />
+					<GoogleIcon aria-hidden="true" />
 					Google
 				</button>
 				<button
 					type="button"
 					className={`${styles.btnSocial} ${styles.btnDiscord}`}
 					onClick={() => handleSocialLogin("discord")}
+					aria-label="Iniciar sesión con Discord"
 				>
-					<DiscordIcon />
+					<DiscordIcon aria-hidden="true" />
 					Discord
 				</button>
 			</div>
 
-			{error && <p className={styles.error}>⚠ {error}</p>}
+			{/* Mensaje de error */}
+			{error && (
+				<p className={styles.error} role="alert">
+					⚠ {error}
+				</p>
+			)}
 		</ModalLayout>
 	);
 }

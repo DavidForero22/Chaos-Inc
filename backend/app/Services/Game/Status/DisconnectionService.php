@@ -87,7 +87,7 @@ class DisconnectionService
 
     /**
      * Asigna acting_boss al mejor candidato disponible.
-     * Prioridad: secretario → becario → victoria union.
+     * Prioridad: secretario → becaria → victoria union.
      */
     public function inheritBossRole(string $roomId): void
     {
@@ -147,7 +147,7 @@ class DisconnectionService
 
     /**
      * El jefe heredado se desconecta.
-     * Si era secretario, intenta ceder al becario. Si era becario, no hay más candidatos.
+     * Si era secretario, intenta ceder al becaria. Si era becaria, no hay más candidatos.
      */
     public function handleActingBossDisconnection(string $roomId, int $actingBossId): void
     {

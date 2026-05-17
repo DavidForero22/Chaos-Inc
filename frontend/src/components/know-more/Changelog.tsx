@@ -1,4 +1,5 @@
 // src/components/know-more/Changelog.tsx
+// Accesibilidad comprobada: SI
 
 import { useState } from "react";
 import styles from "./Changelog.module.css";
@@ -20,6 +21,8 @@ export default function Changelog() {
             <button
                 className={styles.mainToggle}
                 onClick={() => setIsMainOpen(!isMainOpen)}
+                aria-expanded={isMainOpen}
+                aria-controls="changelog-content"
             >
                 {isMainOpen
                     ? "[-] CERRAR ARCHIVO DE VERSIONES"
@@ -28,19 +31,22 @@ export default function Changelog() {
 
             {/* Envoltorio animado principal */}
             <div
+                id="changelog-content"
                 className={`${styles.collapsibleWrapper} ${isMainOpen ? styles.collapsibleWrapperOpen : ""}`}
+                role="region"
+                aria-label="Historial de cambios"
             >
                 <div className={styles.collapsibleInner}>
                     <div className={styles.changelogContent}>
                         {CHANGELOG_DATA.map((release) => (
-                            <div key={release.id} className={styles.releaseBlock}>
+                            <section key={release.id} className={styles.releaseBlock} aria-labelledby={`release-${release.id}`}>
                                 <div className={styles.releaseHeader}>
-                                    <h3 className={styles.versionTitle}>
+                                    <h2 id={`release-${release.id}`} className={styles.versionTitle}>
                                         v{release.version} - {release.description}
-                                    </h3>
-                                    <span className={styles.date}>
+                                    </h2>
+                                    <time className={styles.date}>
                                         FECHA DE PUBLICACIÓN: {release.date}
-                                    </span>
+                                    </time>
                                 </div>
 
                                 <ul className={styles.changesList}>
@@ -53,6 +59,8 @@ export default function Changelog() {
                                     <button
                                         className={styles.notesToggle}
                                         onClick={() => toggleNotes(release.id)}
+                                        aria-expanded={openNotes[release.id] ?? false}
+                                        aria-controls={`notes-${release.id}`}
                                     >
                                         {openNotes[release.id]
                                             ? "▲ Ocultar notas de desarrollo"
@@ -61,7 +69,10 @@ export default function Changelog() {
 
                                     {/* Envoltorio animado secundario para las notas */}
                                     <div
+                                        id={`notes-${release.id}`}
                                         className={`${styles.collapsibleWrapper} ${openNotes[release.id] ? styles.collapsibleWrapperOpen : ""}`}
+                                        role="region"
+                                        aria-label={`Notas de desarrollo v${release.version}`}
                                     >
                                         <div className={styles.collapsibleInner}>
                                             <div className={styles.notesContent}>
@@ -72,7 +83,7 @@ export default function Changelog() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </section>
                         ))}
                     </div>
                 </div>

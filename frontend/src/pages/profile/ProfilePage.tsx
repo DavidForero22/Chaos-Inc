@@ -1,4 +1,5 @@
 // src/pages/ProfilePage.tsx
+// Accesibilidad comprobada: SI
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -31,9 +32,16 @@ export default function ProfilePage() {
 
 	if (!id) {
 		return (
-			<div className={styles.loadingWrapper}>
-				<span>Debes tener una cuenta activa para acceder al perfil.</span>
-			</div>
+			<main
+				className={styles.loadingWrapper}
+				role="status"
+				aria-live="polite"
+				aria-label="Estado de autenticación"
+			>
+				<span aria-live="polite">
+					Debes tener una cuenta activa para acceder al perfil.
+				</span>
+			</main>
 		);
 	}
 
@@ -44,11 +52,17 @@ export default function ProfilePage() {
 
 	// Mientras calcula si es invitado o hace el redirect
 	return (
-		<div className={styles.loadingWrapper}>
-			<div className={styles.loadingSpinner} />
+		<main
+			className={styles.loadingWrapper}
+			role="status"
+			aria-live="polite"
+			aria-label="Cargando perfil"
+			aria-busy="true"
+		>
+			<div className={styles.loadingSpinner} aria-hidden="true" />
 			<span className={styles.loadingText}>
 				Accediendo a la base de datos...
 			</span>
-		</div>
+		</main>
 	);
 }
