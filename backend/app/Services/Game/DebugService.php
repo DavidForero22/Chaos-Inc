@@ -142,21 +142,25 @@ class DebugService
 
     private function forceWin(string $roomId, string $outcome): void
     {
+        // Forzar el estado de la partida en Redis (incluyendo el rol ganador)
         Redis::hmset("room:{$roomId}:state", [
             'game_over'   => 1,
             'winner_role' => $outcome === 'cancelled' ? '' : $outcome,
             'status'      => 'finished',
         ]);
 
-        $message = $outcome === 'cancelled'
-            ? "La partida ha sido cancelada por el sistema."
-            : "Partida finalizada de forma forzada.";
+        // Manejar el caso de cancelación (sin logros ni estadísticas)
+        if ($outcome === 'cancelled') {
+            $message = "La partida ha sido cancelada por el sistema.";
+            event(new RoomStateUpdated($roomId, $message));
 
-        event(new RoomStateUpdated($roomId, $message));
+            $cleanupToken = uniqid('cleanup_', true);
+            Redis::hset("room:{$roomId}:state", 'cleanup_token', $cleanupToken);
+            CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now('UTC')->addSeconds(7));
 
-        $cleanupToken = uniqid('cleanup_', true);
-        Redis::hset("room:{$roomId}:state", 'cleanup_token', $cleanupToken);
+            return;
+        }
 
-        CleanupRoomJob::dispatch($roomId, $cleanupToken)->delay(now('UTC')->addSeconds(7));
+        $this->finalizationService->finalize($roomId);
     }
 }

@@ -119,7 +119,7 @@ export default function GameHistory({ games, user }: GameHistoryProps) {
 									const gameDate = new Date(game.playedAt).toLocaleDateString(
 										"es-ES",
 									);
-									const gameDescription = `Partida del ${gameDate}. Resultado: ${won ? "Éxito" : "Fracaso"}. Rol: ${getRoleLabel(me.stats.role)}`;
+									const gameDescription = `Partida del ${gameDate}. Resultado: ${won ? "Victoria" : "Derrota"}. Rol: ${getRoleLabel(me.stats.role)}`;
 
 									return (
 										<div
@@ -148,10 +148,10 @@ export default function GameHistory({ games, user }: GameHistoryProps) {
 													className={`${styles.gameResult} ${won ? styles.resultWin : styles.resultLoss}`}
 													role="cell"
 													aria-label={
-														won ? "Resultado: Éxito" : "Resultado: Fracaso"
+														won ? "Resultado: Victoria" : "Resultado: Derrota"
 													}
 												>
-													{won ? "ÉXITO" : "FRACASO"}
+													{won ? "Victoria" : "Derrota"}
 												</span>
 												<span className={styles.gameRole} role="cell">
 													{getRoleLabel(me.stats.role)}
