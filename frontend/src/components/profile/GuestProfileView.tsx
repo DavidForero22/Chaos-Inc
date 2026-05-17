@@ -1,7 +1,7 @@
 // src/components/profile/GuestProfileView.tsx
 // Accesibilidad comprobada: SI
 
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import styles from "./GuestProfileView.module.css";
 import sharedStyles from "./Profile.module.css";
 

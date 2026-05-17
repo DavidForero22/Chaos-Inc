@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ACHIEVEMENTS } from "../../data/achievements";
-import { useAchievementNotificationStore } from "../../store/useAchievementNotificationStore";
+import { useAchievementNotificationStore } from "../../store/ui/useAchievementNotificationStore";
 import styles from "./AchievementNotification.module.css";
 
 function AchievementNotificationItem({

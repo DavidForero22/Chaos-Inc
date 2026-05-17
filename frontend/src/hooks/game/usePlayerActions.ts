@@ -1,24 +1,28 @@
 // src/hooks/game/usePlayerActions.ts
 
-import { useGameStore } from "../../store/useGameStore";
-import { useGameUIStore } from "../../store/useGameUIStore";
+import { useGameStore } from "../../store/game/useGameStore";
+import { useGameUIStore } from "../../store/game/useGameUIStore";
 import { useAuth } from "../useAuth";
 import { useState } from "react";
-import { useLoadingStore } from "../../store/useLoadingStore";
+import { useLoadingStore } from "../../store/ui/useLoadingStore";
+import { useGameActions } from "../../store/game/useGameActions";
 
 export function usePlayerActions() {
 	const { id: myId } = useAuth();
 
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
-	const reactToAttack = useGameStore((state) => state.reactToAttack);
-	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-	const endTurn = useGameStore((state) => state.endTurn);
-	const discardCards = useGameStore((state) => state.discardCards);
-	const discardPerks = useGameStore((state) => state.discardPerks);
-	const resolveSabotage = useGameStore((state) => state.resolveSabotage);
-	const playTurn = useGameStore((state) => state.playTurn);
-	const isActionLocked = useGameStore((state) => state.isActionLocked);
+	
+	// Todas las acciones ahora en useGameActions
+	const reactToAttack = useGameActions((state) => state.reactToAttack);
+	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
+	const endTurn = useGameActions((state) => state.endTurn);
+	const discardCards = useGameActions((state) => state.discardCards);
+	const discardPerks = useGameActions((state) => state.discardPerks);
+	const resolveSabotage = useGameActions((state) => state.resolveSabotage);
+	const playTurn = useGameActions((state) => state.playTurn);
+	const isActionLocked = useGameActions((state) => state.isActionLocked);
+
 
 	const {
 		isDiscardMode,

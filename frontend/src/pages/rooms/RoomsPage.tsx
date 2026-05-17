@@ -8,7 +8,7 @@ import CreateRoomModal from "../../components/rooms/CreateRoomModal";
 import GuestNameModal from "../../components/lobby/GuestNameModal";
 import ActiveGameWarning from "../../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
 
 export default function RoomsPage() {

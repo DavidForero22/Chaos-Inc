@@ -12,12 +12,16 @@ export type ActiveModalType =
 interface GameUIState {
 	selectedCardId: string | null;
 	isDiscardMode: boolean;
+
 	isInfoMode: boolean;
 	cardsToDiscard: string[];
 	perksToDiscard: string[];
 	luckResult: "success" | "fail" | null;
+
 	isFolderExpanded: boolean;
 	activeModal: ActiveModalType;
+	showActingBossModal: boolean;
+	matchAchievements: string[];
 
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
@@ -25,13 +29,22 @@ interface GameUIState {
 	toggleDiscardCard: (id: string, maxCards?: number) => void;
 	toggleDiscardPerk: (id: string, maxCards?: number) => void;
 	clearDiscardSelection: () => void;
+
 	handleLuckResult: (success: boolean) => void;
 	toggleFolder: () => void;
 	setFolderExpanded: (expanded: boolean) => void;
 	setActiveModal: (modal: ActiveModalType) => void;
+
+	setShowActingBossModal: (show: boolean) => void;
+	addMatchAchievement: (achievementId: string) => void;
+	clearMatchAchievements: () => void;
+	resetGameUI: () => void;
 }
 
 export const useGameUIStore = create<GameUIState>((set) => ({
+	showActingBossModal: false,
+	matchAchievements: [],
+
 	selectedCardId: null,
 	isDiscardMode: false,
 	isInfoMode: false,
@@ -105,4 +118,24 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	setFolderExpanded: (expanded) => set({ isFolderExpanded: expanded }),
 
 	setActiveModal: (modal) => set({ activeModal: modal }),
+	setShowActingBossModal: (show) => set({ showActingBossModal: show }),
+	addMatchAchievement: (achievementId) =>
+		set((state) => ({
+			matchAchievements: state.matchAchievements.includes(achievementId)
+				? state.matchAchievements
+				: [...state.matchAchievements, achievementId],
+		})),
+	clearMatchAchievements: () => set({ matchAchievements: [] }),
+	resetGameUI: () =>
+		set({
+			showActingBossModal: false,
+			matchAchievements: [],
+			selectedCardId: null,
+			isDiscardMode: false,
+			isInfoMode: false,
+			cardsToDiscard: [],
+			perksToDiscard: [],
+			luckResult: null,
+			activeModal: "none",
+		}),
 }));

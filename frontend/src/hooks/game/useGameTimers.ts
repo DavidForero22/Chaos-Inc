@@ -2,17 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import { logWithTime } from "../../utils/logger.ts";
-import { useGameStore } from "../../store/useGameStore.ts";
-import { useTimerStore } from "../../store/useTimerStore.ts";
-import { useLoadingStore } from "../../store/useLoadingStore";
+import { useGameStore } from "../../store/game/useGameStore.ts";
+import { useTimerStore } from "../../store/game/useTimerStore.ts";
+import { useLoadingStore } from "../../store/ui/useLoadingStore.ts";
 import { useAuth } from "../useAuth.ts";
-import { useGameUIStore } from "../../store/useGameUIStore.ts";
+import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
+import { useGameActions } from "../../store/game/useGameActions.ts";
 
 export function useGameTimers() {
 	const { id: myId } = useAuth();
 
 	const gameData = useGameStore((state) => state.gameData);
-	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
+	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
 
 	// Traer solo los setters de Zustand
 	const setMultiAttackSecondsLeft = useTimerStore(

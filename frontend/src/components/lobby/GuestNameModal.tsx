@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import api, { getCsrfCookie } from "../../api/axios";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
 import LoginModal from "../ui/AuthModal/LoginModal";

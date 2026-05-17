@@ -3,8 +3,9 @@
 
 import { useRef, useState } from "react";
 import { Card } from "../ui/Card.tsx";
-import { useGameStore } from "../../../store/useGameStore.ts";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useGameActions } from "../../../store/game/useGameActions.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts";
 import type { CardInstance } from "../../../types/live-game.ts";
@@ -14,10 +15,10 @@ export function PlayerHand() {
     const { id } = useAuth();
 
     // --- ESTADO GLOBAL Y UI ---
-    const gameData = useGameStore((state) => state.gameData);
-    const reactToAttack = useGameStore((state) => state.reactToAttack);
-    const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-    const isActionLocked = useGameStore((state) => state.isActionLocked);
+   const gameData = useGameStore((state) => state.gameData);                 
+	const reactToAttack = useGameActions((state) => state.reactToAttack);        
+	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
+	const isActionLocked = useGameActions((state) => state.isActionLocked);    
 
     const {
         isDiscardMode,

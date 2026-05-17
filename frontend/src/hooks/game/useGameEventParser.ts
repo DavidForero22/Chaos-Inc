@@ -1,6 +1,6 @@
-import { useNotificationStore } from "../../store/useNotificationStore";
-import type { NotificationType } from "../../store/useNotificationStore";
-import { useGameStore } from "../../store/useGameStore";
+import { useNotificationStore } from "../../store/ui/useNotificationStore";
+import type { NotificationType } from "../../store/ui/useNotificationStore";
+import { useGameStore } from "../../store/game/useGameStore";
 import { useAuth } from "../useAuth";
 
 // Objetivo de la carta

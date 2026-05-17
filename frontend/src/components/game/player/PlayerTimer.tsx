@@ -1,7 +1,7 @@
 // src/components/game/player/PlayerTimer.tsx
 // Accesibilidad comprobada: SI
 
-import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
 
 
 interface PlayerTimerProps {

@@ -8,7 +8,7 @@ import {
 } from "../../../hooks/game/useOpponentPerks.ts";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
-import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 
 

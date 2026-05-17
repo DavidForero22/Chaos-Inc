@@ -10,10 +10,11 @@ import { useAuth } from "../useAuth.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";
-import { useGameStore } from "../../store/useGameStore.ts";
-import { useGameUIStore } from "../../store/useGameUIStore.ts";
-import { useLoadingStore } from "../../store/useLoadingStore.ts";
+import { useGameStore } from "../../store/game/useGameStore.ts";
+import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
+import { useLoadingStore } from "../../store/ui/useLoadingStore.ts";
 import { useLeaveOnUnload } from "./useLeaveOnUnload.ts";
+import { useRoomStore } from "../../store/room/useRoomStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();
@@ -22,11 +23,12 @@ export function useLiveGame(roomId: string | undefined) {
 	const isKickedRef = useRef(false);
 
 	// -- EXTRAER LO NECESARIO DEL STORE --
-	const setRoomId = useGameStore((state) => state.setRoomId);
+	const setRoomId = useRoomStore((state) => state.setRoomId);
+
 	const syncGameStore = useGameStore((state) => state.syncGame);
 	const setIsConnecting = useGameStore((state) => state.setIsConnecting);
 	const isConnecting = useGameStore((state) => state.isConnecting);
-	const resetStore = useGameStore((state) => state.resetStore);
+	const resetRoomStore = useRoomStore((state) => state.resetRoomStore);
 
 	// Extraer el current_turn para vigilarlo
 	const currentTurn = useGameStore(
@@ -51,9 +53,9 @@ export function useLiveGame(roomId: string | undefined) {
 
 			// Si el juego no ha terminado, conservar el Room ID
 			// Si ya terminó, limpiar todo
-			resetStore(!isGameOver);
+			resetRoomStore(!isGameOver);
 		};
-	}, [roomId, setRoomId, resetStore]);
+	}, [roomId, setRoomId, resetRoomStore]);
 
 	// --- 1.5 LIMPIEZA DE UI AL CAMBIAR DE TURNO ---
 	const previousTurnRef = useRef<string | null>(null);

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useUsersData } from "../../hooks/admin/useUsersData.ts";
 import Pagination from "./Pagination.tsx";
-import { useAuthStore } from "../../store/useAuthStore.ts";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
 // ── Constantes
 const PAGE_SIZE = 20;

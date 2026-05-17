@@ -2,8 +2,9 @@
 // Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
-import { useGameStore } from "../../../store/useGameStore.ts";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useGameActions } from "../../../store/game/useGameActions.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { OpponentCard } from "./OpponentCard.tsx";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
@@ -20,7 +21,7 @@ export function OpponentsBoard({
 	const { id: myId } = useAuth();
 
 	const gameData = useGameStore((state) => state.gameData);
-	const playTurn = useGameStore((state) => state.playTurn);
+	const playTurn = useGameActions((state) => state.playTurn);
 
 	const { selectedCardId, setSelectedCardId, isFolderExpanded } =
 		useGameUIStore();
@@ -75,7 +76,7 @@ export function OpponentsBoard({
 			gapClass = "gap-1 sm:gap-2";
 		}
 
-		// Definir el escalado base exacto 
+		// Definir el escalado base exacto
 		let currentScaleClosed = "scale-100";
 		let currentScaleOpen = "scale-75";
 

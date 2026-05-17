@@ -1,6 +1,6 @@
 // Accesibilidad comprobada: SI
 
-import { useLoadingStore } from "../../store/useLoadingStore";
+import { useLoadingStore } from "../../store/ui/useLoadingStore";
 
 export function GlobalLoader() {
 	const { requestCount, message } = useLoadingStore();

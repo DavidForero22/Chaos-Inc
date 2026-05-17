@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import api, { getCsrfCookie } from "../api/axios";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../store/auth/useAuthStore.ts";
 
 type RegisterInput = {
 	username: string;

@@ -18,8 +18,8 @@ import { ImTarget } from "react-icons/im";
 import { HiUsers } from "react-icons/hi";
 
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
-import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
 
 // Diccionario para renderizar dinámicamente los iconos que manda el servidor
 const ICON_MAP: Record<CardIconType, React.ElementType> = {

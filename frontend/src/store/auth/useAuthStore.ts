@@ -1,7 +1,7 @@
-// src/store/useAuthStore.ts
+// src/store/auth/useAuthStore.ts
 
 import { create } from "zustand";
-import type { UserAchievement, SocialAccountInfo } from "../types/api";
+import type { UserAchievement, SocialAccountInfo } from "../../types/api.ts";
 
 interface AuthState {
 	id: string | null;

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import api from "../api/axios";
-import { useAuthStore } from "../store/useAuthStore";
+import { useAuthStore } from "../store/auth/useAuthStore.ts";
 
 export function useSessionGuard() {
 	const logout = useAuthStore((s) => s.logout);

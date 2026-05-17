@@ -3,7 +3,7 @@
 import { useState } from "react";
 import api from "../../../api/axios.ts";
 import { Modal } from "../ui/GameModal.tsx";
-import { useTimerStore } from "../../../store/useTimerStore.ts";
+import { useTimerStore } from "../../../store/game/useTimerStore.ts";
 
 
 // Estilos de las puertas (más oscuros para dar sensación de pasillo cerrado)

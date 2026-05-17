@@ -1,11 +1,14 @@
+// src/components/game/overlays/GameOverlayManager.tsx
+
 import { useNavigate } from "react-router-dom";
-import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useRoomStore } from "../../../store/room/useRoomStore.ts";
 import { RoleRevealModal } from "./RoleRevealModal.tsx";
 import { GameOverModal } from "./GameOverModal.tsx";
 import { LuckChallengeModal } from "./LuckChallengeModal.tsx";
 import { DeathModal } from "./DeathModal.tsx";
 import type { MyData, GameData } from "../../../types/live-game.ts";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { ActingBossModal } from "./ActingBossModal.tsx";
 import { useEffect, useState } from "react";
 
@@ -24,14 +27,14 @@ export function GameOverlayManager({
 }: GameOverlayManagerProps) {
 	const navigate = useNavigate();
 
-	// Extraemos el estado de la UI directamente desde Zustand
-	const isFirstLoad = useGameStore((state) => state.isFirstLoad);
-	const setIsFirstLoad = useGameStore((state) => state.setIsFirstLoad);
+	// Estados movidos a sus stores correspondientes
+	const isFirstLoad = useRoomStore((state) => state.isFirstLoad);
+	const setIsFirstLoad = useRoomStore((state) => state.setIsFirstLoad);
 	const gameOver = useGameStore((state) => state.gameOver);
-	const showActingBossModal = useGameStore(
+	const showActingBossModal = useGameUIStore(
 		(state) => state.showActingBossModal,
 	);
-	const setShowActingBossModal = useGameStore(
+	const setShowActingBossModal = useGameUIStore(
 		(state) => state.setShowActingBossModal,
 	);
 	const luckResult = useGameUIStore((state) => state.luckResult);
@@ -39,8 +42,8 @@ export function GameOverlayManager({
 
 	const handleCloseGameOver = () => {
 		localStorage.removeItem("game_token");
-		useGameStore.getState().setRoomId(null);
-		useGameStore.getState().resetStore();
+		// Limpiar el roomId y resetear la sala
+		useRoomStore.getState().resetRoomStore(false);
 		navigate("/");
 	};
 

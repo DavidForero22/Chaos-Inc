@@ -4,8 +4,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useRoom } from "../../hooks/room/useRoom.ts";
-import { useLoadingStore } from "../../store/useLoadingStore.ts";
-import { useAuthStore } from "../../store/useAuthStore.ts";
+import { useLoadingStore } from "../../store/ui/useLoadingStore.ts";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import { FaShareAlt, FaCheck, FaTools } from "react-icons/fa";
 
 import GuestNameModal from "../../components/lobby/GuestNameModal.tsx";

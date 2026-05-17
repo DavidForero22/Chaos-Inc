@@ -4,7 +4,7 @@
 import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 
 
 export function PlayerActions() {

@@ -2,8 +2,8 @@
 // Accesibilidad comprobada: SI
 
 import { useEffect, useState, useRef } from "react";
-import { useGameStore } from "../../../store/useGameStore.ts";
-import { useGameUIStore } from "../../../store/useGameUIStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 
 import { PlayerHand } from "./PlayerHand.tsx";
 import { PlayerStats } from "./PlayerStats.tsx";

@@ -1,17 +1,18 @@
-import { useGameStore } from "../../store/useGameStore.ts";
+import { useGameStore } from "../../store/game/useGameStore.ts";
+import { useGameActions } from "../../store/game/useGameActions.ts";   
 import { useAuth } from "../useAuth.ts";
-import { useGameUIStore } from "../../store/useGameUIStore.ts";
+import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
 
 export function useGameBoard() {
 	const { user, id: myId } = useAuth();
 
 	// Extraer todo del Store
-	const gameData = useGameStore((state) => state.gameData);
-	const endTurn = useGameStore((state) => state.endTurn);
-	const reactToAttack = useGameStore((state) => state.reactToAttack);
-	const reactToMultiAttack = useGameStore((state) => state.reactToMultiAttack);
-	const discardCards = useGameStore((state) => state.discardCards);
-	const resolveSabotage = useGameStore((state) => state.resolveSabotage);
+	const gameData = useGameStore((state) => state.gameData);                
+	const endTurn = useGameActions((state) => state.endTurn);              
+	const reactToAttack = useGameActions((state) => state.reactToAttack); 
+	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
+	const discardCards = useGameActions((state) => state.discardCards);   
+	const resolveSabotage = useGameActions((state) => state.resolveSabotage); 
 
 	// UI Store
 	const selectedCardId = useGameUIStore((state) => state.selectedCardId);

@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef } from "react";
 import type { ChangeEvent } from "react";
 import { useAuth } from "../useAuth";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore";
 import api from "../../api/axios";
 import type { SocialAccountInfo } from "../../types/api";
 

@@ -3,9 +3,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useGameUIStore } from "../../../../store/useGameUIStore";
-import { useGameStore } from "../../../../store/useGameStore";
-import { useRoomStore } from "../../../../store/useRoomStore";
+import { useGameUIStore } from "../../../../store/game/useGameUIStore.ts";
+import { useGameStore } from "../../../../store/game/useGameStore.ts";
+import { useRoomStore } from "../../../../store/room/useRoomStore.ts";
 import { FaBug } from "react-icons/fa";
 import styles from "./DebugTools.module.css";
 import { useDebug } from "../../../../hooks/game/useDebug";

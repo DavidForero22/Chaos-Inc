@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { useGameUIStore } from "../../../store/useGameUIStore";
+import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import { FaQuestion } from "react-icons/fa";
 import { GUIDE_ITEMS } from "../../../data/iconGuide";
 import styles from "./IconGuide.module.css";

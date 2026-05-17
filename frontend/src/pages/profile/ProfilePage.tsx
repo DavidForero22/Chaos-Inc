@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import GuestProfileView from "../../components/profile/GuestProfileView";
 import api from "../../api/axios";
 import styles from "../../components/profile/Profile.module.css";

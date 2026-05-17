@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { logWithTime } from "../../utils/logger.ts";
-import { useGameStore } from "../../store/useGameStore.ts"; // <-- Importamos el store
+import { useGameStore } from "../../store/game/useGameStore.ts"; // <-- Importamos el store
 
 export function useReconnectionTimers() {
 	// Extraemos solo lo que necesitamos del store

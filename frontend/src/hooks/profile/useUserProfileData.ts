@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import api from "../../api/axios.ts";
-import { useAuthStore } from "../../store/useAuthStore.ts";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord, UserRecord } from "../../types/api.ts";
 
 export function useUserProfileData(userId: string | undefined) {

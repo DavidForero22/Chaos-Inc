@@ -2,8 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useRoomStore } from "../../store/useRoomStore";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useRoomStore } from "../../store/room/useRoomStore";
+import { useAuthStore } from "../../store/auth/useAuthStore";
 import { useAuth } from "../useAuth";
 import { logWithTime } from "../../utils/logger";
 
@@ -20,7 +20,7 @@ export function useRoomSession(
 		isJoining,
 		needsPassword,
 		passwordError,
-		setRoomId,
+		setRoomId, 
 		setIsJoining,
 		attemptJoin,
 		leaveRoom,
@@ -38,7 +38,7 @@ export function useRoomSession(
 		};
 	}, [roomId, setRoomId, resetRoomStore]);
 
-	// Intentar entrar automáticamente si tiene sesion iniciada
+	// Intentar entrar automáticamente si tiene sesión iniciada
 	useEffect(() => {
 		if (!roomId || initAttempted.current) return;
 
@@ -46,14 +46,13 @@ export function useRoomSession(
 			initAttempted.current = true;
 			const store = useRoomStore.getState();
 
-			// Si ya hay token , pedir los datos directamente.
+			// Si ya hay token, pedir los datos directamente.
 			if (store.hasToken) {
 				try {
 					await fetchRoomData();
 					setIsJoining(false);
-					return; //
+					return;
 				} catch (error) {
-					// Si falla , continuar
 					logWithTime(
 						"Token previo no válido para esta sala, intentando Join...",
 						null,
@@ -86,7 +85,6 @@ export function useRoomSession(
 							"Tu sesión ha expirado. Por favor, vuelve a introducir un nombre.",
 						);
 					} else {
-						// Evita quedarse en loading infinito si ocurre un error no tipado
 						setIsJoining(false);
 						console.error("Error no manejado al unirse:", err);
 					}
@@ -109,7 +107,6 @@ export function useRoomSession(
 	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
 	useEffect(() => {
 		if (!room || !myPlayerId || isJoining || needsPassword) return;
-		// Validar estrictamente por ID en la lista de objetos
 		const stillInRoom =
 			room.players?.some((player) => player.id === String(myPlayerId)) ?? true;
 
@@ -124,9 +121,9 @@ export function useRoomSession(
 	// Vigilante de redirección a partida
 	useEffect(() => {
 		if (room?.status === "in_game" && location.pathname.includes(`/rooms/`)) {
-			navigate(`/game/${roomId}`, { replace: true });
+			navigate(`/game/${room.room_id}`, { replace: true });
 		}
-	}, [room?.status, roomId, navigate, location.pathname]);
+	}, [room?.status, room, navigate, location.pathname]);
 
 	// Sync multi-pestaña (Logout)
 	useEffect(() => {

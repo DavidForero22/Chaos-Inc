@@ -6,11 +6,10 @@ import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
 import { RESULT_CONFIG } from "../../../data/gameResults.ts";
 import type { WinnerRole, ConfigKey } from "../../../data/gameResults.ts";
-import { useGameStore } from "../../../store/useGameStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { ACHIEVEMENTS } from "../../../data/achievements.ts";
 import type { PlayerRole } from "../../../types/live-game.ts";
 import { ROLE_LABELS } from "../../../data/roles.ts";
-
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -37,7 +36,7 @@ export function GameOverModal({
 	const isCancelled = configKey === "canceled";
 
 	// Logros desbloqueados en esta partida (solo del jugador)
-	const matchAchievements = useGameStore((s) => s.matchAchievements);
+	const matchAchievements = useGameUIStore((s) => s.matchAchievements);
 	const achievementItems = matchAchievements
 		.map((id) => ACHIEVEMENTS.find((a) => a.id === id))
 		.filter(Boolean);
@@ -230,11 +229,7 @@ export function GameOverModal({
 				className={`${styles.arrow} ${showArrow ? styles.arrowVisible : styles.arrowHidden}`}
 				aria-hidden="true"
 			>
-				<svg
-					viewBox="0 0 24 24"
-					fill="currentColor"
-					className="w-12 h-12"
-				>
+				<svg viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12">
 					{/* Flecha sólida estilo tipográfico con remates marcados */}
 					<path d="M12 21l-9-9h5v-9h8v9h5z" />
 				</svg>

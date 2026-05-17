@@ -1,5 +1,5 @@
 // src/utils/logger.ts
-import { useRoomStore } from "../store/useRoomStore";
+import { useRoomStore } from "../store/room/useRoomStore.ts";
 
 type LogType = "info" | "warn" | "error";
 

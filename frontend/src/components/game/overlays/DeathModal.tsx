@@ -4,7 +4,7 @@
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "../ui/GameModal.tsx";
-import { useGameStore } from "../../../store/useGameStore";
+import { useRoomStore } from "../../../store/room/useRoomStore.ts";
 
 interface DeathModalProps {
 	onClose: () => void;
@@ -21,15 +21,14 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 	useEffect(() => {
 		const timer = setTimeout(() => {
 			spectatorBtnRef.current?.focus();
-		}, 50); // Pequeño delay para asegurar que el DOM del Modal está listo
+		}, 50);
 		return () => clearTimeout(timer);
 	}, []);
 
 	const handleLeaveGame = () => {
-		// Lógica para limpiar la partida y salir
+		// Limpiar la partida y salir usando useRoomStore
 		localStorage.removeItem("game_token");
-		useGameStore.getState().setRoomId(null);
-		useGameStore.getState().resetStore();
+		useRoomStore.getState().resetRoomStore(false);
 		navigate("/");
 	};
 

@@ -9,7 +9,7 @@ import {
 	FaTimes,
 } from "react-icons/fa";
 import { createPortal } from "react-dom";
-import { useToastStore } from "../../../store/useToastStore";
+import { useToastStore } from "../../../store/ui/useToastStore";
 import styles from "./Toast.module.css";
 
 export function Toast() {

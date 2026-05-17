@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useParams, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore";
 import { useAuth } from "../../hooks/useAuth";
 import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../../components/profile/RegisteredProfileView";

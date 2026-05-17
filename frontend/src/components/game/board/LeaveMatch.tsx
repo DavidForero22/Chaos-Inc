@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { FaDoorOpen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useRoomStore } from "../../../store/useRoomStore.ts";
+import { useRoomStore } from "../../../store/room/useRoomStore";
 import { logWithTime } from "../../../utils/logger.ts";
 
 export function LeaveMatch() {

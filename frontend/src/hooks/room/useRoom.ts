@@ -3,7 +3,7 @@
 import { useAuth } from "../useAuth.ts";
 import { useRoomSession } from "./useRoomSession.ts";
 import { useRoomSockets } from "./useRoomSockets.ts";
-import { useRoomStore } from "../../store/useRoomStore.ts"; 
+import { useRoomStore } from "../../store/room/useRoomStore.ts";
 
 export function useRoom(roomId: string | undefined) {
 	const { user } = useAuth();

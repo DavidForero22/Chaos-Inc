@@ -1,7 +1,7 @@
 // src/components/game/player/PlayerBanners.tsx
 // Accesibilidad comprobada: SI
 
-import { useTimerStore } from "../../../store/useTimerStore.ts";
+import { useTimerStore } from "../../../store/game/useTimerStore.ts";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./PlayerBanners.module.css";
 

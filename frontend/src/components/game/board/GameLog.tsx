@@ -2,10 +2,10 @@
 // Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
-import { useGameUIStore } from "../../../store/useGameUIStore";
+import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import { createPortal } from "react-dom";
 import styles from "./GameLog.module.css";
-import { useNotificationStore } from "../../../store/useNotificationStore";
+import { useNotificationStore } from "../../../store/ui/useNotificationStore";
 import { useFocusTrap } from "../../../hooks/game/useFocusTrap";
 
 export function GameLog() {

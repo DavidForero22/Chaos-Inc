@@ -5,9 +5,11 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
-import { useLoadingStore } from "../store/useLoadingStore";
-import { useGameStore } from "../store/useGameStore";
-import { useAuthStore } from "../store/useAuthStore.ts";
+import { useLoadingStore } from "../store/ui/useLoadingStore.ts";
+// ❌ Eliminado: import { useGameStore } from "../store/game/useGameStore.ts";
+// ✅ Nuevo store de sala
+import { useRoomStore } from "../store/room/useRoomStore";
+import { useAuthStore } from "../store/auth/useAuthStore.ts";
 
 export function useLobby() {
 	const [rooms, setRooms] = useState<RoomData[]>([]);
@@ -23,16 +25,17 @@ export function useLobby() {
 	const navigate = useNavigate();
 	const { startLoading, stopLoading } = useLoadingStore();
 
-	// -- ESTADO GLOBAL DE PARTIDA ACTIVA --
-	const activeRoomId = useGameStore((state) => state.roomId);
-	const setRoomId = useGameStore((state) => state.setRoomId);
+	// -- ESTADO GLOBAL DE SALA ACTIVA --
+	// Ahora usamos useRoomStore en lugar de useGameStore
+	const activeRoomId = useRoomStore((state) => state.roomId);
+	const setRoomId = useRoomStore((state) => state.setRoomId);
 	const [isValidatingRoom, setIsValidatingRoom] = useState(
-		!!useGameStore.getState().roomId,
+		!!useRoomStore.getState().roomId,
 	);
 
 	// -- VALIDAR SI LA SALA SIGUE ACTIVA --
 	const checkActiveRoom = useCallback(async () => {
-		const currentRoomId = useGameStore.getState().roomId;
+		const currentRoomId = useRoomStore.getState().roomId;
 		if (!currentRoomId) {
 			setIsValidatingRoom(false);
 			return;
@@ -65,15 +68,13 @@ export function useLobby() {
 	}, [checkActiveRoom]);
 
 	const fetchRooms = useCallback(async (showLocalLoader = false) => {
-		// Solo activar el de RoomList
 		if (showLocalLoader) setIsLoadingRooms(true);
 		try {
 			const response = await api.get("/rooms", { hideLoader: true } as any);
 			const rooms: RoomData[] = response.data;
 			setRooms(rooms);
 
-			const currentRoomId = useGameStore.getState().roomId;
-
+			const currentRoomId = useRoomStore.getState().roomId;
 			const myId = useAuthStore.getState().id;
 
 			if (myId) {
@@ -82,9 +83,11 @@ export function useLobby() {
 				);
 
 				if (myRoom && myRoom.room_id !== currentRoomId) {
-					useGameStore.getState().setRoomId(myRoom.room_id);
+					// Actualizar el roomId global con la sala donde realmente está el jugador
+					useRoomStore.getState().setRoomId(myRoom.room_id);
 				} else if (!myRoom && currentRoomId) {
-					useGameStore.getState().setRoomId(null);
+					// El jugador ya no está en ninguna sala, limpiar el roomId
+					useRoomStore.getState().setRoomId(null);
 				}
 			}
 		} catch (error) {

@@ -1,7 +1,7 @@
 // src/components/game/player/PerkSlot.tsx
 // Accesibilidad comprobada: SI
 
-import { useGameUIStore } from "../../../store/useGameUIStore";
+import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import styles from "./PlayerStats.module.css";
 
 interface PerkSlotProps {

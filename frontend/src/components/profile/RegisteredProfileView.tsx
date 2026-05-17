@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useState, useEffect, useRef } from "react";
-import { useAuthStore } from "../../store/useAuthStore";
+import { useAuthStore } from "../../store/auth/useAuthStore";
 import type { GameRecord, UserRecord } from "../../types/api";
 
 import styles from "./RegisteredProfileView.module.css";

@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "../../../store/useAuthStore";
+import { useAuthStore } from "../../../store/auth/useAuthStore.ts";
 import LoginModal from "../AuthModal/LoginModal";
 import RegisterModal from "../AuthModal/RegisterModal";
 import { NavLinks } from "./NavLinks";

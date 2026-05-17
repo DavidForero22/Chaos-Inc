@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { useLiveGame } from "../hooks/game/useLiveGame.ts";
 import { useGameBoard } from "../hooks/game/useGameBoard.ts";
 import { useGameTimers } from "../hooks/game/useGameTimers.ts";
-import { useGameUIStore } from "../store/useGameUIStore.ts";
+import { useGameUIStore } from "../store/game/useGameUIStore.ts";
 
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
 import { PlayerArea } from "../components/game/player/PlayerArea.tsx";

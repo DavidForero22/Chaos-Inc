@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
-import { useRoomStore } from "../../store/useRoomStore";
+import { useRoomStore } from "../../store/room/useRoomStore.ts";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;

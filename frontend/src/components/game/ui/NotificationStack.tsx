@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNotificationStore } from "../../../store/useNotificationStore";
-import type { GameNotification } from "../../../store/useNotificationStore";
+import { useNotificationStore } from "../../../store/ui/useNotificationStore";
+import type { GameNotification } from "../../../store/ui/useNotificationStore";
 import { RiSwordFill } from "react-icons/ri";
 import { GiTrophyCup, GiHealthNormal } from "react-icons/gi";
 import { BsBackpack2Fill } from "react-icons/bs";

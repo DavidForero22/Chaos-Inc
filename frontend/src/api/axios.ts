@@ -2,8 +2,8 @@
 
 import axios from "axios";
 
-import { useAuthStore } from "../store/useAuthStore.ts";
-import { useLoadingStore } from "../store/useLoadingStore.ts";
+import { useAuthStore } from "../store/auth/useAuthStore.ts";
+import { useLoadingStore } from "../store/ui/useLoadingStore.ts";
 import { logWithTime } from "../utils/logger.ts";
 
 const api = axios.create({
