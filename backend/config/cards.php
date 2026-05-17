@@ -164,12 +164,12 @@ return [
             'image'        => 'distance.png',
         ],
 
-        // ─── 12. LIMPIEZA  ──────────────────────────
+        // ─── 12. RECORTE  ──────────────────────────
         [
             'id'           => 12,
             'type'         => 'default',
             'target'       => 'opponent',
-            'base_name'    => 'Limpieza',
+            'base_name'    => 'Recorte',
             'display_name' => 'Recorte',
             'description'  => 'Descarta una pasiva a elegir de cualquier oponente.',
             'lore'         => 'Te han recortado hasta la ropa... Esto si que es un corte de manga.',

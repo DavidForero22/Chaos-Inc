@@ -50,7 +50,8 @@ export function useCardPlayability(
 				(o.perks.has_shield ||
 					o.perks.vision_bonus > 0 ||
 					o.perks.has_distance ||
-					o.perks.has_luck),
+					o.perks.has_luck ||
+					o.perks.has_storage),
 		);
 
 		const myActivePerksCount =
