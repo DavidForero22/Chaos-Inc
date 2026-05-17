@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef } from "react";
 import styles from "./ActiveGameWarning.module.css";
 
+
+
 interface ActiveGameWarningProps {
 	roomId: string;
 }
@@ -22,7 +24,7 @@ export default function ActiveGameWarning({ roomId }: ActiveGameWarningProps) {
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "alert");
 		announcement.setAttribute("aria-live", "assertive");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent =
 			"Advertencia: Ya estás dentro de una sala activa. Puedes volver a la sala presionando el botón.";
 		document.body.appendChild(announcement);
@@ -37,7 +39,7 @@ export default function ActiveGameWarning({ roomId }: ActiveGameWarningProps) {
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "status");
 		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "visually-hidden";
+		announcement.className ="sr-only";
 		announcement.textContent = "Volviendo a la sala";
 		document.body.appendChild(announcement);
 		setTimeout(() => announcement.remove(), 1000);

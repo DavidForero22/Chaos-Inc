@@ -7,6 +7,7 @@ import viewStyles from "./RegisteredProfileView.module.css";
 import EditProfileModal from "./EditProfileModal";
 import type { UserRecord } from "../../types/api";
 
+
 interface ProfileActionsProps {
 	user?: UserRecord | null;
 	onLogout: () => void;
@@ -38,7 +39,7 @@ export default function ProfileActions({
 			const announcement = document.createElement("div");
 			announcement.setAttribute("role", "status");
 			announcement.setAttribute("aria-live", "polite");
-			announcement.className = "visually-hidden";
+			announcement.className = "sr-only";
 			announcement.textContent =
 				"Advertencia: Estás a punto de borrar tu cuenta. Esta acción es irreversible. Usa los botones para cancelar o confirmar.";
 			document.body.appendChild(announcement);
@@ -55,7 +56,7 @@ export default function ProfileActions({
 			const announcement = document.createElement("div");
 			announcement.setAttribute("role", "status");
 			announcement.setAttribute("aria-live", "polite");
-			announcement.className = "visually-hidden";
+			announcement.className = "sr-only";
 			announcement.textContent = "Perfil actualizado correctamente";
 			document.body.appendChild(announcement);
 			setTimeout(() => announcement.remove(), 3000);
@@ -69,7 +70,7 @@ export default function ProfileActions({
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "status");
 		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent = "Cerrando sesión";
 		document.body.appendChild(announcement);
 		setTimeout(() => announcement.remove(), 1000);
@@ -81,7 +82,7 @@ export default function ProfileActions({
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "alert");
 		announcement.setAttribute("aria-live", "assertive");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent =
 			"Tu cuenta está siendo eliminada. Esta acción es irreversible.";
 		document.body.appendChild(announcement);

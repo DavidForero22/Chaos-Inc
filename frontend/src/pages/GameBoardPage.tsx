@@ -18,8 +18,6 @@ import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
 import { DebugTools } from "../components/game/overlays/debug/DebugTools.tsx";
 import { useInfoModeGuard } from "../hooks/game/useInfoModeGuard.ts";
 
-import srOnlyStyles from "../styles/sr-only.module.css";
-
 
 export default function GameBoardPage() {
 	const { id } = useParams();
@@ -110,7 +108,7 @@ export default function GameBoardPage() {
 					>
 						{board.game.deck_count}
 					</span>
-					<span className={srOnlyStyles.srOnly}>
+					<span className="sr-only">
 						Mazo: {board.game.deck_count} cartas restantes
 					</span>
 				</div>
@@ -141,7 +139,7 @@ export default function GameBoardPage() {
 					>
 						Ronda {board.game.round_number}
 					</span>
-					<span className={srOnlyStyles.srOnly}>
+					<span className="sr-only">
 						Sala {roomId}, Ronda {board.game.round_number}
 					</span>
 				</div>

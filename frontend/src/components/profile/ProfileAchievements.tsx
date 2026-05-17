@@ -11,6 +11,7 @@ import type { UserAchievement } from "../../types/api.ts";
 import styles from "./ProfileAchievements.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 
+
 interface ProfileAchievementsProps {
 	userAchievements?: UserAchievement[];
 }
@@ -129,11 +130,11 @@ export default function ProfileAchievements({
 											aria-hidden="true"
 											className={styles.achSticker}
 										/>
-										<span className="visually-hidden">{title}</span>
+										<span className="sr-only">{title}</span>
 									</button>
 									<div
 										id={`achievement-desc-${ach.id}`}
-										className="visually-hidden"
+										className="sr-only"
 									>
 										{description}
 									</div>
@@ -164,9 +165,9 @@ export default function ProfileAchievements({
 											className={styles.lockedSticker}
 										/>
 										<div className={styles.lockedOverlay} aria-hidden="true">
-											<span>🔒</span>
+											<span>?</span>
 										</div>
-										<span className="visually-hidden">{title} (bloqueado)</span>
+										<span className="sr-only">{title} (bloqueado)</span>
 									</button>
 								</div>
 							);
@@ -195,7 +196,7 @@ export default function ProfileAchievements({
 								aria-label="Cerrar diálogo de logro"
 							>
 								<span aria-hidden="true">✖</span>
-								<span className="visually-hidden">Cerrar</span>
+								<span className="sr-only">Cerrar</span>
 							</button>
 
 							<div className={styles.modalHeader}>

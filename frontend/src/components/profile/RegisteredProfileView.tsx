@@ -118,7 +118,7 @@ export default function RegisteredProfileView({
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "status");
 		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent = `Pestaña activa: ${tabNames[tab]}`;
 		document.body.appendChild(announcement);
 		setTimeout(() => announcement.remove(), 2000);
@@ -131,7 +131,7 @@ export default function RegisteredProfileView({
 			const contentAnnouncement = document.createElement("div");
 			contentAnnouncement.setAttribute("role", "status");
 			contentAnnouncement.setAttribute("aria-live", "polite");
-			contentAnnouncement.className = "visually-hidden";
+			contentAnnouncement.className = "sr-only";
 
 			const contentNames = {
 				info: "Mostrando información del perfil",
@@ -153,7 +153,7 @@ export default function RegisteredProfileView({
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "status");
 		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent = `${profileType} cargado. Usa las flechas izquierda y derecha para navegar entre pestañas.`;
 		document.body.appendChild(announcement);
 		setTimeout(() => announcement.remove(), 4000);

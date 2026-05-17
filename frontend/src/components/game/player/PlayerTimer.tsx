@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useGameStore } from "../../../store/useGameStore.ts";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface PlayerTimerProps {
 	turnTimeLeft?: number | null;
@@ -54,7 +54,7 @@ export function PlayerTimer({
 			} ${className}`}
 		>
 			{/* TEXTO PARA LECTOR DE PANTALLA */}
-			<span className={srOnlyStyles.srOnly}>
+			<span className="sr-only">
 				{isTurnPaused
 					? "El turno está en pausa."
 					: isLowTime

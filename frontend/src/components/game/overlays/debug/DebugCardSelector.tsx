@@ -2,7 +2,6 @@
 // Accesibilidad comprobada: SI
 
 import type { CardCatalogItem } from "../../../../types/api";
-import srOnlyStyles from "../../../../styles/sr-only.module.css";
 
 interface DebugCardSelectorProps {
 	cardCatalog: CardCatalogItem[];
@@ -96,7 +95,7 @@ export function DebugCardSelector({
 								aria-atomic="true"
 							>
 								{/* Contexto adicional solo para voz */}
-								<span className={srOnlyStyles.srOnly}>Cantidad actual: </span>
+								<span className="sr-only">Cantidad actual: </span>
 								{currentQty}
 							</span>
 

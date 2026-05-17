@@ -4,7 +4,7 @@ import { useState } from "react";
 import api from "../../../api/axios.ts";
 import { Modal } from "../ui/GameModal.tsx";
 import { useTimerStore } from "../../../store/useTimerStore.ts";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 // Estilos de las puertas (más oscuros para dar sensación de pasillo cerrado)
 const COLOR_STYLES: Record<string, string> = {
@@ -91,7 +91,7 @@ export function LuckChallengeModal({
 					aria-atomic="true"
 				>
 					{/* Texto exclusivo para lectores de pantalla */}
-					<span className={srOnlyStyles.srOnly}>
+					<span className="sr-only">
 						Tiempo de decisión restante: {luckChallengeSecondsLeft} segundos
 					</span>
 

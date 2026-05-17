@@ -6,7 +6,7 @@ import type { UIEvent } from "react";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./RoleRevealModal.module.css";
 import { ROLE_CONFIG } from "../../../data/roles.ts";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface RoleRevealModalProps {
 	role: MyData["role"];
@@ -145,7 +145,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 
 							{/* Texto del objetivo */}
 							<div className="grow">
-								<h3 className={srOnlyStyles.srOnly}>Objetivo Principal</h3>
+								<h3 className="sr-only">Objetivo Principal</h3>
 								<p
 									className="text-xs uppercase font-bold mb-1 opacity-70"
 									aria-hidden="true"

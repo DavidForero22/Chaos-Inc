@@ -4,7 +4,7 @@
 import { useTimerStore } from "../../../store/useTimerStore.ts";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./PlayerBanners.module.css";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface PlayerBannersProps {
 	me: MyData;
@@ -32,7 +32,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 				singleAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
 						{/* LA ALERTA: Se lee una sola vez al aparecer */}
-						<div role="alert" className={srOnlyStyles.srOnly}>
+						<div role="alert" className="sr-only">
 							¡Alerta Urgente! Ataque entrante. Tienes tiempo limitado.
 						</div>
 
@@ -49,7 +49,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 								aria-atomic="true"
 								className={styles.timerStamp}
 							>
-								<span className={srOnlyStyles.srOnly}>
+								<span className="sr-only">
 									Tiempo restante: {singleAttackSecondsLeft} segundos
 								</span>
 								<span aria-hidden="true">{singleAttackSecondsLeft}s</span>
@@ -62,7 +62,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 			{me.combat_state.is_defending_multi &&
 				multiAttackSecondsLeft !== null && (
 					<div className={styles.warningSlip}>
-						<div role="alert" className={srOnlyStyles.srOnly}>
+						<div role="alert" className="sr-only">
 							¡Alerta Urgente! Ataque masivo entrante.
 						</div>
 
@@ -76,7 +76,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 								aria-atomic="true"
 								className={styles.timerStamp}
 							>
-								<span className={srOnlyStyles.srOnly}>
+								<span className="sr-only">
 									Tiempo restante: {multiAttackSecondsLeft} segundos
 								</span>
 								<span aria-hidden="true">{multiAttackSecondsLeft}s</span>
@@ -88,7 +88,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 			{/* Sabotaje pendiente */}
 			{me.conditions.must_discard && sabotageSecondsLeft !== null && (
 				<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
-					<div role="alert" className={srOnlyStyles.srOnly}>
+					<div role="alert" className="sr-only">
 						Notificación de sabotaje. ¡Descarta una carta inmediatamente!
 					</div>
 
@@ -105,7 +105,7 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 							aria-atomic="true"
 							className={`${styles.timerStamp} ${styles.timerStampOrange}`}
 						>
-							<span className={srOnlyStyles.srOnly}>
+							<span className="sr-only">
 								Tiempo restante: {sabotageSecondsLeft} segundos
 							</span>
 							<span aria-hidden="true">{sabotageSecondsLeft}s</span>

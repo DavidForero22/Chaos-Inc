@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 import { useGameUIStore } from "../../../store/useGameUIStore.ts";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 export function PlayerActions() {
 	const actionLogic = usePlayerActions();
@@ -100,14 +100,14 @@ export function PlayerActions() {
 				className={`hidden lg:inline-block ${styles.dymoTape} ${isCurrentlyOverLimit ? styles.dymoTapeRed : ""}`}
 			>
 				{/* Texto exclusivo para lector de pantalla que explica el error visual (color rojo) */}
-				<span className={srOnlyStyles.srOnly}>
+				<span className="sr-only">
 					{isCurrentlyOverLimit ? "Límite excedido. " : ""}
 					Tienes
 				</span>
 				<span aria-hidden="true">CARTAS: </span>
 				{isDiscardMode ? projectedCardsCount : currentCardsCount} /{" "}
 				{me!.max_hand_size}
-				<span className={srOnlyStyles.srOnly}> cartas en mano.</span>
+				<span className="sr-only"> cartas en mano.</span>
 			</div>
 
 			{/* Botones de Reacción Defensiva y Acción (Sellos) */}

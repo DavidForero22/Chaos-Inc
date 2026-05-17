@@ -9,7 +9,7 @@ import { PlayerTimer } from "./PlayerTimer.tsx";
 import { PerkSlot } from "./PerkSlot.tsx";
 import type { CardInstance } from "../../../types/live-game";
 import styles from "./PlayerStats.module.css";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface PlayerStatsProps {
 	me: MyData;
@@ -48,7 +48,7 @@ export function PlayerStats({
 				{/* Aviso para lectores de pantalla si está muerto */}
 				{me.is_dead && (
 					<>
-						<span className={srOnlyStyles.srOnly}>
+						<span className="sr-only">
 							Estado actual: Muerto. Estás eliminado de la partida.
 						</span>
 						<div aria-hidden="true" className={styles.stampDead}>
@@ -86,7 +86,7 @@ export function PlayerStats({
 						<dt className={styles.formLabel}>Alcance</dt>
 						<dd className={`${styles.formValue} m-0`}>
 							{/* Texto oculto para explicar el alcance en lugar de usar title */}
-							<span className={srOnlyStyles.srOnly}>
+							<span className="sr-only">
 								Puedes atacar a oponentes a una distancia de{" "}
 							</span>
 							{myRange}
@@ -165,7 +165,7 @@ export function PlayerStats({
 							<li>
 								<span className="cursor-help bg-purple-100 border border-purple-300 rounded px-1.5 py-0.5 text-xs font-bold relative group">
 									<span aria-hidden="true">🔒</span> BLOQUEADO
-									<span className={srOnlyStyles.srOnly}>
+									<span className="sr-only">
 										Sancionado. No puedes realizar acciones.
 									</span>
 								</span>
@@ -176,7 +176,7 @@ export function PlayerStats({
 							<li>
 								<span className="cursor-help bg-orange-100 border border-orange-400 text-orange-800 rounded px-1.5 py-0.5 text-xs font-bold relative group">
 									<span aria-hidden="true">⏳</span> PENALIZADO
-									<span className={srOnlyStyles.srOnly}>
+									<span className="sr-only">
 										Penalizado por inactividad. Perderás tu próximo turno.
 									</span>
 								</span>
@@ -187,7 +187,7 @@ export function PlayerStats({
 							<li>
 								<span className="cursor-help bg-yellow-100 border border-yellow-400 rounded px-1.5 py-0.5 text-xs font-bold relative group">
 									<span aria-hidden="true">👑</span> INTERINO
-									<span className={srOnlyStyles.srOnly}>
+									<span className="sr-only">
 										Jefe en Funciones. Asumes el rol de jefe temporalmente.
 									</span>
 								</span>

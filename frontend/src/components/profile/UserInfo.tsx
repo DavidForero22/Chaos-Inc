@@ -14,6 +14,7 @@ import styles from "./UserInfo.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 import { useEffect } from "react";
 
+
 const ACCOUNT_ROLE_CONFIG: Record<
 	string,
 	{ label: string; badgeClass: string }
@@ -91,7 +92,7 @@ export default function UserInfo({
 		const announcement = document.createElement("div");
 		announcement.setAttribute("role", "status");
 		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "visually-hidden";
+		announcement.className = "sr-only";
 		announcement.textContent = `Información del usuario ${displayUser} cargada`;
 		document.body.appendChild(announcement);
 		setTimeout(() => announcement.remove(), 2000);

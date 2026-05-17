@@ -9,7 +9,7 @@ import GuestNameModal from "../../components/lobby/GuestNameModal";
 import ActiveGameWarning from "../../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
 import { useAuthStore } from "../../store/useAuthStore";
-import srOnlyStyles from "../../styles/sr-only.module.css";
+
 
 export default function RoomsPage() {
 	const {
@@ -88,7 +88,7 @@ export default function RoomsPage() {
 				<div className={styles.controlsGrid}>
 					{/* Buscador */}
 					<div className={styles.searchBlock}>
-						<label htmlFor="room-name-search" className={srOnlyStyles.srOnly}>
+						<label htmlFor="room-name-search" className="sr-only">
 							Buscar sala por nombre
 						</label>
 						<input

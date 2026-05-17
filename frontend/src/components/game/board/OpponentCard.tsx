@@ -10,7 +10,7 @@ import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -182,7 +182,7 @@ export function OpponentCard({
             `}
 		>
 			{/* TEXTO EXCLUSIVO PARA LECTOR DE PANTALLA */}
-			<span className={srOnlyStyles.srOnly}>
+			<span className="sr-only">
 				Jugador {player.name}, Rol: {player.role}. Estado: {srStatus}.{" "}
 				{tooltipMessage}
 			</span>

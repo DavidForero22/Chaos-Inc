@@ -10,7 +10,7 @@ import { useGameStore } from "../../../store/useGameStore.ts";
 import { ACHIEVEMENTS } from "../../../data/achievements.ts";
 import type { PlayerRole } from "../../../types/live-game.ts";
 import { ROLE_LABELS } from "../../../data/roles.ts";
-import srOnlyStyles from "../../../styles/sr-only.module.css";
+
 
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
@@ -119,7 +119,7 @@ export function GameOverModal({
 					<h1 className={styles.newspaperName}>LA Agencia Preguntas</h1>
 				</div>
 
-				<span className={srOnlyStyles.srOnly}>
+				<span className="sr-only">
 					Noticia de fin de partida: {config.headline}
 				</span>
 

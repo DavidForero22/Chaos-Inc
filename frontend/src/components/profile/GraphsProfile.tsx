@@ -10,7 +10,7 @@ import { CARD_MAP } from "../../data/cards.ts";
 import styles from "./GraphsProfile.module.css";
 import viewStyles from "./RegisteredProfileView.module.css";
 
-import srOnlyStyles from "../../styles/sr-only.module.css";
+
 
 // ── Paleta temática ──────────────────────────────────────────────────────────
 const C = {
@@ -523,7 +523,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 													— PERFIL DE JUGADOR —
 												</p>
 												{/* Descripción accesible */}
-												<div className={srOnlyStyles.srOnly}>
+												<div className="sr-only">
 													{radarDescription(basicStats)}
 												</div>
 												<div aria-hidden="true">
@@ -537,7 +537,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 
 											<div className={styles.chartBlock}>
 												<p className={styles.chartTitle}>— ROLES JUGADOS —</p>
-												<div className={srOnlyStyles.srOnly}>
+												<div className="sr-only">
 													{doughnutDescription(roleDistribution, totalGames)}
 												</div>
 												<div aria-hidden="true">
@@ -556,7 +556,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— EFICACIA POR ROL —
 												</p>
-												<div className={srOnlyStyles.srOnly}>
+												<div className="sr-only">
 													{winrateDescription(winrateByRole)}
 												</div>
 												<div aria-hidden="true">
@@ -577,7 +577,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— TASA DE SUPERVIVENCIA —
 												</p>
-												<div className={srOnlyStyles.srOnly}>
+												<div className="sr-only">
 													{aliveDeadDescription(
 														aliveDeadData.alive,
 														aliveDeadData.dead,
@@ -602,7 +602,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 												<p className={styles.chartTitle}>
 													— CARTAS MÁS USADAS —
 												</p>
-												<div className={srOnlyStyles.srOnly}>
+												<div className="sr-only">
 													{topCardsDescription(topCards)}
 												</div>
 												<div aria-hidden="true">
@@ -624,7 +624,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 				</div>
 
 				{/* Anuncio de cambio de estado cuando se expande/colapsa */}
-				<div className={srOnlyStyles.srOnly} aria-live="polite" aria-atomic="true">
+				<div className="sr-only" aria-live="polite" aria-atomic="true">
 					{isExpanded
 						? "Sección de estadísticas avanzadas abierta."
 						: "Sección de estadísticas avanzadas cerrada."}
