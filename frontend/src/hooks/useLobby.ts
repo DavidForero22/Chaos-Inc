@@ -6,8 +6,6 @@ import api from "../api/axios";
 import echo from "../echo";
 import type { RoomData } from "../types/api.ts";
 import { useLoadingStore } from "../store/ui/useLoadingStore.ts";
-// ❌ Eliminado: import { useGameStore } from "../store/game/useGameStore.ts";
-// ✅ Nuevo store de sala
 import { useRoomStore } from "../store/room/useRoomStore";
 import { useAuthStore } from "../store/auth/useAuthStore.ts";
 

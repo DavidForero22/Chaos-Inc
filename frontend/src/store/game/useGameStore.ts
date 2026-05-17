@@ -66,7 +66,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 			localStorage.removeItem("game_token");
 
 			// Limpiar el flag de role reveal usando el roomId de useRoomStore
-			const roomId = useRoomStore.getState().room?.room_id;
+			const roomId = useRoomStore.getState().roomId;
 			if (roomId) {
 				const getRoleRevealKey = (rid: string) => `role_reveal_shown:${rid}`;
 				localStorage.removeItem(getRoleRevealKey(roomId));
@@ -78,7 +78,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 	syncGame: async () => {
 		// Obtener roomId del useRoomStore
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		if (!roomId) return;
 		if (!localStorage.getItem("game_token")) return;
 

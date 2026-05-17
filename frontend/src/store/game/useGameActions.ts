@@ -37,7 +37,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
 
 	playTurn: async (cardId, targetId, perkKey) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -69,7 +69,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	reactToAttack: async (reaction, cardId) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -97,7 +97,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	reactToMultiAttack: async (reaction, cardId) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -131,7 +131,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	endTurn: async () => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -151,7 +151,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	discardCards: async (cardIds: string[]) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -174,7 +174,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	discardPerks: async (perkIds: string[]) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
@@ -199,7 +199,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 	},
 
 	resolveSabotage: async (cardId: string) => {
-		const roomId = useRoomStore.getState().room?.room_id;
+		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
 
