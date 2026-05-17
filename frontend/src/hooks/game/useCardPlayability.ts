@@ -17,13 +17,24 @@ export function useCardPlayability(
 
 		const incomingAttack = me.combat_state.is_defending_single;
 		const hasPendingMultiAttack = me.combat_state.is_defending_multi;
-		const hasPendingAttack = me.combat_state.is_attacking_single;
-		const isAttackerWaiting = me.combat_state.is_attacking_multi;
+
+		const hasPendingAttack =
+			me.combat_state.is_attacking_single ||
+			(isMyTurn && !!game.pending_single_attack_target);
+		const isAttackerWaiting =
+			me.combat_state.is_attacking_multi ||
+			(isMyTurn && (game.pending_multi_attack_targets?.length ?? 0) > 0);
 		const hasPendingSabotage =
 			!!game.player_pending_sabotage &&
 			game.player_pending_sabotage !== myPlayerId;
 		const hasLuckChallenge = isMyTurn && !!me.luck_challenge;
 
+		/** Bloqueo total si el jugador está esperando la resolución de cualquier acción */
+		const isGlobalActionBlocked =
+			hasPendingAttack ||
+			isAttackerWaiting ||
+			hasPendingSabotage ||
+			hasLuckChallenge;
 		const anyOpponentHasCards = opponents.some(
 			(o) => o.cards_count > 0 && o.is_online,
 		);
@@ -57,6 +68,7 @@ export function useCardPlayability(
 			isAttackerWaiting,
 			hasPendingSabotage,
 			hasLuckChallenge,
+			isGlobalActionBlocked,
 			anyOpponentHasCards,
 			anyoneHasStress,
 			isAnyOpponentInRange,
@@ -71,9 +83,7 @@ export function useCardPlayability(
 			isMyTurn,
 			incomingAttack,
 			hasPendingMultiAttack,
-			hasPendingAttack,
-			isAttackerWaiting,
-			hasPendingSabotage,
+			isGlobalActionBlocked,
 			anyOpponentHasCards,
 			anyoneHasStress,
 			isAnyOpponentInRange,
@@ -125,7 +135,7 @@ export function useCardPlayability(
 		const isLuckDisabled =
 			(card.card_id === 14 && me.perks.has_luck) || isPerkLimitReached;
 
-		const isDisabled =
+		const isCardSpecificDisabled =
 			isHealDisabled ||
 			isAttackDisabled ||
 			isDodgeDisabled ||
@@ -145,15 +155,14 @@ export function useCardPlayability(
 		const canUseDodgeNow =
 			(incomingAttack || hasPendingMultiAttack) && card.card_id === 3;
 
-		// Evaluar si se puede hacer clic (seleccionar/jugar)
+		/** La carta se deshabilita si hay un bloqueo global (y no es el momento de esquivar) o si incumple sus reglas específicas */
+		const isDisabled =
+			(!canUseDodgeNow && isGlobalActionBlocked) || isCardSpecificDisabled;
+
+		/** Evaluar si se puede hacer clic (seleccionar/jugar) */
 		const isSelectable = isDiscardMode
 			? true
-			: (isMyTurn &&
-					!isDisabled &&
-					!hasPendingAttack &&
-					!isAttackerWaiting &&
-					!hasPendingSabotage) ||
-				canUseDodgeNow;
+			: (isMyTurn && !isDisabled) || canUseDodgeNow;
 
 		return {
 			isDisabled,

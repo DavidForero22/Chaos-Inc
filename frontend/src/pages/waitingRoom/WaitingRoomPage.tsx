@@ -210,7 +210,7 @@ export default function WaitingRoomPage() {
 
 	return (
 		<WallLayout>
-			<main className="flex flex-col items-center">
+			<main className="flex flex-col">
 				<header className="text-center">
 					<h1 className={`${styles.title} ${styles.markerBlack} mb-0`}>
 						SALA: <span className={styles.markerBlue}>{room.name}</span>
