@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useRoomStore } from "../../store/room/useRoomStore";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import { useAuth } from "../useAuth";
+import { useAuth } from "../auth/useAuth";
 import { logWithTime } from "../../utils/logger";
 
 export function useRoomSession(

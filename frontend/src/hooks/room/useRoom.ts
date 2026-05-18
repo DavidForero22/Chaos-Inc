@@ -1,6 +1,6 @@
 // src/hooks/room/useRoom.ts
 
-import { useAuth } from "../useAuth.ts";
+import { useAuth } from "../auth/useAuth.ts";
 import { useRoomSession } from "./useRoomSession.ts";
 import { useRoomSockets } from "./useRoomSockets.ts";
 import { useRoomStore } from "../../store/room/useRoomStore.ts";

@@ -6,7 +6,7 @@ import { Card } from "../ui/Card.tsx";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import { useGameActions } from "../../../store/game/useGameActions.ts";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
-import { useAuth } from "../../../hooks/useAuth.ts";
+import { useAuth } from "../../../hooks/auth/useAuth.ts";
 import { useCardPlayability } from "../../../hooks/game/useCardPlayability.ts";
 import type { CardInstance } from "../../../types/live-game.ts";
 import styles from "./PlayerHand.module.css";

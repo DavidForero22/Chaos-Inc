@@ -6,7 +6,7 @@ import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
 import type { UserRecord } from "../../types/user.ts";
 
-export function useUserProfileData(userId: string | undefined) {
+export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 	const { id: myId, isGuest } = useAuthStore();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
@@ -41,7 +41,7 @@ export function useUserProfileData(userId: string | undefined) {
 		};
 
 		fetchData();
-	}, [userId, myId, isGuest]);
+	}, [userId, myId, isGuest, refreshKey]);
 
 	return { games, profileUser, loading };
 }

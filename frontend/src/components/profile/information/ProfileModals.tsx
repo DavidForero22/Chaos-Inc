@@ -1,7 +1,8 @@
 // src/components/profile/ProfileModals.tsx
 import ModalLayout from "../../ui/ModalLayout";
 import styles from "./UserInfo.module.css";
-import type { SocialAccountInfo } from "../../../types/user.ts";
+import type { SocialAccountInfo, FriendRequest } from "../../../types/user.ts";
+import FriendRequestsModal from "./FriendRequestsModal.tsx";
 
 interface ProfileModalsProps {
 	showAvatarModal: boolean;
@@ -24,6 +25,21 @@ interface ProfileModalsProps {
 	unlinkPassword: string;
 	setUnlinkPassword: (v: string) => void;
 	unlinkPasswordError?: string;
+
+	showFriendRequestsModal: boolean;
+	setShowFriendRequestsModal: (v: boolean) => void;
+	pendingReceived: FriendRequest[];
+	pendingSent: FriendRequest[];
+	friendsLoading: boolean;
+	onAcceptRequest: (userId: number) => void;
+	onRejectRequest: (userId: number) => void;
+	onCancelRequest: (userId: number) => void;
+
+	showRemoveFriendModal: boolean;
+	setShowRemoveFriendModal: (v: boolean) => void;
+	friendToRemoveName?: string;
+	onConfirmRemoveFriend: () => void;
+	isRemovingFriend: boolean;
 }
 
 export default function ProfileModals({
@@ -44,6 +60,21 @@ export default function ProfileModals({
 	unlinkPassword,
 	setUnlinkPassword,
 	unlinkPasswordError,
+
+	showFriendRequestsModal,
+	setShowFriendRequestsModal,
+	pendingReceived,
+	pendingSent,
+	friendsLoading,
+	onAcceptRequest,
+	onRejectRequest,
+	onCancelRequest,
+
+	showRemoveFriendModal,
+	setShowRemoveFriendModal,
+	friendToRemoveName,
+	onConfirmRemoveFriend,
+	isRemovingFriend,
 }: ProfileModalsProps) {
 	return (
 		<>
@@ -161,6 +192,38 @@ export default function ProfileModals({
 								</p>
 							)}
 						</div>
+					</div>
+				</ModalLayout>
+			)}
+
+			{/* ── MODAL DE SOLICITUDES DE AMISTAD ── */}
+			<FriendRequestsModal
+				show={showFriendRequestsModal}
+				onClose={() => setShowFriendRequestsModal(false)}
+				pendingReceived={pendingReceived}
+				pendingSent={pendingSent}
+				isLoading={friendsLoading}
+				onAcceptRequest={onAcceptRequest}
+				onRejectRequest={onRejectRequest}
+				onCancelRequest={onCancelRequest}
+			/>
+
+			{/* ── MODAL CONFIRMAR ELIMINAR AMIGO ── */}
+			{showRemoveFriendModal && (
+				<ModalLayout
+					title="ELIMINAR AMIGO"
+					subtitle={`¿Seguro que quieres eliminar a ${friendToRemoveName} de tus amigos?`}
+					onClose={() => setShowRemoveFriendModal(false)}
+					onSubmit={(e) => {
+						e.preventDefault();
+						onConfirmRemoveFriend();
+					}}
+					isLoading={isRemovingFriend}
+					submitText="Eliminar"
+					loadingText="Eliminando..."
+				>
+					<div className="py-2 text-center text-sm font-mono text-gray-700">
+						<p>Esta acción no se puede deshacer.</p>
 					</div>
 				</ModalLayout>
 			)}

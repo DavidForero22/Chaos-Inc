@@ -2,7 +2,7 @@
 
 import { useGameStore } from "../../store/game/useGameStore";
 import { useGameUIStore } from "../../store/game/useGameUIStore";
-import { useAuth } from "../useAuth";
+import { useAuth } from "../auth/useAuth";
 import { useState } from "react";
 import { useLoadingStore } from "../../store/ui/useLoadingStore";
 import { useGameActions } from "../../store/game/useGameActions";

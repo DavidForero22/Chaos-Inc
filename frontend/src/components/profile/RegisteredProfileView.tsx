@@ -20,6 +20,7 @@ interface RegisteredProfileViewProps {
 	notMyProfile?: boolean;
 	publicProfile?: UserRecord | null;
 	myProfile?: UserRecord | null;
+	onRefreshProfile?: () => void;
 }
 
 export default function RegisteredProfileView({
@@ -30,6 +31,7 @@ export default function RegisteredProfileView({
 	notMyProfile = false,
 	publicProfile = null,
 	myProfile = null,
+	onRefreshProfile,
 }: RegisteredProfileViewProps) {
 	const { id, user, role, avatar, socialAccounts, joinedAt } = useAuthStore();
 	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
@@ -281,6 +283,7 @@ export default function RegisteredProfileView({
 								onLogout={onLogout}
 								onDeleteAccount={onDeleteAccount}
 								onUpdateProfile={onUpdateProfile}
+								onRefreshProfile={onRefreshProfile}
 							/>
 						)}
 					</div>

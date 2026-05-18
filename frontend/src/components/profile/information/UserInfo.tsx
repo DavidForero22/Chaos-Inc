@@ -16,9 +16,10 @@ import type {
 } from "../../../types/user.ts";
 import styles from "./UserInfo.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import LevelProgressBar from "./LevelProgressBar";
 import FriendList from "./FriendList.tsx";
+import { useFriendActions } from "../../../hooks/profile/useFriendActions";
 
 interface UserInfoProps {
 	userId?: number | null;
@@ -34,6 +35,7 @@ interface UserInfoProps {
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
 	onUpdateProfile?: (data: any) => Promise<void>;
+	onRefreshProfile?: () => void;
 }
 
 export default function UserInfo({
@@ -50,6 +52,7 @@ export default function UserInfo({
 	onLogout,
 	onDeleteAccount,
 	onUpdateProfile,
+	onRefreshProfile,
 }: UserInfoProps) {
 	const {
 		isUploading,
@@ -83,6 +86,39 @@ export default function UserInfo({
 		socialAccounts,
 	});
 
+	const {
+		pendingReceived,
+		pendingSent,
+		friendsLoading,
+		myFriends,
+		showFriendRequestsModal,
+		setShowFriendRequestsModal,
+		isSendingRequest,
+		handleSendFriendRequest,
+		handleAcceptRequest,
+		handleRejectRequest,
+		handleCancelRequest,
+		handleRemoveFriend,
+	} = useFriendActions({ userId, notMyProfile, onRefreshProfile });
+
+	const isFriend = useMemo(() => {
+		if (!notMyProfile || !userId || !myFriends) return false;
+		return myFriends.some((f) => f.id === userId);
+	}, [notMyProfile, myFriends, userId]);
+
+	// Modal de confirmación para eliminar amigo
+	const [showRemoveFriendModal, setShowRemoveFriendModal] = useState(false);
+	const [removingFriend, setRemovingFriend] = useState(false);
+
+	const openRemoveFriendModal = () => setShowRemoveFriendModal(true);
+
+	const confirmRemoveFriend = async () => {
+		if (!userId) return;
+		setRemovingFriend(true);
+		await handleRemoveFriend(userId);
+		setRemovingFriend(false);
+		setShowRemoveFriendModal(false);
+	};
 	// Anunciar carga de información del usuario
 	useEffect(() => {
 		const announcement = document.createElement("div");
@@ -115,12 +151,15 @@ export default function UserInfo({
 					displayUser={displayUser}
 					displayRole={displayRole}
 					notMyProfile={notMyProfile}
-					onFriendRequest={() => {
-						// TODO: implementar solicitud de amistad
-					}}
+					onFriendRequest={handleSendFriendRequest}
 					onGallery={() => {
-						// TODO: implementar galería de desbloqueables
+						/* TODO */
 					}}
+					onOpenFriendRequests={() => setShowFriendRequestsModal(true)}
+					pendingReceivedCount={pendingReceived.length}
+					isSendingRequest={isSendingRequest}
+					isFriend={isFriend}
+					onRemoveFriend={openRemoveFriendModal}
 				/>
 			</div>
 			<div className="mt-8">
@@ -190,6 +229,19 @@ export default function UserInfo({
 				unlinkPassword={unlinkPassword}
 				setUnlinkPassword={setUnlinkPassword}
 				unlinkPasswordError={unlinkPasswordError}
+				showFriendRequestsModal={showFriendRequestsModal}
+				setShowFriendRequestsModal={setShowFriendRequestsModal}
+				pendingReceived={pendingReceived}
+				pendingSent={pendingSent}
+				friendsLoading={friendsLoading}
+				onAcceptRequest={handleAcceptRequest}
+				onRejectRequest={handleRejectRequest}
+				onCancelRequest={handleCancelRequest}
+				showRemoveFriendModal={showRemoveFriendModal}
+				setShowRemoveFriendModal={setShowRemoveFriendModal}
+				friendToRemoveName={displayUser ?? ""}
+				onConfirmRemoveFriend={confirmRemoveFriend}
+				isRemovingFriend={removingFriend}
 			/>
 		</>
 	);

@@ -1,7 +1,7 @@
 // Accesibilidad comprobada: SI
 
 import { useState } from "react";
-import { useAuth } from "../../../hooks/useAuth.ts";
+import { useAuth } from "../../../hooks/auth/useAuth.ts";
 import ModalLayout from "../ModalLayout";
 import styles from "../ModalLayout.module.css";
 import { GoogleIcon, DiscordIcon } from "./AuthIcons";

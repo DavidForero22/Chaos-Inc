@@ -5,7 +5,7 @@ import { logWithTime } from "../../utils/logger.ts";
 import { useGameStore } from "../../store/game/useGameStore.ts";
 import { useTimerStore } from "../../store/game/useTimerStore.ts";
 import { useLoadingStore } from "../../store/ui/useLoadingStore.ts";
-import { useAuth } from "../useAuth.ts";
+import { useAuth } from "../auth/useAuth.ts";
 import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
 import { useGameActions } from "../../store/game/useGameActions.ts";
 

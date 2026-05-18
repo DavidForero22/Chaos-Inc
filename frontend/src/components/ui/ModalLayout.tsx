@@ -15,6 +15,7 @@ interface ModalLayoutProps {
 	children: ReactNode;
 	disableBackdropClick?: boolean;
 	hideSubmit?: boolean;
+	closeOnly?: boolean;
 }
 
 export default function ModalLayout({
@@ -29,6 +30,7 @@ export default function ModalLayout({
 	children,
 	disableBackdropClick = false,
 	hideSubmit = false,
+	closeOnly = false,
 }: ModalLayoutProps) {
 	const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (e.target === e.currentTarget && !disableBackdropClick) {
@@ -42,6 +44,9 @@ export default function ModalLayout({
 		}
 	};
 
+	const ContentWrapper = closeOnly ? "div" : "form";
+	const wrapperProps = closeOnly ? {} : { onSubmit, "aria-label": title };
+
 	return (
 		<div
 			className={styles.overlay}
@@ -53,7 +58,7 @@ export default function ModalLayout({
 			aria-describedby="modal-description"
 		>
 			<div className={styles.card} onClick={(e) => e.stopPropagation()}>
-				{/* Cabecera dinámica (Fija) */}
+				{/* Cabecera (igual) */}
 				<div className={styles.header}>
 					<div>
 						<p className={styles.headerTitle}>
@@ -75,20 +80,23 @@ export default function ModalLayout({
 					</button>
 				</div>
 
-				<form
-					className={styles.formWrapper}
-					onSubmit={onSubmit}
-					aria-label={title}
-				>
-					{/* Cuerpo dinámico (Con Scroll) */}
+				<ContentWrapper className={styles.formWrapper} {...wrapperProps}>
 					<div className={styles.body}>{children}</div>
 
 					{/* Pie dinámico (Fijo) */}
 					<div className={styles.footer}>
 						{switchButton ? <div>{switchButton}</div> : <div />}
-
 						<div className={styles.actions}>
-							{!hideSubmit && (
+							{closeOnly ? (
+								<button
+									type="button"
+									className={styles.btnPrimary}
+									onClick={onClose}
+									aria-label="Cerrar modal"
+								>
+									Cerrar
+								</button>
+							) : !hideSubmit ? (
 								<>
 									<button
 										type="button"
@@ -108,10 +116,10 @@ export default function ModalLayout({
 										{isLoading ? loadingText : submitText}
 									</button>
 								</>
-							)}
+							) : null}
 						</div>
 					</div>
-				</form>
+				</ContentWrapper>
 			</div>
 		</div>
 	);

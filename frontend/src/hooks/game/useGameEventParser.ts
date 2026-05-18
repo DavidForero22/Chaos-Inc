@@ -1,7 +1,7 @@
 import { useNotificationStore } from "../../store/ui/useNotificationStore";
 import type { NotificationType } from "../../store/ui/useNotificationStore";
 import { useGameStore } from "../../store/game/useGameStore";
-import { useAuth } from "../useAuth";
+import { useAuth } from "../auth/useAuth";
 
 // Objetivo de la carta
 type TargetScope = "single" | "all" | "opponents" | "self";

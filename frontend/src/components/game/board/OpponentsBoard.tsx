@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import { useGameActions } from "../../../store/game/useGameActions.ts";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
-import { useAuth } from "../../../hooks/useAuth.ts";
+import { useAuth } from "../../../hooks/auth/useAuth.ts";
 import { OpponentCard } from "./OpponentCard.tsx";
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 

@@ -6,7 +6,7 @@ import api from "../../api/axios.ts";
 
 // -- HOOKS CUSTOM --
 import { useGameSockets } from "./useGameSockets.ts";
-import { useAuth } from "../useAuth.ts";
+import { useAuth } from "../auth/useAuth.ts";
 
 // -- UTILS & STORE --
 import { logWithTime } from "../../utils/logger.ts";

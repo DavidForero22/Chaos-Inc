@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
-import { useAuth } from "../../../hooks/useAuth.ts";
+import { useAuth } from "../../../hooks/auth/useAuth.ts";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import styles from "./GameBanners.module.css";
 

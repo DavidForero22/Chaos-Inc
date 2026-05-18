@@ -3,12 +3,13 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../../components/profile/RegisteredProfileView";
 import GuestProfileView from "../../components/profile/GuestProfileView";
 import styles from "../../components/profile/Profile.module.css";
 import api from "../../api/axios";
+import { useState } from "react";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
@@ -18,7 +19,19 @@ export default function PublicProfilePage() {
 
 	// ¿Es mi perfil o el de otro?
 	const isMe = String(myId) === userId;
-	const { games, profileUser, loading } = useUserProfileData(userId);
+
+	// Estado para forzar refresco del perfil
+	const [refreshKey, setRefreshKey] = useState(0);
+
+	const { games, profileUser, loading } = useUserProfileData(
+		userId,
+		refreshKey,
+	);
+
+	// Callback para refrescar el perfil (lo usarán UserInfo -> useFriendActions)
+	const refreshProfile = () => {
+		setRefreshKey((prev) => prev + 1);
+	};
 
 	// Acciones manuales para no tener que llamar a useProfileData y duplicar peticiones
 	const handleLogout = async () => {
@@ -41,7 +54,7 @@ export default function PublicProfilePage() {
 	};
 	const handleUpdateProfile = async (data: any) => {
 		await updateProfile(data);
-		window.location.reload();
+		refreshProfile();
 	};
 
 	if (myId == null) {
@@ -86,6 +99,7 @@ export default function PublicProfilePage() {
 				onLogout={isMe ? handleLogout : undefined}
 				onDeleteAccount={isMe ? handleDeleteAccount : undefined}
 				onUpdateProfile={isMe ? handleUpdateProfile : undefined}
+				onRefreshProfile={refreshProfile}
 			/>
 		</main>
 	);

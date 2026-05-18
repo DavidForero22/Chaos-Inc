@@ -2,6 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { FriendSummary } from "../../../types/user";
 import styles from "./FriendList.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
@@ -17,7 +18,6 @@ function getInitials(username: string): string {
 }
 
 function getLevelFromXp(xp: number): number {
-	// Misma lógica que LevelProgressBar — ajusta si la tuya es distinta
 	return Math.floor(Math.sqrt(xp / 100)) + 1;
 }
 
@@ -25,30 +25,24 @@ function FriendCard({ friend }: { friend: FriendSummary }) {
 	const level = getLevelFromXp(friend.totalXp ?? 0);
 
 	return (
-		<div
+		<Link
+			to={`/profile/${friend.id}`}
 			className={styles.friendCard}
-			role="listitem"
-			tabIndex={0}
-			aria-label={`${friend.username}, nivel ${level}`}
+			aria-label={`Ver perfil de ${friend.username}, nivel ${level}`}
 		>
+			<span className={styles.name}>{friend.username}</span>
 			<div className={styles.avatarWrapper}>
 				{friend.avatar ? (
-					<img
-						src={friend.avatar}
-						alt=""
-						aria-hidden="true"
-						className={styles.avatarImg}
-					/>
+					<img src={friend.avatar} alt="" referrerPolicy="no-referrer" className={styles.avatarImg} />
 				) : (
-					<div className={styles.avatarInitials} aria-hidden="true">
+					<span className={styles.avatarInitials} aria-hidden="true">
 						{getInitials(friend.username)}
-					</div>
+					</span>
 				)}
 			</div>
 
-			<span className={styles.friendName}>{friend.username}</span>
-			<span className={styles.friendXp}>NV. {level}</span>
-		</div>
+			<span className={styles.level}>NV. {level}</span>
+		</Link>
 	);
 }
 
@@ -62,7 +56,7 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 	return (
 		<section aria-labelledby="friends-heading">
 			<h2 id="friends-heading" className={viewStyles.sectionLabel}>
-				AMIGOS
+				AMIGOS <span className={styles.count}>({friends.length})</span>
 			</h2>
 
 			<div className={styles.friendsSection}>
@@ -85,15 +79,8 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 								className={styles.toggleButton}
 								onClick={() => setExpanded((prev) => !prev)}
 								aria-expanded={expanded}
-								aria-controls="friends-grid"
 							>
-								<span
-									className={`${styles.toggleIcon} ${expanded ? styles.open : ""}`}
-									aria-hidden="true"
-								>
-									▼
-								</span>
-								{expanded ? "VER MENOS" : `VER ${hiddenCount} MÁS`}
+								{expanded ? "Ver menos" : `Ver ${hiddenCount} más`}
 							</button>
 						)}
 					</>

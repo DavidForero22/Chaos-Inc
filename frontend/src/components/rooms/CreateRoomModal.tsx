@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ModalLayout from "../ui/ModalLayout";
 import styles from "../ui/ModalLayout.module.css";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/auth/useAuth";
 import { useRoomStore } from "../../store/room/useRoomStore.ts";
 import { logWithTime } from "../../utils/logger";
 

@@ -1,8 +1,8 @@
-// src/hooks/useAuth.ts
+// src/hooks/auth/useAuth.ts
 
 import { useState } from "react";
-import api, { getCsrfCookie } from "../api/axios";
-import { useAuthStore } from "../store/auth/useAuthStore.ts";
+import api, { getCsrfCookie } from "../../api/axios";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
 type RegisterInput = {
 	username: string;
@@ -24,7 +24,6 @@ type UpdateProfileInput = {
 };
 
 export function useAuth() {
-	// Extraemos también provider y providerAvatar del store
 	const { id, user, avatar, isGuest, role, setAuth, logout } = useAuthStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
