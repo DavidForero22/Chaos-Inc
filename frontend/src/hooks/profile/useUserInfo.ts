@@ -5,7 +5,7 @@ import type { ChangeEvent } from "react";
 import { useAuth } from "../useAuth";
 import { useAuthStore } from "../../store/auth/useAuthStore";
 import api from "../../api/axios";
-import type { SocialAccountInfo } from "../../types/api";
+import type { SocialAccountInfo } from "../../types/user.ts";
 
 interface UseUserInfoParams {
 	userId?: number | null;
@@ -84,8 +84,7 @@ export function useUserInfo({
 		}
 	};
 
-	const handleManualUploadClick = (e: React.FormEvent) => {
-		e.preventDefault();
+	const handleManualUploadClick = () => {
 		setShowAvatarModal(false);
 		fileInputRef.current?.click();
 	};
@@ -138,8 +137,7 @@ export function useUserInfo({
 		}
 	};
 
-	const confirmUnlink = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const confirmUnlink = async () => {
 		if (!userId || !providerToUnlink) return;
 
 		setUnlinkPasswordError("");

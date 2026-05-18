@@ -1,4 +1,4 @@
-import { getLevelProgress, getRankLabel } from "../../utils/experience";
+import { getLevelProgress, getRankLabel } from "../../../utils/experience";
 
 interface LevelProgressBarProps {
 	totalXp: number;

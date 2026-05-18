@@ -129,7 +129,6 @@
 	font-weight: bold;
 	min-height: 24px;
 	display: flex;
-	align-items: flex-end;
 }
 
 .employeeName {
@@ -281,23 +280,15 @@
 	.formValue {
 		justify-content: center;
 		border-bottom: none;
-		background-color: rgba(0, 0, 0, 0.03);
 		border-radius: 4px;
 		padding: 8px 0;
 		margin-top: 4px;
 	}
 
-	.employeeName {
-		font-size: 1.5rem;
-	}
 
 	.formRow {
 		grid-template-columns: 1fr;
 		gap: 1rem;
-		align-items: center;
-	}
-
-	.formGroup {
 		align-items: center;
 	}
 

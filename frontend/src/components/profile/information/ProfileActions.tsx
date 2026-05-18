@@ -3,9 +3,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import styles from "./ProfileActions.module.css";
-import viewStyles from "./RegisteredProfileView.module.css";
-import EditProfileModal from "./EditProfileModal";
-import type { UserRecord } from "../../types/api";
+import viewStyles from "../RegisteredProfileView.module.css";
+import EditProfileModal from "./EditProfileModal.tsx";
+import type { UserRecord } from "../../../types/user.ts";
 
 interface ProfileActionsProps {
 	user?: UserRecord | null;

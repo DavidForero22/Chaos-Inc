@@ -4,11 +4,12 @@
 use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\FriendshipController;
+use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Lobby\DebugController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
-use App\Http\Controllers\SocialAuthController;
 use App\Http\Middleware\IsDebugRoom;
 use Illuminate\Support\Facades\Route;
 
@@ -86,6 +87,20 @@ Route::prefix('v1')->group(function () {
             Route::get('/users/{user}/games', [GameController::class, 'userGames']);
             Route::delete('/users/{user}/social/{provider}', [SocialAuthController::class, 'unlinkSocialAccount']);
             Route::delete('/users/{user}', [UserController::class, 'destroy']);
+
+            // Solicitudes de amistad
+            Route::prefix('friends')->group(function () {
+                Route::get('/',        [FriendshipController::class, 'index']);
+                Route::get('/pending', [FriendshipController::class, 'pendingReceived']);
+                Route::get('/sent',    [FriendshipController::class, 'pendingSent']);
+
+                Route::post('/{user}/request', [FriendshipController::class, 'sendRequest']);
+                Route::post('/{user}/accept',  [FriendshipController::class, 'accept']);
+                Route::post('/{user}/reject',  [FriendshipController::class, 'reject']);
+
+                Route::delete('/{user}', [FriendshipController::class, 'remove']);
+            });
+
 
             Route::get('/games', [GameController::class, 'index']);
             Route::get('/games/{game}', [GameController::class, 'show']);

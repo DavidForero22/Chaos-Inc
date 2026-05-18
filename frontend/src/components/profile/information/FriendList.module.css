@@ -1,0 +1,155 @@
+.friendsSection {
+	margin-top: 0.5rem;
+}
+
+/* ── GRID DE AMIGOS ── */
+.friendsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+	gap: 0.75rem;
+	margin-top: 0.75rem;
+}
+
+/* ── TARJETA DE AMIGO ── */
+.friendCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.4rem;
+	padding: 0.75rem 0.5rem;
+	border: 2px solid var(--color-border, #2a2a2a);
+	background: var(--color-surface, #1a1a1a);
+	cursor: pointer;
+	transition:
+		transform 0.15s ease,
+		border-color 0.15s ease,
+		background 0.15s ease;
+	text-align: center;
+	text-decoration: none;
+	position: relative;
+	outline: none;
+}
+
+.friendCard::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 4px,
+		rgba(255, 255, 255, 0.01) 4px,
+		rgba(255, 255, 255, 0.01) 5px
+	);
+	pointer-events: none;
+}
+
+.friendCard:hover,
+.friendCard:focus-visible {
+	transform: translateY(-3px);
+	border-color: var(--color-accent, #e2c077);
+	background: var(--color-surface-hover, #222);
+}
+
+/* ── AVATAR ── */
+.avatarWrapper {
+	position: relative;
+	width: 52px;
+	height: 52px;
+	flex-shrink: 0;
+}
+
+.avatarImg {
+	width: 52px;
+	height: 52px;
+	border-radius: 0; /* cuadrado, coherente con el polaroid */
+	border: 2px solid var(--color-border, #2a2a2a);
+	object-fit: cover;
+	display: block;
+}
+
+.avatarInitials {
+	width: 52px;
+	height: 52px;
+	border: 2px solid var(--color-border, #2a2a2a);
+	background: var(--color-bg, #111);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: var(--font-mono, monospace);
+	font-size: 1rem;
+	font-weight: 700;
+	color: var(--color-accent, #e2c077);
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+/* ── NOMBRE Y XP ── */
+.friendName {
+	font-family: var(--font-mono, monospace);
+	font-size: 0.65rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--color-text, #e0e0e0);
+	word-break: break-all;
+	line-height: 1.2;
+	max-width: 100%;
+}
+
+.friendXp {
+	font-family: var(--font-mono, monospace);
+	font-size: 0.55rem;
+	letter-spacing: 0.05em;
+	color: var(--color-text-muted, #888);
+	text-transform: uppercase;
+}
+
+/* ── ESTADO VACÍO ── */
+.emptyState {
+	padding: 1.25rem 0;
+	font-family: var(--font-mono, monospace);
+	font-size: 0.7rem;
+	letter-spacing: 0.08em;
+	color: var(--color-text-muted, #888);
+	text-transform: uppercase;
+	font-style: italic;
+}
+
+/* ── BOTÓN VER MÁS / VER MENOS ── */
+.toggleButton {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 0.75rem;
+	padding: 0.35rem 0.75rem;
+	background: transparent;
+	border: 1px solid var(--color-border, #2a2a2a);
+	color: var(--color-text-muted, #888);
+	font-family: var(--font-mono, monospace);
+	font-size: 0.6rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	cursor: pointer;
+	transition:
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.toggleButton:hover,
+.toggleButton:focus-visible {
+	border-color: var(--color-accent, #e2c077);
+	color: var(--color-accent, #e2c077);
+	outline: none;
+}
+
+.toggleIcon {
+	font-size: 0.55rem;
+	transition: transform 0.2s ease;
+	display: inline-block;
+}
+
+.toggleIcon.open {
+	transform: rotate(180deg);
+}

@@ -66,4 +66,62 @@ class User extends Authenticatable
             'is_guest'          => 'boolean',
         ];
     }
+
+
+    /**
+     * Amigos donde yo envié la solicitud aceptada
+     */
+    public function friendsOfMine()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'sender_id', 'receiver_id')
+            ->wherePivot('status', 'accepted')
+            ->withTimestamps();
+    }
+
+    /**
+     * Amigos donde yo recibí la solicitud aceptada
+     */
+    public function friendOf()
+    {
+        return $this->belongsToMany(User::class, 'friendships', 'receiver_id', 'sender_id')
+            ->wherePivot('status', 'accepted')
+            ->withTimestamps();
+    }
+
+
+    /**
+     * Helper no-eager: útil en servicios cuando ya están cargadas ambas relaciones
+     */
+    public function getFriends(): \Illuminate\Support\Collection
+    {
+        return $this->friendsOfMine->merge($this->friendOf)->unique('id');
+    }
+
+    /**
+     * Solicitudes que este usuario ha enviado
+     */
+    public function sentFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'sender_id');
+    }
+
+    /** 
+     *  Solicitudes que este usuario ha recibido
+     */
+    public function receivedFriendRequests()
+    {
+        return $this->hasMany(Friendship::class, 'receiver_id');
+    }
+
+    /**
+     * Helper: comprueba si ya existe alguna relación con otro usuario
+     */
+    public function friendshipWith(User $user): ?Friendship
+    {
+        return Friendship::where(function ($q) use ($user) {
+            $q->where('sender_id', $this->id)->where('receiver_id', $user->id);
+        })->orWhere(function ($q) use ($user) {
+            $q->where('sender_id', $user->id)->where('receiver_id', $this->id);
+        })->first();
+    }
 }

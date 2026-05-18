@@ -3,10 +3,10 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
-import type { GameRecord } from "../../types/api";
+import type { GameRecord } from "../../../types/api";
 import styles from "./GameHistory.module.css";
-import viewStyles from "./RegisteredProfileView.module.css";
-import { ROLE_LABELS } from "../../data/roles";
+import viewStyles from "../RegisteredProfileView.module.css";
+import { ROLE_LABELS } from "../../../data/roles";
 
 interface GameHistoryProps {
 	games: GameRecord[];

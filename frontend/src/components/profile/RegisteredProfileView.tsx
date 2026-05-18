@@ -3,13 +3,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import type { GameRecord, UserRecord } from "../../types/api";
+import type { GameRecord } from "../../types/api";
+import type { UserRecord } from "../../types/user";
 
 import styles from "./RegisteredProfileView.module.css";
 
-import UserInfo from "./UserInfo";
-import GraphsProfile from "./GraphsProfile";
-import GameHistory from "./GameHistory";
+import UserInfo from ".//information/UserInfo";
+import GraphsProfile from "./stats/GraphsProfile";
+import GameHistory from "./history/GameHistory";
 
 interface RegisteredProfileViewProps {
 	games: GameRecord[];
@@ -69,6 +70,10 @@ export default function RegisteredProfileView({
 	const displayAchievements = notMyProfile
 		? publicProfile?.achievements
 		: myProfile?.achievements;
+
+	const displayFriends = notMyProfile
+		? publicProfile?.friends
+		: myProfile?.friends;
 
 	// Manejar navegación por teclado entre pestañas
 	const handleTabKeyDown = (
@@ -272,6 +277,7 @@ export default function RegisteredProfileView({
 								avatar={displayAvatar}
 								socialAccounts={displaySocialAccounts}
 								achievements={displayAchievements}
+								friends={displayFriends}
 								onLogout={onLogout}
 								onDeleteAccount={onDeleteAccount}
 								onUpdateProfile={onUpdateProfile}

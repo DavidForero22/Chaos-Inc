@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import api from "../../api/axios.ts";
-import type { UserRecord } from "../../types/api.ts";
+import type { UserRecord } from "../../types/user.ts";
 
 export function useUsersData() {
 	const [users, setUsers] = useState<UserRecord[]>([]);

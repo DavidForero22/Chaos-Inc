@@ -18,6 +18,10 @@ class UserResource extends JsonResource
             $currentUser->id === $this->id || $currentUser->role === 'admin'
         );
 
+        // Los amigos vienen de dos relaciones distintas; se fusionan si alguna está cargada
+        $friendsLoaded = $this->relationLoaded('friendsOfMine') || $this->relationLoaded('friendOf');
+
+
         return [
             'id'       => $this->id,
             'username' => $this->username,
@@ -38,6 +42,18 @@ class UserResource extends JsonResource
                         'avatar'   => $account->provider_avatar,
                     ];
                 });
+            }),
+
+            // Solo viaja si el controlador cargó las relaciones de amistad
+            'friends' => $this->when($friendsLoaded, function () {
+                $friends = $this->getFriends(); // merge de ambas relaciones ya cargadas
+
+                return $friends->map(fn($friend) => [
+                    'id'       => $friend->id,
+                    'username' => $friend->username,
+                    'avatar'   => $friend->avatar,
+                    'totalXp'  => $friend->total_xp,
+                ]);
             }),
 
             'joinedAt'     => $this->created_at->toIso8601String(),

@@ -4,11 +4,11 @@
 import { useState } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
-import type { GameRecord } from "../../types/api";
-import { useProfileStats } from "../../hooks/profile/useProfileStats.ts";
-import { CARD_MAP } from "../../data/cards.ts";
+import type { GameRecord } from "../../../types/api.ts";
+import { useProfileStats } from "../../../hooks/profile/useProfileStats.ts";
+import { CARD_MAP } from "../../../data/cards.ts";
 import styles from "./GraphsProfile.module.css";
-import viewStyles from "./RegisteredProfileView.module.css";
+import viewStyles from "../RegisteredProfileView.module.css";
 
 
 

@@ -58,32 +58,6 @@ export interface GameRecord {
 	players: GameParticipant[];
 }
 
-/**
- * Tipado de un logro desbloqueado por el usuario
- */
-export interface UserAchievement {
-	id: string;
-	unlockedAt: string;
-}
-
-export interface SocialAccountInfo {
-	provider: string;
-	avatar: string | null;
-}
-
-export interface UserRecord {
-	id: number;
-	username: string;
-	email?: string;
-	role: string;
-	avatar: string | null;
-	socialAccounts?: SocialAccountInfo[];
-	isGuest: boolean;
-	joinedAt: string;
-	achievements?: UserAchievement[];
-	totalXp?: number;
-}
-
 export interface RoomRecord {
 	room_id: string;
 	name: string;

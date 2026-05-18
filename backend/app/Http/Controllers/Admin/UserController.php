@@ -42,7 +42,13 @@ class UserController extends Controller
         $user = $this->userService->getUserById($id);
 
         // Relaciones públicas (Partidas y Logros)
-        $relationsToLoad = ['games.participants', 'games.cardUsages', 'achievements'];
+        $relationsToLoad = [
+            'games.participants',
+            'games.cardUsages',
+            'achievements',
+            'friendsOfMine',
+            'friendOf',
+        ];
 
         // Relaciones privadas (Cuentas sociales vinculadas)
         if ($request->user() && $request->user()->id == $id) {

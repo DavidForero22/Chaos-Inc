@@ -6,10 +6,10 @@ import {
 	ACHIEVEMENTS,
 	type Achievement,
 	type UnactiveAchievement,
-} from "../../data/achievements.ts";
-import type { UserAchievement } from "../../types/api.ts";
+} from "../../../data/achievements.ts";
+import type { UserAchievement } from "../../../types/user.ts";
 import styles from "./ProfileAchievements.module.css";
-import viewStyles from "./RegisteredProfileView.module.css";
+import viewStyles from "../RegisteredProfileView.module.css";
 
 
 interface ProfileAchievementsProps {
