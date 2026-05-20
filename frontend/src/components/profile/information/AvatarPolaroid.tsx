@@ -1,38 +1,39 @@
 // src/components/profile/AvatarPolaroid.tsx
-import { type RefObject } from "react";
+import { useRef } from "react";
+import { useAuthStore } from "../../../store/auth/useAuthStore";
+import { useProfileStore } from "../../../store/profile/useProfileStore";
 import styles from "./UserInfo.module.css";
 
-interface AvatarPolaroidProps {
-	notMyProfile: boolean;
-	isUploading: boolean;
-	avatarUrl: string | null;
-	initials: string;
-	displayUser?: string | null;
-	onClick: () => void;
-	fileInputRef: RefObject<HTMLInputElement | null>;
-	onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
+export default function AvatarPolaroid() {
+	// ── Store del perfil ──
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	const isUploading = useProfileStore((s) => s.isUploading);
+	const userRecord = useProfileStore((s) => s.userRecord);
+	const handleAvatarClick = useProfileStore((s) => s.handleAvatarClick);
+	const handleFileChange = useProfileStore((s) => s.handleFileChange);
 
-export default function AvatarPolaroid({
-	notMyProfile,
-	isUploading,
-	avatarUrl,
-	initials,
-	displayUser,
-	onClick,
-	fileInputRef,
-	onFileChange,
-}: AvatarPolaroidProps) {
+	// ── Auth store ──
+	const { user: myUser, avatar: myAvatar } = useAuthStore();
+
+	// ── Datos derivados ──
+	const displayUser = notMyProfile ? userRecord?.username : myUser;
+	const displayAvatar = notMyProfile ? userRecord?.avatar : myAvatar;
+	const avatarUrl = displayAvatar || null;
+	const initials = displayUser ? displayUser.charAt(0).toUpperCase() : "?";
+
+	// ── Referencia para el input file ──
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
 	return (
 		<div className={styles.photoAttachment}>
 			<div className={styles.clip} aria-hidden="true" />
 			<div
 				className={styles.avatarContainer}
-				onClick={onClick}
+				onClick={handleAvatarClick}
 				onKeyDown={(e) => {
 					if (!notMyProfile && (e.key === "Enter" || e.key === " ")) {
 						e.preventDefault();
-						onClick();
+						handleAvatarClick();
 					}
 				}}
 				role={!notMyProfile ? "button" : undefined}
@@ -87,7 +88,7 @@ export default function AvatarPolaroid({
 					ref={fileInputRef}
 					style={{ display: "none" }}
 					accept="image/jpeg, image/png, image/webp"
-					onChange={onFileChange}
+					onChange={handleFileChange}
 					aria-hidden="true"
 					tabIndex={-1}
 				/>

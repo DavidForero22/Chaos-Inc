@@ -2,33 +2,35 @@
 import { IoPersonAddSharp, IoPersonRemove } from "react-icons/io5";
 import { IoIosMail } from "react-icons/io";
 import { MdMenuBook } from "react-icons/md";
+import { useAuthStore } from "../../../store/auth/useAuthStore";
+import { useProfileStore } from "../../../store/profile/useProfileStore";
 import styles from "./UserInfo.module.css";
 
-interface UserNameAndActionsProps {
-	displayUser?: string | null;
-	displayRole?: string | null;
-	notMyProfile: boolean;
-	onFriendRequest?: () => void;
-	onGallery?: () => void;
-	onOpenFriendRequests?: () => void;
-	pendingReceivedCount?: number;
-	isSendingRequest?: boolean;
-	isFriend?: boolean;
-	onRemoveFriend?: () => void;
-}
+export default function UserNameAndActions() {
+	// ── Store del perfil ──
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	const userRecord = useProfileStore((s) => s.userRecord);
+	const isSendingRequest = useProfileStore((s) => s.isSendingRequest);
+	const isFriend = useProfileStore((s) => s.isFriend);
+	const pendingReceivedCount = useProfileStore((s) => s.pendingReceived.length);
 
-export default function UserNameAndActions({
-	displayUser,
-	displayRole,
-	notMyProfile,
-	onFriendRequest,
-	onGallery,
-	onOpenFriendRequests,
-	pendingReceivedCount = 0,
-	isSendingRequest = false,
-	isFriend = false,
-	onRemoveFriend,
-}: UserNameAndActionsProps) {
+	// ── Acciones del store ──
+	const sendFriendRequest = useProfileStore((s) => s.sendFriendRequest);
+	const setShowFriendRequestsModal = useProfileStore(
+		(s) => s.setShowFriendRequestsModal,
+	);
+	const loadFriendRequests = useProfileStore((s) => s.loadFriendRequests);
+	const setShowRemoveFriendModal = useProfileStore(
+		(s) => s.setShowRemoveFriendModal,
+	);
+
+	// ── Auth store ──
+	const { user: myUser, role: myRole } = useAuthStore();
+
+	// ── Datos derivados ──
+	const displayUser = notMyProfile ? userRecord?.username : myUser;
+	const displayRole = notMyProfile ? userRecord?.role : myRole;
+
 	return (
 		<div className={styles.employeeData}>
 			<div className={styles.formGroup}>
@@ -68,7 +70,7 @@ export default function UserNameAndActions({
 								className="p-1 rounded-md border border-gray-400 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors cursor-pointer disabled:opacity-50"
 								aria-label={`Eliminar a ${displayUser} de amigos`}
 								title={`Eliminar a ${displayUser} de amigos`}
-								onClick={onRemoveFriend}
+								onClick={() => setShowRemoveFriendModal(true)}
 								disabled={isSendingRequest}
 							>
 								<IoPersonRemove size={28} aria-hidden="true" />
@@ -79,7 +81,7 @@ export default function UserNameAndActions({
 								className="p-1 rounded-md border border-gray-400 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer disabled:opacity-50"
 								aria-label={`Enviar solicitud de amistad a ${displayUser}`}
 								title={`Enviar solicitud de amistad a ${displayUser}`}
-								onClick={onFriendRequest}
+								onClick={sendFriendRequest}
 								disabled={isSendingRequest}
 							>
 								<IoPersonAddSharp size={28} aria-hidden="true" />
@@ -92,7 +94,10 @@ export default function UserNameAndActions({
 								className="relative p-1 rounded-md border border-gray-400 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
 								aria-label="Ver solicitudes de amistad"
 								title="Bandeja de solicitudes"
-								onClick={onOpenFriendRequests}
+								onClick={() => {
+									loadFriendRequests();
+									setShowFriendRequestsModal(true);
+								}}
 							>
 								<IoIosMail size={28} aria-hidden="true" />
 								{pendingReceivedCount > 0 && (
@@ -106,7 +111,9 @@ export default function UserNameAndActions({
 								className="p-1 rounded-md border border-gray-400 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
 								aria-label="Ver galería de desbloqueables"
 								title="Ver galería de desbloqueables"
-								onClick={onGallery}
+								onClick={() => {
+									/* TODO */
+								}}
 							>
 								<MdMenuBook size={28} aria-hidden="true" />
 							</button>

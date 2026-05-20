@@ -3,35 +3,29 @@
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import { useAuth } from "../../hooks/auth/useAuth";
 import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../../components/profile/RegisteredProfileView";
 import GuestProfileView from "../../components/profile/GuestProfileView";
 import styles from "../../components/profile/Profile.module.css";
 import api from "../../api/axios";
+import { ProfileProvider } from "../../store/profile/useProfileStore";
 import { useState } from "react";
+import { useAuth } from "../../hooks/auth/useAuth";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
 	const { id: myId, logout, isGuest } = useAuthStore();
-	const { updateProfile } = useAuth();
 	const navigate = useNavigate();
 
 	// ¿Es mi perfil o el de otro?
 	const isMe = String(myId) === userId;
 
-	// Estado para forzar refresco del perfil
 	const [refreshKey, setRefreshKey] = useState(0);
-
 	const { games, profileUser, loading } = useUserProfileData(
 		userId,
 		refreshKey,
 	);
-
-	// Callback para refrescar el perfil (lo usarán UserInfo -> useFriendActions)
-	const refreshProfile = () => {
-		setRefreshKey((prev) => prev + 1);
-	};
+	const refreshProfile = () => setRefreshKey((prev) => prev + 1);
 
 	// Acciones manuales para no tener que llamar a useProfileData y duplicar peticiones
 	const handleLogout = async () => {
@@ -40,21 +34,6 @@ export default function PublicProfilePage() {
 		} catch {}
 		logout();
 		navigate("/");
-	};
-
-	const handleDeleteAccount = async () => {
-		if (!myId) return;
-		try {
-			await api.delete(`/users/${myId}`);
-			logout();
-			navigate("/");
-		} catch (e: any) {
-			alert(e.response?.data?.message || "Error al eliminar la cuenta.");
-		}
-	};
-	const handleUpdateProfile = async (data: any) => {
-		await updateProfile(data);
-		refreshProfile();
 	};
 
 	if (myId == null) {
@@ -89,18 +68,37 @@ export default function PublicProfilePage() {
 		);
 	}
 
+	const handleDeleteAccount = async () => {
+		if (!myId) return;
+		try {
+			await api.delete(`/users/${myId}`);
+			logout();
+			navigate("/");
+		} catch (e: any) {
+			alert(e.response?.data?.message || "Error al eliminar la cuenta.");
+		}
+	};
+
+	const handleUpdateProfile = async (data: any) => {
+		const { updateProfile } = useAuth();
+		await updateProfile(data);
+		refreshProfile();
+	};
+
 	return (
 		<main>
-			<RegisteredProfileView
-				games={games}
-				publicProfile={!isMe ? profileUser : null}
-				myProfile={isMe ? profileUser : null}
+			<ProfileProvider
+				userId={Number(userId)}
 				notMyProfile={!isMe}
+				games={games}
+				userRecord={profileUser}
 				onLogout={isMe ? handleLogout : undefined}
 				onDeleteAccount={isMe ? handleDeleteAccount : undefined}
 				onUpdateProfile={isMe ? handleUpdateProfile : undefined}
-				onRefreshProfile={refreshProfile}
-			/>
+				refreshProfile={refreshProfile}
+			>
+				<RegisteredProfileView />
+			</ProfileProvider>
 		</main>
 	);
 }

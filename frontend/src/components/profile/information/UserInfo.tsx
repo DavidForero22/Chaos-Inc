@@ -1,124 +1,57 @@
 // src/components/profile/UserInfo.tsx
 // Accesibilidad comprobada: SI
 
+import { useEffect } from "react";
+import { useAuthStore } from "../../../store/auth/useAuthStore";
+import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
 import ProfileActions from "./ProfileActions";
 import ProfileAchievements from "./ProfileAchievements";
 import AvatarPolaroid from "./AvatarPolaroid";
 import UserNameAndActions from "./UserNameAndActions";
 import LinkedAccounts from "./LinkedAccounts";
 import ProfileModals from "./ProfileModals";
-import { useUserInfo } from "../../../hooks/profile/useUserInfo";
-import type {
-	UserAchievement,
-	SocialAccountInfo,
-	UserRecord,
-	FriendSummary,
-} from "../../../types/user.ts";
+import LevelProgressBar from "./LevelProgressBar";
+import FriendList from "./FriendList";
 import styles from "./UserInfo.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
-import { useEffect, useMemo, useState } from "react";
-import LevelProgressBar from "./LevelProgressBar";
-import FriendList from "./FriendList.tsx";
-import { useFriendActions } from "../../../hooks/profile/useFriendActions";
 
-interface UserInfoProps {
-	userId?: number | null;
-	notMyProfile: boolean;
-	userRecord?: UserRecord | null;
-	displayUser?: string | null;
-	displayRole?: string | null;
-	displayJoinedAt?: string | null;
-	avatar?: string | null;
-	socialAccounts?: SocialAccountInfo[] | null;
-	achievements?: UserAchievement[];
-	friends?: FriendSummary[];
-	onLogout?: () => void;
-	onDeleteAccount?: () => void;
-	onUpdateProfile?: (data: any) => Promise<void>;
-	onRefreshProfile?: () => void;
-}
+export default function UserInfo() {
+	// ── Store del perfil ──
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	const userRecord = useProfileStore((s) => s.userRecord);
 
-export default function UserInfo({
-	userId,
-	notMyProfile,
-	userRecord,
-	displayUser,
-	displayRole,
-	displayJoinedAt,
-	avatar,
-	socialAccounts,
-	achievements,
-	friends,
-	onLogout,
-	onDeleteAccount,
-	onUpdateProfile,
-	onRefreshProfile,
-}: UserInfoProps) {
+	// ── Auth store ──
 	const {
-		isUploading,
-		showAvatarModal,
-		setShowAvatarModal,
-		showUnlinkModal,
-		setShowUnlinkModal,
-		providerToUnlink,
-		isUnlinking,
-		fileInputRef,
-		isDiscordLinked,
-		isGoogleLinked,
-		initials,
-		avatarUrl,
-		handleAvatarClick,
-		handleManualUploadClick,
-		handleFileChange,
-		handleSelectProviderAvatar,
-		handleProviderClick,
-		confirmUnlink,
-		showForcePasswordModal,
-		closeForcePasswordModal,
-		unlinkPassword,
-		setUnlinkPassword,
-		unlinkPasswordError,
-	} = useUserInfo({
-		userId,
-		notMyProfile,
-		displayUser,
-		avatar,
-		socialAccounts,
-	});
+		user: myUser,
+		socialAccounts: mySocialAccounts,
+		joinedAt: myJoinedAt,
+	} = useAuthStore();
 
-	const {
-		pendingReceived,
-		pendingSent,
-		friendsLoading,
-		myFriends,
-		showFriendRequestsModal,
-		setShowFriendRequestsModal,
-		isSendingRequest,
-		handleSendFriendRequest,
-		handleAcceptRequest,
-		handleRejectRequest,
-		handleCancelRequest,
-		handleRemoveFriend,
-	} = useFriendActions({ userId, notMyProfile, onRefreshProfile });
+	// ── Datos derivados ──
+	const displayUser = notMyProfile ? userRecord?.username : myUser;
+	const displayJoinedAt = notMyProfile
+		? userRecord?.joinedAt
+		: (userRecord?.joinedAt ?? myJoinedAt);
+	const isActuallyMe = !notMyProfile;
+	const displaySocialAccounts = isActuallyMe
+		? userRecord?.socialAccounts || mySocialAccounts
+		: null;
 
-	const isFriend = useMemo(() => {
-		if (!notMyProfile || !userId || !myFriends) return false;
-		return myFriends.some((f) => f.id === userId);
-	}, [notMyProfile, myFriends, userId]);
+	// Detectar proveedores vinculados
+	const socialAccountsArray = displaySocialAccounts || [];
+	const isDiscordLinked = socialAccountsArray.some(
+		(acc) => acc.provider === "discord",
+	);
+	const isGoogleLinked = socialAccountsArray.some(
+		(acc) => acc.provider === "google",
+	);
 
-	// Modal de confirmación para eliminar amigo
-	const [showRemoveFriendModal, setShowRemoveFriendModal] = useState(false);
-	const [removingFriend, setRemovingFriend] = useState(false);
+	// ── Acciones del store ──
+	const handleProviderClick = useProfileStore((s) => s.handleProviderClick);
+	const onLogout = useProfileStore((s) => s.onLogout);
+	const onDeleteAccount = useProfileStore((s) => s.onDeleteAccount);
+	const onUpdateProfile = useProfileStore((s) => s.onUpdateProfile);
 
-	const openRemoveFriendModal = () => setShowRemoveFriendModal(true);
-
-	const confirmRemoveFriend = async () => {
-		if (!userId) return;
-		setRemovingFriend(true);
-		await handleRemoveFriend(userId);
-		setRemovingFriend(false);
-		setShowRemoveFriendModal(false);
-	};
 	// Anunciar carga de información del usuario
 	useEffect(() => {
 		const announcement = document.createElement("div");
@@ -134,34 +67,11 @@ export default function UserInfo({
 		<>
 			<h1 className={viewStyles.sectionTitle}>INFORMACIÓN DEL USUARIO</h1>
 			<div className={styles.header}>
-				{/* ── FOTO TIPO POLAROID ── */}
-				<AvatarPolaroid
-					notMyProfile={notMyProfile}
-					isUploading={isUploading}
-					avatarUrl={avatarUrl}
-					initials={initials}
-					displayUser={displayUser}
-					onClick={handleAvatarClick}
-					fileInputRef={fileInputRef}
-					onFileChange={handleFileChange}
-				/>
+				<AvatarPolaroid />
 
-				{/* ── DATOS DEL EMPLEADO ── */}
-				<UserNameAndActions
-					displayUser={displayUser}
-					displayRole={displayRole}
-					notMyProfile={notMyProfile}
-					onFriendRequest={handleSendFriendRequest}
-					onGallery={() => {
-						/* TODO */
-					}}
-					onOpenFriendRequests={() => setShowFriendRequestsModal(true)}
-					pendingReceivedCount={pendingReceived.length}
-					isSendingRequest={isSendingRequest}
-					isFriend={isFriend}
-					onRemoveFriend={openRemoveFriendModal}
-				/>
+				<UserNameAndActions />
 			</div>
+
 			<div className="mt-8">
 				<div className={styles.formGroup}>
 					<label id="user-level-label">NIVEL DEL USUARIO:</label>
@@ -176,6 +86,7 @@ export default function UserInfo({
 					</div>
 				</div>
 			</div>
+
 			<div className={styles.formRow}>
 				<div className={styles.formGroup}>
 					<label id="join-date-label">FECHA DE REGISTRO:</label>
@@ -186,6 +97,7 @@ export default function UserInfo({
 					</strong>
 				</div>
 			</div>
+
 			{/* ── CUENTAS VINCULADAS ── */}
 			{!notMyProfile && (
 				<LinkedAccounts
@@ -194,12 +106,15 @@ export default function UserInfo({
 					onProviderClick={handleProviderClick}
 				/>
 			)}
+
 			{/* ── SECCIÓN DE LOGROS ── */}
 			<div className={styles.divider} />
-			<ProfileAchievements userAchievements={achievements} />
-			{/* ── SECCIÓN DE AMIGOS ── */} {/* <- NUEVO BLOQUE */}
+			<ProfileAchievements userAchievements={userRecord?.achievements || []} />
+
+			{/* ── SECCIÓN DE AMIGOS ── */}
 			<div className={styles.divider} />
-			<FriendList friends={friends} />
+			<FriendList friends={userRecord?.friends || []} />
+
 			{/* ── ACCIONES DEL PERFIL PROPIO ── */}
 			{!notMyProfile && onLogout && onDeleteAccount && onUpdateProfile && (
 				<>
@@ -212,37 +127,9 @@ export default function UserInfo({
 					/>
 				</>
 			)}
+
 			{/* ── MODALES ── */}
-			<ProfileModals
-				showAvatarModal={showAvatarModal}
-				setShowAvatarModal={setShowAvatarModal}
-				socialAccounts={socialAccounts}
-				handleSelectProviderAvatar={handleSelectProviderAvatar}
-				handleManualUploadClick={handleManualUploadClick}
-				showUnlinkModal={showUnlinkModal}
-				setShowUnlinkModal={setShowUnlinkModal}
-				providerToUnlink={providerToUnlink}
-				isUnlinking={isUnlinking}
-				confirmUnlink={confirmUnlink}
-				showForcePasswordModal={showForcePasswordModal}
-				closeForcePasswordModal={closeForcePasswordModal}
-				unlinkPassword={unlinkPassword}
-				setUnlinkPassword={setUnlinkPassword}
-				unlinkPasswordError={unlinkPasswordError}
-				showFriendRequestsModal={showFriendRequestsModal}
-				setShowFriendRequestsModal={setShowFriendRequestsModal}
-				pendingReceived={pendingReceived}
-				pendingSent={pendingSent}
-				friendsLoading={friendsLoading}
-				onAcceptRequest={handleAcceptRequest}
-				onRejectRequest={handleRejectRequest}
-				onCancelRequest={handleCancelRequest}
-				showRemoveFriendModal={showRemoveFriendModal}
-				setShowRemoveFriendModal={setShowRemoveFriendModal}
-				friendToRemoveName={displayUser ?? ""}
-				onConfirmRemoveFriend={confirmRemoveFriend}
-				isRemovingFriend={removingFriend}
-			/>
+			<ProfileModals />
 		</>
 	);
 }

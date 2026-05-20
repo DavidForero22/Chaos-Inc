@@ -1,42 +1,28 @@
 // src/components/profile/RegisteredProfileView.tsx
 // Accesibilidad comprobada: SI
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import type { GameRecord } from "../../types/api";
-import type { UserRecord } from "../../types/user";
-
+import { useProfileStore } from "../../store/profile/useProfileStore.tsx";
 import styles from "./RegisteredProfileView.module.css";
 
 import UserInfo from ".//information/UserInfo";
 import GraphsProfile from "./stats/GraphsProfile";
 import GameHistory from "./history/GameHistory";
 
-interface RegisteredProfileViewProps {
-	games: GameRecord[];
-	onLogout?: () => void;
-	onDeleteAccount?: () => void;
-	onUpdateProfile?: (data: any) => Promise<void>;
-	notMyProfile?: boolean;
-	publicProfile?: UserRecord | null;
-	myProfile?: UserRecord | null;
-	onRefreshProfile?: () => void;
-}
+export default function RegisteredProfileView() {
+	// ── Store del perfil ──
+	const activeTab = useProfileStore((s) => s.activeTab);
+	const setActiveTab = useProfileStore((s) => s.setActiveTab);
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	const userRecord = useProfileStore((s) => s.userRecord);
+	const games = useProfileStore((s) => s.games);
 
-export default function RegisteredProfileView({
-	games,
-	onLogout,
-	onDeleteAccount,
-	onUpdateProfile,
-	notMyProfile = false,
-	publicProfile = null,
-	myProfile = null,
-	onRefreshProfile,
-}: RegisteredProfileViewProps) {
-	const { id, user, role, avatar, socialAccounts, joinedAt } = useAuthStore();
-	const [activeTab, setActiveTab] = useState<"info" | "stats" | "history">(
-		"info",
-	);
+	// ── Auth store (solo para datos del usuario actual) ──
+	const { user: myUser } = useAuthStore();
+
+	// ── Datos derivados ──
+	const displayUser = notMyProfile ? userRecord?.username : myUser;
 
 	// Referencias para los botones de pestaña
 	const tabButtonsRef = useRef<{
@@ -52,30 +38,22 @@ export default function RegisteredProfileView({
 	// Referencia para el contenido activo
 	const activeContentRef = useRef<HTMLDivElement>(null);
 
-	const displayId = notMyProfile ? publicProfile?.id : id;
-	const displayUser = notMyProfile ? publicProfile?.username : user;
-	const displayRole = notMyProfile ? publicProfile?.role : role;
-	const displayJoinedAt = notMyProfile
-		? publicProfile?.joinedAt
-		: (myProfile?.joinedAt ?? joinedAt);
-	const displayAvatar = notMyProfile ? publicProfile?.avatar : avatar;
+	// ── Anunciar cambio de pestaña ──
+	const announceTabChange = (tab: "info" | "stats" | "history") => {
+		const tabNames = {
+			info: "Información del perfil",
+			stats: "Estadísticas del jugador",
+			history: "Historial de partidas",
+		};
 
-	// Verificar si el perfil que miramos es el mismo perfil de quien lo ve
-	const isActuallyMe = !notMyProfile && id === displayId;
-
-	// Si es propio, priorizar los datos recién traídos de /users/{id} (myProfile)
-	// Si falla, caer en el store. Si no es propio, SIEMPRE null.
-	const displaySocialAccounts = isActuallyMe
-		? myProfile?.socialAccounts || socialAccounts
-		: null;
-
-	const displayAchievements = notMyProfile
-		? publicProfile?.achievements
-		: myProfile?.achievements;
-
-	const displayFriends = notMyProfile
-		? publicProfile?.friends
-		: myProfile?.friends;
+		const announcement = document.createElement("div");
+		announcement.setAttribute("role", "status");
+		announcement.setAttribute("aria-live", "polite");
+		announcement.className = "sr-only";
+		announcement.textContent = `Pestaña activa: ${tabNames[tab]}`;
+		document.body.appendChild(announcement);
+		setTimeout(() => announcement.remove(), 2000);
+	};
 
 	// Manejar navegación por teclado entre pestañas
 	const handleTabKeyDown = (
@@ -98,7 +76,6 @@ export default function RegisteredProfileView({
 			if (nextTab) {
 				setActiveTab(nextTab);
 				tabButtonsRef.current[nextTab]?.focus();
-				// Anunciar cambio de pestaña
 				announceTabChange(nextTab);
 			}
 		} else if (e.key === "Home") {
@@ -114,27 +91,9 @@ export default function RegisteredProfileView({
 		}
 	};
 
-	// Anunciar cambio de pestaña a lectores de pantalla
-	const announceTabChange = (tab: "info" | "stats" | "history") => {
-		const tabNames = {
-			info: "Información del perfil",
-			stats: "Estadísticas del jugador",
-			history: "Historial de partidas",
-		};
-
-		const announcement = document.createElement("div");
-		announcement.setAttribute("role", "status");
-		announcement.setAttribute("aria-live", "polite");
-		announcement.className = "sr-only";
-		announcement.textContent = `Pestaña activa: ${tabNames[tab]}`;
-		document.body.appendChild(announcement);
-		setTimeout(() => announcement.remove(), 2000);
-	};
-
 	// Enfocar el contenido cuando cambia la pestaña activa
 	useEffect(() => {
 		if (activeContentRef.current) {
-			// Anunciar que el contenido ha cambiado
 			const contentAnnouncement = document.createElement("div");
 			contentAnnouncement.setAttribute("role", "status");
 			contentAnnouncement.setAttribute("aria-live", "polite");
@@ -268,24 +227,7 @@ export default function RegisteredProfileView({
 						hidden={activeTab !== "info"}
 						tabIndex={activeTab === "info" ? 0 : -1}
 					>
-						{activeTab === "info" && (
-							<UserInfo
-								userId={Number(displayId)}
-								notMyProfile={notMyProfile}
-								userRecord={notMyProfile ? publicProfile : myProfile}
-								displayUser={displayUser}
-								displayRole={displayRole}
-								displayJoinedAt={displayJoinedAt}
-								avatar={displayAvatar}
-								socialAccounts={displaySocialAccounts}
-								achievements={displayAchievements}
-								friends={displayFriends}
-								onLogout={onLogout}
-								onDeleteAccount={onDeleteAccount}
-								onUpdateProfile={onUpdateProfile}
-								onRefreshProfile={onRefreshProfile}
-							/>
-						)}
+						{activeTab === "info" && <UserInfo />}
 					</div>
 
 					<div

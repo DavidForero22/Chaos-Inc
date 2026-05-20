@@ -1,83 +1,76 @@
 // src/components/profile/ProfileModals.tsx
+import { useRef } from "react";
+import { useAuthStore } from "../../../store/auth/useAuthStore";
+import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
 import ModalLayout from "../../ui/ModalLayout";
+import FriendRequestsModal from "./FriendRequestsModal";
 import styles from "./UserInfo.module.css";
-import type { SocialAccountInfo, FriendRequest } from "../../../types/user.ts";
-import FriendRequestsModal from "./FriendRequestsModal.tsx";
 
-interface ProfileModalsProps {
-	showAvatarModal: boolean;
-	setShowAvatarModal: (v: boolean) => void;
-	socialAccounts?: SocialAccountInfo[] | null;
-	handleSelectProviderAvatar: (
-		provider: string,
-		avatarUrl: string | null,
-	) => void;
-	handleManualUploadClick: () => void;
+export default function ProfileModals() {
+	// ── Store del perfil ──
+	const showAvatarModal = useProfileStore((s) => s.showAvatarModal);
+	const setShowAvatarModal = useProfileStore((s) => s.setShowAvatarModal);
+	const showUnlinkModal = useProfileStore((s) => s.showUnlinkModal);
+	const setShowUnlinkModal = useProfileStore((s) => s.setShowUnlinkModal);
+	const providerToUnlink = useProfileStore((s) => s.providerToUnlink);
+	const showForcePasswordModal = useProfileStore(
+		(s) => s.showForcePasswordModal,
+	);
+	const unlinkPassword = useProfileStore((s) => s.unlinkPassword);
+	const unlinkPasswordError = useProfileStore((s) => s.unlinkPasswordError);
+	const showFriendRequestsModal = useProfileStore(
+		(s) => s.showFriendRequestsModal,
+	);
+	const setShowFriendRequestsModal = useProfileStore(
+		(s) => s.setShowFriendRequestsModal,
+	);
+	const pendingReceived = useProfileStore((s) => s.pendingReceived);
+	const pendingSent = useProfileStore((s) => s.pendingSent);
+	const friendsLoading = useProfileStore((s) => s.friendsLoading);
+	const showRemoveFriendModal = useProfileStore((s) => s.showRemoveFriendModal);
+	const setShowRemoveFriendModal = useProfileStore(
+		(s) => s.setShowRemoveFriendModal,
+	);
+	const userRecord = useProfileStore((s) => s.userRecord);
 
-	showUnlinkModal: boolean;
-	setShowUnlinkModal: (v: boolean) => void;
-	providerToUnlink?: string | null;
-	isUnlinking: boolean;
-	confirmUnlink: () => void;
+	// ── Acciones del store ──
+	const handleSelectProviderAvatar = useProfileStore(
+		(s) => s.handleSelectProviderAvatar,
+	);
+	const confirmUnlink = useProfileStore((s) => s.confirmUnlink);
+	const closeForcePasswordModal = useProfileStore(
+		(s) => s.closeForcePasswordModal,
+	);
+	const setUnlinkPassword = useProfileStore((s) => s.setUnlinkPassword);
+	const acceptRequest = useProfileStore((s) => s.acceptRequest);
+	const rejectRequest = useProfileStore((s) => s.rejectRequest);
+	const cancelRequest = useProfileStore((s) => s.cancelRequest);
+	const removeFriend = useProfileStore((s) => s.removeFriend);
+	const handleFileChange = useProfileStore((s) => s.handleFileChange);
 
-	showForcePasswordModal: boolean;
-	closeForcePasswordModal: () => void;
-	unlinkPassword: string;
-	setUnlinkPassword: (v: string) => void;
-	unlinkPasswordError?: string;
+	// ── Auth store (datos del usuario actual) ──
+	const { user: myUser, socialAccounts: mySocialAccounts } = useAuthStore();
 
-	showFriendRequestsModal: boolean;
-	setShowFriendRequestsModal: (v: boolean) => void;
-	pendingReceived: FriendRequest[];
-	pendingSent: FriendRequest[];
-	friendsLoading: boolean;
-	onAcceptRequest: (userId: number) => void;
-	onRejectRequest: (userId: number) => void;
-	onCancelRequest: (userId: number) => void;
+	// ── Datos derivados ──
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	const displayUser = notMyProfile ? userRecord?.username : myUser;
 
-	showRemoveFriendModal: boolean;
-	setShowRemoveFriendModal: (v: boolean) => void;
-	friendToRemoveName?: string;
-	onConfirmRemoveFriend: () => void;
-	isRemovingFriend: boolean;
-}
+	// Cuentas sociales para el modal de avatar
+	const displaySocialAccounts = notMyProfile
+		? null
+		: userRecord?.socialAccounts || mySocialAccounts;
 
-export default function ProfileModals({
-	showAvatarModal,
-	setShowAvatarModal,
-	socialAccounts,
-	handleSelectProviderAvatar,
-	handleManualUploadClick,
+	// ── Referencia para el input de archivo ──
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	showUnlinkModal,
-	setShowUnlinkModal,
-	providerToUnlink,
-	isUnlinking,
-	confirmUnlink,
+	// Handler para abrir el diálogo de archivos
+	const handleManualUploadClick = () => {
+		fileInputRef.current?.click();
+	};
 
-	showForcePasswordModal,
-	closeForcePasswordModal,
-	unlinkPassword,
-	setUnlinkPassword,
-	unlinkPasswordError,
-
-	showFriendRequestsModal,
-	setShowFriendRequestsModal,
-	pendingReceived,
-	pendingSent,
-	friendsLoading,
-	onAcceptRequest,
-	onRejectRequest,
-	onCancelRequest,
-
-	showRemoveFriendModal,
-	setShowRemoveFriendModal,
-	friendToRemoveName,
-	onConfirmRemoveFriend,
-	isRemovingFriend,
-}: ProfileModalsProps) {
 	return (
 		<>
+			{/* ── MODAL DE ACTUALIZAR AVATAR ── */}
 			{showAvatarModal && (
 				<ModalLayout
 					title="ACTUALIZAR AVATAR"
@@ -98,7 +91,7 @@ export default function ProfileModals({
 							role="group"
 							aria-labelledby="avatar-options-label"
 						>
-							{socialAccounts?.map((acc) => (
+							{displaySocialAccounts?.map((acc) => (
 								<button
 									key={acc.provider}
 									type="button"
@@ -120,13 +113,16 @@ export default function ProfileModals({
 				</ModalLayout>
 			)}
 
+			{/* ── MODAL DE DESVINCULAR CUENTA ── */}
 			{showUnlinkModal && (
 				<ModalLayout
 					title="DESVINCULAR CUENTA"
 					subtitle={`¿Seguro que quieres quitar ${providerToUnlink?.toUpperCase()}?`}
 					onClose={() => setShowUnlinkModal(false)}
-					onSubmit={confirmUnlink}
-					isLoading={isUnlinking}
+					onSubmit={(e) => {
+						e.preventDefault();
+						confirmUnlink();
+					}}
 					submitText="Desvincular"
 					loadingText="Procesando..."
 				>
@@ -142,13 +138,16 @@ export default function ProfileModals({
 				</ModalLayout>
 			)}
 
+			{/* ── MODAL DE CONTRASEÑA FORZADA ── */}
 			{showForcePasswordModal && (
 				<ModalLayout
 					title="ACCIÓN REQUERIDA"
 					subtitle="Establece una contraseña de seguridad"
 					onClose={closeForcePasswordModal}
-					onSubmit={confirmUnlink}
-					isLoading={isUnlinking}
+					onSubmit={(e) => {
+						e.preventDefault();
+						confirmUnlink();
+					}}
 					submitText="Guardar y Desvincular"
 					loadingText="Procesando..."
 				>
@@ -197,28 +196,31 @@ export default function ProfileModals({
 			)}
 
 			{/* ── MODAL DE SOLICITUDES DE AMISTAD ── */}
-			<FriendRequestsModal
-				show={showFriendRequestsModal}
-				onClose={() => setShowFriendRequestsModal(false)}
-				pendingReceived={pendingReceived}
-				pendingSent={pendingSent}
-				isLoading={friendsLoading}
-				onAcceptRequest={onAcceptRequest}
-				onRejectRequest={onRejectRequest}
-				onCancelRequest={onCancelRequest}
-			/>
+			{showFriendRequestsModal && (
+				<FriendRequestsModal
+					show={showFriendRequestsModal}
+					onClose={() => setShowFriendRequestsModal(false)}
+					pendingReceived={pendingReceived}
+					pendingSent={pendingSent}
+					isLoading={friendsLoading}
+					onAcceptRequest={acceptRequest}
+					onRejectRequest={rejectRequest}
+					onCancelRequest={cancelRequest}
+				/>
+			)}
 
 			{/* ── MODAL CONFIRMAR ELIMINAR AMIGO ── */}
 			{showRemoveFriendModal && (
 				<ModalLayout
 					title="ELIMINAR AMIGO"
-					subtitle={`¿Seguro que quieres eliminar a ${friendToRemoveName} de tus amigos?`}
+					subtitle={`¿Seguro que quieres eliminar a ${displayUser} de tus amigos?`}
 					onClose={() => setShowRemoveFriendModal(false)}
 					onSubmit={(e) => {
 						e.preventDefault();
-						onConfirmRemoveFriend();
+						if (userRecord?.id) {
+							removeFriend(userRecord.id);
+						}
 					}}
-					isLoading={isRemovingFriend}
 					submitText="Eliminar"
 					loadingText="Eliminando..."
 				>
@@ -226,6 +228,19 @@ export default function ProfileModals({
 						<p>Esta acción no se puede deshacer.</p>
 					</div>
 				</ModalLayout>
+			)}
+
+			{/* Input oculto para subida de archivos */}
+			{!notMyProfile && (
+				<input
+					type="file"
+					ref={fileInputRef}
+					style={{ display: "none" }}
+					accept="image/jpeg, image/png, image/webp"
+					onChange={handleFileChange}
+					aria-hidden="true"
+					tabIndex={-1}
+				/>
 			)}
 		</>
 	);
