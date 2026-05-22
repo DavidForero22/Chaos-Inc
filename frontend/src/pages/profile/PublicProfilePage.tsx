@@ -9,12 +9,12 @@ import GuestProfileView from "../../components/profile/GuestProfileView";
 import styles from "../../components/profile/Profile.module.css";
 import api from "../../api/axios";
 import { ProfileProvider } from "../../store/profile/useProfileStore";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
-	const { id: myId, logout, isGuest } = useAuthStore();
+	const { id: myId, logout, isGuest, setAuth } = useAuthStore();
 	const navigate = useNavigate();
 
 	// ¿Es mi perfil o el de otro?
@@ -25,7 +25,32 @@ export default function PublicProfilePage() {
 		userId,
 		refreshKey,
 	);
-	const refreshProfile = () => setRefreshKey((prev) => prev + 1);
+	const refreshProfile = useCallback(async () => {
+		// Si es mi perfil, obtener datos actualizados y actualizar AuthStore
+		if (isMe && myId) {
+			try {
+				const response = await api.get(`/users/${myId}`);
+				const updatedUser = response.data.data ?? response.data;
+
+				// Actualizar AuthStore con los datos más recientes
+				setAuth(
+					updatedUser.id,
+					updatedUser.username,
+					updatedUser.avatar,
+					updatedUser.isGuest,
+					updatedUser.role,
+					updatedUser.socialAccounts,
+					updatedUser.joinedAt,
+					updatedUser.achievements,
+				);
+			} catch (error) {
+				console.error("Error refreshing auth store:", error);
+			}
+		}
+
+		// Incrementar refreshKey para recargar los datos del perfil
+		setRefreshKey((prev) => prev + 1);
+	}, [isMe, myId, setAuth]);
 
 	// Acciones manuales para no tener que llamar a useProfileData y duplicar peticiones
 	const handleLogout = async () => {

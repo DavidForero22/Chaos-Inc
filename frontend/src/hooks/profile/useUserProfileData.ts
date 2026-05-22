@@ -1,6 +1,6 @@
 // src/hooks/profile/useUserProfileData.ts
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
@@ -13,35 +13,57 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 	const [profileUser, setProfileUser] = useState<UserRecord | null>(null);
 	const [loading, setLoading] = useState(true);
 
-	useEffect(() => {
-		// Si no hay ID de perfil o no hay sesión activa, no pedir datos
+	const fetchData = useCallback(async () => {
 		if (!userId || (!myId && !isGuest)) {
 			setLoading(false);
 			return;
 		}
 
-		const fetchData = async () => {
-			setLoading(true);
-			try {
-				const gamesEndpoint =
-					String(myId) === userId ? "/me/games" : `/users/${userId}/games`;
+		setLoading(true);
+		try {
+			const gamesEndpoint =
+				String(myId) === userId ? "/me/games" : `/users/${userId}/games`;
 
-				const [userRes, gamesRes] = await Promise.all([
-					api.get(`/users/${userId}`, { hideLoader: true } as any),
-					api.get(gamesEndpoint, { hideLoader: true } as any),
-				]);
+			const [userRes, gamesRes] = await Promise.all([
+				api.get(`/users/${userId}`, { hideLoader: true } as any),
+				api.get(gamesEndpoint, { hideLoader: true } as any),
+			]);
 
-				setProfileUser(userRes.data.data ?? userRes.data);
-				setGames(gamesRes.data.data ?? gamesRes.data);
-			} catch {
-				// no-op
-			} finally {
-				setLoading(false);
+			const newProfileUser = userRes.data.data ?? userRes.data;
+			const newGames = gamesRes.data.data ?? gamesRes.data;
+
+			setProfileUser(newProfileUser);
+			setGames(newGames);
+
+			// Si es mi perfil, también actualizar AuthStore con los datos más recientes
+			if (String(myId) === userId && newProfileUser) {
+				const { setAuth } = useAuthStore.getState();
+				setAuth(
+					newProfileUser.id,
+					newProfileUser.username,
+					newProfileUser.avatar,
+					newProfileUser.isGuest,
+					newProfileUser.role,
+					newProfileUser.socialAccounts,
+					newProfileUser.joinedAt,
+					newProfileUser.achievements,
+				);
 			}
-		};
+		} catch (error) {
+			console.error("Error fetching user profile:", error);
+		} finally {
+			setLoading(false);
+		}
+	}, [userId, myId, isGuest]);
 
+	useEffect(() => {
 		fetchData();
-	}, [userId, myId, isGuest, refreshKey]);
+	}, [fetchData, refreshKey]);
 
-	return { games, profileUser, loading };
+	// Método para refrescar manualmente desde fuera
+	const refreshUserData = useCallback(() => {
+		fetchData();
+	}, [fetchData]);
+
+	return { games, profileUser, loading, refreshUserData };
 }

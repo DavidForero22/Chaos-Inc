@@ -50,7 +50,7 @@ export interface ProfilePageActions {
 		provider: string,
 		avatarUrl: string | null,
 	) => void;
-	handleProviderClick: (provider: string) => void;
+	handleProviderClick: (provider: string, isLinked: boolean) => void;
 	confirmUnlink: () => Promise<void>;
 	closeForcePasswordModal: () => void;
 

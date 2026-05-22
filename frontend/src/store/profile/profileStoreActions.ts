@@ -1,4 +1,5 @@
 import api from "../../api/axios";
+import { useAuthStore } from "../auth/useAuthStore";
 import type { ProfileStore } from "./profileStoreTypes";
 
 export const createProfileActions = (
@@ -35,7 +36,12 @@ export const createProfileActions = (
 		try {
 			const form = new FormData();
 			form.append("avatar", file);
-			await api.post(`/users/${get().userId}/avatar`, form);
+			const response = await api.post(`/users/${get().userId}/avatar`, form);
+
+			// Actualizar AuthStore con el nuevo avatar
+			const newAvatar = response.data.avatar || null;
+			useAuthStore.getState().setAvatar(newAvatar);
+
 			get().refreshProfile();
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al subir avatar");
@@ -43,24 +49,63 @@ export const createProfileActions = (
 			set({ isUploading: false, showAvatarModal: false });
 		}
 	},
+
 	handleSelectProviderAvatar: async (provider, avatarUrl) => {
 		if (!avatarUrl) return;
 		try {
-			await api.put(`/users/${get().userId}/avatar`, { provider, avatarUrl });
+			const response = await api.post(`/users/${get().userId}/avatar`, {
+				provider,
+				avatarUrl,
+			});
+
+			// Actualizar AuthStore con el nuevo avatar
+			const newAvatar = response.data.avatar || null;
+			useAuthStore.getState().setAvatar(newAvatar);
+
 			get().refreshProfile();
 			set({ showAvatarModal: false });
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al actualizar avatar");
 		}
 	},
-	handleProviderClick: (provider) => {
-		set({ providerToUnlink: provider, showUnlinkModal: true });
+
+	handleProviderClick: (provider: string, isLinked: boolean) => {
+		const { notMyProfile } = get();
+		if (notMyProfile) return;
+
+		if (isLinked) {
+			set({ providerToUnlink: provider, showUnlinkModal: true });
+		} else {
+			const rawUrl =
+				import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1";
+			const backendUrl = rawUrl.replace(/\/api\/v1\/?$/, "");
+			window.location.href = `${backendUrl}/auth/${provider}/redirect`;
+		}
 	},
+
 	confirmUnlink: async () => {
 		const { providerToUnlink, userId } = get();
 		if (!providerToUnlink || !userId) return;
 		try {
-			await api.post(`/auth/unlink/${providerToUnlink}`);
+			const response = await api.post(`/auth/unlink/${providerToUnlink}`);
+
+			// Actualizar AuthStore
+			const updatedUser = response.data.user;
+			if (updatedUser) {
+				useAuthStore
+					.getState()
+					.setAuth(
+						updatedUser.id,
+						updatedUser.username,
+						updatedUser.avatar,
+						updatedUser.isGuest,
+						updatedUser.role,
+						updatedUser.socialAccounts,
+						updatedUser.joinedAt,
+						updatedUser.achievements,
+					);
+			}
+
 			set({ showUnlinkModal: false, showForcePasswordModal: false });
 			get().refreshProfile();
 		} catch (err: any) {
@@ -71,6 +116,7 @@ export const createProfileActions = (
 			}
 		}
 	},
+
 	closeForcePasswordModal: () => {
 		set({
 			showForcePasswordModal: false,

@@ -1,4 +1,5 @@
 // src/components/profile/LinkedAccounts.tsx
+
 import styles from "./UserInfo.module.css";
 
 interface LinkedAccountsProps {
@@ -22,7 +23,7 @@ export default function LinkedAccounts({
 			>
 				<button
 					type="button"
-					onClick={() => onProviderClick("discord", !!isDiscordLinked)}
+					onClick={() => onProviderClick("discord", isDiscordLinked)}
 					className={`${styles.providerBadge} ${styles.badgeDiscord} ${!isDiscordLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
 					aria-label={
 						isDiscordLinked
@@ -34,7 +35,7 @@ export default function LinkedAccounts({
 				</button>
 				<button
 					type="button"
-					onClick={() => onProviderClick("google", !!isGoogleLinked)}
+					onClick={() => onProviderClick("google", isGoogleLinked)}
 					className={`${styles.providerBadge} ${styles.badgeGoogle} ${!isGoogleLinked ? styles.badgeUnlinked : ""} transition-transform hover:scale-105`}
 					aria-label={
 						isGoogleLinked
