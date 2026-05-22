@@ -58,19 +58,27 @@ export function useGalleryData() {
 		const fetchGallery = async () => {
 			try {
 				setLoading(true);
-				const res = await api.get<GalleryResponse>("/gallery");
+				const res = await api.get("/gallery");
+
+				const responseData = res.data.data || res.data;
 				const {
 					cards: rawCards,
 					roles: rawRoles,
 					endings: rawEndings,
-				} = res.data;
+				} = responseData;
 
-				const enrichedCards: EnrichedCard[] = rawCards.map((card) => ({
-					...card,
-					unlockHint: card.is_discovered
-						? undefined
-						: "Juega una partida y ten esta carta en tu mano para descubrirla.",
-				}));
+				console.log("Raw cards:", rawCards);
+				console.log("Raw roles:", rawRoles);
+				console.log("Raw endings:", rawEndings);
+
+				const enrichedCards: EnrichedCard[] = rawCards.map(
+					(card: GalleryCard) => ({
+						...card,
+						unlockHint: card.is_discovered
+							? undefined
+							: "Juega una partida y ten esta carta en tu mano para descubrirla.",
+					}),
+				);
 
 				// Enriquecer roles
 				const allRoles: DisplayRole[] = [
@@ -86,7 +94,7 @@ export function useGalleryData() {
 						label: config.label,
 						image: config.image,
 						unlockHint: config.unlockHint,
-						isUnlocked: rawRoles.includes(role),
+						isUnlocked: rawRoles?.includes(role) ?? false,
 					};
 				});
 
@@ -99,7 +107,7 @@ export function useGalleryData() {
 						name: config.name,
 						image: config.image,
 						unlockHint: config.unlockHint,
-						isUnlocked: rawEndings.includes(ending),
+						isUnlocked: rawEndings?.includes(ending) ?? false,
 					};
 				});
 
@@ -108,6 +116,7 @@ export function useGalleryData() {
 				setEndings(enrichedEndings);
 			} catch (err: any) {
 				setError(err.response?.data?.message || "Error al cargar la galería");
+				console.error("Gallery error:", err);
 			} finally {
 				setLoading(false);
 			}
