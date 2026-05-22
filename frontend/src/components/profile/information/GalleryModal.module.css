@@ -1,0 +1,253 @@
+/* src/components/profile/gallery/GalleryModal.module.css */
+
+.album {
+	background: #faf0e1; /* papel envejecido */
+	background-image: radial-gradient(
+		circle at 25% 40%,
+		rgba(0, 0, 0, 0.02) 2%,
+		transparent 2.5%
+	);
+	background-size: 20px 20px;
+	border-radius: 12px;
+	box-shadow:
+		0 10px 25px rgba(0, 0, 0, 0.2),
+		inset 0 1px 0 rgba(255, 255, 255, 0.6);
+	padding: 20px;
+	position: relative;
+}
+
+/* Simular lomo central (solo en desktop) */
+@media (min-width: 768px) {
+	.content {
+		display: flex;
+		gap: 20px;
+		position: relative;
+	}
+	.content::before {
+		content: "";
+		position: absolute;
+		left: 50%;
+		top: 10px;
+		bottom: 10px;
+		width: 2px;
+		background: linear-gradient(to bottom, #c0a080, #8b6946, #c0a080);
+		transform: translateX(-50%);
+		box-shadow: 0 0 2px rgba(0, 0, 0, 0.3);
+	}
+}
+
+.leftPage,
+.rightPage {
+	flex: 1;
+	background: #fff9ef;
+	border-radius: 8px;
+	padding: 16px;
+	box-shadow:
+		inset 0 0 0 1px rgba(255, 255, 200, 0.8),
+		0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 16px;
+	max-height: 500px;
+	overflow-y: auto;
+	padding-right: 8px;
+}
+
+.gridItem {
+	background: #e9dbc9;
+	border-radius: 8px;
+	padding: 8px;
+	text-align: center;
+	cursor: pointer;
+	transition:
+		transform 0.1s ease,
+		box-shadow 0.1s ease;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	/* efecto plástico */
+	background: linear-gradient(145deg, #f5ebdc, #e0d0bc);
+	border: 1px solid rgba(255, 255, 200, 0.6);
+}
+
+.gridItem:hover {
+	transform: scale(1.02);
+	box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.locked {
+	opacity: 0.7;
+	filter: grayscale(0.3);
+}
+
+.itemImage {
+	width: 80px;
+	height: 80px;
+	margin: 0 auto 8px;
+	background: #cbbd9e;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.itemImage img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.placeholder {
+	font-size: 2.5rem;
+	font-weight: bold;
+	color: #8b6946;
+	background: #e9dbc9;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.itemName {
+	font-size: 0.8rem;
+	font-weight: bold;
+	color: #4a3724;
+	text-transform: uppercase;
+	word-break: break-word;
+}
+
+/* Detalle */
+.detail {
+	padding: 12px;
+}
+
+.detailImage {
+	width: 150px;
+	height: 150px;
+	margin: 0 auto 16px;
+	background: #cbbd9e;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.detailImage img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.placeholderLarge {
+	font-size: 4rem;
+	font-weight: bold;
+	color: #8b6946;
+}
+
+.detailTitle {
+	font-size: 1.4rem;
+	font-weight: bold;
+	text-align: center;
+	color: #3e2a1f;
+	margin-bottom: 12px;
+}
+
+.unlockHint {
+	text-align: center;
+	font-style: italic;
+	color: #7a5a3a;
+	background: #f7efdd;
+	padding: 8px;
+	border-radius: 20px;
+	font-size: 0.9rem;
+}
+
+.detailDescription,
+.detailLore,
+.timesPlayed {
+	font-size: 0.9rem;
+	color: #4a3724;
+	margin-top: 12px;
+	line-height: 1.4;
+}
+
+/* Pestañas */
+.tabs {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 20px;
+	padding-left: 20px;
+}
+
+.tab {
+	background: #e9dbc9;
+	border: none;
+	padding: 10px 24px;
+	font-weight: bold;
+	text-transform: uppercase;
+	border-radius: 20px 20px 0 0;
+	cursor: pointer;
+	font-family: monospace;
+	color: #4a3724;
+	transition: all 0.2s;
+	box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.activeTab {
+	background: #fff9ef;
+	color: #b85c1a;
+	border-bottom: 2px solid #b85c1a;
+	transform: translateY(-2px);
+}
+
+.loading,
+.error {
+	text-align: center;
+	padding: 40px;
+	font-size: 1.2rem;
+	color: #4a3724;
+}
+
+.error {
+	color: #b85c1a;
+}
+
+.emptyDetail {
+	text-align: center;
+	padding: 40px;
+	color: #8b6946;
+	font-style: italic;
+}
+
+/* Móvil */
+@media (max-width: 768px) {
+	.album {
+		padding: 12px;
+	}
+	.grid {
+		grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+		gap: 12px;
+		max-height: 60vh;
+	}
+	.itemImage {
+		width: 60px;
+		height: 60px;
+	}
+	.backButton {
+		background: #e9dbc9;
+		border: none;
+		padding: 6px 12px;
+		border-radius: 20px;
+		margin-bottom: 16px;
+		font-weight: bold;
+		cursor: pointer;
+	}
+	.detailImage {
+		width: 120px;
+		height: 120px;
+	}
+}

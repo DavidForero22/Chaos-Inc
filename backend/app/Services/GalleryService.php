@@ -1,7 +1,7 @@
 <?php
 // app/Services/Gallery/GalleryService.php
 
-namespace App\Services\Gallery;
+namespace App\Services;
 
 use App\Models\User;
 use App\Models\UserDiscoveredCard;

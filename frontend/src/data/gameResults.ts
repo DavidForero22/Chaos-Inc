@@ -1,3 +1,5 @@
+// src/config/gameResults.ts
+
 import type { PlayerRole } from "../types/live-game";
 
 export type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
@@ -6,6 +8,8 @@ export type ConfigKey = "boss" | "union" | "intern" | "canceled";
 export const RESULT_CONFIG: Record<
 	ConfigKey,
 	{
+		name: string; 
+		unlockHint: string; 
 		headline: string;
 		image: string;
 		subtitle: string;
@@ -14,6 +18,9 @@ export const RESULT_CONFIG: Record<
 	}
 > = {
 	boss: {
+		name: "Victoria del Jefe",
+		unlockHint:
+			"Termina una partida en la que gane la empresa (Jefe o Secretario)",
 		headline: "¡EMPRESA APESTOSA EN CABEZA!",
 		image: "/game-result/game_result_boss.jpg",
 		subtitle:
@@ -25,6 +32,8 @@ export const RESULT_CONFIG: Record<
 		winners: ["boss", "secretary"],
 	},
 	union: {
+		name: "Victoria del Sindicato",
+		unlockHint: "Termina una partida en la que gane el Sindicato",
 		headline: "¡CHAOS INC. CIERRA SUS PUERTAS!",
 		image: "/game-result/game_result_union.jpg",
 		subtitle:
@@ -36,6 +45,8 @@ export const RESULT_CONFIG: Record<
 		winners: ["union"],
 	},
 	intern: {
+		name: "Victoria de la Becaria",
+		unlockHint: "Termina una partida en la que gane la Becaria",
 		headline: "¡RUBIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
 		image: "/game-result/game_result_intern.jpg",
 		subtitle:
@@ -47,6 +58,8 @@ export const RESULT_CONFIG: Record<
 		winners: ["intern"],
 	},
 	canceled: {
+		name: "Partida Cancelada",
+		unlockHint: "Abandona una partida o que se cancele por falta de jugadores",
 		headline: "¡NUNCA PASA NADA!",
 		image: "/game-result/game_result_cancelled.jpg",
 		subtitle: "También en la sección del tiempo: Nublado",

@@ -1,3 +1,5 @@
+// src/config/roles.ts
+
 import type { MyData } from "../types/live-game.ts";
 
 export type DisplayRole = MyData["role"];
@@ -19,6 +21,7 @@ export const ROLE_CONFIG: Record<
 		image: string;
 		objective: string;
 		titleLabel: string;
+		unlockHint: string; 
 	}
 > = {
 	boss: {
@@ -27,6 +30,7 @@ export const ROLE_CONFIG: Record<
 		objective:
 			"Meses de explotación y maltrato laboral han cultivado sus frutos: tienes al sindicato de trabajadores pidiendo tu cabeza en bandeja. Acaba con el sindicato y evita que la becaria sea la última en pie. La becaria podría fingir ser tu secretario para traicionarte.",
 		titleLabel: "Tu rol: Jefe",
+		unlockHint: "Comienza una partida jugando como Jefe",
 	},
 	secretary: {
 		label: "Secretario",
@@ -34,6 +38,7 @@ export const ROLE_CONFIG: Record<
 		objective:
 			"Eres la mano derecha de la dirección. El sindicato busca acabar con el jefe y la becaria quiere ser la última en pie; debes evitar ambas situaciones. Si cae el jefe, tú también caes. La becaria intentará hacerse pasar por tu rol, ten cuidado.",
 		titleLabel: "Tu rol: Secretario",
+		unlockHint: "Comienza una partida jugando como Secretario",
 	},
 	intern: {
 		label: "Becaria",
@@ -41,6 +46,7 @@ export const ROLE_CONFIG: Record<
 		objective:
 			"Has decidido adueñarte de la empresa por la fuerza para dejar de cobrar menos del salario mínimo. Para ello, tendrás que ser el último jugador en pie. Acaba con el sindicato y finge ser el secretario para ganarte la confianza del jefe.",
 		titleLabel: "Tu rol: Becaria",
+		unlockHint: "Comienza una partida jugando como Becaria",
 	},
 	union: {
 		label: "Sindicato",
@@ -48,5 +54,6 @@ export const ROLE_CONFIG: Record<
 		objective:
 			"El sistema está corrupto y tú eres la cura. Coordina con tus compañeros para acabar con el jefe y su horripilante empresa. El secretario y la becaria intentarán pararos los pies, no tengáis piedad.",
 		titleLabel: "Tu rol: Sindicato",
+		unlockHint: "Comienza una partida jugando como Sindicato",
 	},
 };

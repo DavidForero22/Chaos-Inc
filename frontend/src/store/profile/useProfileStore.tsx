@@ -55,6 +55,7 @@ export function ProfileProvider({
 			isSendingRequest: false,
 			isFriend: false,
 			isUploading: false,
+			showGalleryModal: false,
 			onLogout,
 			onDeleteAccount,
 			onUpdateProfile,

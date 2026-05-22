@@ -20,6 +20,7 @@ export const createProfileActions = (
 	setProviderToUnlink: (p) => set({ providerToUnlink: p }),
 	setUnlinkPassword: (p) => set({ unlinkPassword: p }),
 	setUnlinkPasswordError: (e) => set({ unlinkPasswordError: e }),
+	setShowGalleryModal: (v) => set({ showGalleryModal: v }),
 
 	// ---- avatar ----
 	handleAvatarClick: () => {

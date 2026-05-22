@@ -5,6 +5,7 @@ import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
 import ModalLayout from "../../ui/ModalLayout";
 import FriendRequestsModal from "./FriendRequestsModal";
 import styles from "./UserInfo.module.css";
+import GalleryModal from "./GalleryModal.tsx";
 
 export default function ProfileModals() {
 	// ── Store del perfil ──
@@ -47,6 +48,9 @@ export default function ProfileModals() {
 	const cancelRequest = useProfileStore((s) => s.cancelRequest);
 	const removeFriend = useProfileStore((s) => s.removeFriend);
 	const handleFileChange = useProfileStore((s) => s.handleFileChange);
+
+	const showGalleryModal = useProfileStore((s) => s.showGalleryModal);
+	const setShowGalleryModal = useProfileStore((s) => s.setShowGalleryModal);
 
 	// ── Auth store (datos del usuario actual) ──
 	const { user: myUser, socialAccounts: mySocialAccounts } = useAuthStore();
@@ -241,6 +245,11 @@ export default function ProfileModals() {
 					aria-hidden="true"
 					tabIndex={-1}
 				/>
+			)}
+
+			{/* Modal de galería */}
+			{showGalleryModal && (
+				<GalleryModal onClose={() => setShowGalleryModal(false)} />
 			)}
 		</>
 	);

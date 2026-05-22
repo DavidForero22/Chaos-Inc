@@ -23,6 +23,7 @@ export default function UserNameAndActions() {
 	const setShowRemoveFriendModal = useProfileStore(
 		(s) => s.setShowRemoveFriendModal,
 	);
+	const setShowGalleryModal = useProfileStore((s) => s.setShowGalleryModal);
 
 	// ── Auth store ──
 	const { user: myUser, role: myRole } = useAuthStore();
@@ -106,14 +107,12 @@ export default function UserNameAndActions() {
 									</span>
 								)}
 							</button>
-							{/* Galería */}
+							{/* Galeria */}
 							<button
 								className="p-1 rounded-md border border-gray-400 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
 								aria-label="Ver galería de desbloqueables"
 								title="Ver galería de desbloqueables"
-								onClick={() => {
-									/* TODO */
-								}}
+								onClick={() => setShowGalleryModal(true)}
 							>
 								<MdMenuBook size={28} aria-hidden="true" />
 							</button>

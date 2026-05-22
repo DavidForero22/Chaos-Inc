@@ -25,6 +25,7 @@ export interface ProfilePageState {
 	isFriend: boolean;
 
 	isUploading: boolean;
+	showGalleryModal: boolean;
 
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
@@ -59,6 +60,8 @@ export interface ProfilePageActions {
 	rejectRequest: (requestId: number) => Promise<void>;
 	cancelRequest: (requestId: number) => Promise<void>;
 	removeFriend: (friendId: number) => Promise<void>;
+
+	setShowGalleryModal: (v: boolean) => void;
 }
 
 export type ProfileStore = ProfilePageState & ProfilePageActions;
