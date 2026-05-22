@@ -124,4 +124,9 @@ class User extends Authenticatable
             $q->where('sender_id', $user->id)->where('receiver_id', $this->id);
         })->first();
     }
+
+    public function discoveredCards()
+    {
+        return $this->hasMany(UserDiscoveredCard::class);
+    }
 }

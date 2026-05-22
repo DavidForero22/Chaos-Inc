@@ -68,6 +68,8 @@ Route::prefix('v1')->group(function () {
 
             Route::post('/rooms/{id}/debug', [DebugController::class, 'handle'])
                 ->middleware([IsDebugRoom::class,]);
+
+            Route::get('/gallery', [\App\Http\Controllers\GalleryController::class, 'index']);
         });
 
         // ==========================================================

@@ -12,6 +12,7 @@ use App\Http\Resources\GameDataResource;
 use App\Http\Resources\MyDataResource;
 use App\Jobs\AutoEndTurnJob;
 use App\Models\User;
+use App\Models\UserDiscoveredCard;
 use App\Services\Game\Actions\GameActionService;
 use App\Services\Game\Engine\DeckService;
 use App\Services\Game\Engine\TurnService;
@@ -165,7 +166,6 @@ class LiveGameService
         $currentTurnPlayerId = '';
 
         foreach ($playerIds as $index => $playerId) {
-
             $user = $users->firstWhere('id', (int) $playerId);
             $playerRole = $roles[$index];
 
@@ -176,6 +176,7 @@ class LiveGameService
             $playerCards = array_splice($deck, 0, 3);
             $baseKey     = "room:{$roomId}:player:{$playerId}";
 
+            // ---- 1. Info del jugador ----
             Redis::hmset("{$baseKey}:info", [
                 'user_id'     => $playerId,
                 'username'    => $user?->username ?? '',
@@ -188,6 +189,7 @@ class LiveGameService
                 'is_guest'    => $user ? ($user->is_guest ? 1 : 0) : 1,
             ]);
 
+            // ---- 2. Estadísticas ----
             Redis::hmset("{$baseKey}:stats", [
                 'damage_dealt'    => 0,
                 'damage_received' => 0,
@@ -215,9 +217,34 @@ class LiveGameService
                 'vision_bonus' => 0,
             ]);
 
-            Redis::set("{$baseKey}:hand", json_encode($playerCards));
+            // ---- 3. Inicializar sets de descubrimiento ----
+            $knownKey = "room:{$roomId}:player:{$playerId}:known_cards";
+            $newKey   = "room:{$roomId}:player:{$playerId}:new_cards";
+
+            // Si NO es invitado, cargar desde BD las cartas ya descubiertas
+            $isGuest = $user ? $user->is_guest : true;
+            if (!$isGuest && $user) {
+                $discovered = UserDiscoveredCard::where('user_id', $user->id)
+                    ->pluck('card_id')
+                    ->map(fn($id) => (string) $id)
+                    ->toArray();
+                if (!empty($discovered)) {
+                    Redis::sadd($knownKey, ...$discovered);
+                }
+            }
+
+            // Añadir las 3 cartas iniciales a new_cards si no estaban en known_cards
+            foreach ($playerCards as $card) {
+                $cardBaseId = (string) $card['card_id'];
+                if (!Redis::sismember($knownKey, $cardBaseId)) {
+                    Redis::sadd($newKey, $cardBaseId);
+                }
+            }
+            // ---- 4. Guardar mano ----
+            $this->deckService->initialDeal($roomId, $playerId, $playerCards);
             Redis::hmset("{$baseKey}:card_usage", ['initialized' => 1]);
 
+            // ---- 5. Expiración (TTL 24h) ----
             Redis::expire("{$baseKey}:info", 86400);
             Redis::expire("{$baseKey}:stats", 86400);
             Redis::expire("{$baseKey}:turn_state", 86400);

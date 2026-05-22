@@ -4,6 +4,7 @@
 namespace App\Services\Admin;
 
 use App\Models\Game;
+use App\Models\GameUser;
 use Illuminate\Support\Facades\DB;
 
 class GameService
@@ -11,7 +12,7 @@ class GameService
     public function getAllGames($perPage = 20, array $filters = [])
     {
         $query = Game::with(['participants', 'cardUsages']);
-        
+
         // Filtro: Ganador
         if (!empty($filters['winner']) && $filters['winner'] !== 'all') {
             $query->where('winner_role', $filters['winner']);
@@ -87,6 +88,40 @@ class GameService
                         DB::table('game_card_usage')->insert($cardUsages);
                     }
                 }
+            }
+
+            return $game;
+        });
+    }
+
+    public function createCanceledGame(array $playersData, int $roundNumber): Game
+    {
+        return DB::transaction(function () use ($playersData, $roundNumber) {
+            $game = Game::create([
+                'winner_role'        => 'canceled',
+                'total_rounds'       => $roundNumber,
+                'total_eliminations' => 0,
+            ]);
+
+            foreach ($playersData as $player) {
+                GameUser::create([
+                    'game_id'         => $game->id,
+                    'user_id'         => $player['user_id'] ?? null,
+                    'is_guest'        => $player['is_guest'],
+                    'display_name'    => $player['display_name'],
+                    'has_won'         => false,
+                    'role'            => $player['role'],
+                    'is_dead'         => $player['is_dead'] ?? false,
+                    'damage_dealt'    => 0,
+                    'damage_received' => 0,
+                    'healing_done'    => 0,
+                    'cards_played'    => 0,
+                    'passives_played' => 0,
+                    'eliminations'    => 0,
+                    'dodged_attacks'  => 0,
+                    'cards_stolen'    => 0,
+                ]);
+                // No se guarda card_details
             }
 
             return $game;

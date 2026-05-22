@@ -1,4 +1,5 @@
 <?php
+// database/migrations/[timestamp]_create_games_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -14,8 +15,7 @@ return new class extends Migration
         Schema::create('games', function (Blueprint $table) {
             $table->id();
 
-            // Añadir ->index() aquí para búsquedas instantáneas
-            $table->enum('winner_role', ['boss', 'secretary', 'intern', 'union'])->index();
+            $table->enum('winner_role', ['boss', 'secretary', 'intern', 'union', 'canceled'])->index();
             $table->integer('total_rounds');
             $table->integer('total_eliminations');
 

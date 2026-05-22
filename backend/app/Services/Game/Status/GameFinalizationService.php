@@ -7,6 +7,7 @@ use App\Events\GameFinalized;
 use App\Events\RoomStateUpdated;
 use App\Jobs\CheckVictoryJob;
 use App\Jobs\CleanupRoomJob;
+use App\Models\UserDiscoveredCard;
 use App\Services\Admin\GameService;
 use App\Services\Game\Engine\AchievementService;
 use App\Services\Game\Engine\ExperienceService;
@@ -131,9 +132,33 @@ class GameFinalizationService
             'players'            => $playersData,
         ]);
 
+        // ---- Persistir nuevos descubrimientos y guardar experiencia ----
         foreach ($playersData as $player) {
             $xpSummary = $this->experienceService->processPlayer($player, $mvpPlayerId);
 
+            $pInfo = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
+            $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
+            if ($isGuest) {
+                continue; // Los invitados no guardan progreso
+            }
+            $userId = $pInfo['user_id'] ?? null;
+            if (!$userId) continue;
+
+            $newKey = "room:{$roomId}:player:{$playerId}:new_cards";
+            $newCardIds = Redis::smembers($newKey);
+            if (!empty($newCardIds)) {
+                $now = now();
+                $insertData = [];
+                foreach ($newCardIds as $cardId) {
+                    $insertData[] = [
+                        'user_id'       => $userId,
+                        'card_id'       => (int) $cardId,
+                        'discovered_at' => $now,
+                    ];
+                }
+                // Usar insertOrIgnore para evitar duplicados (por si acaso)
+                UserDiscoveredCard::insertOrIgnore($insertData);
+            }
             // Guests no tienen canal privado donde recibir el evento
             if (!$player['is_guest']) {
                 event(new GameFinalized((int) $player['user_id'], $xpSummary));
@@ -151,10 +176,34 @@ class GameFinalizationService
     {
         $roomStateKey = "room:{$roomId}:state";
 
-        // Evita que se programe la limpieza 500 veces por segundo
         if (Redis::hget($roomStateKey, 'game_over') == 1) {
             return;
         }
+
+        // Obtener datos de los jugadores (necesarios para guardar la partida cancelada)
+        $playerIds = Redis::smembers("room:{$roomId}:players");
+        $roundNumber = (int) Redis::hget($roomStateKey, 'round_number') ?: 1;
+        $playersData = [];
+
+        foreach ($playerIds as $playerId) {
+            $pInfo = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
+            $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
+            $isDead = CastHelper::toBool($pInfo['is_dead'] ?? 0);
+            $displayName = $pInfo['username'] ?? "Player_{$playerId}";
+            $userId = $pInfo['user_id'] ?? null;
+            $role = $pInfo['role'] ?? 'intern';
+
+            $playersData[] = [
+                'user_id'      => $userId,
+                'is_guest'     => $isGuest,
+                'display_name' => $displayName,
+                'role'         => $role,
+                'is_dead'      => $isDead,
+            ];
+        }
+
+        // Guardar la partida cancelada
+        $this->gameService->createCanceledGame($playersData, $roundNumber);
 
         // Marcar estado para que el /sync no falle
         Redis::hset($roomStateKey, 'game_over', 1);
