@@ -111,6 +111,7 @@ Route::prefix('v1')->group(function () {
             Route::middleware(\App\Http\Middleware\IsAdmin::class)->group(function () {
                 Route::post('/users', [UserController::class, 'store']);
                 Route::post('/games', [GameController::class, 'store']);
+                Route::delete('/rooms/{id}', [RoomController::class, 'destroy']);
             });
         });
     });

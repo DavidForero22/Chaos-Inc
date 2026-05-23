@@ -7,8 +7,9 @@ import { useAuthStore } from "../store/auth/useAuthStore.ts";
 
 import UsersTab from "../components/admin/UsersTab.tsx";
 import GamesTab from "../components/admin/GamesTab.tsx";
+import RoomsTab from "../components/admin/RoomsTab.tsx";
 
-type Tab = "users" | "games";
+type Tab = "users" | "games" | "rooms";
 
 export default function AdminPage() {
 	const { role, user } = useAuthStore();
@@ -24,7 +25,7 @@ export default function AdminPage() {
 
 	return (
 		<main className="pl-6 pb-10 pr-6">
-			{/* Cabecera Oficial */}
+			{/* Cabecera */}
 			<header>
 				<h1
 					className="text-4xl mb-6 font-black uppercase"
@@ -39,7 +40,7 @@ export default function AdminPage() {
 				className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4"
 				aria-label="Secciones de administración"
 			>
-				{(["users", "games"] as Tab[]).map((t) => (
+				{(["users", "games", "rooms"] as Tab[]).map((t) => (
 					<button
 						key={t}
 						onClick={() => setTab(t)}
@@ -48,24 +49,25 @@ export default function AdminPage() {
 								? "bg-[#393e42] border-[#393e42] text-[#d2d4d1]"
 								: "bg-transparent border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42]"
 						}`}
-						aria-label={`Ver ${t === "users" ? "usuarios" : "partidas"}`}
+						aria-label={`Ver ${t === "users" ? "usuarios" : t === "games" ? "partidas" : "salas"}`}
 						aria-pressed={tab === t}
 					>
-						{t === "users" && <span aria-hidden="true">📄 </span>}
-						{t === "games" && <span aria-hidden="true">📂 </span>}
-						{t === "users" ? "Usuarios" : "Partidas"}
+						{t === "users" && <span aria-hidden="true"></span>}
+						{t === "games" && <span aria-hidden="true"></span>}
+						{t === "rooms" && <span aria-hidden="true"></span>}
+						{t === "users" ? "Usuarios" : t === "games" ? "Partidas" : "Salas"}
 					</button>
 				))}
 			</nav>
 
-			{/* Contenido dinámico de las pestañas */}
 			<section
 				className="font-mono text-[#393e42]"
-				aria-label={`Contenido de ${tab === "users" ? "usuarios" : "partidas"}`}
+				aria-label={`Contenido de ${tab === "users" ? "usuarios" : tab === "games" ? "partidas" : "salas"}`}
 				aria-live="polite"
 			>
 				{tab === "users" && <UsersTab />}
 				{tab === "games" && <GamesTab />}
+				{tab === "rooms" && <RoomsTab />}
 			</section>
 		</main>
 	);

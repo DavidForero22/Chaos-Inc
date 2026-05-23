@@ -207,4 +207,29 @@ class RoomService
 
         return $roomDataResponse;
     }
+
+    public function deleteRoom(string $roomId): void
+    {
+        $roomInfoKey = "room:{$roomId}:info";
+        if (!Redis::exists($roomInfoKey)) {
+            throw new \Exception("La sala no existe", 404);
+        }
+
+        $playerIds = Redis::smembers("room:{$roomId}:players");
+
+        foreach ($playerIds as $playerId) {
+            Redis::del("player:{$playerId}:room");
+        }
+
+        // Eliminar todas las llaves de la sala usando patrón
+        $keys = Redis::keys("room:{$roomId}*");
+        if (!empty($keys)) {
+            Redis::del($keys);
+        }
+
+        // Eliminar de active_rooms
+        Redis::srem("active_rooms", $roomId);
+
+        event(new RoomListUpdated($roomId));
+    }
 }

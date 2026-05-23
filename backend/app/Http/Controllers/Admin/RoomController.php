@@ -49,4 +49,14 @@ class RoomController extends Controller
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
         }
     }
+
+    public function destroy(string $id)
+    {
+        try {
+            $this->roomService->deleteRoom($id);
+            return response()->json(['message' => 'Sala eliminada correctamente'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 500);
+        }
+    }
 }
