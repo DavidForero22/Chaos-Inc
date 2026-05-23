@@ -23,6 +23,12 @@ interface GameUIState {
 	showActingBossModal: boolean;
 	matchAchievements: string[];
 
+	isSacrificeMode: boolean;
+	sacrificeCardId: string | null; // ID de la carta elegida para sacrificar
+	setSacrificeMode: (active: boolean) => void;
+	setSacrificeCard: (cardId: string | null) => void;
+	clearSacrifice: () => void;
+
 	setSelectedCardId: (id: string | null) => void;
 	setIsDiscardMode: (active: boolean) => void;
 	setIsInfoMode: (active: boolean) => void;
@@ -53,6 +59,9 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 	luckResult: null,
 	isFolderExpanded: false,
 	activeModal: "none",
+
+	isSacrificeMode: false,
+	sacrificeCardId: null,
 
 	setSelectedCardId: (id) => set({ selectedCardId: id }),
 
@@ -106,6 +115,8 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 			cardsToDiscard: [],
 			perksToDiscard: [],
 			selectedCardId: null,
+			isSacrificeMode: false,
+			sacrificeCardId: null,
 		}),
 
 	handleLuckResult: (success: boolean) => {
@@ -138,4 +149,9 @@ export const useGameUIStore = create<GameUIState>((set) => ({
 			luckResult: null,
 			activeModal: "none",
 		}),
+
+	setSacrificeMode: (active) =>
+		set({ isSacrificeMode: active, sacrificeCardId: null }),
+	setSacrificeCard: (cardId) => set({ sacrificeCardId: cardId }),
+	clearSacrifice: () => set({ isSacrificeMode: false, sacrificeCardId: null }),
 }));

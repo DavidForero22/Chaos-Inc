@@ -26,6 +26,7 @@ export interface PlayerPerks {
 	has_distance: boolean;
 	has_storage: boolean;
 	has_luck: boolean;
+	chaotic_passive: boolean;
 }
 
 export interface TurnLimits {
@@ -96,6 +97,7 @@ export interface CardInstance {
 	lore: string;
 	image?: string;
 	icons: CardIconType[];
+	category: "normal" | "chaotic";
 }
 
 /**

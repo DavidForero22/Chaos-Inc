@@ -75,12 +75,13 @@ class MyDataResource extends JsonResource
 
             // Perks
             'perks' => [
-                'has_shield'   => CastHelper::toBool($myData['has_shield'] ?? 0),
-                'vision_range' => app(CombatService::class)->getPlayerRange($roomId, $playerId),
-                'vision_bonus' => (int) ($myData['vision_bonus'] ?? 0),
-                'has_distance' => (int) ($myData['has_distance'] ?? 0),
-                'has_storage'  => CastHelper::toBool($myData['has_storage'] ?? 0),
-                'has_luck'     => CastHelper::toBool($myData['has_luck'] ?? 0),
+                'has_shield'        => CastHelper::toBool($myData['has_shield'] ?? 0),
+                'vision_range'      => app(CombatService::class)->getPlayerRange($roomId, $playerId),
+                'vision_bonus'      => (int) ($myData['vision_bonus'] ?? 0),
+                'has_distance'      => (int) ($myData['has_distance'] ?? 0),
+                'has_storage'       => CastHelper::toBool($myData['has_storage'] ?? 0),
+                'has_luck'          => CastHelper::toBool($myData['has_luck'] ?? 0),
+                'chaotic_passive'   => CastHelper::toBool($myData['chaotic_passive'] ?? 0),
             ],
 
             // Turno

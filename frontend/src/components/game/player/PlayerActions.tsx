@@ -45,6 +45,7 @@ export function PlayerActions() {
 	const selectedCardId = useGameUIStore((state) => state.selectedCardId);
 	const selectedCard = me?.cards.find((c) => c.id === selectedCardId);
 	const isTargetingMode = selectedCard?.target === "opponent";
+	const hasSelectedCard = selectedCardId !== null;
 
 	// Sincronización inteligente de limpieza de modos
 	useEffect(() => {
@@ -80,12 +81,19 @@ export function PlayerActions() {
 	]);
 
 	const isDead = me?.is_dead || false;
-	const isInfoDisabled = isGlobalLoading || isDead || isDiscardMode;
+	const isInfoDisabled =
+		isGlobalLoading || isDead || isDiscardMode || hasSelectedCard;
+
 	if (!actionLogic.isReady) return null;
 
 	// ¿Deberían estar deshabilitados los botones por el modo Info?
 	const isInteractionBlockedByInfo = isInfoMode || isDead;
 	const isCurrentlyOverLimit = isDiscardMode ? willBeOverLimit : isOverLimit;
+	console.log("canDiscard: ", canDiscard);
+	console.log("isInteractionBlockedByInfo: ", isInteractionBlockedByInfo);
+	console.log("hasSelectedCard: ", hasSelectedCard);
+	const isDiscardDisabled =
+		!canDiscard || isInteractionBlockedByInfo || hasSelectedCard;
 
 	return (
 		<section
@@ -172,7 +180,7 @@ export function PlayerActions() {
 							<button
 								tabIndex={isTargetingMode ? -1 : 0}
 								onClick={() => setIsDiscardMode?.(true)}
-								disabled={!canDiscard || isInteractionBlockedByInfo}
+								disabled={isDiscardDisabled}
 								className={`${styles.inkStamp} ${styles.stampOrange} ${!canDiscard || isInteractionBlockedByInfo ? styles.stampDisabled : ""}`}
 							>
 								DESCARTAR

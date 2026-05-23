@@ -22,6 +22,7 @@ return [
             'icons'        => ['opponent', 'attack'],
             'count'        => 28,
             'image'        => 'attack.png',
+            'category'     => 'normal',
         ],
 
         // ─── 2. CURAR  ────────────────────────────────
@@ -36,6 +37,7 @@ return [
             'icons'        => ['self', 'heal'],
             'count'        => 7,
             'image'        => 'heal.png',
+            'category'     => 'normal',
         ],
 
         // ─── 3. ESQUIVAR  ─────────────────────────────
@@ -50,6 +52,7 @@ return [
             'icons'        => ['self', 'dodge'],
             'count'        => 11,
             'image'        => 'dodge.png',
+            'category'     => 'normal',
         ],
 
         // ─── 4. ROBAR  ──────────────────────────────
@@ -64,6 +67,7 @@ return [
             'icons'        => ['opponent', 'steal'],
             'count'        => 5,
             'image'        => 'steal.png',
+            'category'     => 'normal',
         ],
 
         // ─── 5. ESCUDO  ────────────────────────────────
@@ -78,6 +82,7 @@ return [
             'icons'        => ['self', 'perk'],
             'count'        => 4,
             'image'        => 'shield.png',
+            'category'     => 'normal',
         ],
 
         // ─── 6. BLOQUEO  ────────────────────────────
@@ -92,6 +97,7 @@ return [
             'icons'        => ['opponent', 'block'],
             'count'        => 4,
             'image'        => 'block.png',
+            'category'     => 'normal',
         ],
 
         // ─── 7. ATAQUE MASIVO  ──────────────────────
@@ -106,6 +112,7 @@ return [
             'icons'        => ['opponents', 'attack'],
             'count'        => 6,
             'image'        => 'multi_attack.png',
+            'category'     => 'normal',
         ],
 
         // ─── 8. CURACIÓN MASIVA  ────────────────────
@@ -120,6 +127,7 @@ return [
             'icons'        => ['all', 'heal'],
             'count'        => 3,
             'image'        => 'multi_heal.png',
+            'category'     => 'normal',
         ],
 
         // ─── 9. SABOTAJE  ────────────────────
@@ -134,6 +142,7 @@ return [
             'icons'        => ['opponent', 'discard'],
             'count'        => 6,
             'image'        => 'discard.png',
+            'category'     => 'normal',
         ],
 
         // ─── 10. VISIÓN  ───────────────────────────────
@@ -148,6 +157,7 @@ return [
             'icons'        => ['self', 'perk'],
             'count'        => 3,
             'image'        => 'vision.png',
+            'category'     => 'normal',
         ],
 
         // ─── 11. LEJANÍA  ──────────────────────────────
@@ -162,6 +172,7 @@ return [
             'icons'        => ['self', 'perk'],
             'count'        => 3,
             'image'        => 'distance.png',
+            'category'     => 'normal',
         ],
 
         // ─── 12. RECORTE  ──────────────────────────
@@ -176,6 +187,7 @@ return [
             'icons'        => ['opponent', 'discard'],
             'count'        => 8,
             'image'        => 'clean.png',
+            'category'     => 'normal',
         ],
 
         // ─── 13. ALMACÉN  ──────────────────────────────
@@ -190,6 +202,7 @@ return [
             'icons'        => ['self', 'perk'],
             'count'        => 3,
             'image'        => 'storage.png',
+            'category'     => 'normal',
         ],
 
         // ─── 14. SUERTE  ───────────────────────────────
@@ -204,6 +217,56 @@ return [
             'icons'        => ['self', 'perk'],
             'count'        => 3,
             'image'        => 'luck.png',
+            'category'     => 'normal',
         ],
+
+        // ─── 15. CAOS ACCIONARIO (Caótica) ──────────────────
+        [
+            'id'               => 15,
+            'type'             => 'action',
+            'target'           => 'self',
+            'base_name'        => 'Caos Accionario',
+            'display_name'     => 'Caos Accionario',
+            'description'      => 'Roba una carta por cada jugador vivo. Debes descartar 1 carta de tu mano para activar este efecto.',
+            'lore'             => 'El mercado se desploma y la desesperación se apodera de la sala...',
+            'icons'            => ['opponents', 'discard'],
+            'count'            => 1,
+            'image'            => 'chaotic_action.png',
+            'category'         => 'chaotic',
+        ],
+        // ─── 16. CAOS PASIVO (Caótica) ──────────────────────
+        [
+            'id'               => 16,
+            'type'             => 'perk',
+            'target'           => 'self',
+            'base_name'        => 'Caos Pasivo',
+            'display_name'     => 'Caos Pasivo',
+            'description'      => 'Permite realizar ataques básicos ilimitados en este turno (solo a distancia 1). Debes descartar 1 carta de tu mano para activarlo.',
+            'lore'             => 'La burocracia se vuelve loca... hoy puedes despedir a todo el mundo.',
+            'icons'            => ['self', 'perk'],
+            'count'            => 1,
+            'image'            => 'chaotic_passive.png',
+            'category'         => 'chaotic',
+        ],
+        // ─── 17. RECONTRATACIÓN DE EMERGENCIA ─────
+        [
+            'id'               => 17,
+            'type'             => 'action',
+            'target'           => 'opponent',
+            'base_name'        => 'Re-contratación',
+            'display_name'     => 'Re-contratación',
+            'description'      => 'Revive a un jugador eliminado con 2 puntos de vida. No gasta tu turno. Debes descartar 1 carta de tu mano.',
+            'lore'             => 'Te despidieron, pero al día siguiente te llaman para un puesto mejor...',
+            'icons'            => ['opponent'],
+            'count'            => 1,
+            'image'            => 'chaotic_revive.png',
+            'category'         => 'chaotic',
+        ],
+    ],
+
+    'chaotic' => [
+        'enabled'          => true,
+        'chance_per_cycle' => 15,
+        'min_position'     => 40,
     ],
 ];

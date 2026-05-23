@@ -10,7 +10,7 @@ import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
-
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -49,6 +49,8 @@ export function OpponentCard({
 		(state) => state.gameData?.game?.current_turn,
 	);
 	const isThisOpponentTurn = currentTurn === player.id && !player.is_dead;
+	const { isSacrificeMode, sacrificeCardId } = useGameUIStore();
+	const isWaitingForSacrifice = isSacrificeMode && sacrificeCardId === null;
 
 	// --- REGLAS DE SELECCIÓN ---
 	const isCardActive = isMyTurn && selectedCard !== null;
@@ -96,7 +98,13 @@ export function OpponentCard({
 		}
 	}
 
-	const canBeTargeted = isCardActive && isTargetingCard && !isUnclickable;
+	if (isWaitingForSacrifice) {
+		tooltipMessage = "Debes elegir una carta para sacrificar antes de atacar.";
+		isUnclickable = true;
+	}
+
+	const canBeTargeted =
+		isCardActive && isTargetingCard && !isUnclickable && !isWaitingForSacrifice;
 	const isCleanMode = selectedCard?.card_id === 12 && isMyTurn;
 	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
 
@@ -155,6 +163,7 @@ export function OpponentCard({
 							description: slot.title,
 							lore: "",
 							icons: [],
+							category: "normal",
 						});
 					}
 				}}
@@ -198,7 +207,10 @@ export function OpponentCard({
 							: "cursor-default"
 				}`}
 				disabled={
-					isUnclickable || isNonOpponentTarget || selectedCard?.card_id === 12
+					isUnclickable ||
+					isNonOpponentTarget ||
+					selectedCard?.card_id === 12 ||
+					isWaitingForSacrifice
 				}
 				onClick={() => onAction(player.id, player.is_online)}
 				aria-label={

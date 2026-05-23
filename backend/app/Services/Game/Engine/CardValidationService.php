@@ -4,6 +4,7 @@
 namespace App\Services\Game\Engine;
 
 use App\Exceptions\GameException;
+use App\Support\CardHelper;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 
@@ -16,12 +17,29 @@ class CardValidationService
         }
 
         $playerTurnStateKey = "room:{$roomId}:player:{$playerId}:turn_state";
+        $alreadyAttacked = (int) (Redis::hget($playerTurnStateKey, 'single_attack_used_this_turn') ?? 0);
 
-        $alreadyAttacked = (int) (
-            Redis::hget($playerTurnStateKey, 'single_attack_used_this_turn') ?? 0
-        );
+        // Verificar si tiene la pasiva caótica activa
+        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive') == 1;
 
-        if ($alreadyAttacked === 1) {
+        $distance = app(CombatService::class)->getDistance($roomId, $playerId, $targetId);
+        $playerRange = app(CombatService::class)->getPlayerRange($roomId, $playerId);
+
+        // PRIMER ATAQUE: rango normal, sin restricción adicional
+        if ($alreadyAttacked === 0) {
+            // Validación normal de rango
+            if ($distance > $playerRange) {
+                throw new GameException(
+                    GameException::INVALID_TARGET,
+                    "El objetivo está demasiado lejos. Tu alcance actual es {$playerRange}.",
+                    422
+                );
+            }
+            return;
+        }
+
+        // ATAQUES ADICIONALES (ya atacó una vez)
+        if ($alreadyAttacked >= 1 && !$hasChaoticPassive) {
             throw new GameException(
                 GameException::INVALID_ACTION,
                 "Ya has usado una carta de ataque individual en este turno.",
@@ -29,13 +47,11 @@ class CardValidationService
             );
         }
 
-        $distance = app(CombatService::class)->getDistance($roomId, $playerId, $targetId);
-        $playerRange = app(CombatService::class)->getPlayerRange($roomId, $playerId);
-
-        if ($distance > $playerRange) {
+        // Si tiene pasiva caótica y es un ataque adicional, solo puede atacar a distancia 1
+        if ($hasChaoticPassive && $distance !== 1) {
             throw new GameException(
                 GameException::INVALID_TARGET,
-                "El objetivo está demasiado lejos. Tu alcance actual es {$playerRange}.",
+                "El caos pasivo solo permite ataques adicionales a jugadores adyacentes (distancia 1).",
                 422
             );
         }
@@ -404,6 +420,36 @@ class CardValidationService
                 "Has alcanzado el límite de 3 pasivas.",
                 422
             );
+        }
+    }
+
+    public function validateChaoticDraw(string $roomId, int $playerId, ?string $sacrificeCardId): void
+    {
+        CardHelper::checkSacrificeCardExists($roomId, $playerId, $sacrificeCardId);
+    }
+
+    public function validateChaoticPassive(string $roomId, int $playerId, ?string $sacrificeCardId): void
+    {
+        CardHelper::checkSacrificeCardExists($roomId, $playerId, $sacrificeCardId);
+        // Asegurar que no tenga ya la pasiva caótica activa (para no acumular)
+        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive') == 1;
+        if ($hasChaoticPassive) {
+            throw new GameException(GameException::INVALID_ACTION, "Ya tienes activado el caos pasivo.", 422);
+        }
+    }
+
+    public function validateChaoticRevive(string $roomId, int $playerId, string $targetId, ?string $sacrificeCardId): void
+    {
+        CardHelper::checkSacrificeCardExists($roomId, $playerId, $sacrificeCardId);
+
+        // Comprobar que el objetivo está muerto
+        $targetInfo = Redis::hgetall("room:{$roomId}:player:{$targetId}:info");
+        if (($targetInfo['is_dead'] ?? 0) != 1) {
+            throw new GameException(GameException::INVALID_TARGET, "El jugador objetivo no está muerto.", 422);
+        }
+        // No se puede revivir a sí mismo
+        if ($targetId === $playerId) {
+            throw new GameException(GameException::INVALID_TARGET, "No puedes revivirte a ti mismo.", 422);
         }
     }
 }

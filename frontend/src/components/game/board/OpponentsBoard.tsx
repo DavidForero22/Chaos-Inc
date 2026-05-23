@@ -23,8 +23,12 @@ export function OpponentsBoard({
 	const gameData = useGameStore((state) => state.gameData);
 	const playTurn = useGameActions((state) => state.playTurn);
 
-	const { selectedCardId, setSelectedCardId, isFolderExpanded } =
-		useGameUIStore();
+	const {
+		selectedCardId,
+		setSelectedCardId,
+		isFolderExpanded,
+		sacrificeCardId,
+	} = useGameUIStore();
 
 	// Guardar el ancho para los rangos manuales. PC ahora es estrictamente >= 1050
 	const [screenWidth, setScreenWidth] = useState(window.innerWidth);
@@ -59,7 +63,13 @@ export function OpponentsBoard({
 		perkKey?: string,
 	) => {
 		if (!isMyTurn || !selectedCardId || !isOnline) return;
-		const success = await playTurn(selectedCardId, targetId, perkKey);
+		const success = await playTurn(
+			selectedCardId,
+			targetId,
+			perkKey,
+			sacrificeCardId || undefined,
+		);
+
 		if (success) {
 			setSelectedCardId(null);
 		}

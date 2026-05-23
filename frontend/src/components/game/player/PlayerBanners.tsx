@@ -1,10 +1,10 @@
 // src/components/game/player/PlayerBanners.tsx
 // Accesibilidad comprobada: SI
 
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { useTimerStore } from "../../../store/game/useTimerStore.ts";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./PlayerBanners.module.css";
-
 
 interface PlayerBannersProps {
 	me: MyData;
@@ -21,6 +21,8 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 	const singleAttackSecondsLeft = useTimerStore(
 		(state) => state.singleAttackSecondsLeft,
 	);
+
+	const { isSacrificeMode } = useGameUIStore();
 
 	return (
 		<aside
@@ -110,6 +112,25 @@ export function PlayerBanners({ me }: PlayerBannersProps) {
 							</span>
 							<span aria-hidden="true">{sabotageSecondsLeft}s</span>
 						</span>
+					</div>
+				</div>
+			)}
+
+			{/* 🔥 Banner de sacrificio */}
+			{isSacrificeMode && (
+				<div className={`${styles.warningSlip} ${styles.warningSlipOrange}`}>
+					<div role="alert" className="sr-only">
+						Necesitas elegir una carta para sacrificar para usar la carta
+						caótica.
+					</div>
+					<div
+						aria-hidden="true"
+						className={`${styles.header} ${styles.headerOrange}`}
+					>
+						¡SACRIFICIO!
+					</div>
+					<div className={styles.content}>
+						<span aria-hidden="true">Elige una carta para sacrificar</span>
 					</div>
 				</div>
 			)}

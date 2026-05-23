@@ -16,6 +16,7 @@ interface GameActionsState {
 		cardId: string,
 		targetId: string,
 		perkKey?: string,
+		sacrificeCardId?: string,
 	) => Promise<boolean>;
 	reactToAttack: (
 		reaction: "dodge" | "accept",
@@ -36,7 +37,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 
 	setIsActionLocked: (locked) => set({ isActionLocked: locked }),
 
-	playTurn: async (cardId, targetId, perkKey) => {
+	playTurn: async (cardId, targetId, perkKey, sacrificeCardId) => {
 		const roomId = useRoomStore.getState().roomId;
 		const { applyGameData } = useGameStore.getState();
 		const isActionLocked = get().isActionLocked;
@@ -51,10 +52,11 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 					card_id: cardId,
 					target_id: targetId,
 					...(perkKey && { perk_key: perkKey }),
+					...(sacrificeCardId && { sacrifice_card_id: sacrificeCardId }),
 				},
 			);
 			applyGameData(res.data);
-			set({ isActionLocked: false })
+			set({ isActionLocked: false });
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -82,7 +84,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 				card_id: cardId,
 			});
 			applyGameData(res.data);
-			set({ isActionLocked: false }); 
+			set({ isActionLocked: false });
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -113,7 +115,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 				},
 			);
 			applyGameData(res.data);
-			set({ isActionLocked: false }); 
+			set({ isActionLocked: false });
 			return true;
 		} catch (error: any) {
 			set({ isActionLocked: false });
@@ -144,7 +146,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 				{},
 			);
 			applyGameData(res.data);
-			set({ isActionLocked: false }); 
+			set({ isActionLocked: false });
 		} catch (error) {
 			set({ isActionLocked: false });
 		}
@@ -166,7 +168,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 				},
 			);
 			applyGameData(res.data);
-			set({ isActionLocked: false }); 
+			set({ isActionLocked: false });
 		} catch (error: any) {
 			set({ isActionLocked: false });
 			alert(error.response?.data?.message || "Error al descartar cartas.");
@@ -189,7 +191,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 				},
 			);
 			applyGameData(res.data);
-			set({ isActionLocked: false }); 
+			set({ isActionLocked: false });
 		} catch (error: any) {
 			set({ isActionLocked: false });
 			alert(

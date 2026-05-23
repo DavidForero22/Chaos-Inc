@@ -18,7 +18,8 @@ class GameActionService
         protected CardValidationService $cardValidationService,
     ) {}
 
-    public function playAction(string $roomId, string $playerId, string $cardId, string $targetId, ?string $perkKey = null): void
+    public function playAction(string $roomId, string $playerId, string $cardId, string $targetId, ?string $perkKey = null, ?string $sacrificeCardId = null): void
+
     {
         $roomStateKey = "room:{$roomId}:state";
 
@@ -73,6 +74,10 @@ class GameActionService
             12 => $this->cardValidationService->validateClean($roomId, $playerId, $targetId, $perkKey),
             13 => $this->cardValidationService->validateStorage($roomId, $playerId),
             14 => $this->cardValidationService->validateLuck($roomId, $playerId),
+            15 => $this->cardValidationService->validateChaoticDraw($roomId, $playerId, $sacrificeCardId),
+            16 => $this->cardValidationService->validateChaoticPassive($roomId, $playerId, $sacrificeCardId),
+            17 => $this->cardValidationService->validateChaoticRevive($roomId, $playerId, $targetId, $sacrificeCardId),
+
             default => null,
         };
 
@@ -91,10 +96,18 @@ class GameActionService
             12 => $this->cardEffectService->applyClean($roomId, $targetId, $perkKey),
             13 => $this->cardEffectService->applyStorage($roomId, $playerId),
             14 => $this->cardEffectService->applyLuck($roomId, $playerId),
+            15 => $this->cardEffectService->applyChaoticDraw($roomId, $playerId, $sacrificeCardId),
+            16 => $this->cardEffectService->applyChaoticPassive($roomId, $playerId, $sacrificeCardId),
+            17 => $this->cardEffectService->applyChaoticRevive($roomId, $playerId, $targetId, $sacrificeCardId),
+
             default => null,
         };
 
         $this->handService->findAndRemoveCard($roomId, $playerId, $cardId);
+
+        if ($sacrificeCardId) {
+            $this->handService->findAndRemoveCard($roomId, $playerId, $sacrificeCardId);
+        }
 
         // ── REGISTRO DE ESTADÍSTICAS ──
         $statsKey     = "room:{$roomId}:player:{$playerId}:stats";

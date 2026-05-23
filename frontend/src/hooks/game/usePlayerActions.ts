@@ -12,17 +12,18 @@ export function usePlayerActions() {
 
 	const me = useGameStore((state) => state.gameData?.me);
 	const game = useGameStore((state) => state.gameData?.game);
-	
+
 	// Todas las acciones ahora en useGameActions
 	const reactToAttack = useGameActions((state) => state.reactToAttack);
-	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
+	const reactToMultiAttack = useGameActions(
+		(state) => state.reactToMultiAttack,
+	);
 	const endTurn = useGameActions((state) => state.endTurn);
 	const discardCards = useGameActions((state) => state.discardCards);
 	const discardPerks = useGameActions((state) => state.discardPerks);
 	const resolveSabotage = useGameActions((state) => state.resolveSabotage);
 	const playTurn = useGameActions((state) => state.playTurn);
 	const isActionLocked = useGameActions((state) => state.isActionLocked);
-
 
 	const {
 		isDiscardMode,
@@ -34,6 +35,9 @@ export function usePlayerActions() {
 		setIsDiscardMode,
 		setIsInfoMode,
 		clearDiscardSelection,
+		isSacrificeMode,
+		sacrificeCardId,
+		clearSacrifice,
 	} = useGameUIStore();
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,11 +77,27 @@ export function usePlayerActions() {
 	const isConfirmDisabled =
 		noSelection || isEvadingSabotage || isSubmitting || isGlobalLoading;
 
-	// Detectar si la carta seleccionada es de auto-uso
 	const selectedCard = me.cards.find((c) => c.id === selectedCardId);
+
+	// Detectar si la carta seleccionada es de auto-uso
 	const isSelfTargetCard = selectedCard
 		? ["self", "all", "opponents", "none"].includes(selectedCard.target)
 		: false;
+
+	// Detectar si la carta seleccionada es caótica y requiere sacrificio
+	const isChaoticCard = selectedCard?.category === "chaotic";
+
+	// Saber si tiene al menos otra carta para sacrificar (excluyendo la propia caótica)
+	const hasOtherCards = isChaoticCard && me.cards.length > 1;
+
+	/**  La carta caótica es usable si:
+		- No es caótica, o
+		- Es caótica Y (no estamos en modo sacrificio O ya tenemos carta de sacrificio)
+		- Hay  otra carta en mano
+	*/
+	const canUseChaotic =
+		!isChaoticCard ||
+		(isSacrificeMode && sacrificeCardId !== null && hasOtherCards);
 
 	const canUseCard =
 		isMyTurn &&
@@ -86,7 +106,8 @@ export function usePlayerActions() {
 		!isTurnFrozen &&
 		!isSomeoneWaitingForReaction &&
 		!isInfoMode &&
-		!isGlobalLoading;
+		!isGlobalLoading &&
+		canUseChaotic;
 
 	const canEndTurn =
 		isMyTurn &&
@@ -97,7 +118,8 @@ export function usePlayerActions() {
 		!isDiscardMode &&
 		!isInfoMode &&
 		selectedCardId === null &&
-		!isGlobalLoading;
+		!isGlobalLoading &&
+		!(isSacrificeMode && sacrificeCardId === null);
 
 	const canDiscard =
 		isMyTurn &&
@@ -106,7 +128,8 @@ export function usePlayerActions() {
 		!me.conditions.must_discard &&
 		!isInfoMode &&
 		(currentCardsCount > 0 || hasEquippedPerks) &&
-		!isGlobalLoading;
+		!isGlobalLoading &&
+		selectedCardId === null;
 
 	const handleConfirmDiscard = async () => {
 		if (isSubmitting) return;
@@ -127,8 +150,15 @@ export function usePlayerActions() {
 	// Usar la carta seleccionada de auto-uso
 	const handleUseCard = async () => {
 		if (!canUseCard || !selectedCardId) return;
-		await playTurn(selectedCardId, String(myId));
+
+		// Si es caótica, usar el sacrificeCardId
+		const sacrificeId = isChaoticCard
+			? (sacrificeCardId ?? undefined)
+			: undefined;
+		await playTurn(selectedCardId, String(myId), undefined, sacrificeId);
+
 		setSelectedCardId(null);
+		clearSacrifice(); // limpiar modo sacrificio después de usar
 	};
 
 	return {
@@ -154,5 +184,8 @@ export function usePlayerActions() {
 		setIsDiscardMode,
 		setIsInfoMode,
 		clearDiscardSelection,
+		isSacrificeMode,
+		sacrificeCardId,
+		clearSacrifice,
 	};
 }

@@ -90,7 +90,8 @@ class LiveGameController extends Controller
             $playerId,
             $request->input('card_id'),
             $request->input('target_id'),
-            $request->input('perk_key')
+            $request->input('perk_key'),
+             $request->input('sacrifice_card_id')
         );
 
         return $this->syncResponse($id, $playerId);

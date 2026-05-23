@@ -209,12 +209,13 @@ class LiveGameService
             ]);
 
             Redis::hmset("{$baseKey}:perks", [
-                'has_shield'   => 0,
-                'has_storage'  => 0,
-                'has_luck'     => 0,
-                'has_distance' => 0,
-                'is_blocked'   => 0,
-                'vision_bonus' => 0,
+                'has_shield'        => 0,
+                'has_storage'       => 0,
+                'has_luck'          => 0,
+                'has_distance'      => 0,
+                'is_blocked'        => 0,
+                'vision_bonus'      => 0,
+                'chaotic_passive'   => 0,
             ]);
 
             // ---- 3. Inicializar sets de descubrimiento ----

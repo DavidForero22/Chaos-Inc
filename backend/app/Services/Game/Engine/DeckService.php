@@ -7,36 +7,93 @@ use Illuminate\Support\Facades\Redis;
 
 class DeckService
 {
-    public function buildDeck(): array
+    public function buildDeck(bool $isReshuffle = false, int $cycleNumber = 1): array
     {
         $definitions = config('cards.cards', []);
         $deck = [];
 
+        // Solo añadimos cartas normales (no caóticas) en la construcción base
         foreach ($definitions as $card) {
+            if (($card['category'] ?? 'normal') === 'chaotic') continue; // saltamos caóticas
+
             $cardId = $card['id'] ?? null;
             $count = $card['count'] ?? 0;
-
             if ($cardId === null || $count <= 0) continue;
 
             for ($i = 0; $i < $count; $i++) {
                 $deck[] = [
-                    'id'                   => uniqid((string) $cardId . '_', true), // ID único de la instancia en la mano
-                    'card_id'              => $cardId, // El ID base (1, 2, 3...)
-                    'type'                 => $card['type'],
-                    'target'               => $card['target'],
-                    'base_name'            => $card['base_name'] ?? 'Carta',
-                    'name'                 => $card['display_name'] ?? ($card['base_name'] ?? 'Carta'),
-                    'description'          => $card['description'] ?? '',
-                    'lore'                 => $card['lore'] ?? '',
-                    'icons'                => $card['icons'] ?? [],
-                    'image'                => $card['image'] ?? null,
+                    'id'        => uniqid((string) $cardId . '_', true),
+                    'card_id'   => $cardId,
+                    'type'      => $card['type'],
+                    'target'    => $card['target'],
+                    'base_name' => $card['base_name'] ?? 'Carta',
+                    'name'      => $card['display_name'] ?? ($card['base_name'] ?? 'Carta'),
+                    'description' => $card['description'] ?? '',
+                    'lore'      => $card['lore'] ?? '',
+                    'icons'     => $card['icons'] ?? [],
+                    'image'     => $card['image'] ?? null,
+                    'category'  => $card['category'] ?? 'normal',
                 ];
             }
         }
 
         shuffle($deck);
+
+        // Si es un reshuffle, intentamos añadir una carta caótica
+        if ($isReshuffle) {
+            $deck = $this->maybeInjectChaoticCard($deck, $cycleNumber);
+        }
+
         return $deck;
     }
+
+    protected function maybeInjectChaoticCard(array $deck, int $cycleNumber): array
+    {
+        $chaoticConfig = config('cards.chaotic');
+        $chance = $chaoticConfig['chance_per_cycle'] ?? 15;
+
+        if (mt_rand(1, 100) > $chance) {
+            return $deck; // no hay caótica este ciclo
+        }
+
+        // Obtener todas las cartas caóticas disponibles
+        $allChaotic = array_filter(config('cards.cards', []), fn($c) => ($c['category'] ?? '') === 'chaotic');
+        if (empty($allChaotic)) return $deck;
+
+        // Elegir una aleatoria
+        $chaoticCard = $allChaotic[array_rand($allChaotic)];
+        $cardId = $chaoticCard['id'];
+
+        // Construir la instancia de la carta
+        $chaoticInstance = [
+            'id'        => uniqid((string) $cardId . '_', true),
+            'card_id'   => $cardId,
+            'type'      => $chaoticCard['type'],
+            'target'    => $chaoticCard['target'],
+            'base_name' => $chaoticCard['base_name'] ?? 'Carta Caótica',
+            'name'      => $chaoticCard['display_name'],
+            'description' => $chaoticCard['description'] ?? '',
+            'lore'      => $chaoticCard['lore'] ?? '',
+            'icons'     => $chaoticCard['icons'] ?? [],
+            'image'     => $chaoticCard['image'] ?? null,
+            'category'  => 'chaotic',
+        ];
+
+        // Determinar posición (entre $minPosition y el final)
+        $minPos = $chaoticConfig['min_position'] ?? 40;
+        $maxPos = count($deck);
+        if ($maxPos <= $minPos) {
+            // Si el mazo es más pequeño que la posición mínima, insertamos al final
+            $deck[] = $chaoticInstance;
+        } else {
+            $position = mt_rand($minPos, $maxPos);
+            array_splice($deck, $position, 0, [$chaoticInstance]);
+        }
+
+        return $deck;
+    }
+
+
 
     /**
      * Reparte cartas a un jugador y trackea los nuevos descubrimientos.

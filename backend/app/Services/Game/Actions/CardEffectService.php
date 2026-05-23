@@ -361,4 +361,78 @@ class CardEffectService
             1
         );
     }
+
+    public function applyChaoticDraw(string $roomId, int $playerId): void
+    {
+        $playerIds = Redis::smembers("room:{$roomId}:players");
+        $stolenCards = [];
+        $stolenFrom = [];
+
+        foreach ($playerIds as $targetId) {
+            $targetId = (string) $targetId;
+
+            // No robarse a sí mismo
+            if ($targetId === (string) $playerId) continue;
+
+            $info = Redis::hgetall("room:{$roomId}:player:{$targetId}:info");
+            // Solo robar a vivos y online
+            if (($info['is_dead'] ?? 0) == 0 && ($info['is_online'] ?? 1) == 1) {
+                $handKey = "room:{$roomId}:player:{$targetId}:hand";
+                $hand = json_decode(Redis::get($handKey) ?: '[]', true);
+
+                if (!empty($hand)) {
+                    // Elegir carta aleatoria
+                    $randomIndex = array_rand($hand);
+                    $stolenCard = $hand[$randomIndex];
+
+                    // Eliminar del objetivo
+                    array_splice($hand, $randomIndex, 1);
+                    Redis::set($handKey, json_encode($hand));
+
+                    // Añadir al jugador actual
+                    $stolenCards[] = $stolenCard;
+                    $stolenFrom[] = $targetId;
+
+                    // Estadística de robo
+                    Redis::hincrby("room:{$roomId}:player:{$playerId}:stats", 'cards_stolen', 1);
+                }
+            }
+        }
+
+        if (!empty($stolenCards)) {
+            // Añadir a la mano del jugador actual
+            $currentHandKey = "room:{$roomId}:player:{$playerId}:hand";
+            $currentHand = json_decode(Redis::get($currentHandKey) ?: '[]', true);
+            $currentHand = array_merge($currentHand, $stolenCards);
+            Redis::set($currentHandKey, json_encode($currentHand));
+
+            // Registrar nuevos descubrimientos
+            $knownKey = "room:{$roomId}:player:{$playerId}:known_cards";
+            $newKey   = "room:{$roomId}:player:{$playerId}:new_cards";
+
+            foreach ($stolenCards as $card) {
+                $cardBaseId = (string) $card['card_id'];
+                if (!Redis::sismember($knownKey, $cardBaseId)) {
+                    Redis::sadd($newKey, $cardBaseId);
+                }
+            }
+        }
+    }
+
+
+    public function applyChaoticPassive(string $roomId, int $playerId): void
+    {
+        Redis::hset("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive', 1);
+    }
+
+    public function applyChaoticRevive(string $roomId, string $targetId): void
+    {
+        // Revivir al objetivo
+        $targetInfoKey = "room:{$roomId}:player:{$targetId}:info";
+        Redis::hset($targetInfoKey, 'is_dead', 0);
+        Redis::hset($targetInfoKey, 'stress', 2);
+        // Limpiar posibles efectos negativos
+        Redis::hset("room:{$roomId}:player:{$targetId}:turn_state", 'skip_next_turn', 0);
+        Redis::hset("room:{$roomId}:player:{$targetId}:perks", 'is_blocked', 0);
+    }
 }

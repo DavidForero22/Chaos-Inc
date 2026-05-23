@@ -2,6 +2,9 @@
 // app/Helpers/CardHelper.php 
 namespace App\Support;
 
+use App\Exceptions\GameException;
+use Illuminate\Support\Facades\Redis;
+
 class CardHelper
 {
     public static function formatCard(array $card, bool $isDiscovered, int $timesPlayed = 0): array
@@ -32,5 +35,17 @@ class CardHelper
             'is_discovered' => true,
             'times_played'  => $timesPlayed,
         ];
+    }
+
+    public static function checkSacrificeCardExists(string $roomId, int $playerId, ?string $sacrificeCardId): void
+    {
+        if (!$sacrificeCardId) {
+            throw new GameException(GameException::INVALID_ACTION, "Debes sacrificar una carta para usar esta carta caótica.", 422);
+        }
+        $handKey = "room:{$roomId}:player:{$playerId}:hand";
+        $cards = collect(json_decode(Redis::get($handKey) ?: '[]', true));
+        if (!$cards->contains('id', $sacrificeCardId)) {
+            throw new GameException(GameException::CARD_NOT_IN_HAND, "La carta a sacrificar no está en tu mano.", 422);
+        }
     }
 }

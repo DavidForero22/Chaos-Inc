@@ -43,6 +43,7 @@ interface CardProps {
 	isHighlighted?: boolean;
 	isMarkedForDiscard?: boolean;
 	onClick?: () => void;
+	isSacrificeSelected?: boolean;
 }
 
 // Función para mapear el color del borde según el TIPO de carta
@@ -70,6 +71,7 @@ export function Card({
 	isSelected = false,
 	isHighlighted = false,
 	isMarkedForDiscard = false,
+	isSacrificeSelected = false,
 	onClick,
 }: CardProps) {
 	const [showInfo, setShowInfo] = useState(false);
@@ -77,6 +79,8 @@ export function Card({
 
 	let stateClass = "";
 	if (isMarkedForDiscard) stateClass = styles.markedForDiscard;
+	else if (isSacrificeSelected)
+		stateClass = styles.sacrificeSelected;
 	else if (isSelected && !isDiscardMode && !isInfoMode)
 		stateClass = styles.selected;
 	else if (isHighlighted && !isDiscardMode && !isInfoMode)

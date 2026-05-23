@@ -59,7 +59,8 @@ export function useCardPlayability(
 			((me.perks.vision_bonus ?? 0) > 0 ? 1 : 0) +
 			(me.perks.has_distance ? 1 : 0) +
 			(me.perks.has_storage ? 1 : 0) +
-			(me.perks.has_luck ? 1 : 0);
+			(me.perks.has_luck ? 1 : 0) +
+			(me.perks.chaotic_passive ? 1 : 0);
 
 		return {
 			isMyTurn,
@@ -91,6 +92,8 @@ export function useCardPlayability(
 			anyOpponentHasPerks,
 			myActivePerksCount,
 		} = globalConditions;
+
+		const isChaoticCard = card.category === "chaotic";
 
 		// Evaluar si la carta está deshabilitada por reglas de juego usando card_id
 		const isHealDisabled = card.card_id === 2 && me.stress <= 0;
@@ -135,6 +138,8 @@ export function useCardPlayability(
 			(card.card_id === 13 && me.perks.has_storage) || isPerkLimitReached;
 		const isLuckDisabled =
 			(card.card_id === 14 && me.perks.has_luck) || isPerkLimitReached;
+		const isChaosPerkDisabled =
+			(card.card_id === 16 && me.perks.chaotic_passive) || isPerkLimitReached;
 
 		const isCardSpecificDisabled =
 			isHealDisabled ||
@@ -150,7 +155,8 @@ export function useCardPlayability(
 			isDistanceDisabled ||
 			isCleanDisabled ||
 			isStorageDisabled ||
-			isLuckDisabled;
+			isLuckDisabled ||
+			isChaosPerkDisabled;
 
 		// Evaluar condiciones especiales
 		const canUseDodgeNow =
@@ -170,6 +176,7 @@ export function useCardPlayability(
 			canUseDodgeNow,
 			isSelectable,
 			globalConditions,
+			requiresSacrifice: isChaoticCard,
 		};
 	};
 
