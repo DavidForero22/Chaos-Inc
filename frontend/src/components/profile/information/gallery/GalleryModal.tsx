@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
-import {
-	useGalleryData,
-	type EnrichedCard,
-	type EnrichedRole,
-	type EnrichedEnding,
-} from "../../../../hooks/profile/useGalleryData.ts";
+
 import GalleryGrid from "./GalleryGrid";
 import GalleryDetail from "./GalleryDetail";
 import styles from "./GalleryModal.module.css";
 import { useModalOverlay } from "../../../../hooks/useModalOverlay.ts";
 import AnimatedOverlay from "../../../../layouts/site-overlay/AnimatedOverlay.tsx";
+import { useGalleryData } from "../../../../hooks/profile/useGalleryData.ts";
+import type {
+	EnrichedCard,
+	EnrichedEnding,
+	EnrichedRole,
+} from "../../../../types/gallery.ts";
 
 type TabId = "cards" | "roles" | "endings";
 
@@ -99,6 +100,15 @@ export default function GalleryModal({ onClose }: GalleryModalProps) {
 				</div>
 
 				<div className={styles.bookInner}>
+					{/* BOTÓN DE CIERRE (X) */}
+					<button
+						onClick={closeAnimated}
+						className={styles.closeAlbumBtn}
+						aria-label="Cerrar Álbum"
+					>
+						✕
+					</button>
+
 					<h2 id="gallery-title" className="sr-only">
 						Álbum de desbloqueables
 					</h2>

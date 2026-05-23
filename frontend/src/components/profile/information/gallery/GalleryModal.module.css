@@ -3,8 +3,8 @@
 .bookWrapper {
 	position: relative;
 	width: 100%;
-	max-width: 1100px; 
-	height: 85vh; 
+	max-width: 1100px;
+	height: 85vh;
 	max-height: 800px;
 	display: flex;
 	flex-direction: column;
@@ -56,10 +56,15 @@
 .bookInner {
 	flex: 1;
 	background: #fdfbf2;
-	border-radius: 8px;
+	border-radius: 12px;
+
+	/* Efecto de tapas duras del álbum */
+	border: 8px solid #3e2a1f;
 	box-shadow:
-		0 20px 40px rgba(0, 0, 0, 0.4),
-		inset 0 0 40px rgba(200, 180, 150, 0.2);
+		0 30px 60px -15px rgba(0, 0, 0, 0.6),
+		/* Sombra exterior muy profunda */ inset 0 0 0 2px rgba(255, 255, 255, 0.6),
+		/* Borde brillante de las páginas */ inset 0 0 40px rgba(200, 180, 150, 0.3); /* Sombreado vintage en el papel */
+
 	position: relative;
 	overflow: hidden;
 	z-index: 6;
@@ -74,6 +79,34 @@
 		20px 100%,
 		100% 100%;
 }
+
+/* --- Botón de Cerrar (La 'X' en la esquina) --- */
+.closeAlbumBtn {
+	position: absolute;
+	top: 6px;
+	right: 5px;
+	background: rgba(62, 42, 31, 0.1);
+	color: #3e2a1f;
+	border: none;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.2rem;
+	font-weight: bold;
+	cursor: pointer;
+	z-index: 100;
+	transition: all 0.2s ease;
+}
+
+.closeAlbumBtn:hover {
+	background: #3e2a1f;
+	color: #fdfbf2;
+	transform: scale(1.1);
+}
+/* ----------------------------------------------- */
 
 .contentWrapper {
 	height: 100%;
@@ -167,6 +200,8 @@
 
 .pageContent {
 	padding: 32px;
+	padding-top: 50px;
+	padding-bottom: 50px;
 	min-height: 100%;
 }
 
