@@ -3,6 +3,7 @@
 import { useState } from "react";
 import ModalLayout from "../../ui/ModalLayout";
 import type { FriendRequest } from "../../../types/user";
+import { getFullAvatarUrl } from "../../../utils/avatar";
 
 interface FriendRequestsModalProps {
 	show: boolean;
@@ -28,6 +29,11 @@ export default function FriendRequestsModal({
 	const [activeTab, setActiveTab] = useState<"received" | "sent">("received");
 
 	if (!show) return null;
+
+	// Helper para obtener la URL completa del avatar
+	const getAvatarUrl = (avatar: string | null): string | null => {
+		return getFullAvatarUrl(avatar);
+	};
 
 	return (
 		<ModalLayout
@@ -85,44 +91,50 @@ export default function FriendRequestsModal({
 								</p>
 							) : (
 								<ul className="space-y-3">
-									{pendingReceived.map((req) => (
-										<li
-											key={req.id}
-											className="flex items-center gap-3 p-2 bg-gray-50 rounded border border-gray-200"
-										>
-											{/* Avatar pequeño */}
-											<div className="shrink-0 w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
-												{req.user.avatar ? (
-													<img
-														src={req.user.avatar}
-														alt={req.user.username}
-														className="w-full h-full rounded-full object-cover"
-													/>
-												) : (
-													req.user.username.charAt(0).toUpperCase()
-												)}
-											</div>
-											<div className="flex-1 min-w-0">
-												<p className="font-mono font-bold text-sm truncate">
-													{req.user.username}
-												</p>
-											</div>
-											<div className="flex gap-2">
-												<button
-													onClick={() => onAcceptRequest(req.user.id)}
-													className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
-												>
-													Aceptar
-												</button>
-												<button
-													onClick={() => onRejectRequest(req.user.id)}
-													className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
-												>
-													Rechazar
-												</button>
-											</div>
-										</li>
-									))}
+									{pendingReceived.map((req) => {
+										const avatarUrl = getAvatarUrl(req.user.avatar);
+										return (
+											<li
+												key={req.id}
+												className="flex items-center gap-3 p-2 bg-gray-50 rounded border border-gray-200"
+											>
+												{/* Avatar */}
+												<div className="shrink-0 w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold overflow-hidden">
+													{avatarUrl ? (
+														<img
+															src={avatarUrl}
+															alt={req.user.username}
+															className="w-full h-full rounded-full object-cover"
+															referrerPolicy="no-referrer"
+														/>
+													) : (
+														<span className="text-sm">
+															{req.user.username.charAt(0).toUpperCase()}
+														</span>
+													)}
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="font-mono font-bold text-sm truncate">
+														{req.user.username}
+													</p>
+												</div>
+												<div className="flex gap-2">
+													<button
+														onClick={() => onAcceptRequest(req.user.id)}
+														className="bg-green-600 hover:bg-green-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
+													>
+														Aceptar
+													</button>
+													<button
+														onClick={() => onRejectRequest(req.user.id)}
+														className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
+													>
+														Rechazar
+													</button>
+												</div>
+											</li>
+										);
+									})}
 								</ul>
 							)}
 						</>
@@ -135,35 +147,41 @@ export default function FriendRequestsModal({
 								</p>
 							) : (
 								<ul className="space-y-3">
-									{pendingSent.map((req) => (
-										<li
-											key={req.id}
-											className="flex items-center gap-3 p-2 bg-gray-50 rounded border border-gray-200"
-										>
-											<div className="shrink-0 w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
-												{req.user.avatar ? (
-													<img
-														src={req.user.avatar}
-														alt={req.user.username}
-														className="w-full h-full rounded-full object-cover"
-													/>
-												) : (
-													req.user.username.charAt(0).toUpperCase()
-												)}
-											</div>
-											<div className="flex-1 min-w-0">
-												<p className="font-mono font-bold text-sm truncate">
-													{req.user.username}
-												</p>
-											</div>
-											<button
-												onClick={() => onCancelRequest(req.user.id)}
-												className="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
+									{pendingSent.map((req) => {
+										const avatarUrl = getAvatarUrl(req.user.avatar);
+										return (
+											<li
+												key={req.id}
+												className="flex items-center gap-3 p-2 bg-gray-50 rounded border border-gray-200"
 											>
-												Cancelar
-											</button>
-										</li>
-									))}
+												<div className="shrink-0 w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold overflow-hidden">
+													{avatarUrl ? (
+														<img
+															src={avatarUrl}
+															alt={req.user.username}
+															className="w-full h-full rounded-full object-cover"
+															referrerPolicy="no-referrer"
+														/>
+													) : (
+														<span className="text-sm">
+															{req.user.username.charAt(0).toUpperCase()}
+														</span>
+													)}
+												</div>
+												<div className="flex-1 min-w-0">
+													<p className="font-mono font-bold text-sm truncate">
+														{req.user.username}
+													</p>
+												</div>
+												<button
+													onClick={() => onCancelRequest(req.user.id)}
+													className="bg-gray-600 hover:bg-gray-700 text-white text-xs font-bold uppercase px-3 py-1 rounded transition-colors"
+												>
+													Cancelar
+												</button>
+											</li>
+										);
+									})}
 								</ul>
 							)}
 						</>

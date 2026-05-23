@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { FriendSummary } from "../../../types/user";
+import { getFullAvatarUrl } from "../../../utils/avatar"; // 🔥 Importar helper
 import styles from "./FriendList.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
 import { useProfileStore } from "../../../store/profile/useProfileStore";
@@ -24,6 +25,8 @@ function getLevelFromXp(xp: number): number {
 
 function FriendCard({ friend }: { friend: FriendSummary }) {
 	const level = getLevelFromXp(friend.totalXp ?? 0);
+	// 🔥 Normalizar la URL del avatar
+	const avatarUrl = getFullAvatarUrl(friend.avatar);
 
 	return (
 		<Link
@@ -33,8 +36,13 @@ function FriendCard({ friend }: { friend: FriendSummary }) {
 		>
 			<span className={styles.name}>{friend.username}</span>
 			<div className={styles.avatarWrapper}>
-				{friend.avatar ? (
-					<img src={friend.avatar} alt="" referrerPolicy="no-referrer" className={styles.avatarImg} />
+				{avatarUrl ? (
+					<img
+						src={avatarUrl}
+						alt=""
+						referrerPolicy="no-referrer"
+						className={styles.avatarImg}
+					/>
 				) : (
 					<span className={styles.avatarInitials} aria-hidden="true">
 						{getInitials(friend.username)}
@@ -53,8 +61,7 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 	const hasMore = friends.length > VISIBLE_DEFAULT;
 	const visible = expanded ? friends : friends.slice(0, VISIBLE_DEFAULT);
 	const hiddenCount = friends.length - VISIBLE_DEFAULT;
-		const notMyProfile = useProfileStore((s) => s.notMyProfile);
-	
+	const notMyProfile = useProfileStore((s) => s.notMyProfile);
 
 	return (
 		<section aria-labelledby="friends-heading">
@@ -64,7 +71,11 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 
 			<div className={styles.friendsSection}>
 				{friends.length === 0 ? (
-					<p className={styles.emptyState}>{notMyProfile ? "Este usuario aún no tiene amigos agregados" : "Aún no tienes amigos agregados"}</p>
+					<p className={styles.emptyState}>
+						{notMyProfile
+							? "Este usuario aún no tiene amigos agregados"
+							: "Aún no tienes amigos agregados"}
+					</p>
 				) : (
 					<>
 						<div

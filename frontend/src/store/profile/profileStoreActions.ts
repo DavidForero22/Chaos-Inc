@@ -1,6 +1,7 @@
 import api from "../../api/axios";
 import { getFullAvatarUrl } from "../../utils/avatar";
 import { useAuthStore } from "../auth/useAuthStore";
+import { useToastStore } from "../ui/useToastStore";
 import type { ProfileStore } from "./profileStoreTypes";
 
 export const createProfileActions = (
@@ -11,9 +12,8 @@ export const createProfileActions = (
 	) => void,
 	get: () => ProfileStore,
 ): Partial<ProfileStore> => ({
-	// <--- Agregamos este tipado de retorno
 	// ---------- setters ----------
-	setActiveTab: (tab) => set({ activeTab: tab }), // TypeScript ahora sabe el tipo de 'tab'
+	setActiveTab: (tab) => set({ activeTab: tab }),
 	setShowAvatarModal: (v) => set({ showAvatarModal: v }),
 	setShowUnlinkModal: (v) => set({ showUnlinkModal: v }),
 	setShowFriendRequestsModal: (v) => set({ showFriendRequestsModal: v }),
@@ -35,11 +35,15 @@ export const createProfileActions = (
 
 		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
 		if (!allowedTypes.includes(file.type)) {
-			alert("Formato no soportado. Usa JPEG, PNG o WEBP.");
+			useToastStore
+				.getState()
+				.showToast("Formato no soportado. Usa JPEG, PNG o WEBP.", "warn");
 			return;
 		}
 		if (file.size > 5 * 1024 * 1024) {
-			alert("La imagen no puede superar los 5MB.");
+			useToastStore
+				.getState()
+				.showToast("La imagen no puede superar los 5MB.", "warn");
 			return;
 		}
 
@@ -86,9 +90,17 @@ export const createProfileActions = (
 			}
 
 			set({ showAvatarModal: false, isUploading: false });
+			useToastStore
+				.getState()
+				.showToast("Avatar actualizado correctamente", "success");
 		} catch (err: any) {
 			console.error("Error subiendo avatar:", err);
-			alert(err.response?.data?.message || "Error al subir avatar");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al subir avatar",
+					"danger",
+				);
 			set({ isUploading: false });
 		} finally {
 			if (e.target) e.target.value = "";
@@ -106,7 +118,7 @@ export const createProfileActions = (
 			const newAvatar = response.data.avatar || null;
 			useAuthStore.getState().setAvatar(getFullAvatarUrl(newAvatar));
 
-			await get().refreshProfile(); // <-- await para poder normalizar después
+			await get().refreshProfile();
 
 			// Re-normalizar tras el refresh
 			const updatedRecord = get().userRecord;
@@ -120,8 +132,16 @@ export const createProfileActions = (
 			}
 
 			set({ showAvatarModal: false });
+			useToastStore
+				.getState()
+				.showToast(`Avatar actualizado desde ${provider}`, "success");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al actualizar avatar");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al actualizar avatar",
+					"danger",
+				);
 		}
 	},
 
@@ -145,7 +165,6 @@ export const createProfileActions = (
 		try {
 			const response = await api.post(`/auth/unlink/${providerToUnlink}`);
 
-			// Actualizar AuthStore
 			const updatedUser = response.data.user;
 			if (updatedUser) {
 				useAuthStore
@@ -164,11 +183,19 @@ export const createProfileActions = (
 
 			set({ showUnlinkModal: false, showForcePasswordModal: false });
 			get().refreshProfile();
+			useToastStore
+				.getState()
+				.showToast(`Cuenta de ${providerToUnlink} desvinculada`, "success");
 		} catch (err: any) {
 			if (err.response?.status === 403) {
 				set({ showForcePasswordModal: true });
 			} else {
-				alert(err.response?.data?.message || "Error al desvincular");
+				useToastStore
+					.getState()
+					.showToast(
+						err.response?.data?.message || "Error al desvincular",
+						"danger",
+					);
 			}
 		}
 	},
@@ -186,18 +213,20 @@ export const createProfileActions = (
 		set({ friendsLoading: true });
 		try {
 			const [receivedRes, sentRes] = await Promise.all([
-				api.get("/friends/pending"),
-				api.get("/friends/sent"),
+				api.get("/friends/pending", { hideLoader: true } as any),
+				api.get("/friends/sent", { hideLoader: true } as any),
 			]);
 			set({
 				pendingReceived: receivedRes.data.data ?? [],
 				pendingSent: sentRes.data.data ?? [],
 				friendsLoading: false,
 			});
-		} catch {
+		} catch (error) {
+			console.error("Error loading friend requests:", error);
 			set({ friendsLoading: false });
 		}
 	},
+
 	sendFriendRequest: async () => {
 		const { userId, notMyProfile } = get();
 		if (!notMyProfile || !userId) return;
@@ -205,44 +234,77 @@ export const createProfileActions = (
 		try {
 			await api.post(`/friends/${userId}/request`);
 			get().loadFriendRequests();
+			useToastStore
+				.getState()
+				.showToast("Solicitud de amistad enviada", "success");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al enviar solicitud");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al enviar solicitud",
+					"danger",
+				);
 		} finally {
 			set({ isSendingRequest: false });
 		}
 	},
+
 	acceptRequest: async (requestId) => {
 		try {
 			await api.post(`/friends/${requestId}/accept`);
 			get().loadFriendRequests();
 			get().refreshProfile();
+			useToastStore.getState().showToast("Solicitud aceptada", "success");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al aceptar");
+			useToastStore
+				.getState()
+				.showToast(err.response?.data?.message || "Error al aceptar", "danger");
 		}
 	},
+
 	rejectRequest: async (requestId) => {
 		try {
 			await api.post(`/friends/${requestId}/reject`);
 			get().loadFriendRequests();
+			useToastStore.getState().showToast("Solicitud rechazada", "info");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al rechazar");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al rechazar",
+					"danger",
+				);
 		}
 	},
+
 	cancelRequest: async (requestId) => {
 		try {
 			await api.post(`/friends/${requestId}/cancel`);
 			get().loadFriendRequests();
+			useToastStore.getState().showToast("Solicitud cancelada", "info");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al cancelar");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al cancelar",
+					"danger",
+				);
 		}
 	},
+
 	removeFriend: async (friendId) => {
 		try {
 			await api.delete(`/friends/${friendId}`);
 			get().refreshProfile();
 			set({ showRemoveFriendModal: false });
+			useToastStore.getState().showToast("Amigo eliminado", "info");
 		} catch (err: any) {
-			alert(err.response?.data?.message || "Error al eliminar amigo");
+			useToastStore
+				.getState()
+				.showToast(
+					err.response?.data?.message || "Error al eliminar amigo",
+					"danger",
+				);
 		}
 	},
 });
