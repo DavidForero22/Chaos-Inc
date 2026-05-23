@@ -12,7 +12,7 @@ type RegisterInput = {
 };
 
 type LoginInput = {
-	login: string;
+	email: string;
 	password: string;
 	remember?: boolean;
 };

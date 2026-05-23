@@ -59,14 +59,20 @@ class AuthService
 
     public function login(array $credentials): User
     {
-        $login    = trim($credentials['login']);
-        $password = $credentials['password'];
+        $email    = trim($credentials['email'] ?? '');
+        $password = $credentials['password'] ?? '';
         $remember = (bool) ($credentials['remember'] ?? false);
 
-        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        if (empty($email) || empty($password)) {
+            throw new UserException(
+                UserException::INVALID_DATA,
+                'El correo electrónico y la contraseña son obligatorios.',
+                401
+            );
+        }
 
         // Detectar si la cuenta existe pero es OAuth (sin contraseña propia)
-        $candidate = User::where($field, $login)->first();
+        $candidate = User::where('email', $email)->first();
 
         if ($candidate && $candidate->isOAuthUser()) {
             $providerName = ucfirst($candidate->provider);
@@ -78,7 +84,7 @@ class AuthService
         }
 
         $ok = Auth::guard('web')->attempt([
-            $field    => $login,
+            'email'    => $email,
             'password' => $password,
         ], $remember);
 

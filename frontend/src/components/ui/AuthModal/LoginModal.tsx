@@ -23,7 +23,7 @@ export default function LoginModal({
 }: LoginModalProps) {
 	const { login, isLoading, error, clearError } = useAuth();
 	const [credentials, setCredentials] = useState({
-		login: "",
+		email: "",
 		password: "",
 		remember: false,
 	});
@@ -70,7 +70,7 @@ export default function LoginModal({
 				)
 			}
 		>
-			{/* Campo: Usuario o Correo */}
+			{/* Campo: Correo */}
 			<div className={styles.fieldRow}>
 				<span className={styles.annexNum} aria-hidden="true">
 					1.
@@ -80,17 +80,17 @@ export default function LoginModal({
 						className={`${styles.label} ${styles.labelFirst}`}
 						id="login-label"
 					>
-						Usuario o Correo
+						Correo electrónico
 					</label>
 					<input
 						className={styles.input}
 						type="text"
-						placeholder="Escribe aquí..."
+						placeholder="Tu correo..."
 						required
 						autoFocus
-						value={credentials.login}
+						value={credentials.email}
 						onChange={(e) =>
-							setCredentials((prev) => ({ ...prev, login: e.target.value }))
+							setCredentials((prev) => ({ ...prev, email: e.target.value }))
 						}
 						aria-labelledby="login-label"
 						aria-required="true"
