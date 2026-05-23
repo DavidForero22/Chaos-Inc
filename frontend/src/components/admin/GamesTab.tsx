@@ -118,7 +118,7 @@ export default function GamesTab() {
 								setSortDir(dir);
 								resetPage();
 							}}
-							className={`text-xs font-bold uppercase px-2 py-1 border transition-colors ${
+							className={`text-xs font-bold uppercase px-2 py-1 border transition-colors cursor-pointer ${
 								sortDir === dir
 									? "border-[#295c60] text-[#295c60] bg-[#295c60]/10"
 									: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"

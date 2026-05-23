@@ -48,7 +48,8 @@ export default function SocialLoginChart({ data }: Props) {
 	useEffect(() => {
 		if (!chartRef.current) return;
 
-		if (chartInstance.current) {
+		// Verificar si ya existe una instancia válida antes de crear otra
+		if (chartInstance.current && !chartInstance.current.isDisposed()) {
 			chartInstance.current.dispose();
 		}
 
@@ -145,6 +146,7 @@ export default function SocialLoginChart({ data }: Props) {
 								left: "center",
 								top: "65%",
 								style: {
+									text: "total usuarios",
 									fill: "#666",
 									fontSize: 10,
 								},
@@ -156,11 +158,20 @@ export default function SocialLoginChart({ data }: Props) {
 
 		chartInstance.current.setOption(option, true);
 
-		const handler = () => chartInstance.current?.resize();
+		const handler = () => {
+			if (chartInstance.current && !chartInstance.current.isDisposed()) {
+				chartInstance.current.resize();
+			}
+		};
+
 		window.addEventListener("resize", handler);
+
 		return () => {
 			window.removeEventListener("resize", handler);
-			chartInstance.current?.dispose();
+			if (chartInstance.current && !chartInstance.current.isDisposed()) {
+				chartInstance.current.dispose();
+				chartInstance.current = null;
+			}
 		};
 	}, [data, containerWidth]);
 

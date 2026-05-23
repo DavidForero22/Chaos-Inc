@@ -52,7 +52,7 @@ export default function AnalyticsDashboard({
 					id="daysRange"
 					value={days}
 					onChange={(e) => setDays(Number(e.target.value))}
-					className="bg-transparent border-b-2 border-gray-400 px-2 py-1 text-sm focus:outline-none focus:border-[#295c60]"
+					className="bg-transparent border-b-2 border-gray-400 px-2 py-1 text-sm focus:outline-none focus:border-[#295c60] cursor-pointer"
 				>
 					<option value={7}>Últimos 7 días</option>
 					<option value={30}>Últimos 30 días</option>

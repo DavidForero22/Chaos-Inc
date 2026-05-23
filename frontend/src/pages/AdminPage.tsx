@@ -43,7 +43,7 @@ export default function AdminPage() {
 					<button
 						key={t}
 						onClick={() => setTab(t)}
-						className={`font-mono text-sm font-bold uppercase tracking-wider px-4 py-2 border-2 rounded-sm transition-all ${
+						className={`font-mono text-sm font-bold uppercase tracking-wider px-4 py-2 border-2 rounded-sm transition-all cursor-pointer ${
 							tab === t
 								? "bg-[#393e42] border-[#393e42] text-[#d2d4d1]"
 								: "bg-transparent border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42]"

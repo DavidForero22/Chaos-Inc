@@ -103,7 +103,7 @@ export default function RoomsTab() {
 									<button
 										onClick={() => handleDelete(room.room_id)}
 										disabled={deletingId === room.room_id}
-										className="px-4 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
+										className="px-4 py-2 bg-red-600 text-white text-xs font-bold uppercase cursor-pointer rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
 									>
 										{deletingId === room.room_id
 											? "ELIMINANDO..."

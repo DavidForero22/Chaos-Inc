@@ -162,9 +162,9 @@ export default function UsersTab() {
 				</h3>
 				<button
 					onClick={() => setShowCreate(!showCreate)}
-					className="px-4 py-2 border-2 border-[#295c60] text-[#295c60] font-bold text-xs uppercase hover:bg-[#295c60] hover:text-[#d2d4d1] transition-colors"
+					className="px-4 py-2 border-2 border-[#295c60] text-[#295c60] font-bold text-xs uppercase cursor-pointer hover:bg-[#295c60] hover:text-[#d2d4d1] transition-colors"
 				>
-					{showCreate ? "Cancelar Alta" : "+ Dar de Alta"}
+					{showCreate ? "Cancelar" : "+ Registrar"}
 				</button>
 			</div>
 
@@ -274,7 +274,7 @@ export default function UsersTab() {
 					</span>
 					<button
 						onClick={() => handleSort("username")}
-						className={`text-xs font-bold uppercase px-2 py-1 border transition-colors ${
+						className={`text-xs font-bold uppercase px-2 py-1 border cursor-pointer transition-colors ${
 							sortField === "username"
 								? "border-[#295c60] text-[#295c60] bg-[#295c60]/10"
 								: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"
@@ -285,7 +285,7 @@ export default function UsersTab() {
 					</button>
 					<button
 						onClick={() => handleSort("joinedAt")}
-						className={`text-xs font-bold uppercase px-2 py-1 border transition-colors ${
+						className={`text-xs font-bold uppercase px-2 py-1 border cursor-pointer transition-colors ${
 							sortField === "joinedAt"
 								? "border-[#295c60] text-[#295c60] bg-[#295c60]/10"
 								: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"
@@ -331,7 +331,7 @@ export default function UsersTab() {
 											}
 										/>
 										<select
-											className="w-32 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none"
+											className="w-32 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer"
 											value={editData.role}
 											onChange={(e) =>
 												setEditData({ ...editData, role: e.target.value })
@@ -342,16 +342,16 @@ export default function UsersTab() {
 										</select>
 										<div className="flex gap-2">
 											<button
-												onClick={() => handleSave(u.id)}
-												className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase"
-											>
-												Guardar
-											</button>
-											<button
 												onClick={() => setEditingId(null)}
-												className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase"
+												className="px-3 py-1 border border-gray-500 text-gray-600 text-xs font-bold uppercase cursor-pointer"
 											>
 												Cancelar
+											</button>{" "}
+											<button
+												onClick={() => handleSave(u.id)}
+												className="px-3 py-1 bg-[#295c60] text-white text-xs font-bold uppercase cursor-pointer"
+											>
+												Guardar
 											</button>
 										</div>
 									</div>
@@ -398,7 +398,7 @@ export default function UsersTab() {
 											) : displayRole === "guest" ? (
 												<button
 													onClick={() => handleDelete(u.id)}
-													className="text-sm font-bold text-red-700 hover:underline"
+													className="text-sm font-bold text-red-700 hover:underline cursor-pointer"
 												>
 													ELIMINAR
 												</button>
@@ -414,13 +414,13 @@ export default function UsersTab() {
 																role: u.role,
 															});
 														}}
-														className="text-sm font-bold text-blue-700 hover:underline"
+														className="text-sm font-bold text-blue-700 hover:underline cursor-pointer"
 													>
 														EDITAR
 													</button>
 													<button
 														onClick={() => handleDelete(u.id)}
-														className="text-sm font-bold text-red-700 hover:underline"
+														className="text-sm font-bold text-red-700 hover:underline cursor-pointer"
 													>
 														ELIMINAR
 													</button>
