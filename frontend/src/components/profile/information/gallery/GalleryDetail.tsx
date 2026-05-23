@@ -1,10 +1,7 @@
 // src/components/profile/gallery/GalleryDetail.tsx
 
-import type {
-	EnrichedCard,
-	EnrichedRole,
-	EnrichedEnding,
-} from "../../../../hooks/profile/useGalleryData.ts";
+
+import type { EnrichedCard, EnrichedEnding, EnrichedRole } from "../../../../types/gallery";
 import styles from "./GalleryDetail.module.css";
 
 interface GalleryDetailProps {
@@ -57,7 +54,7 @@ export default function GalleryDetail({
 	if (isCard) {
 		isUnlocked = selectedItem.is_discovered;
 		name = selectedItem.display_name;
-		imageUrl = selectedItem.image;
+		imageUrl =  `/cards/${selectedItem.image_path}`;
 		unlockHint = selectedItem.unlockHint;
 		description = selectedItem.description;
 		lore = selectedItem.lore;
@@ -67,13 +64,13 @@ export default function GalleryDetail({
 		name = selectedItem.label;
 		imageUrl = selectedItem.image;
 		unlockHint = selectedItem.unlockHint;
-		extraLoreText = selectedItem.objective; // Extraemos el objetivo del rol
+		extraLoreText = selectedItem.objective; // Extraer el objetivo del rol
 	} else {
 		isUnlocked = selectedItem.isUnlocked;
 		name = selectedItem.name;
 		imageUrl = selectedItem.image;
 		unlockHint = selectedItem.unlockHint;
-		extraLoreText = selectedItem.description; // Extraemos la descripción del final
+		extraLoreText = selectedItem.description; // Extraer la descripción del final
 	}
 
 	return (

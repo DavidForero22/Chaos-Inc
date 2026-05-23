@@ -18,7 +18,7 @@ return [
             'base_name'    => 'Atacar',
             'display_name' => 'Ataque',
             'description'  => 'Inflige 1 punto de estrés a un oponente vivo dentro de tu rango de visión.',
-            'lore'         => 'Al contable le cayó una grapadora mientras caminaba por el pasillo.',
+            'lore'         => 'Al contable le cayó una grapadora en la cabeza.',
             'icons'        => ['opponent', 'attack'],
             'count'        => 28,
             'image'        => 'attack.png',

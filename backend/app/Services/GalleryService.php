@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\UserDiscoveredCard;
 use App\Models\GameUser;
 use App\Models\Game;
+use App\Support\CardHelper;
 use Illuminate\Support\Facades\DB;
 
 class GalleryService
@@ -25,20 +26,16 @@ class GalleryService
             ->groupBy('card_id')
             ->pluck('total', 'card_id');
 
-        $cards = [];
+        $cards = []; 
         foreach ($cardsCatalog as $card) {
             $cardId = $card['id'];
             $isDiscovered = isset($discoveredCardIds[$cardId]);
-            $cards[] = [
-                'id'            => $cardId,
-                'display_name'  => $isDiscovered ? $card['display_name'] : '???',
-                'description'   => $isDiscovered ? $card['description'] : null,
-                'lore'          => $isDiscovered ? $card['lore'] : null,
-                'image'         => $isDiscovered ? $card['image'] : null,
-                'type'          => $isDiscovered ? $card['type'] : null,
-                'is_discovered' => $isDiscovered,
-                'times_played'  => $timesPlayed[$cardId] ?? 0,
-            ];
+
+            $cards[] = CardHelper::formatCard(
+                $card,
+                $isDiscovered,
+                $timesPlayed[$cardId] ?? 0
+            );
         }
 
         // 2. Roles desbloqueados

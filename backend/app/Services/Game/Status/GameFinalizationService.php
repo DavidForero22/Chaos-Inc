@@ -136,6 +136,8 @@ class GameFinalizationService
         foreach ($playersData as $player) {
             $xpSummary = $this->experienceService->processPlayer($player, $mvpPlayerId);
 
+            $playerId = $player['player_id'];
+
             $pInfo = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
             $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
             if ($isGuest) {

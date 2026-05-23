@@ -1,8 +1,8 @@
 import type {
 	EnrichedCard,
-	EnrichedRole,
 	EnrichedEnding,
-} from "../../../../hooks/profile/useGalleryData.ts";
+	EnrichedRole,
+} from "../../../../types/gallery";
 import styles from "./GalleryGrid.module.css";
 
 type TabId = "cards" | "roles" | "endings";
@@ -51,7 +51,7 @@ export default function GalleryGrid({
 					id = item.id;
 					isUnlocked = item.is_discovered;
 					displayName = item.display_name;
-					imageUrl = item.image;
+					imageUrl = `/cards/${item.image_path}`;
 				} else if (isEnrichedRole(item)) {
 					id = item.role;
 					isUnlocked = item.isUnlocked;
@@ -74,7 +74,22 @@ export default function GalleryGrid({
 						aria-label={isUnlocked ? displayName : "Elemento bloqueado"}
 						aria-pressed={isSelected}
 					>
-						<div className={styles.itemImageContainer}>
+						<div
+							className={`
+								${styles.itemImageContainer} 
+								${
+									isUnlocked && isEnrichedCard(item)
+										? {
+												attack:
+													"border-4 border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]",
+												heal: "border-4 border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]",
+												perk: "border-4 border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]",
+												default:
+													"border-4 border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]",
+											}[item.type || "default"]
+										: ""
+								}`}
+							>
 							{isUnlocked ? (
 								imageUrl ? (
 									<img
