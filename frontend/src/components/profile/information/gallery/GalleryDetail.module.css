@@ -199,6 +199,6 @@
 	/* En móviles asegurar que incluso las apaisadas no rompan el layout */
 	.detailImageWrapper.wideImage {
 		width: 100%;
-		max-width: 320px;
+		max-width: 460px;
 	}
 }

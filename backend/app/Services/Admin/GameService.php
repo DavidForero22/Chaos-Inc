@@ -94,37 +94,43 @@ class GameService
         });
     }
 
-    public function createCanceledGame(array $playersData, int $roundNumber): Game
+    public function createCanceledGame(array $playersData, int $roundNumber): ?Game
     {
-        return DB::transaction(function () use ($playersData, $roundNumber) {
-            $game = Game::create([
-                'winner_role'        => 'canceled',
-                'total_rounds'       => $roundNumber,
-                'total_eliminations' => 0,
-            ]);
+        // Crear el juego cancelado
+        $game = Game::create([
+            'winner_role'        => 'canceled',
+            'total_rounds'       => $roundNumber,
+            'total_eliminations' => 0,
+            'ended_at'           => now(),
+        ]);
 
-            foreach ($playersData as $player) {
+        // Crear los registros game_user para cada jugador
+        foreach ($playersData as $player) {
+            // Solo guardar si no es invitado
+            if (!$player['is_guest'] && $player['user_id']) {
                 GameUser::create([
-                    'game_id'         => $game->id,
-                    'user_id'         => $player['user_id'] ?? null,
-                    'is_guest'        => $player['is_guest'],
-                    'display_name'    => $player['display_name'],
-                    'has_won'         => false,
-                    'role'            => $player['role'],
-                    'is_dead'         => $player['is_dead'] ?? false,
-                    'damage_dealt'    => 0,
-                    'damage_received' => 0,
-                    'healing_done'    => 0,
-                    'cards_played'    => 0,
-                    'passives_played' => 0,
-                    'eliminations'    => 0,
-                    'dodged_attacks'  => 0,
-                    'cards_stolen'    => 0,
+                    'game_id'     => $game->id,
+                    'user_id'     => $player['user_id'],
+                    'role'        => $player['role'],
+                    'is_dead'     => $player['is_dead'],
+                    'has_won'     => false, // Nadie gana en cancelación
+                    'is_guest'    => false,
+                    'display_name' => $player['display_name'],
                 ]);
-                // No se guarda card_details
+            } else if ($player['is_guest']) {
+                // También guardar invitados para estadísticas, pero sin user_id
+                GameUser::create([
+                    'game_id'     => $game->id,
+                    'user_id'     => null,
+                    'role'        => $player['role'],
+                    'is_dead'     => $player['is_dead'],
+                    'has_won'     => false,
+                    'is_guest'    => true,
+                    'display_name' => $player['display_name'],
+                ]);
             }
+        }
 
-            return $game;
-        });
+        return $game;
     }
 }
