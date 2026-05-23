@@ -1,6 +1,8 @@
-// Accesibilidad comprobada: SI
+// src/components/ui/ModalLayout.tsx
 
 import type { ReactNode } from "react";
+import AnimatedOverlay from "../../layouts/site-overlay/AnimatedOverlay.tsx";
+import { useModalOverlay } from "../../hooks/useModalOverlay";
 import styles from "./ModalLayout.module.css";
 
 interface ModalLayoutProps {
@@ -32,33 +34,23 @@ export default function ModalLayout({
 	hideSubmit = false,
 	closeOnly = false,
 }: ModalLayoutProps) {
-	const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (e.target === e.currentTarget && !disableBackdropClick) {
-			onClose();
-		}
-	};
-
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-		if (e.key === "Escape" && !disableBackdropClick) {
-			onClose();
-		}
-	};
+	// Usar el hook para manejar las animaciones de cierre
+	const { isClosing, closeAnimated, handleBackdropClick } = useModalOverlay(
+		onClose,
+		disableBackdropClick,
+	);
 
 	const ContentWrapper = closeOnly ? "div" : "form";
 	const wrapperProps = closeOnly ? {} : { onSubmit, "aria-label": title };
 
 	return (
-		<div
-			className={styles.overlay}
-			onClick={handleBackdropClick}
-			onKeyDown={handleKeyDown}
-			role="dialog"
-			aria-modal="true"
-			aria-labelledby="modal-title"
-			aria-describedby="modal-description"
+		<AnimatedOverlay
+			isClosing={isClosing}
+			onBackdropClick={handleBackdropClick}
+			ariaLabelledby="modal-title"
+			ariaDescribedby="modal-description"
 		>
-			<div className={styles.card} onClick={(e) => e.stopPropagation()}>
-				{/* Cabecera (igual) */}
+			<div className={styles.card}>
 				<div className={styles.header}>
 					<div>
 						<p className={styles.headerTitle}>
@@ -70,9 +62,10 @@ export default function ModalLayout({
 							</span>
 						</p>
 					</div>
+					{/* Sustituir onClose por closeAnimated */}
 					<button
 						className={styles.closeBtn}
-						onClick={onClose}
+						onClick={closeAnimated}
 						title="Cerrar"
 						aria-label="Cerrar modal"
 					>
@@ -82,8 +75,6 @@ export default function ModalLayout({
 
 				<ContentWrapper className={styles.formWrapper} {...wrapperProps}>
 					<div className={styles.body}>{children}</div>
-
-					{/* Pie dinámico (Fijo) */}
 					<div className={styles.footer}>
 						{switchButton ? <div>{switchButton}</div> : <div />}
 						<div className={styles.actions}>
@@ -91,8 +82,7 @@ export default function ModalLayout({
 								<button
 									type="button"
 									className={styles.btnPrimary}
-									onClick={onClose}
-									aria-label="Cerrar modal"
+									onClick={closeAnimated}
 								>
 									Cerrar
 								</button>
@@ -101,8 +91,7 @@ export default function ModalLayout({
 									<button
 										type="button"
 										className={styles.btnSecondary}
-										onClick={onClose}
-										aria-label="Cancelar y cerrar modal"
+										onClick={closeAnimated}
 									>
 										Cancelar
 									</button>
@@ -110,8 +99,6 @@ export default function ModalLayout({
 										type="submit"
 										className={styles.btnPrimary}
 										disabled={isLoading}
-										aria-label={isLoading ? loadingText : submitText}
-										aria-disabled={isLoading}
 									>
 										{isLoading ? loadingText : submitText}
 									</button>
@@ -121,6 +108,6 @@ export default function ModalLayout({
 					</div>
 				</ContentWrapper>
 			</div>
-		</div>
+		</AnimatedOverlay>
 	);
 }

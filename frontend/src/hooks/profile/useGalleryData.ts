@@ -58,7 +58,7 @@ export function useGalleryData() {
 		const fetchGallery = async () => {
 			try {
 				setLoading(true);
-				const res = await api.get("/gallery");
+				const res = await api.get("/gallery", { hideLoader: true } as any);
 
 				const responseData = res.data.data || res.data;
 				const {

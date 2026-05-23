@@ -1,0 +1,85 @@
+/* src/components/ui/AnimatedOverlay.module.css */
+
+.overlay {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(57, 62, 66, 0.75);
+	backdrop-filter: blur(3px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	z-index: 1000;
+}
+
+/* El contenedor interno aísla la animación de deslizamiento del fondo */
+.contentContainer {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	pointer-events: none;
+}
+
+/* Reactiva los clics para el contenido de modal */
+.contentContainer > * {
+	pointer-events: auto;
+}
+
+/* Animaciones del Fondo (Opacidad) */
+.fadeIn {
+	animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.fadeOut {
+	animation: fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Animaciones del Modal (Desplazamiento vertical) */
+.slideUp {
+	animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.slideDown {
+	animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOut {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes slideUp {
+	from {
+		transform: translateY(100vh); /* Empieza fuera de la pantalla (abajo) */
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideDown {
+	from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateY(100vh); /* Sale hacia abajo */
+		opacity: 0;
+	}
+}

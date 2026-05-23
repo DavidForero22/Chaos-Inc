@@ -1,0 +1,157 @@
+.detailContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 24px;
+}
+
+.emptyDetail {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #9a8a75;
+	font-style: italic;
+	text-align: center;
+	margin-top: 40px;
+}
+
+.emptyStamp {
+	width: 80px;
+	height: 80px;
+	border: 3px dashed #d1c5b4;
+	border-radius: 50%;
+	margin-bottom: 16px;
+	opacity: 0.5;
+}
+
+.detailHeader {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+
+.detailImageWrapper {
+	width: 180px;
+	background: white;
+	padding: 10px;
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+	border-radius: 4px;
+	transform: rotate(-1deg);
+	margin-bottom: 24px;
+}
+
+.detailImageWrapper.lockedDetail {
+	background: rgba(0, 0, 0, 0.02);
+	border: 3px dashed rgba(139, 105, 70, 0.3);
+	box-shadow: none;
+	transform: none;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 250px;
+}
+
+.detailImage {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+.missingSilhouetteLarge {
+	font-size: 4rem;
+	font-weight: bold;
+	color: rgba(139, 105, 70, 0.3);
+}
+
+.detailTitle {
+	font-size: 1.8rem;
+	font-weight: 900;
+	color: #3e2a1f;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	text-align: center;
+	border-bottom: 2px solid #e3d5bb;
+	padding-bottom: 8px;
+	width: 100%;
+}
+
+.detailBody {
+	width: 100%;
+	color: #4a3b2c;
+}
+
+.hintBox {
+	background: #f5eedf;
+	padding: 16px;
+	border-left: 4px solid #b85c1a;
+	border-radius: 0 8px 8px 0;
+	font-style: italic;
+}
+
+.hintBox strong {
+	display: block;
+	margin-bottom: 4px;
+	font-style: normal;
+	color: #b85c1a;
+}
+
+.cardInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.description {
+	font-size: 1.1rem;
+	line-height: 1.5;
+	font-weight: bold;
+}
+
+.separator {
+	height: 1px;
+	background: linear-gradient(90deg, transparent, #d1c5b4, transparent);
+	width: 80%;
+	margin: 0 auto;
+}
+
+.lore {
+	font-style: italic;
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: #6b5a45;
+}
+
+.stats {
+	margin-top: 16px;
+	padding: 12px;
+	background: rgba(0, 0, 0, 0.03);
+	border-radius: 8px;
+	font-family: monospace;
+	font-size: 0.9rem;
+	text-align: center;
+}
+
+.infoBlock {
+	font-size: 1.1rem;
+	line-height: 1.5;
+	text-align: center;
+	background: rgba(0, 0, 0, 0.02);
+	padding: 16px;
+	border-radius: 8px;
+}
+
+.mobileBackButton {
+	align-self: flex-start;
+	background: #e3d5bb;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 20px;
+	font-weight: bold;
+	color: #4a3b2c;
+	cursor: pointer;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	margin-bottom: 20px;
+}

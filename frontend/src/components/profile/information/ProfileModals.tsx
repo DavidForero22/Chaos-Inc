@@ -5,7 +5,7 @@ import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
 import ModalLayout from "../../ui/ModalLayout";
 import FriendRequestsModal from "./FriendRequestsModal";
 import styles from "./UserInfo.module.css";
-import GalleryModal from "./GalleryModal.tsx";
+import GalleryModal from "./gallery/GalleryModal.tsx";
 
 export default function ProfileModals() {
 	// ── Store del perfil ──
