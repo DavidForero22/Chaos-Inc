@@ -1,7 +1,11 @@
-import { createContext, useContext, useRef, useEffect } from "react";
+import { createContext, useContext, useRef, useEffect, useMemo } from "react";
 import { createStore, useStore, type StoreApi } from "zustand";
 import type { GameRecord } from "../../types/api";
-import type { FriendRequest, UserRecord } from "../../types/user";
+import type {
+	FriendRequest,
+	FriendSummary,
+	UserRecord,
+} from "../../types/user";
 import type { ProfileStore } from "./profileStoreTypes";
 import { createProfileActions } from "./profileStoreActions";
 import { getFullAvatarUrl } from "../../utils/avatar";
@@ -18,6 +22,7 @@ interface ProfileProviderProps {
 	pendingReceived?: FriendRequest[];
 	pendingSent?: FriendRequest[];
 	friendsLoading?: boolean;
+	myFriends?: FriendSummary[];
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
 	onUpdateProfile?: (data: any) => Promise<void>;
@@ -30,9 +35,10 @@ export function ProfileProvider({
 	notMyProfile,
 	games,
 	userRecord,
-	pendingReceived = [], // 🔥 Valor por defecto
-	pendingSent = [], // 🔥 Valor por defecto
-	friendsLoading = false, // 🔥 Valor por defecto
+	pendingReceived = [],
+	pendingSent = [],
+	friendsLoading = false,
+	myFriends = [],
 	onLogout,
 	onDeleteAccount,
 	onUpdateProfile,
@@ -40,6 +46,11 @@ export function ProfileProvider({
 	children,
 }: ProfileProviderProps) {
 	const storeRef = useRef<StoreApi<ProfileStore> | null>(null);
+
+	const isFriend = useMemo(() => {
+		if (!userId || notMyProfile === false) return false;
+		return myFriends.some((friend) => friend.id === userId);
+	}, [userId, notMyProfile, myFriends]);
 
 	if (!storeRef.current) {
 		storeRef.current = createStore<ProfileStore>((set, get) => ({
@@ -49,9 +60,10 @@ export function ProfileProvider({
 			userRecord: userRecord
 				? { ...userRecord, avatar: getFullAvatarUrl(userRecord.avatar) }
 				: null,
-			pendingReceived, // 🔥 Inicializar
-			pendingSent, // 🔥 Inicializar
-			friendsLoading, // 🔥 Inicializar
+			pendingReceived,
+			pendingSent,
+			friendsLoading,
+			isFriend,
 			activeTab: "info",
 			showAvatarModal: false,
 			showUnlinkModal: false,
@@ -62,7 +74,6 @@ export function ProfileProvider({
 			unlinkPassword: "",
 			unlinkPasswordError: "",
 			isSendingRequest: false,
-			isFriend: false,
 			isUploading: false,
 			showGalleryModal: false,
 			onLogout,
@@ -84,9 +95,10 @@ export function ProfileProvider({
 				notMyProfile,
 				games,
 				userRecord: normalized,
-				pendingReceived, // 🔥 Actualizar
-				pendingSent, // 🔥 Actualizar
-				friendsLoading, // 🔥 Actualizar
+				pendingReceived,
+				pendingSent,
+				friendsLoading,
+				isFriend,
 				onLogout,
 				onDeleteAccount,
 				onUpdateProfile,
@@ -98,9 +110,10 @@ export function ProfileProvider({
 		notMyProfile,
 		games,
 		userRecord,
-		pendingReceived, // 🔥 Añadir a dependencias
-		pendingSent, // 🔥 Añadir a dependencias
-		friendsLoading, // 🔥 Añadir a dependencias
+		pendingReceived,
+		pendingSent,
+		friendsLoading,
+		isFriend,
 		onLogout,
 		onDeleteAccount,
 		onUpdateProfile,

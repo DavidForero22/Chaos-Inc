@@ -9,9 +9,10 @@ import GuestProfileView from "../../components/profile/GuestProfileView";
 import styles from "../../components/profile/Profile.module.css";
 import api from "../../api/axios";
 import { ProfileProvider } from "../../store/profile/useProfileStore";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth";
 import { getFullAvatarUrl } from "../../utils/avatar";
+import { useFriends } from "../../hooks/auth/useFriends";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
@@ -31,6 +32,17 @@ export default function PublicProfilePage() {
 		pendingSent,
 		friendsLoading,
 	} = useUserProfileData(userId, refreshKey);
+
+	const {
+		friends: myFriends,
+		fetchFriends,
+	} = useFriends();
+
+	useEffect(() => {
+		if (myId) {
+			fetchFriends();
+		}
+	}, [myId, fetchFriends]);
 
 	const refreshProfile = useCallback(async () => {
 		// Si es mi perfil, obtener datos actualizados y actualizar AuthStore
@@ -126,6 +138,7 @@ export default function PublicProfilePage() {
 				pendingReceived={pendingReceived}
 				pendingSent={pendingSent}
 				friendsLoading={friendsLoading}
+				myFriends={myFriends}
 				onLogout={isMe ? handleLogout : undefined}
 				onDeleteAccount={isMe ? handleDeleteAccount : undefined}
 				onUpdateProfile={isMe ? handleUpdateProfile : undefined}
