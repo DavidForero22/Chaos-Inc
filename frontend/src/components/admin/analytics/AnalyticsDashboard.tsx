@@ -4,7 +4,6 @@ import WinRateChart from "./WinRateChart";
 import TopCardsChart from "./TopCardsChart";
 import UserGrowthChart from "./UserGrowthChart";
 import SocialLoginChart from "./SocialLoginChart";
-import SessionLineChart from "./SessionLineChart";
 
 export default function AnalyticsDashboard({
 	initialDays = 30,
@@ -68,11 +67,6 @@ export default function AnalyticsDashboard({
 				<TopCardsChart data={data.top_cards} />
 				<UserGrowthChart data={data.user_growth} />
 				<SocialLoginChart data={data.social_auth} />
-			</div>
-
-			{/* Gráfico de líneas a ancho completo */}
-			<div className="mt-6">
-				<SessionLineChart data={data.sessions_hourly} />
 			</div>
 		</div>
 	);

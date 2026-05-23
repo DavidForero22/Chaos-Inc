@@ -29,7 +29,6 @@ class AnalyticsService
                 'top_cards'      => $this->getTopCards(),
                 'user_growth'    => $this->getUserGrowth($days),
                 'social_auth'    => $this->getSocialAuthStats(),
-                'sessions_hourly' => $this->getSessionsByHour($days),
             ];
         });
     }
@@ -158,53 +157,5 @@ class AnalyticsService
             'discord' => $discordCount,
             'email'   => $emailCount,
         ];
-    }
-
-    /**
-     * Sesiones promedio por hora (últimos N días)
-     */
-    private function getSessionsByHour(int $days = 30): array
-    {
-        $startDate = Carbon::now()->subDays($days)->startOfDay();
-
-        $sessions = DB::table('sessions')
-            ->where('last_activity', '>=', $startDate->timestamp)
-            ->select('last_activity')
-            ->get();
-
-        // Inicializar contador por hora (0-23)
-        $hourlyCounts = array_fill(0, 24, 0);
-        $totalDays = 0;
-
-        $processedDays = [];
-
-        foreach ($sessions as $session) {
-            $timestamp = $session->last_activity;
-            $date = Carbon::createFromTimestamp($timestamp);
-            $hour = (int) $date->format('G');
-            $dayKey = $date->format('Y-m-d');
-
-            // Registrar que este día tiene actividad
-            if (!isset($processedDays[$dayKey])) {
-                $processedDays[$dayKey] = true;
-                $totalDays++;
-            }
-
-            if ($hour >= 0 && $hour <= 23) {
-                $hourlyCounts[$hour]++;
-            }
-        }
-
-        // Calcular promedio por hora (dividir por número de días)
-        $result = [];
-        for ($hour = 0; $hour < 24; $hour++) {
-            $average = $totalDays > 0 ? round($hourlyCounts[$hour] / $totalDays, 1) : 0;
-            $result[] = [
-                'hour' => $hour,
-                'sessions' => $average,
-            ];
-        }
-
-        return $result;
     }
 }

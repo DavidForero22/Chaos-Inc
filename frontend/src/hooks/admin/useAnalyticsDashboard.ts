@@ -33,17 +33,11 @@ export interface HeatmapData {
 	max: number;
 }
 
-export interface SessionHourlyData {
-	hour: number; // 0-23
-	sessions: number;
-}
-
 export interface AnalyticsDashboardData {
 	win_rate: WinRateData;
 	top_cards: TopCard[];
 	user_growth: GrowthPoint[];
 	social_auth: SocialAuthData;
-	sessions_hourly: SessionHourlyData[];
 }
 
 interface UseAnalyticsDashboardReturn {
