@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useUsersData } from "../../hooks/admin/useUsersData.ts";
 import Pagination from "./Pagination.tsx";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
+import { Link } from "react-router-dom";
 
 // ── Constantes
 const PAGE_SIZE = 20;
@@ -359,7 +360,12 @@ export default function UsersTab() {
 										<div>
 											<span className="font-bold text-lg">
 												#{u.id} <span className="mx-2 opacity-50">|</span>{" "}
-												{u.username}
+												<Link
+													to={`/profile/${u.id}`}
+													className="hover:underline hover:text-[#295c60] transition-colors"
+												>
+													{u.username}
+												</Link>
 												{isMe && (
 													<span className="ml-2 text-xs text-[#295c60] italic">
 														(TÚ)

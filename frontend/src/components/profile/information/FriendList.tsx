@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import type { FriendSummary } from "../../../types/user";
 import styles from "./FriendList.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
+import { useProfileStore } from "../../../store/profile/useProfileStore";
 
 const VISIBLE_DEFAULT = 6;
 
@@ -52,6 +53,8 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 	const hasMore = friends.length > VISIBLE_DEFAULT;
 	const visible = expanded ? friends : friends.slice(0, VISIBLE_DEFAULT);
 	const hiddenCount = friends.length - VISIBLE_DEFAULT;
+		const notMyProfile = useProfileStore((s) => s.notMyProfile);
+	
 
 	return (
 		<section aria-labelledby="friends-heading">
@@ -61,7 +64,7 @@ export default function FriendList({ friends = [] }: FriendListProps) {
 
 			<div className={styles.friendsSection}>
 				{friends.length === 0 ? (
-					<p className={styles.emptyState}>Aún no tienes amigos agregados</p>
+					<p className={styles.emptyState}>{notMyProfile ? "Este usuario aún no tiene amigos agregados" : "Aún no tienes amigos agregados"}</p>
 				) : (
 					<>
 						<div
