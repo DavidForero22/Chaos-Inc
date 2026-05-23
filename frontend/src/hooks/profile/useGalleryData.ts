@@ -28,11 +28,6 @@ export function useGalleryData() {
 					roles: rawRoles,
 					endings: rawEndings,
 				} = responseData;
-
-				console.log("Raw cards:", rawCards);
-				console.log("Raw roles:", rawRoles);
-				console.log("Raw endings:", rawEndings);
-
 				const enrichedCards: EnrichedCard[] = rawCards.map(
 					(card: GalleryCard) => ({
 						...card,

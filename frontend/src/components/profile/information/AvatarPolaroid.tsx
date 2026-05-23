@@ -21,10 +21,6 @@ export default function AvatarPolaroid() {
 	// ── Datos derivados ──
 	const displayUser = notMyProfile ? userRecord?.username : myUser;
 	const displayAvatar = notMyProfile ? userRecord?.avatar : myAvatar;
-	console.log("notMyProfile:", notMyProfile);
-	console.log("myAvatar (authStore):", myAvatar);
-	console.log("userRecord?.avatar (profileStore):", userRecord?.avatar);
-	console.log("displayAvatar:", displayAvatar);
 	const avatarUrl = displayAvatar || null;
 	const initials = displayUser ? displayUser.charAt(0).toUpperCase() : "?";
 

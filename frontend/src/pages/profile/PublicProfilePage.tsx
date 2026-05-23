@@ -17,6 +17,7 @@ export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
 	const { id: myId, logout, isGuest, setAuth } = useAuthStore();
 	const navigate = useNavigate();
+	const { updateProfile } = useAuth();
 
 	// ¿Es mi perfil o el de otro?
 	const isMe = String(myId) === userId;
@@ -106,7 +107,6 @@ export default function PublicProfilePage() {
 	};
 
 	const handleUpdateProfile = async (data: any) => {
-		const { updateProfile } = useAuth();
 		await updateProfile(data);
 		refreshProfile();
 	};

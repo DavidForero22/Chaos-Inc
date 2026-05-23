@@ -67,7 +67,6 @@ export function ProfileProvider({
 
 	useEffect(() => {
 		if (storeRef.current) {
-			console.log("userRecord.avatar ANTES de normalizar:", userRecord?.avatar);
 
 			const normalized = userRecord
 				? { ...userRecord, avatar: getFullAvatarUrl(userRecord.avatar) }
@@ -83,11 +82,6 @@ export function ProfileProvider({
 				onUpdateProfile,
 				refreshProfile,
 			});
-
-			console.log(
-				"userRecord.avatar DESPUÉS de normalizar:",
-				normalized?.avatar,
-			);
 		}
 	}, [
 		userId,

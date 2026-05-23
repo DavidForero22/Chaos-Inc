@@ -58,14 +58,10 @@ export const createProfileActions = (
 				response.data.user?.avatar || response.data.avatar || null;
 			const normalizedAvatar = rawAvatar ? getFullAvatarUrl(rawAvatar) : null;
 
-			console.log("Raw avatar:", rawAvatar);
-			console.log("Normalized avatar:", normalizedAvatar);
-
-			// 🔥 ACTUALIZAR AMBOS STORES
-			// 1. Actualizar el store de autenticación (para AvatarPolaroid)
+			// Actualizar el store de autenticación (para AvatarPolaroid)
 			useAuthStore.getState().setAvatar(normalizedAvatar);
 
-			// 2. También actualizar el userRecord del perfil con la URL normalizada
+			// También actualizar el userRecord del perfil con la URL normalizada
 			const currentUserRecord = get().userRecord;
 			if (currentUserRecord) {
 				set({
@@ -76,7 +72,7 @@ export const createProfileActions = (
 				});
 			}
 
-			// 3. Refrescar perfil desde el backend
+			// Refrescar perfil desde el backend
 			await get().refreshProfile();
 
 			const updatedRecord = get().userRecord;
