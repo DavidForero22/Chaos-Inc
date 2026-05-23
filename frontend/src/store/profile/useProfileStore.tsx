@@ -4,6 +4,7 @@ import type { GameRecord } from "../../types/api";
 import type { UserRecord } from "../../types/user";
 import type { ProfileStore } from "./profileStoreTypes";
 import { createProfileActions } from "./profileStoreActions";
+import { getFullAvatarUrl } from "../../utils/avatar";
 
 // ---------- Contexto ----------
 const ProfileStoreContext = createContext<StoreApi<ProfileStore> | null>(null);
@@ -66,16 +67,27 @@ export function ProfileProvider({
 
 	useEffect(() => {
 		if (storeRef.current) {
+			console.log("userRecord.avatar ANTES de normalizar:", userRecord?.avatar);
+
+			const normalized = userRecord
+				? { ...userRecord, avatar: getFullAvatarUrl(userRecord.avatar) }
+				: null;
+
 			storeRef.current.setState({
 				userId,
 				notMyProfile,
 				games,
-				userRecord,
+				userRecord: normalized,
 				onLogout,
 				onDeleteAccount,
 				onUpdateProfile,
 				refreshProfile,
 			});
+
+			console.log(
+				"userRecord.avatar DESPUÉS de normalizar:",
+				normalized?.avatar,
+			);
 		}
 	}, [
 		userId,

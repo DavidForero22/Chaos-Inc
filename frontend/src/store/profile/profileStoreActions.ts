@@ -1,4 +1,5 @@
 import api from "../../api/axios";
+import { getFullAvatarUrl } from "../../utils/avatar";
 import { useAuthStore } from "../auth/useAuthStore";
 import type { ProfileStore } from "./profileStoreTypes";
 
@@ -29,24 +30,72 @@ export const createProfileActions = (
 		set({ showAvatarModal: true });
 	},
 	handleFileChange: async (e: React.ChangeEvent<HTMLInputElement>) => {
-		// El evento de HTML sí requiere tipo explícito
 		const file = e.target.files?.[0];
 		if (!file) return;
+
+		const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+		if (!allowedTypes.includes(file.type)) {
+			alert("Formato no soportado. Usa JPEG, PNG o WEBP.");
+			return;
+		}
+		if (file.size > 5 * 1024 * 1024) {
+			alert("La imagen no puede superar los 5MB.");
+			return;
+		}
+
 		set({ isUploading: true });
 		try {
 			const form = new FormData();
 			form.append("avatar", file);
-			const response = await api.post(`/users/${get().userId}/avatar`, form);
 
-			// Actualizar AuthStore con el nuevo avatar
-			const newAvatar = response.data.avatar || null;
-			useAuthStore.getState().setAvatar(newAvatar);
+			const userId = get().userId;
+			const response = await api.post(`/users/${userId}/avatar`, form, {
+				headers: { "Content-Type": "multipart/form-data" },
+			});
 
-			get().refreshProfile();
+			// Obtener la ruta devuelta por el backend
+			const rawAvatar =
+				response.data.user?.avatar || response.data.avatar || null;
+			const normalizedAvatar = rawAvatar ? getFullAvatarUrl(rawAvatar) : null;
+
+			console.log("Raw avatar:", rawAvatar);
+			console.log("Normalized avatar:", normalizedAvatar);
+
+			// 🔥 ACTUALIZAR AMBOS STORES
+			// 1. Actualizar el store de autenticación (para AvatarPolaroid)
+			useAuthStore.getState().setAvatar(normalizedAvatar);
+
+			// 2. También actualizar el userRecord del perfil con la URL normalizada
+			const currentUserRecord = get().userRecord;
+			if (currentUserRecord) {
+				set({
+					userRecord: {
+						...currentUserRecord,
+						avatar: normalizedAvatar,
+					},
+				});
+			}
+
+			// 3. Refrescar perfil desde el backend
+			await get().refreshProfile();
+
+			const updatedRecord = get().userRecord;
+			if (updatedRecord?.avatar) {
+				set({
+					userRecord: {
+						...updatedRecord,
+						avatar: getFullAvatarUrl(updatedRecord.avatar),
+					},
+				});
+			}
+
+			set({ showAvatarModal: false, isUploading: false });
 		} catch (err: any) {
+			console.error("Error subiendo avatar:", err);
 			alert(err.response?.data?.message || "Error al subir avatar");
+			set({ isUploading: false });
 		} finally {
-			set({ isUploading: false, showAvatarModal: false });
+			if (e.target) e.target.value = "";
 		}
 	},
 
@@ -58,11 +107,22 @@ export const createProfileActions = (
 				avatarUrl,
 			});
 
-			// Actualizar AuthStore con el nuevo avatar
 			const newAvatar = response.data.avatar || null;
-			useAuthStore.getState().setAvatar(newAvatar);
+			useAuthStore.getState().setAvatar(getFullAvatarUrl(newAvatar));
 
-			get().refreshProfile();
+			await get().refreshProfile(); // <-- await para poder normalizar después
+
+			// Re-normalizar tras el refresh
+			const updatedRecord = get().userRecord;
+			if (updatedRecord?.avatar) {
+				set({
+					userRecord: {
+						...updatedRecord,
+						avatar: getFullAvatarUrl(updatedRecord.avatar),
+					},
+				});
+			}
+
 			set({ showAvatarModal: false });
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al actualizar avatar");

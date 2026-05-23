@@ -11,6 +11,7 @@ import api from "../../api/axios";
 import { ProfileProvider } from "../../store/profile/useProfileStore";
 import { useCallback, useState } from "react";
 import { useAuth } from "../../hooks/auth/useAuth";
+import { getFullAvatarUrl } from "../../utils/avatar";
 
 export default function PublicProfilePage() {
 	const { userId } = useParams<{ userId: string }>();
@@ -36,7 +37,7 @@ export default function PublicProfilePage() {
 				setAuth(
 					updatedUser.id,
 					updatedUser.username,
-					updatedUser.avatar,
+					getFullAvatarUrl(updatedUser.avatar),
 					updatedUser.isGuest,
 					updatedUser.role,
 					updatedUser.socialAccounts,

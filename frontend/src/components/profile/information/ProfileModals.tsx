@@ -1,5 +1,5 @@
 // src/components/profile/ProfileModals.tsx
-import { useRef } from "react";
+import { useRef, type FormEvent } from "react";
 import { useAuthStore } from "../../../store/auth/useAuthStore";
 import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
 import ModalLayout from "../../ui/ModalLayout";
@@ -68,7 +68,9 @@ export default function ProfileModals() {
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	// Handler para abrir el diálogo de archivos
-	const handleManualUploadClick = () => {
+	const handleManualUploadClick = (e: FormEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
 		fileInputRef.current?.click();
 	};
 

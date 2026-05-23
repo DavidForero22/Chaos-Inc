@@ -12,28 +12,50 @@ export default function AvatarPolaroid() {
 	const handleAvatarClick = useProfileStore((s) => s.handleAvatarClick);
 	const handleFileChange = useProfileStore((s) => s.handleFileChange);
 
-	// ── Auth store ──
-	const { user: myUser, avatar: myAvatar } = useAuthStore();
+	const {
+		user: myUser,
+		avatar: myAvatar,
+		socialAccounts: mySocialAccounts,
+	} = useAuthStore();
 
 	// ── Datos derivados ──
 	const displayUser = notMyProfile ? userRecord?.username : myUser;
 	const displayAvatar = notMyProfile ? userRecord?.avatar : myAvatar;
+	console.log("notMyProfile:", notMyProfile);
+	console.log("myAvatar (authStore):", myAvatar);
+	console.log("userRecord?.avatar (profileStore):", userRecord?.avatar);
+	console.log("displayAvatar:", displayAvatar);
 	const avatarUrl = displayAvatar || null;
 	const initials = displayUser ? displayUser.charAt(0).toUpperCase() : "?";
 
-	// ── Referencia para el input file ──
+	// Detectar si tiene cuentas sociales
+	const socialAccounts = notMyProfile
+		? userRecord?.socialAccounts
+		: mySocialAccounts;
+	const hasSocialAccounts = socialAccounts && socialAccounts.length > 0;
+
 	const fileInputRef = useRef<HTMLInputElement>(null);
+
+	// Si tiene cuentas sociales, abre modal; si no, abre directamente el selector de archivos
+	const handleClick = () => {
+		if (notMyProfile) return;
+		if (hasSocialAccounts) {
+			handleAvatarClick();
+		} else {
+			fileInputRef.current?.click();
+		}
+	};
 
 	return (
 		<div className={styles.photoAttachment}>
 			<div className={styles.clip} aria-hidden="true" />
 			<div
 				className={styles.avatarContainer}
-				onClick={handleAvatarClick}
+				onClick={handleClick}
 				onKeyDown={(e) => {
 					if (!notMyProfile && (e.key === "Enter" || e.key === " ")) {
 						e.preventDefault();
-						handleAvatarClick();
+						handleClick();
 					}
 				}}
 				role={!notMyProfile ? "button" : undefined}

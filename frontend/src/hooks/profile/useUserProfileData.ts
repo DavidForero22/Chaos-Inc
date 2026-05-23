@@ -5,6 +5,7 @@ import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
 import type { UserRecord } from "../../types/user.ts";
+import { getFullAvatarUrl } from "../../utils/avatar.ts";
 
 export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 	const { id: myId, isGuest } = useAuthStore();
@@ -30,18 +31,23 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 			]);
 
 			const newProfileUser = userRes.data.data ?? userRes.data;
-			const newGames = gamesRes.data.data ?? gamesRes.data;
 
-			setProfileUser(newProfileUser);
+			const newGames = gamesRes.data.data ?? gamesRes.data;
+			const normalizedProfileUser = newProfileUser
+				? { ...newProfileUser, avatar: getFullAvatarUrl(newProfileUser.avatar) }
+				: null;
+
+			setProfileUser(normalizedProfileUser);
 			setGames(newGames);
 
 			// Si es mi perfil, también actualizar AuthStore con los datos más recientes
 			if (String(myId) === userId && newProfileUser) {
 				const { setAuth } = useAuthStore.getState();
+
 				setAuth(
 					newProfileUser.id,
 					newProfileUser.username,
-					newProfileUser.avatar,
+					getFullAvatarUrl(newProfileUser.avatar),
 					newProfileUser.isGuest,
 					newProfileUser.role,
 					newProfileUser.socialAccounts,
