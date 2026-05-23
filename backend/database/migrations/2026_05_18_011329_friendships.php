@@ -20,7 +20,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            $table->enum('status', ['pending', 'accepted', 'rejected'])
+            $table->enum('status', ['pending', 'accepted'])
                 ->default('pending');
 
             $table->timestamps();

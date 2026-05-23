@@ -23,10 +23,15 @@ export default function PublicProfilePage() {
 	const isMe = String(myId) === userId;
 
 	const [refreshKey, setRefreshKey] = useState(0);
-	const { games, profileUser, loading } = useUserProfileData(
-		userId,
-		refreshKey,
-	);
+	const {
+		games,
+		profileUser,
+		loading,
+		pendingReceived,
+		pendingSent,
+		friendsLoading,
+	} = useUserProfileData(userId, refreshKey);
+
 	const refreshProfile = useCallback(async () => {
 		// Si es mi perfil, obtener datos actualizados y actualizar AuthStore
 		if (isMe && myId) {
@@ -118,6 +123,9 @@ export default function PublicProfilePage() {
 				notMyProfile={!isMe}
 				games={games}
 				userRecord={profileUser}
+				pendingReceived={pendingReceived}
+				pendingSent={pendingSent}
+				friendsLoading={friendsLoading}
 				onLogout={isMe ? handleLogout : undefined}
 				onDeleteAccount={isMe ? handleDeleteAccount : undefined}
 				onUpdateProfile={isMe ? handleUpdateProfile : undefined}

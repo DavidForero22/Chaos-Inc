@@ -22,7 +22,7 @@ export interface FriendSummary {
 
 export interface FriendRequest {
 	id: number;
-	status: "pending" | "accepted" | "rejected";
+	status: "pending" | "accepted";
 	direction: "sent" | "received";
 	createdAt: string;
 	user: FriendSummary;

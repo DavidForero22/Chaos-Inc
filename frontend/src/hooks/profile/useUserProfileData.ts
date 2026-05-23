@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
-import type { UserRecord } from "../../types/user.ts";
+import type { FriendRequest, UserRecord } from "../../types/user.ts";
 import { getFullAvatarUrl } from "../../utils/avatar.ts";
 
 export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
@@ -13,6 +13,9 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 	const [games, setGames] = useState<GameRecord[]>([]);
 	const [profileUser, setProfileUser] = useState<UserRecord | null>(null);
 	const [loading, setLoading] = useState(true);
+	const [pendingReceived, setPendingReceived] = useState<FriendRequest[]>([]);
+	const [pendingSent, setPendingSent] = useState<FriendRequest[]>([]);
+	const [friendsLoading, setFriendsLoading] = useState(false);
 
 	const fetchData = useCallback(async () => {
 		if (!userId || (!myId && !isGuest)) {
@@ -54,6 +57,8 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 					newProfileUser.joinedAt,
 					newProfileUser.achievements,
 				);
+
+				await loadFriendRequests();
 			}
 		} catch (error) {
 			console.error("Error fetching user profile:", error);
@@ -61,6 +66,22 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 			setLoading(false);
 		}
 	}, [userId, myId, isGuest]);
+
+	const loadFriendRequests = async () => {
+		setFriendsLoading(true);
+		try {
+			const [receivedRes, sentRes] = await Promise.all([
+				api.get("/friends/pending"),
+				api.get("/friends/sent"),
+			]);
+			setPendingReceived(receivedRes.data.data ?? []);
+			setPendingSent(sentRes.data.data ?? []);
+		} catch (error) {
+			console.error("Error loading friend requests:", error);
+		} finally {
+			setFriendsLoading(false);
+		}
+	};
 
 	useEffect(() => {
 		fetchData();
@@ -71,5 +92,14 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 		fetchData();
 	}, [fetchData]);
 
-	return { games, profileUser, loading, refreshUserData };
+	return {
+		games,
+		profileUser,
+		loading,
+		refreshUserData,
+		pendingReceived,
+		pendingSent,
+		friendsLoading,
+		loadFriendRequests,
+	};
 }

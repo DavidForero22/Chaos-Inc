@@ -1,7 +1,7 @@
 import { createContext, useContext, useRef, useEffect } from "react";
 import { createStore, useStore, type StoreApi } from "zustand";
 import type { GameRecord } from "../../types/api";
-import type { UserRecord } from "../../types/user";
+import type { FriendRequest, UserRecord } from "../../types/user";
 import type { ProfileStore } from "./profileStoreTypes";
 import { createProfileActions } from "./profileStoreActions";
 import { getFullAvatarUrl } from "../../utils/avatar";
@@ -15,6 +15,9 @@ interface ProfileProviderProps {
 	notMyProfile: boolean;
 	games: GameRecord[];
 	userRecord: UserRecord | null;
+	pendingReceived?: FriendRequest[];
+	pendingSent?: FriendRequest[];
+	friendsLoading?: boolean;
 	onLogout?: () => void;
 	onDeleteAccount?: () => void;
 	onUpdateProfile?: (data: any) => Promise<void>;
@@ -27,6 +30,9 @@ export function ProfileProvider({
 	notMyProfile,
 	games,
 	userRecord,
+	pendingReceived = [], // 🔥 Valor por defecto
+	pendingSent = [], // 🔥 Valor por defecto
+	friendsLoading = false, // 🔥 Valor por defecto
 	onLogout,
 	onDeleteAccount,
 	onUpdateProfile,
@@ -40,7 +46,12 @@ export function ProfileProvider({
 			userId,
 			notMyProfile,
 			games,
-			userRecord,
+			userRecord: userRecord
+				? { ...userRecord, avatar: getFullAvatarUrl(userRecord.avatar) }
+				: null,
+			pendingReceived, // 🔥 Inicializar
+			pendingSent, // 🔥 Inicializar
+			friendsLoading, // 🔥 Inicializar
 			activeTab: "info",
 			showAvatarModal: false,
 			showUnlinkModal: false,
@@ -50,9 +61,6 @@ export function ProfileProvider({
 			providerToUnlink: null,
 			unlinkPassword: "",
 			unlinkPasswordError: "",
-			pendingReceived: [],
-			pendingSent: [],
-			friendsLoading: false,
 			isSendingRequest: false,
 			isFriend: false,
 			isUploading: false,
@@ -67,7 +75,6 @@ export function ProfileProvider({
 
 	useEffect(() => {
 		if (storeRef.current) {
-
 			const normalized = userRecord
 				? { ...userRecord, avatar: getFullAvatarUrl(userRecord.avatar) }
 				: null;
@@ -77,6 +84,9 @@ export function ProfileProvider({
 				notMyProfile,
 				games,
 				userRecord: normalized,
+				pendingReceived, // 🔥 Actualizar
+				pendingSent, // 🔥 Actualizar
+				friendsLoading, // 🔥 Actualizar
 				onLogout,
 				onDeleteAccount,
 				onUpdateProfile,
@@ -88,6 +98,9 @@ export function ProfileProvider({
 		notMyProfile,
 		games,
 		userRecord,
+		pendingReceived, // 🔥 Añadir a dependencias
+		pendingSent, // 🔥 Añadir a dependencias
+		friendsLoading, // 🔥 Añadir a dependencias
 		onLogout,
 		onDeleteAccount,
 		onUpdateProfile,

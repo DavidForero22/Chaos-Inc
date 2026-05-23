@@ -185,10 +185,13 @@ export const createProfileActions = (
 	loadFriendRequests: async () => {
 		set({ friendsLoading: true });
 		try {
-			const res = await api.get("/friends/requests/pending");
+			const [receivedRes, sentRes] = await Promise.all([
+				api.get("/friends/pending"),
+				api.get("/friends/sent"),
+			]);
 			set({
-				pendingReceived: res.data.received,
-				pendingSent: res.data.sent,
+				pendingReceived: receivedRes.data.data ?? [],
+				pendingSent: sentRes.data.data ?? [],
 				friendsLoading: false,
 			});
 		} catch {
@@ -200,7 +203,7 @@ export const createProfileActions = (
 		if (!notMyProfile || !userId) return;
 		set({ isSendingRequest: true });
 		try {
-			await api.post(`/friends/request/${userId}`);
+			await api.post(`/friends/${userId}/request`);
 			get().loadFriendRequests();
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al enviar solicitud");
@@ -210,7 +213,7 @@ export const createProfileActions = (
 	},
 	acceptRequest: async (requestId) => {
 		try {
-			await api.post(`/friends/accept/${requestId}`);
+			await api.post(`/friends/${requestId}/accept`);
 			get().loadFriendRequests();
 			get().refreshProfile();
 		} catch (err: any) {
@@ -219,7 +222,7 @@ export const createProfileActions = (
 	},
 	rejectRequest: async (requestId) => {
 		try {
-			await api.post(`/friends/reject/${requestId}`);
+			await api.post(`/friends/${requestId}/reject`);
 			get().loadFriendRequests();
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al rechazar");
@@ -227,7 +230,7 @@ export const createProfileActions = (
 	},
 	cancelRequest: async (requestId) => {
 		try {
-			await api.post(`/friends/cancel/${requestId}`);
+			await api.post(`/friends/${requestId}/cancel`);
 			get().loadFriendRequests();
 		} catch (err: any) {
 			alert(err.response?.data?.message || "Error al cancelar");

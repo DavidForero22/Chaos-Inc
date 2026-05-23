@@ -24,7 +24,7 @@ class FriendshipService
             return match ($existing->status) {
                 'accepted' => ['error' => 'Ya sois amigos.',               'status' => 409],
                 'pending'  => ['error' => 'Ya existe una solicitud pendiente.', 'status' => 409],
-                'rejected' => ['error' => 'Esta solicitud fue rechazada.',  'status' => 409],
+                default    => ['error' => 'No se puede enviar la solicitud.',   'status' => 409],
             };
         }
 
@@ -36,6 +36,7 @@ class FriendshipService
 
         return ['data' => $friendship, 'status' => 201];
     }
+
 
     /**
      * Aceptar solicitud de amistad.
@@ -70,9 +71,9 @@ class FriendshipService
             return ['error' => 'Solicitud no encontrada.', 'status' => 404];
         }
 
-        $friendship->update(['status' => 'rejected']);
+        $friendship->delete();
 
-        return ['data' => $friendship, 'status' => 200];
+        return ['data' => null, 'status' => 200];
     }
 
     /**
