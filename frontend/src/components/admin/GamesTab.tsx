@@ -12,6 +12,7 @@ const roleTranslations: Record<string, string> = {
 	intern: "Becaria",
 	union: "Sindicato",
 	secretary: "Secretario",
+	canceled: "Cancelada",
 };
 
 type SortDir = "asc" | "desc";
@@ -144,16 +145,23 @@ export default function GamesTab() {
 							<div className="flex justify-between items-center mb-3">
 								<p className="font-bold text-lg">
 									#{g.id} <span className="mx-2 opacity-50">|</span>{" "}
-									<span className="uppercase text-green-700">
-										Victoria: {roleTranslations[g.winnerRole] || g.winnerRole}
-									</span>
+									{g.winnerRole === "canceled" ? (
+										<span className="uppercase text-red-600 font-bold">
+											{g.winnerRole === "canceled"
+												? "PARTIDA CANCELADA"
+												: roleTranslations[g.winnerRole]}
+										</span>
+									) : (
+										<span className="uppercase text-green-700">
+											Victoria: {roleTranslations[g.winnerRole] || g.winnerRole}
+										</span>
+									)}
 								</p>
 								<p className="text-xs opacity-70 font-bold">
 									{new Date(g.playedAt).toLocaleDateString("es-ES")} —{" "}
 									{g.totalRounds} RONDAS
 								</p>
 							</div>
-
 							<div className="flex flex-wrap gap-2 mt-2">
 								{g.players?.map((p, i) => (
 									<span
