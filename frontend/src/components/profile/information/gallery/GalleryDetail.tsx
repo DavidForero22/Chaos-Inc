@@ -1,3 +1,5 @@
+// src/components/profile/gallery/GalleryDetail.tsx
+
 import type {
 	EnrichedCard,
 	EnrichedRole,
@@ -41,11 +43,18 @@ export default function GalleryDetail({
 	let name: string;
 	let imageUrl: string | null | undefined;
 	let unlockHint: string | undefined;
+
+	// Variables de Cartas
 	let description: string | null | undefined;
 	let lore: string | null | undefined;
 	let timesPlayed: number | undefined;
 
-	if (isEnrichedCard(selectedItem)) {
+	// Nuevas variables para Roles y Finales
+	let extraLoreText: string | undefined;
+
+	const isCard = isEnrichedCard(selectedItem);
+
+	if (isCard) {
 		isUnlocked = selectedItem.is_discovered;
 		name = selectedItem.display_name;
 		imageUrl = selectedItem.image;
@@ -58,11 +67,13 @@ export default function GalleryDetail({
 		name = selectedItem.label;
 		imageUrl = selectedItem.image;
 		unlockHint = selectedItem.unlockHint;
+		extraLoreText = selectedItem.objective; // Extraemos el objetivo del rol
 	} else {
 		isUnlocked = selectedItem.isUnlocked;
 		name = selectedItem.name;
 		imageUrl = selectedItem.image;
 		unlockHint = selectedItem.unlockHint;
+		extraLoreText = selectedItem.description; // Extraemos la descripción del final
 	}
 
 	return (
@@ -75,7 +86,7 @@ export default function GalleryDetail({
 
 			<div className={styles.detailHeader}>
 				<div
-					className={`${styles.detailImageWrapper} ${!isUnlocked ? styles.lockedDetail : ""}`}
+					className={`${styles.detailImageWrapper} ${!isUnlocked ? styles.lockedDetail : ""} ${!isCard ? styles.wideImage : ""}`}
 				>
 					{isUnlocked && imageUrl ? (
 						<img src={imageUrl} alt={name} className={styles.detailImage} />
@@ -96,7 +107,7 @@ export default function GalleryDetail({
 					</div>
 				) : (
 					<>
-						{isEnrichedCard(selectedItem) && (
+						{isCard && (
 							<div className={styles.cardInfo}>
 								<p className={styles.description}>{description}</p>
 								<div className={styles.separator}></div>
@@ -109,14 +120,24 @@ export default function GalleryDetail({
 							</div>
 						)}
 						{isEnrichedRole(selectedItem) && (
-							<p className={styles.infoBlock}>
-								Rol desbloqueado. Ahora puede aparecer en tus partidas.
-							</p>
+							<div className={styles.infoBlock}>
+								<p className={styles.infoBlockTitle}>
+									Rol descubierto.
+								</p>
+								<div className={styles.separator}></div>
+								<p className={styles.extraLoreText}>{extraLoreText}</p>
+								<div className={styles.separator}></div>
+								<p className={styles.acknowledgments}>Agradecimientos a mi amigo Danitron</p>
+							</div>
 						)}
 						{isEnrichedEnding(selectedItem) && (
-							<p className={styles.infoBlock}>
-								Final desbloqueado. Has vivido esta conclusión.
-							</p>
+							<div className={styles.infoBlock}>
+								<p className={styles.infoBlockTitle}>
+									Final descubierto.
+								</p>
+								<div className={styles.separator}></div>
+								<p className={styles.extraLoreText}>{extraLoreText}</p>
+							</div>
 						)}
 					</>
 				)}

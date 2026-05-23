@@ -1,3 +1,5 @@
+/* src/components/profile/gallery/GalleryDetail.module.css */
+
 .detailContainer {
 	display: flex;
 	flex-direction: column;
@@ -33,16 +35,23 @@
 	width: 100%;
 }
 
+/* Imagen por defecto (Cartas) */
 .detailImageWrapper {
-	width: 180px;
+	width: 240px;
 	background: white;
-	padding: 10px;
+	padding: 12px;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 	border-radius: 4px;
 	transform: rotate(-1deg);
 	margin-bottom: 24px;
 }
 
+/* Modificador para imágenes apaisadas (Roles y Finales) */
+.detailImageWrapper.wideImage {
+	width: 450px;
+}
+
+/* Placeholder cuando está bloqueado */
 .detailImageWrapper.lockedDetail {
 	background: rgba(0, 0, 0, 0.02);
 	border: 3px dashed rgba(139, 105, 70, 0.3);
@@ -51,7 +60,12 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 250px;
+	height: 340px; /* Ajuste vertical para la carta */
+}
+
+/* Placeholder apaisado */
+.detailImageWrapper.wideImage.lockedDetail {
+	height: 260px;
 }
 
 .detailImage {
@@ -135,12 +149,37 @@
 }
 
 .infoBlock {
-	font-size: 1.1rem;
-	line-height: 1.5;
-	text-align: center;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 	background: rgba(0, 0, 0, 0.02);
-	padding: 16px;
+	padding: 20px;
 	border-radius: 8px;
+	border: 1px solid rgba(139, 105, 70, 0.1);
+}
+
+.infoBlockTitle {
+	font-size: 1.05rem;
+	line-height: 1.4;
+	text-align: center;
+	font-weight: bold;
+	color: #4a3b2c;
+}
+
+.extraLoreText {
+	font-size: 0.85rem;
+	line-height: 1.6;
+	color: #6b5a45;
+	font-style: italic;
+	text-align: justify;
+}
+
+.acknowledgments {
+	font-size: 0.70rem;
+	line-height: 1.6;
+	color: #6b5a45;
+	text-align: justify;
+	text-align: center;
 }
 
 .mobileBackButton {
@@ -154,4 +193,12 @@
 	cursor: pointer;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin-bottom: 20px;
+}
+
+@media (max-width: 1040px) {
+	/* En móviles asegurar que incluso las apaisadas no rompan el layout */
+	.detailImageWrapper.wideImage {
+		width: 100%;
+		max-width: 320px;
+	}
 }

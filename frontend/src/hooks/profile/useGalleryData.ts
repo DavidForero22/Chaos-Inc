@@ -37,6 +37,7 @@ export interface EnrichedRole {
 	image: string;
 	unlockHint: string;
 	isUnlocked: boolean;
+	objective: string;
 }
 
 export interface EnrichedEnding {
@@ -45,6 +46,7 @@ export interface EnrichedEnding {
 	image: string;
 	unlockHint: string;
 	isUnlocked: boolean;
+	description: string;
 }
 
 export function useGalleryData() {
@@ -95,6 +97,7 @@ export function useGalleryData() {
 						image: config.image,
 						unlockHint: config.unlockHint,
 						isUnlocked: rawRoles?.includes(role) ?? false,
+						objective: config.objective,
 					};
 				});
 
@@ -108,6 +111,7 @@ export function useGalleryData() {
 						image: config.image,
 						unlockHint: config.unlockHint,
 						isUnlocked: rawEndings?.includes(ending) ?? false,
+						description: config.description,
 					};
 				});
 

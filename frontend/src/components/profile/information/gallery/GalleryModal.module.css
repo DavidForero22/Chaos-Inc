@@ -3,9 +3,9 @@
 .bookWrapper {
 	position: relative;
 	width: 100%;
-	max-width: 900px;
-	height: 80vh;
-	max-height: 700px;
+	max-width: 1100px; 
+	height: 85vh; 
+	max-height: 800px;
 	display: flex;
 	flex-direction: column;
 }
@@ -15,7 +15,7 @@
 	gap: 12px;
 	padding-left: 40px;
 	margin-bottom: -2px;
-	z-index: 10;
+	z-index: 5;
 }
 
 .bookmark {
@@ -62,6 +62,7 @@
 		inset 0 0 40px rgba(200, 180, 150, 0.2);
 	position: relative;
 	overflow: hidden;
+	z-index: 6;
 	background-image:
 		linear-gradient(90deg, transparent 98%, rgba(180, 160, 130, 0.1) 100%),
 		radial-gradient(
@@ -84,7 +85,7 @@
 .dimmed {
 	opacity: 0.3;
 	filter: grayscale(0.6) blur(2px);
-	pointer-events: none; /* Evita interacciones mientras carga */
+	pointer-events: none;
 }
 
 .loadingOverlay {
@@ -94,12 +95,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background: rgba(
-		253,
-		251,
-		242,
-		0.4
-	); /* Capa muy sutil por encima del difuminado */
+	background: rgba(253, 251, 242, 0.4);
 }
 
 .statusBox {
@@ -116,7 +112,6 @@
 	gap: 16px;
 	align-items: center;
 	border: 2px dashed #d1c5b4;
-	animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .spinner {
@@ -193,7 +188,7 @@
 	z-index: 5;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1040px) {
 	.bookWrapper {
 		height: 90vh;
 		max-height: none;
@@ -213,16 +208,5 @@
 @keyframes spin {
 	to {
 		transform: rotate(360deg);
-	}
-}
-
-@keyframes popIn {
-	from {
-		transform: scale(0.9);
-		opacity: 0;
-	}
-	to {
-		transform: scale(1);
-		opacity: 1;
 	}
 }
