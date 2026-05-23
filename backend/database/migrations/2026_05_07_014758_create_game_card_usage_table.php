@@ -18,6 +18,9 @@ return new class extends Migration
             $table->integer('times_played')->default(1);
 
             $table->timestamps();
+
+            // ÍNDICES PARA ANALÍTICAS
+            $table->index(['card_id', 'times_played']);
         });
     }
 

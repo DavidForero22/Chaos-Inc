@@ -1,15 +1,14 @@
 // src/pages/AdminPage.tsx
-// Accesibilidad comprobada: SI
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/auth/useAuthStore.ts";
+import { useAuthStore } from "../store/auth/useAuthStore";
 
-import UsersTab from "../components/admin/UsersTab.tsx";
-import GamesTab from "../components/admin/GamesTab.tsx";
-import RoomsTab from "../components/admin/RoomsTab.tsx";
+import UsersTab from "../components/admin/UsersTab";
+import GamesTab from "../components/admin/GamesTab";
+import RoomsTab from "../components/admin/RoomsTab";
+import AnalyticsDashboard from "../components/admin/analytics/AnalyticsDashboard";
 
-type Tab = "users" | "games" | "rooms";
+type Tab = "users" | "games" | "rooms" | "analytics";
 
 export default function AdminPage() {
 	const { role, user } = useAuthStore();
@@ -40,7 +39,7 @@ export default function AdminPage() {
 				className="flex flex-wrap gap-2 mb-8 border-b border-gray-400/30 pb-4"
 				aria-label="Secciones de administración"
 			>
-				{(["users", "games", "rooms"] as Tab[]).map((t) => (
+				{(["users", "games", "rooms", "analytics"] as Tab[]).map((t) => (
 					<button
 						key={t}
 						onClick={() => setTab(t)}
@@ -49,25 +48,26 @@ export default function AdminPage() {
 								? "bg-[#393e42] border-[#393e42] text-[#d2d4d1]"
 								: "bg-transparent border-[#8f9e9b] text-[#8f9e9b] hover:border-[#393e42] hover:text-[#393e42]"
 						}`}
-						aria-label={`Ver ${t === "users" ? "usuarios" : t === "games" ? "partidas" : "salas"}`}
+						aria-label={`Ver ${t === "users" ? "usuarios" : t === "games" ? "partidas" : t === "rooms" ? "salas" : "analíticas"}`}
 						aria-pressed={tab === t}
 					>
-						{t === "users" && <span aria-hidden="true"></span>}
-						{t === "games" && <span aria-hidden="true"></span>}
-						{t === "rooms" && <span aria-hidden="true"></span>}
-						{t === "users" ? "Usuarios" : t === "games" ? "Partidas" : "Salas"}
+						{t === "users" && "Usuarios"}
+						{t === "games" && "Partidas"}
+						{t === "rooms" && "Salas"}
+						{t === "analytics" && "Analíticas"}
 					</button>
 				))}
 			</nav>
 
 			<section
 				className="font-mono text-[#393e42]"
-				aria-label={`Contenido de ${tab === "users" ? "usuarios" : tab === "games" ? "partidas" : "salas"}`}
+				aria-label={`Contenido de ${tab}`}
 				aria-live="polite"
 			>
 				{tab === "users" && <UsersTab />}
 				{tab === "games" && <GamesTab />}
 				{tab === "rooms" && <RoomsTab />}
+				{tab === "analytics" && <AnalyticsDashboard />}
 			</section>
 		</main>
 	);

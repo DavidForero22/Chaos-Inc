@@ -1,6 +1,7 @@
 <?php
 // /routes/api.php
 
+use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\GameController;
 use App\Http\Controllers\Admin\RoomController;
 use App\Http\Controllers\Admin\UserController;
@@ -109,6 +110,7 @@ Route::prefix('v1')->group(function () {
 
             // Rutas de Administrador
             Route::middleware(\App\Http\Middleware\IsAdmin::class)->group(function () {
+                Route::get('/analytics', [AnalyticsController::class, 'dashboard']);
                 Route::post('/users', [UserController::class, 'store']);
                 Route::post('/games', [GameController::class, 'store']);
                 Route::delete('/rooms/{id}', [RoomController::class, 'destroy']);

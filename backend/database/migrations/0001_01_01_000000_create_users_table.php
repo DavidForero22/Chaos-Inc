@@ -24,6 +24,11 @@ return new class extends Migration
             $table->rememberToken();
             $table->softDeletes();
             $table->timestamps();
+
+            // ÍNDICES PARA ANALÍTICAS
+            $table->index('created_at');
+            $table->index('is_guest');
+            $table->index(['created_at', 'is_guest']);
         });
 
         // Tabla relacional de Métodos de Acceso (Google, Discord...)
@@ -41,6 +46,9 @@ return new class extends Migration
             $table->unique(['user_id', 'provider_name']);
             // Una cuenta de Discord no puede estar vinculada a dos usuarios distintos
             $table->unique(['provider_name', 'provider_id']);
+
+            // ÍNDICE PARA ANALÍTICAS
+            $table->index('provider_name');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
