@@ -8,8 +8,8 @@ export type ConfigKey = "boss" | "union" | "intern" | "canceled";
 export const RESULT_CONFIG: Record<
 	ConfigKey,
 	{
-		name: string; 
-		unlockHint: string; 
+		name: string;
+		unlockHint: string;
 		headline: string;
 		image: string;
 		subtitle: string;
@@ -37,24 +37,26 @@ export const RESULT_CONFIG: Record<
 		headline: "¡CHAOS INC. CIERRA SUS PUERTAS!",
 		image: "/game-result/game_result_union.jpg",
 		subtitle:
-			"El abandonado establecimiento fue comprado por una cadena de Labubus.",
-		description: `Tras meses de huelgas y recogida de firmas por abusos laborales, el sindicato de trabajadores ha logrado que Chaos Inc. se declare en bancarrota y cierre 
-            sus puertas para siempre. Al ver que las protestas convencionales no surtían efecto, el comité ejecutó una maniobra sin precedentes: organizar turnos para que las 
-            mascotas de todos los huelguistas orinasen frente a la sede principal a diario. El insoportable hedor acabó provocando el abandono masivo de las instalaciones, dejando 
-            a la directiva sin más opción que la rendición.`,
+			"El abandonado establecimiento fue comprado por una cadena de kebabs.",
+		description: `Tras meses de huelgas y recogida de firmas por abusos laborales, el sindicato de trabajadores ha logrado que Chaos Inc. se declare en bancarrota y 
+		cierre sus puertas para siempre. Al ver que las protestas convencionales no surtían efecto, el comité ejecutó una maniobra desesperada: lanzar huevos contra las 
+		oficinas. El problema real no fueron las fachadas vandalizadas, sino que, por un descuido, las gallinas ponedoras escaparon de su corral e irrumpieron en el 
+		edificio con sed de venganza materna. En la brutal batalla campal entre oficinistas y aves, el 94% de la plantilla terminó hospitalizada, 
+		obligando al cese inmediato de las operaciones de la empresa.`,
 		winners: ["union"],
 	},
 	intern: {
 		name: "Victoria de la Becaria",
 		unlockHint: "Termina una partida en la que gane la Becaria",
-		headline: "¡RUBIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
+		headline: "¡BECARIA CUALQUIERA SE ADUEÑA UNA EMPRESA!",
 		image: "/game-result/game_result_intern.jpg",
 		subtitle:
 			'"¡Pues ahora pienso montar mi propia empresa, con casinos y f*rcias! Es más, paso de la empresa."',
-		description: `En mitad de las encarnizadas disputas entre la directiva de Chaos Inc. y el sindicato de trabajadores, una joven que se incorporó hace apenas semanas como becaria ha 
-            aprovechado el vacío de poder para autoproclamarse CEO. La incógnita sobre cómo logró inscribir su nombre en las escrituras de la empresa entre grito y grito sigue
-            desconcertando a los analistas. Mientras tanto, antiguos empleados aseguran haber visto a Oswaldo Calzas y Gusi Baboncia, ex-directivos de la empresa, pidiendo limosna 
-            y haciendo malabares en los semáforos de las carreteras de Jaén.`,
+		description: `En medio de las disputas entre la directiva de Chaos Inc. y el sindicato, una joven que se incorporó hace apenas unas semanas como becaria 
+		ha aprovechado el vacío de poder para inscribir su nombre en las escrituras notariales y proclamarse CEO legítima. Según filtraciones internas, sus primeras 
+		medidas urgentes han sido reorientar la actividad comercial —pasando de la consultoría  a la fabricación de sartenes para zurdos— y autorizar el libre acceso
+		de los becarios a los baños. Mientras tanto, antiguos empleados aseguran haber avistado a Oswaldo Calzas y Gusi 
+		Baboncia, ex-altos cargos de la empresa, subsistiendo a base de hacer malabares en los semáforos de la provincia de Jaén.`,
 		winners: ["intern"],
 	},
 	canceled: {
