@@ -18,7 +18,6 @@ import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
 import { DebugTools } from "../components/game/overlays/debug/DebugTools.tsx";
 import { useInfoModeGuard } from "../hooks/game/ui/useInfoModeGuard.ts";
 
-
 export default function GameBoardPage() {
 	const { id } = useParams();
 	const roomId = id!;
@@ -29,6 +28,7 @@ export default function GameBoardPage() {
 
 	const selectedCardId = useGameUIStore((state) => state.selectedCardId);
 	const setSelectedCardId = useGameUIStore((state) => state.setSelectedCardId);
+	const clearSacrifice = useGameUIStore((state) => state.clearSacrifice);
 
 	useInfoModeGuard();
 
@@ -160,7 +160,10 @@ export default function GameBoardPage() {
 			{isTargetingMode && (
 				<div className="fixed top-1/2 right-0 -translate-y-1/2 z-100 lg:hidden animate-in slide-in-from-right-8 duration-300">
 					<button
-						onClick={() => setSelectedCardId(null)}
+						onClick={() => {
+							setSelectedCardId(null);
+							clearSacrifice();
+						}}
 						className="bg-red-600 hover:bg-red-500 text-white font-black px-3 py-6 rounded-l-xl border-y-4 border-l-4 border-red-800 flex items-center justify-center group shadow-[-4px_0_15px_rgba(0,0,0,0.5)] focus:outline-none focus:ring-4 focus:ring-red-400"
 						style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
 						title="Cancelar carta seleccionada"

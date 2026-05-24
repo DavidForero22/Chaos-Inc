@@ -32,6 +32,8 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		isFolderExpanded,
 		setFolderExpanded,
 		selectedCardId,
+		isSacrificeMode,
+		sacrificeCardId,
 	} = useGameUIStore();
 
 	const [activeTab, setActiveTab] = useState<"hand" | "stats">("hand");
@@ -67,34 +69,43 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 	// Reacciones Automáticas de la Interfaz
 	useEffect(() => {
-		// A) Auto-Minimizar al apuntar
-		if (isTargetingMode && !prevIsTargeting.current) {
+		const sacrificePending = isSacrificeMode && sacrificeCardId === null;
+		if (isTargetingMode && !prevIsTargeting.current && !sacrificePending) {
 			setFolderExpanded(false);
-		}
-		// B) Auto-Maximizar al soltar carta o atacar
-		else if (!isTargetingMode && prevIsTargeting.current) {
+		} else if (!isTargetingMode && prevIsTargeting.current) {
 			setFolderExpanded(true);
 		}
 
-		// C) Auto-Maximizar SOLO cuando EMPIEZA el turno
 		if (isMyTurnNow && !prevIsMyTurn.current && !isTargetingMode) {
 			setFolderExpanded(true);
 		}
 
-		// D) Auto-Maximizar si recibo un ataque
 		if (isDefending && !prevIsDefending.current && !isTargetingMode) {
 			setActiveTab("hand");
 			setFolderExpanded(true);
 		}
 
-		// Guardar los estados para la próxima evaluación
 		prevIsTargeting.current = isTargetingMode;
 		prevIsDefending.current = !!isDefending;
 		prevIsMyTurn.current = isMyTurnNow;
-	}, [isTargetingMode, isMyTurnNow, isDefending, setFolderExpanded]);
+	}, [
+		isTargetingMode,
+		isMyTurnNow,
+		isDefending,
+		setFolderExpanded,
+		isSacrificeMode,
+		sacrificeCardId,
+	]);
+
+	// E) Separado y al mismo nivel — se dispara cuando cambia sacrificeCardId
+	useEffect(() => {
+		if (isTargetingMode && isSacrificeMode && sacrificeCardId !== null) {
+			setFolderExpanded(false);
+		}
+	}, [sacrificeCardId]);
 
 	if (!me) return null;
-
+	
 	// --- LÓGICA DE PESTAÑAS ---
 	const handleTabClick = (tab: "hand" | "stats") => {
 		// Bloquear el clic si esta apuntando a un enemigo
@@ -208,7 +219,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						activeTab !== "stats" &&
 						typeof window !== "undefined" &&
 						window.innerWidth < 1024
-					} 
+					}
 					className={`shrink-0 z-40 w-full lg:w-65 h-[99%] lg:-mt-6 transform lg:rotate-2 relative ${activeTab === "stats" ? "block" : "hidden lg:block"}`}
 				>
 					<div
