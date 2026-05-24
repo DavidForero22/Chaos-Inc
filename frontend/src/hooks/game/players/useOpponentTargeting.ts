@@ -1,3 +1,4 @@
+import { useGameStore } from "../../../store/game/useGameStore";
 import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import type { Opponent, CardInstance } from "../../../types/live-game";
 
@@ -18,6 +19,8 @@ export function useOpponentTargeting(
 	selectedCard: CardInstance | null,
 	isMyTurn: boolean,
 ) {
+	const me = useGameStore((state) => state.gameData?.me);
+
 	const { isSacrificeMode, sacrificeCardId } = useGameUIStore();
 
 	const isCardActive = isMyTurn && selectedCard !== null;
@@ -61,7 +64,18 @@ export function useOpponentTargeting(
 				isUnclickable = true;
 			} else {
 				// Validar rango, robo, bloqueo, sabotaje...
-				const isOutOfRange = selectedCard?.card_id === 1 && !player.is_in_range;
+				const isAttackCard = selectedCard?.card_id === 1;
+				const isPotatoExtraAttack =
+					isAttackCard &&
+					(me?.turn_limits.single_attack_used ?? false) &&
+					(me?.perks.has_potato_launcher ?? false);
+
+				const isOutOfRange =
+					isAttackCard &&
+					(isPotatoExtraAttack
+						? player.distance > 1 // rango forzado a 1
+						: !player.is_in_range); // rango normal
+
 				const isUnstealable =
 					selectedCard?.card_id === 4 && player.cards_count === 0;
 				const isPlayerBlocked =

@@ -16,7 +16,6 @@ export function useCardPlayability(
 
 	// --- CONDICIONES GLOBALES CALCULADAS UNA SOLA VEZ ---
 	const globalConditions = useMemo(() => {
-		const myRange = me.perks.vision_range ?? 1;
 		const isMyTurn = String(current_turn) === String(myPlayerId);
 
 		const incomingAttack = me.combat_state.is_defending_single;
@@ -44,9 +43,6 @@ export function useCardPlayability(
 		);
 		const anyoneHasStress =
 			opponents.some((o) => !o.is_dead && o.stress > 0) || me.stress > 0;
-		const isAnyOpponentInRange = opponents.some(
-			(o) => !o.is_dead && o.is_online && o.distance <= myRange,
-		);
 		const anyOpponentHasPerks = opponents.some(
 			(o) =>
 				!o.is_dead &&
@@ -77,7 +73,6 @@ export function useCardPlayability(
 			isGlobalActionBlocked,
 			anyOpponentHasCards,
 			anyoneHasStress,
-			isAnyOpponentInRange,
 			anyOpponentHasPerks,
 			myActivePerksCount,
 		};
@@ -92,18 +87,27 @@ export function useCardPlayability(
 			isGlobalActionBlocked,
 			anyOpponentHasCards,
 			anyoneHasStress,
-			isAnyOpponentInRange,
 			anyOpponentHasPerks,
 			myActivePerksCount,
 		} = globalConditions;
 
 		const isChaoticCard = card.category === "chaotic";
 
+		const hasPotatoLauncher = me.perks.has_potato_launcher;
+		const attackAlreadyUsed = me.turn_limits.single_attack_used;
+		const effectiveRange =
+			attackAlreadyUsed && hasPotatoLauncher ? 1 : (me.perks.vision_range ?? 1);
+		const isAnyOpponentInEffectiveRange = opponents.some(
+			(o) => !o.is_dead && o.is_online && o.distance <= effectiveRange,
+		);
+
 		// Evaluar si la carta está deshabilitada por reglas de juego usando card_id
 		const isHealDisabled = card.card_id === 2 && me.stress <= 0;
 		const isAttackDisabled =
 			card.card_id === 1 &&
-			(me.turn_limits.single_attack_used || !isAnyOpponentInRange);
+			((attackAlreadyUsed && !hasPotatoLauncher) ||
+				!isAnyOpponentInEffectiveRange);
+
 		const isAttackAllDisabled =
 			card.card_id === 7 && me.turn_limits.multi_attack_used;
 		const isDodgeDisabled =
