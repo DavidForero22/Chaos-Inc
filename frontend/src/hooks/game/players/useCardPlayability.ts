@@ -1,6 +1,6 @@
 // frontend/src/hooks/game/useCardPlayability.ts
 import { useMemo } from "react";
-import type { CardInstance, GameData } from "../../types/live-game";
+import type { CardInstance, GameData } from "../../../types/live-game";
 
 export function useCardPlayability(
 	gameData: GameData,
@@ -60,7 +60,7 @@ export function useCardPlayability(
 			(me.perks.has_distance ? 1 : 0) +
 			(me.perks.has_storage ? 1 : 0) +
 			(me.perks.has_luck ? 1 : 0) +
-			(me.perks.chaotic_passive ? 1 : 0);
+			(me.perks.has_potato_launcher ? 1 : 0);
 
 		return {
 			isMyTurn,
@@ -139,7 +139,7 @@ export function useCardPlayability(
 		const isLuckDisabled =
 			(card.card_id === 14 && me.perks.has_luck) || isPerkLimitReached;
 		const isChaosPerkDisabled =
-			(card.card_id === 16 && me.perks.chaotic_passive) || isPerkLimitReached;
+			(card.card_id === 16 && me.perks.has_potato_launcher) || isPerkLimitReached;
 
 		const isCardSpecificDisabled =
 			isHealDisabled ||

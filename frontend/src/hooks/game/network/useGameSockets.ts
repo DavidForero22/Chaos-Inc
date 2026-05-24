@@ -1,17 +1,17 @@
 // src/hooks/game/useGameSockets.ts
 
 import { useEffect } from "react";
-import echo from "../../echo";
-import { logWithTime } from "../../utils/logger";
-import { useGameStore } from "../../store/game/useGameStore.ts";
-import { useNotificationStore } from "../../store/ui/useNotificationStore.ts";
-import { useGameEventParser } from "./useGameEventParser.ts";
+import echo from "../../../echo";
+import { logWithTime } from "../../../utils/logger";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useNotificationStore } from "../../../store/ui/useNotificationStore.ts";
+import { useGameEventParser } from "../core/useGameEventParser.ts";
 
-import api from "../../api/axios.ts";
-import { ACHIEVEMENTS } from "../../data/achievements.ts";
-import { useAchievementNotificationStore } from "../../store/ui/useAchievementNotificationStore.ts";
-import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
-import { useAuthStore } from "../../store/auth/useAuthStore.ts";
+import api from "../../../api/axios.ts";
+import { ACHIEVEMENTS } from "../../../data/app/achievements.ts";
+import { useAchievementNotificationStore } from "../../../store/ui/useAchievementNotificationStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
+import { useAuthStore } from "../../../store/auth/useAuthStore.ts";
 
 interface UseGameSocketsProps {
 	roomId: string | undefined;

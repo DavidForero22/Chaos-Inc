@@ -1,7 +1,7 @@
 // src/hooks/game/useInfoModeGuard.ts
 
 import { useEffect } from "react";
-import { useGameUIStore } from "../../store/game/useGameUIStore";
+import { useGameUIStore } from "../../../store/game/useGameUIStore";
 
 export function useInfoModeGuard() {
 	const isInfoMode = useGameUIStore((state) => state.isInfoMode);

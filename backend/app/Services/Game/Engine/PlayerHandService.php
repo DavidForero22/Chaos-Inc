@@ -177,14 +177,7 @@ class PlayerHandService
 
         $discardedNames = [];
 
-        // Definir los nombres para el log
-        $allowedPerks = [
-            'has_shield'   => 'Escudo',
-            'vision_bonus' => 'Visión',
-            'has_distance' => 'Lejania',
-            'has_storage'  => 'Almacen',
-            'has_luck'     => 'Suerte'
-        ];
+        $allowedPerks = config('game.perks.allowed_keys') ?? [];
 
         foreach ($perksToDiscard as $perkKey) {
             if (array_key_exists($perkKey, $allowedPerks)) {

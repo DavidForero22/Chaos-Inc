@@ -1,35 +1,7 @@
-import { useNotificationStore } from "../../store/ui/useNotificationStore";
-import type { NotificationType } from "../../store/ui/useNotificationStore";
-import { useGameStore } from "../../store/game/useGameStore";
-import { useAuth } from "../auth/useAuth";
-
-// Objetivo de la carta
-type TargetScope = "single" | "all" | "opponents" | "self";
-
-const CARD_DICT: Record<
-	number,
-	{ type: NotificationType; name: string; icon: string; scope: TargetScope }
-> = {
-	1: { type: "attack", name: "Ataque", icon: "attack", scope: "single" },
-	2: { type: "heal", name: "Té", icon: "heal", scope: "self" },
-	3: { type: "default", name: "Evasión", icon: "dodge", scope: "self" },
-	4: { type: "default", name: "Robo", icon: "steal", scope: "single" },
-	5: { type: "perk", name: "Escudo", icon: "perk", scope: "self" },
-	6: { type: "default", name: "Laxante", icon: "block", scope: "single" },
-	7: {
-		type: "attack",
-		name: "Inspección Sorpresa",
-		icon: "all",
-		scope: "opponents",
-	},
-	8: { type: "heal", name: "Viernes de Cañas", icon: "all", scope: "all" },
-	9: { type: "default", name: "Sabotaje", icon: "discard", scope: "single" },
-	10: { type: "perk", name: "Catalejo", icon: "perk", scope: "self" },
-	11: { type: "perk", name: "Teletrabajo", icon: "perk", scope: "self" },
-	12: { type: "default", name: "Recorte", icon: "discard", scope: "single" },
-	13: { type: "perk", name: "Riñonera", icon: "perk", scope: "self" },
-	14: { type: "perk", name: "Suerte", icon: "perk", scope: "self" },
-};
+import { useNotificationStore } from "../../../store/ui/useNotificationStore";
+import { useGameStore } from "../../../store/game/useGameStore";
+import { useAuth } from "../../auth/useAuth";
+import { CARD_NOTIFICATION_DICT } from "../../../data/game/cardNotifications";
 
 export function useGameEventParser() {
 	const { id: myId } = useAuth();
@@ -48,8 +20,8 @@ export function useGameEventParser() {
 		const me = state.gameData?.me;
 		const opponents = state.gameData?.game?.opponents ?? [];
 
-		const cardInfo = CARD_DICT[cardId];
-		if (!cardInfo) return; // Si la carta no existe, ignorar
+		const cardInfo = CARD_NOTIFICATION_DICT[cardId];
+		if (!cardInfo) return;
 
 		/**
 		 * Resolver ID a Nombre
@@ -58,11 +30,12 @@ export function useGameEventParser() {
 			if (!id) return "Alguien";
 			if (String(id) === String(myId)) return me?.name;
 			const opponent = opponents.find((o) => String(o.id) === String(id));
-			return opponent ? opponent.name : `Empleado ${id}`;
+			return opponent ? opponent.name : `Jugador ${id}`;
 		};
 
 		const sourceName = resolveName(sourceId);
 		const targetName = resolveName(targetId);
+
 		/**
 		 * Obtiene el objeto completo del target para comprobar su estado de muerte
 		 */
@@ -75,7 +48,8 @@ export function useGameEventParser() {
 		let message = "";
 		const isMeSource = String(sourceId) === String(myId);
 		const isMeTarget = targetId ? String(targetId) === String(myId) : false;
-		// Comprobar si este ataque concreto ha sido el causante de la muerte
+
+		/**  Comprobar si este ataque concreto ha sido el causante de la muerte */
 		const isLethal =
 			targetObj?.is_dead && targetObj?.killer_name === sourceName;
 
@@ -106,8 +80,24 @@ export function useGameEventParser() {
 						? `Has usado ${cardInfo.name} (Todos se curan)`
 						: `${sourceName} usó ${cardInfo.name} (Todos se curan)`;
 				} else {
-					if (isMeSource) message = "Te has curado";
-					else message = `${sourceName} se ha curado`;
+					// Verificar si la carta es específicamente la de Resurrección
+					const isRevive = cardId === 17;
+					const actionVerb = isRevive ? "revivido" : "curado";
+
+					if (isMeSource) {
+						message =
+							targetId && !isMeTarget
+								? `Has ${actionVerb} a ${targetName}`
+								: `Te has ${actionVerb}`;
+					} else {
+						if (isMeTarget) {
+							message = `${sourceName} te ha ${actionVerb}`;
+						} else {
+							message = targetId
+								? `${sourceName} ha ${actionVerb} a ${targetName}`
+								: `${sourceName} se ha ${actionVerb}`;
+						}
+					}
 				}
 				break;
 

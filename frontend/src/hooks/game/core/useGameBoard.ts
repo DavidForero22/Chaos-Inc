@@ -1,7 +1,7 @@
-import { useGameStore } from "../../store/game/useGameStore.ts";
-import { useGameActions } from "../../store/game/useGameActions.ts";   
-import { useAuth } from "../auth/useAuth.ts";
-import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useGameActions } from "../../../store/game/useGameActions.ts";   
+import { useAuth } from "../../auth/useAuth.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 
 export function useGameBoard() {
 	const { user, id: myId } = useAuth();

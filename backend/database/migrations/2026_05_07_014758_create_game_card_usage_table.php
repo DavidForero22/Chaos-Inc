@@ -15,6 +15,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
             $table->string('card_id')->index();
+            $table->string('card_name');
             $table->integer('times_played')->default(1);
 
             $table->timestamps();

@@ -68,7 +68,7 @@ class AnalyticsService
      */
     private function getTopCards(): array
     {
-        $cardsConfig = config('cards.cards', []);
+        $cardsConfig = config('game.cards.cards', []);
         // Mapear id -> display_name
         $cardNames = [];
         foreach ($cardsConfig as $card) {

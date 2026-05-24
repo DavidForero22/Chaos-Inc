@@ -15,7 +15,7 @@ class GalleryService
     public function getUserGalleryData(User $user): array
     {
         // 1. Cartas
-        $cardsCatalog = config('cards.cards', []);
+        $cardsCatalog = config('game.cards.cards', []);
         $discoveredCardIds = UserDiscoveredCard::where('user_id', $user->id)
             ->pluck('card_id')
             ->flip();

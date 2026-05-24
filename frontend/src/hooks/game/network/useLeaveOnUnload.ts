@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { sendLeaveBeacon } from "../../utils/leaveRoom";
+import { sendLeaveBeacon } from "../../../utils/leaveRoom";
 
 export function useLeaveOnUnload(
 	roomId: string | undefined,

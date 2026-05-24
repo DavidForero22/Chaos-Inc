@@ -8,10 +8,10 @@ import { useGameStore } from "../../../../store/game/useGameStore.ts";
 import { useRoomStore } from "../../../../store/room/useRoomStore.ts";
 import { FaBug } from "react-icons/fa";
 import styles from "./DebugTools.module.css";
-import { useDebug } from "../../../../hooks/game/useDebug";
+import { useDebug } from "../../../../hooks/game/utils/useDebug";
 import { PlayerModifier } from "./PlayerModifier";
-import { useFocusTrap } from "../../../../hooks/game/useFocusTrap";
-import { ROLE_LABELS } from "../../../../data/roles.ts";
+import { useFocusTrap } from "../../../../hooks/ui/useFocusTrap.ts";
+import { ROLE_LABELS } from "../../../../data/game/roles.ts";
 
 interface DebugToolsProps {
 	roomId: string;

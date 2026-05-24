@@ -10,7 +10,7 @@ import { PlayerStats } from "./PlayerStats.tsx";
 import { PlayerBanners } from "./PlayerBanners.tsx";
 import { PlayerActions } from "./PlayerActions.tsx";
 import { PlayerTimer } from "./PlayerTimer.tsx";
-import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
+import { usePlayerStats } from "../../../hooks/game/players/usePlayerStats.ts";
 import { PerkSlot } from "./PerkSlot.tsx";
 
 import styles from "./PlayerArea.module.css";

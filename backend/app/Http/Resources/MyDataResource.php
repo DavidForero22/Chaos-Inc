@@ -81,7 +81,7 @@ class MyDataResource extends JsonResource
                 'has_distance'      => (int) ($myData['has_distance'] ?? 0),
                 'has_storage'       => CastHelper::toBool($myData['has_storage'] ?? 0),
                 'has_luck'          => CastHelper::toBool($myData['has_luck'] ?? 0),
-                'chaotic_passive'   => CastHelper::toBool($myData['chaotic_passive'] ?? 0),
+                'has_potato_launcher'   => CastHelper::toBool($myData['has_potato_launcher'] ?? 0),
             ],
 
             // Turno

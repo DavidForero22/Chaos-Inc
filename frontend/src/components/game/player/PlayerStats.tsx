@@ -2,14 +2,13 @@
 // Accesibilidad comprobada: SI
 
 import type { MyData } from "../../../types/live-game";
-import { usePlayerStats } from "../../../hooks/game/usePlayerPerks";
+import { usePlayerStats } from "../../../hooks/game/players/usePlayerStats.ts";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { PlayerTimer } from "./PlayerTimer.tsx";
 import { PerkSlot } from "./PerkSlot.tsx";
 import type { CardInstance } from "../../../types/live-game";
 import styles from "./PlayerStats.module.css";
-
 
 interface PlayerStatsProps {
 	me: MyData;
@@ -136,6 +135,7 @@ export function PlayerStats({
 														description: desc,
 														lore: "",
 														icons: [],
+														category: "normal",
 													})
 												}
 											/>

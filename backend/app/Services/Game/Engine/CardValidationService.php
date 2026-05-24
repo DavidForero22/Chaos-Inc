@@ -20,7 +20,7 @@ class CardValidationService
         $alreadyAttacked = (int) (Redis::hget($playerTurnStateKey, 'single_attack_used_this_turn') ?? 0);
 
         // Verificar si tiene la pasiva caótica activa
-        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive') == 1;
+        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'has_potato_launcher') == 1;
 
         $distance = app(CombatService::class)->getDistance($roomId, $playerId, $targetId);
         $playerRange = app(CombatService::class)->getPlayerRange($roomId, $playerId);
@@ -432,7 +432,7 @@ class CardValidationService
     {
         CardHelper::checkSacrificeCardExists($roomId, $playerId, $sacrificeCardId);
         // Asegurar que no tenga ya la pasiva caótica activa (para no acumular)
-        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive') == 1;
+        $hasChaoticPassive = Redis::hget("room:{$roomId}:player:{$playerId}:perks", 'has_potato_launcher') == 1;
         if ($hasChaoticPassive) {
             throw new GameException(GameException::INVALID_ACTION, "Ya tienes activado el caos pasivo.", 422);
         }

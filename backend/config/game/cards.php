@@ -1,14 +1,6 @@
 <?php
 
 return [
-    /*
-    |--------------------------------------------------------------------------
-    | Definición de Cartas (Chaos Inc.)
-    |--------------------------------------------------------------------------
-    |
-    |
-    */
-
     'cards' => [
         // ─── 1. ATACAR  ───────────────────────────────
         [
@@ -60,7 +52,7 @@ return [
             'id'           => 4,
             'type'         => 'default',
             'target'       => 'opponent',
-            'base_name'    => 'Robar',
+            'base_name'    => 'Robo',
             'display_name' => 'Robo',
             'description'  => 'Roba una carta aleatoria de la mano de un oponente.',
             'lore'         => 'Pensaba que el nombre del tupper era el nombre del plato...',
@@ -220,53 +212,47 @@ return [
             'category'     => 'normal',
         ],
 
-        // ─── 15. CAOS ACCIONARIO ──────────────────
+        // ─── 15. MONOS LOCOS ──────────────────
         [
             'id'               => 15,
             'type'             => 'action',
             'target'           => 'self',
             'base_name'        => 'Monos Locos',
             'display_name'     => 'Monos Locos',
-            'description'      => 'Roba una carta por cada jugador vivo. Debes descartar 1 carta de tu mano para activar este efecto.',
+            'description'      => 'Roba una carta por cada jugador vivo.',
             'lore'             => 'Monos entrenados en Gibraltar con un solo propósito: robar. Libéralos y contempla el arte del carterismo en su máximo esplendor.',
             'icons'            => ['opponents', 'discard'],
             'count'            => 1,
             'image'            => 'monkeys.png',
             'category'         => 'chaotic',
         ],
-        // ─── 16. CAOS PASIVO ──────────────────────
+        // ─── 16. LANZAPATATAS 3000 ──────────────────────
         [
             'id'               => 16,
             'type'             => 'perk',
             'target'           => 'self',
             'base_name'        => 'Lanzapatatas 3000',
             'display_name'     => 'Lanzapatatas 3000',
-            'description'      => 'Permite realizar ataques básicos ilimitados en este turno (solo a distancia 1).',
+            'description'      => 'Permite realizar ataques básicos ilimitados (solo a distancia 1).',
             'lore'             => 'Artillería pesada: un prototipo que devoraba el 70% de los ingresos mensuales de la empresa.',
             'icons'            => ['self', 'perk'],
             'count'            => 1,
             'image'            => 'potato_launcher.png',
             'category'         => 'chaotic',
         ],
-        // ─── 17. RECONTRATACIÓN DE EMERGENCIA ─────
+        // ─── 17. RESURECCIÓN ─────
         [
             'id'               => 17,
             'type'             => 'action',
             'target'           => 'opponent',
             'base_name'        => 'Resurección',
             'display_name'     => 'Resurección',
-            'description'      => 'Revive a un jugador eliminado con 2 puntos de vida. No gasta tu turno. Debes descartar 1 carta de tu mano.',
+            'description'      => 'Revive a un jugador eliminado con 2 puntos de vida.',
             'lore'             => 'El poder divino del cura Don José Manuel ha bendecido a tu compañero y lo ha traído de vuelta a la empresa. Solo necesitaba un plus de transporte.',
-            'icons'            => ['opponent'],
+            'icons'            => ['opponent', 'heal'],
             'count'            => 1,
             'image'            => 'revive.png',
             'category'         => 'chaotic',
         ],
-    ],
-
-    'chaotic' => [
-        'enabled'          => true,
-        'chance_per_cycle' => 15,
-        'min_position'     => 40,
-    ],
+    ]
 ];

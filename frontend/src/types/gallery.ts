@@ -1,5 +1,5 @@
-import type { DisplayRole } from "../data/roles";
-import { type ConfigKey as EndingKey } from "../data/gameResults.ts";
+import type { DisplayRole } from "../data/game/roles";
+import { type ConfigKey as EndingKey } from "../data/game/gameResults.ts";
 
 // Tipos de respuesta del backend
 export interface GalleryCard {

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { ROLE_CONFIG, type DisplayRole } from "../../data/roles";
+import { ROLE_CONFIG, type DisplayRole } from "../../data/game/roles";
 import {
 	RESULT_CONFIG,
 	type ConfigKey as EndingKey,
-} from "../../data/gameResults";
+} from "../../data/game/gameResults";
 import type { EnrichedCard, EnrichedEnding, EnrichedRole, GalleryCard } from "../../types/gallery";
 
 export function useGalleryData() {

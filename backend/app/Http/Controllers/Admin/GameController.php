@@ -58,7 +58,7 @@ class GameController extends Controller
 
     public function getCards()
     {
-        $cards = config('cards.cards', []);
+        $cards = config('game.cards.cards', []);
         return CardCatalogResource::collection(collect($cards));
     }
 }

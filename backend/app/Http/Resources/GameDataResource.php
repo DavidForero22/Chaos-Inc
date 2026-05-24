@@ -92,7 +92,7 @@ class GameDataResource extends JsonResource
                     'has_distance' => CastHelper::toBool($pPerks['has_distance'] ?? 0) ? 1 : 0,
                     'has_storage'  => CastHelper::toBool($pPerks['has_storage'] ?? 0),
                     'has_luck'     => CastHelper::toBool($pPerks['has_luck'] ?? 0),
-                    'chaotic_passive'   => CastHelper::toBool($pPerks['chaotic_passive'] ?? 0),
+                    'has_potato_launcher'   => CastHelper::toBool($pPerks['has_potato_launcher'] ?? 0),
                 ],
             ];
         }

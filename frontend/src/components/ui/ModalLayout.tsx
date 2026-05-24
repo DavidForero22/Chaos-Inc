@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import AnimatedOverlay from "../../layouts/site-overlay/AnimatedOverlay.tsx";
-import { useModalOverlay } from "../../hooks/useModalOverlay";
+import { useModalOverlay } from "../../hooks/ui/useModalOverlay.ts";
 import styles from "./ModalLayout.module.css";
 
 interface ModalLayoutProps {

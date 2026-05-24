@@ -5,9 +5,9 @@ import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import { FaQuestion } from "react-icons/fa";
-import { GUIDE_ITEMS } from "../../../data/iconGuide";
+import { GUIDE_ITEMS } from "../../../data/ui/iconGuide";
 import styles from "./IconGuide.module.css";
-import { useFocusTrap } from "../../../hooks/game/useFocusTrap";
+import { useFocusTrap } from "../../../hooks/ui/useFocusTrap";
 
 export function IconGuide() {
 	const activeModal = useGameUIStore((state) => state.activeModal);

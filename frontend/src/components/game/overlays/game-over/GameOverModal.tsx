@@ -4,12 +4,12 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
-import { RESULT_CONFIG } from "../../../../data/gameResults.ts";
-import type { WinnerRole, ConfigKey } from "../../../../data/gameResults.ts";
+import { RESULT_CONFIG } from "../../../../data/game/gameResults.ts";
+import type { WinnerRole, ConfigKey } from "../../../../data/game/gameResults.ts";
 import { useGameUIStore } from "../../../../store/game/useGameUIStore.ts";
-import { ACHIEVEMENTS } from "../../../../data/achievements.ts";
+import { ACHIEVEMENTS } from "../../../../data/app/achievements.ts";
 import type { PlayerRole } from "../../../../types/live-game.ts";
-import { ROLE_LABELS } from "../../../../data/roles.ts";
+import { ROLE_LABELS } from "../../../../data/game/roles.ts";
 import { useGameStore } from "../../../../store/game/useGameStore.ts";
 import { XpSummaryCard } from "./XPSummaryCard.tsx";
 

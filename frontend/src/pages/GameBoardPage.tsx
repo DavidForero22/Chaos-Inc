@@ -1,9 +1,9 @@
 // src/pages/GameBoardPage.tsx
 
 import { useParams } from "react-router-dom";
-import { useLiveGame } from "../hooks/game/useLiveGame.ts";
-import { useGameBoard } from "../hooks/game/useGameBoard.ts";
-import { useGameTimers } from "../hooks/game/useGameTimers.ts";
+import { useLiveGame } from "../hooks/game/core/useLiveGame.ts";
+import { useGameBoard } from "../hooks/game/core/useGameBoard.ts";
+import { useGameTimers } from "../hooks/game/core/useGameTimers.ts";
 import { useGameUIStore } from "../store/game/useGameUIStore.ts";
 
 import { OpponentsBoard } from "../components/game/board/OpponentsBoard.tsx";
@@ -16,7 +16,7 @@ import { IconGuide } from "../components/game/board/IconGuide.tsx";
 import { LeaveMatch } from "../components/game/board/LeaveMatch.tsx";
 import { NotificationStack } from "../components/game/ui/NotificationStack.tsx";
 import { DebugTools } from "../components/game/overlays/debug/DebugTools.tsx";
-import { useInfoModeGuard } from "../hooks/game/useInfoModeGuard.ts";
+import { useInfoModeGuard } from "../hooks/game/ui/useInfoModeGuard.ts";
 
 
 export default function GameBoardPage() {
@@ -53,7 +53,7 @@ export default function GameBoardPage() {
 	}
 
 	// LÓGICA INTELIGENTE: ¿Es una carta de apuntar?
-	const selectedCard = board.me.cards.find((c) => c.id === selectedCardId);
+	const selectedCard = board.me.cards.find((c: any) => c.id === selectedCardId);
 	const isTargetingMode = selectedCard?.target === "opponent";
 
 	return (

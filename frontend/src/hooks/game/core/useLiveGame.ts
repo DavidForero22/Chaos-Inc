@@ -2,19 +2,19 @@
 
 import { useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios.ts";
+import api from "../../../api/axios.ts";
 
 // -- HOOKS CUSTOM --
-import { useGameSockets } from "./useGameSockets.ts";
-import { useAuth } from "../auth/useAuth.ts";
+import { useGameSockets } from "../network/useGameSockets.ts";
+import { useAuth } from "../../auth/useAuth.ts";
 
 // -- UTILS & STORE --
-import { logWithTime } from "../../utils/logger.ts";
-import { useGameStore } from "../../store/game/useGameStore.ts";
-import { useGameUIStore } from "../../store/game/useGameUIStore.ts";
-import { useLoadingStore } from "../../store/ui/useLoadingStore.ts";
-import { useLeaveOnUnload } from "./useLeaveOnUnload.ts";
-import { useRoomStore } from "../../store/room/useRoomStore.ts";
+import { logWithTime } from "../../../utils/logger.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
+import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
+import { useLoadingStore } from "../../../store/ui/useLoadingStore.ts";
+import { useLeaveOnUnload } from "../network/useLeaveOnUnload.ts";
+import { useRoomStore } from "../../../store/room/useRoomStore.ts";
 
 export function useLiveGame(roomId: string | undefined) {
 	const navigate = useNavigate();

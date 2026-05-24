@@ -6,11 +6,8 @@ import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
 import type { GameRecord } from "../../../types/api.ts";
 import { useProfileStats } from "../../../hooks/profile/useProfileStats.ts";
-import { CARD_MAP } from "../../../data/cards.ts";
 import styles from "./GraphsProfile.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
-
-
 
 // ── Paleta temática ──────────────────────────────────────────────────────────
 const C = {
@@ -113,16 +110,13 @@ function winrateDescription(
 	);
 }
 
-function topCardsDescription(cards: { id: number; count: number }[]) {
+function topCardsDescription(
+	cards: { id: number; name: string; count: number }[],
+) {
 	if (cards.length === 0) return "Sin datos de cartas más usadas.";
 	return (
 		"Cartas más usadas: " +
-		cards
-			.map((c) => {
-				const name = CARD_MAP[c.id] ?? `Carta #${c.id}`;
-				return `${name}: ${c.count} usos`;
-			})
-			.join("; ")
+		cards.map((c) => `${c.name}: ${c.count} usos`).join("; ")
 	);
 }
 
@@ -341,9 +335,7 @@ export default function GraphsProfile({ games, user }: GraphsProfileProps) {
 		},
 		yAxis: {
 			type: "category",
-			data: [...topCards]
-				.reverse()
-				.map((c) => CARD_MAP[c.id] ?? `Carta #${c.id}`),
+			data: [...topCards].reverse().map((c) => c.name),
 			axisLabel: {
 				fontSize: FONT_SM,
 				fontWeight: 900,

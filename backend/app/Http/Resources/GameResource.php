@@ -50,6 +50,7 @@ class GameResource extends JsonResource
                                 ->map(function ($usage) {
                                     return [
                                         'cardId'      => $usage->card_id,
+                                        'name'        => $usage->card_name,
                                         'timesPlayed' => $usage->times_played,
                                     ];
                                 })

@@ -26,7 +26,7 @@ export interface PlayerPerks {
 	has_distance: boolean;
 	has_storage: boolean;
 	has_luck: boolean;
-	chaotic_passive: boolean;
+	has_potato_launcher: boolean;
 }
 
 export interface TurnLimits {

@@ -26,6 +26,7 @@ export interface RoomData {
  */
 export interface CardUsage {
 	cardId: number;
+	name: string;
 	timesPlayed: number;
 }
 

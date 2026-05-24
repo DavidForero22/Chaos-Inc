@@ -102,7 +102,7 @@ class DebugService
 
     private function addCardsToPlayer(string $roomId, string $playerId, array $cardIds): void
     {
-        $allCards = config('cards.cards', []);
+        $allCards = config('game.cards.cards', []);
         $cardMap  = collect($allCards)->keyBy('id');
 
         $handKey = "room:{$roomId}:player:{$playerId}:hand";

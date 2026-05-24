@@ -422,7 +422,7 @@ class CardEffectService
 
     public function applyChaoticPassive(string $roomId, int $playerId): void
     {
-        Redis::hset("room:{$roomId}:player:{$playerId}:perks", 'chaotic_passive', 1);
+        Redis::hset("room:{$roomId}:player:{$playerId}:perks", 'has_potato_launcher', 1);
     }
 
     public function applyChaoticRevive(string $roomId, string $targetId): void

@@ -4,13 +4,13 @@
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
 import {
 	useOpponentPerks,
-	type OpponentPerkSlot,
-} from "../../../hooks/game/useOpponentPerks.ts";
+} from "../../../hooks/game/players/useOpponentPerks.ts";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
+import type { PerkSlot } from "../../../hooks/game/players/useDisplayPerks.ts";
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -126,7 +126,7 @@ export function OpponentCard({
 				? "Bloqueado"
 				: "Activo";
 
-	const renderPerkSlot = (slot: OpponentPerkSlot) => {
+	const renderPerkSlot = (slot: PerkSlot) => {
 		if (slot.isEmpty) {
 			return (
 				<div

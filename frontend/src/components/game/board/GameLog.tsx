@@ -6,7 +6,7 @@ import { useGameUIStore } from "../../../store/game/useGameUIStore";
 import { createPortal } from "react-dom";
 import styles from "./GameLog.module.css";
 import { useNotificationStore } from "../../../store/ui/useNotificationStore";
-import { useFocusTrap } from "../../../hooks/game/useFocusTrap";
+import { useFocusTrap } from "../../../hooks/ui/useFocusTrap";
 
 export function GameLog() {
 	const logs = useNotificationStore((state) => state.logs);

@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useEffect, useRef } from "react";
-import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
+import { usePlayerActions } from "../../../hooks/game/players/usePlayerActions.ts";
 import styles from "./PlayerActions.module.css";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 

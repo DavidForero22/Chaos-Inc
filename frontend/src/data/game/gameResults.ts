@@ -1,6 +1,6 @@
 // src/config/gameResults.ts
 
-import type { PlayerRole } from "../types/live-game";
+import type { PlayerRole } from "../../types/live-game";
 
 export type WinnerRole = "boss" | "union" | "intern" | "canceled" | null;
 export type ConfigKey = "boss" | "union" | "intern" | "canceled";

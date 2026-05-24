@@ -6,7 +6,7 @@ import {
 	ACHIEVEMENTS,
 	type Achievement,
 	type UnactiveAchievement,
-} from "../../../data/achievements.ts";
+} from "../../../data/app/achievements.ts";
 import type { UserAchievement } from "../../../types/user.ts";
 import styles from "./ProfileAchievements.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";

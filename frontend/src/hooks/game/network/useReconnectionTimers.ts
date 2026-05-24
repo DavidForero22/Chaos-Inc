@@ -1,8 +1,8 @@
 // src/hooks/game/useReconnectionTimers.ts
 
 import { useState, useEffect, useRef } from "react";
-import { logWithTime } from "../../utils/logger.ts";
-import { useGameStore } from "../../store/game/useGameStore.ts"; // <-- Importamos el store
+import { logWithTime } from "../../../utils/logger.ts";
+import { useGameStore } from "../../../store/game/useGameStore.ts";
 
 export function useReconnectionTimers() {
 	// Extraemos solo lo que necesitamos del store

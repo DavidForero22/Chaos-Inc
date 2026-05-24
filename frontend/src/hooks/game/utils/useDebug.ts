@@ -1,9 +1,9 @@
 // src/hooks/game/useDebug.ts
 
 import { useState, useCallback, useEffect } from "react";
-import api from "../../api/axios";
-import type { CardCatalogItem } from "../../types/api";
-import { useToastStore } from "../../store/ui/useToastStore"; 
+import api from "../../../api/axios";
+import type { CardCatalogItem } from "../../../types/api";
+import { useToastStore } from "../../../store/ui/useToastStore"; 
 
 interface DebugState {
 	playerModifications: {

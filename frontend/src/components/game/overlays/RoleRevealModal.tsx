@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from "react";
 import type { UIEvent } from "react";
 import type { MyData } from "../../../types/live-game.ts";
 import styles from "./RoleRevealModal.module.css";
-import { ROLE_CONFIG } from "../../../data/roles.ts";
+import { ROLE_CONFIG } from "../../../data/game/roles.ts";
 
 
 interface RoleRevealModalProps {

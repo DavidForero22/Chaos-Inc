@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import styles from "./Changelog.module.css";
-import { CHANGELOG_DATA } from "../../data/versions";
+import { CHANGELOG_DATA } from "../../data/app/versions";
 
 export default function Changelog() {
     const [isMainOpen, setIsMainOpen] = useState(false);

@@ -17,7 +17,7 @@ import { IoHandLeftSharp } from "react-icons/io5";
 import { ImTarget } from "react-icons/im";
 import { HiUsers } from "react-icons/hi";
 
-import { usePlayerActions } from "../../../hooks/game/usePlayerActions.ts";
+import { usePlayerActions } from "../../../hooks/game/players/usePlayerActions.ts";
 import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 

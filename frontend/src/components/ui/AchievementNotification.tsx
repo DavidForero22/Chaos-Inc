@@ -1,7 +1,7 @@
 // Accesibilidad comprobada: SI
 
 import { useEffect, useMemo, useState } from "react";
-import { ACHIEVEMENTS } from "../../data/achievements";
+import { ACHIEVEMENTS } from "../../data/app/achievements";
 import { useAchievementNotificationStore } from "../../store/ui/useAchievementNotificationStore";
 import styles from "./AchievementNotification.module.css";
 

@@ -24,6 +24,7 @@ export interface WinrateEntry {
 }
 export interface CardEntry {
 	id: number;
+	name: string;
 	count: number;
 }
 
@@ -139,14 +140,26 @@ export function useProfileStats(
 		);
 
 		// ── Top 5 cartas ──────────────────────────────────────────────
-		const cardTotals: Record<number, number> = {};
+		const cardTotals: Record<number, { count: number; name: string }> = {};
 		myGames.forEach(({ me }) => {
-			me.cardUsages?.forEach(({ cardId, timesPlayed }) => {
-				cardTotals[cardId] = (cardTotals[cardId] ?? 0) + timesPlayed;
+			me.cardUsages?.forEach(({ cardId, name, timesPlayed }) => {
+				if (!cardTotals[cardId]) {
+					// Si es la primera vez que vemos esta carta, inicializamos su contador y guardamos su nombre
+					cardTotals[cardId] = {
+						count: 0,
+						name: name ?? `Carta #${cardId}`,
+					};
+				}
+				// Sumamos los usos
+				cardTotals[cardId].count += timesPlayed;
 			});
 		});
 		const topCards = Object.entries(cardTotals)
-			.map(([id, count]) => ({ id: Number(id), count }))
+			.map(([id, data]) => ({
+				id: Number(id),
+				name: data.name, 
+				count: data.count,
+			}))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 5);
 

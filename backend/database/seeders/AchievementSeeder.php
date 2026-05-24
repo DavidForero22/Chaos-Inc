@@ -29,8 +29,6 @@ class AchievementSeeder extends Seeder
             ['id' => 'ach_one_hp_clutch'],
         ];
 
-        // Usar insertOrIgnore para que si ejecutamos el seeder varias veces, 
-        // no dé error de clave duplicada.
         DB::table('achievements')->insertOrIgnore($achievements);
     }
 }

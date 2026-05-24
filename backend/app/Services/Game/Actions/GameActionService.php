@@ -96,9 +96,9 @@ class GameActionService
             12 => $this->cardEffectService->applyClean($roomId, $targetId, $perkKey),
             13 => $this->cardEffectService->applyStorage($roomId, $playerId),
             14 => $this->cardEffectService->applyLuck($roomId, $playerId),
-            15 => $this->cardEffectService->applyChaoticDraw($roomId, $playerId, $sacrificeCardId),
-            16 => $this->cardEffectService->applyChaoticPassive($roomId, $playerId, $sacrificeCardId),
-            17 => $this->cardEffectService->applyChaoticRevive($roomId, $playerId, $targetId, $sacrificeCardId),
+            15 => $this->cardEffectService->applyChaoticDraw($roomId, $playerId),
+            16 => $this->cardEffectService->applyChaoticPassive($roomId, $playerId),
+            17 => $this->cardEffectService->applyChaoticRevive($roomId, $targetId),
 
             default => null,
         };

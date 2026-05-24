@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import GalleryGrid from "./GalleryGrid";
 import GalleryDetail from "./GalleryDetail";
 import styles from "./GalleryModal.module.css";
-import { useModalOverlay } from "../../../../hooks/useModalOverlay.ts";
+import { useModalOverlay } from "../../../../hooks/ui/useModalOverlay.ts";
 import AnimatedOverlay from "../../../../layouts/site-overlay/AnimatedOverlay.tsx";
 import { useGalleryData } from "../../../../hooks/profile/useGalleryData.ts";
 import type {

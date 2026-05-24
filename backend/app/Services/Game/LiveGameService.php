@@ -215,7 +215,7 @@ class LiveGameService
                 'has_distance'      => 0,
                 'is_blocked'        => 0,
                 'vision_bonus'      => 0,
-                'chaotic_passive'   => 0,
+                'has_potato_launcher'   => 0,
             ]);
 
             // ---- 3. Inicializar sets de descubrimiento ----
