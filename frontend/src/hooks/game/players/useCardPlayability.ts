@@ -1,7 +1,10 @@
 // frontend/src/hooks/game/useCardPlayability.ts
 import { useMemo } from "react";
 import type { CardInstance, GameData } from "../../../types/live-game";
-import { PASSIVE_CARD_IDS, STACKABLE_PASSIVE_CARD_IDS } from "../../../data/game/passiveCards";
+import {
+	PASSIVE_CARD_IDS,
+	STACKABLE_PASSIVE_CARD_IDS,
+} from "../../../data/game/passiveCards";
 
 export function useCardPlayability(
 	gameData: GameData,
@@ -142,6 +145,10 @@ export function useCardPlayability(
 			isPerkLimitReached;
 		const isChaoticAlone = card.category === "chaotic" && me.cards.length <= 1;
 
+		/** No se puede usar revivir si no hay jugadores vivos */
+		const isReviveDisabled =
+			card.card_id === 17 && !opponents.some((o) => o.is_dead && o.is_online);
+
 		const isCardSpecificDisabled =
 			isHealDisabled ||
 			isAttackDisabled ||
@@ -158,7 +165,8 @@ export function useCardPlayability(
 			isStorageDisabled ||
 			isLuckDisabled ||
 			isChaosPerkDisabled ||
-			isChaoticAlone;
+			isChaoticAlone ||
+			isReviveDisabled;
 
 		// Evaluar condiciones especiales
 		const canUseDodgeNow =

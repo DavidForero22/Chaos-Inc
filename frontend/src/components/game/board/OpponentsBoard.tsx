@@ -28,6 +28,7 @@ export function OpponentsBoard({
 		setSelectedCardId,
 		isFolderExpanded,
 		sacrificeCardId,
+		clearSacrifice,
 	} = useGameUIStore();
 
 	// Guardar el ancho para los rangos manuales. PC ahora es estrictamente >= 1050
@@ -72,6 +73,7 @@ export function OpponentsBoard({
 
 		if (success) {
 			setSelectedCardId(null);
+			clearSacrifice();
 		}
 	};
 

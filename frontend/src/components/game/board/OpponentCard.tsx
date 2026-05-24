@@ -1,16 +1,12 @@
-// src/components/game/board/OpponentCard.tsx
 // Accesibilidad comprobada: SI
-
 import type { Opponent, CardInstance } from "../../../types/live-game.ts";
-import {
-	useOpponentPerks,
-} from "../../../hooks/game/players/useOpponentPerks.ts";
+import { useOpponentPerks } from "../../../hooks/game/players/useOpponentPerks.ts";
 import { useState } from "react";
 import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
-import { useGameUIStore } from "../../../store/game/useGameUIStore.ts";
 import type { PerkSlot } from "../../../hooks/game/players/useDisplayPerks.ts";
+import { useOpponentTargeting } from "../../../hooks/game/players/useOpponentTargeting.ts"; // <-- Nuevo Hook
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -20,18 +16,6 @@ interface OpponentCardProps {
 	turnTimeLeft?: number | null;
 	isTurnPaused?: boolean;
 }
-
-type NonOpponentTarget = Exclude<CardInstance["target"], "opponent">;
-
-const isOpponentTargetCard = (
-	card: CardInstance | null,
-): card is CardInstance & { target: "opponent" } =>
-	!!card && card.target === "opponent";
-
-const isNonOpponentTargetCard = (
-	card: CardInstance | null,
-): card is CardInstance & { target: NonOpponentTarget } =>
-	!!card && card.target !== "opponent";
 
 export function OpponentCard({
 	player,
@@ -49,65 +33,20 @@ export function OpponentCard({
 		(state) => state.gameData?.game?.current_turn,
 	);
 	const isThisOpponentTurn = currentTurn === player.id && !player.is_dead;
-	const { isSacrificeMode, sacrificeCardId } = useGameUIStore();
-	const isWaitingForSacrifice = isSacrificeMode && sacrificeCardId === null;
 
-	// --- REGLAS DE SELECCIÓN ---
-	const isCardActive = isMyTurn && selectedCard !== null;
-	const isTargetingCard = isOpponentTargetCard(selectedCard);
-	const isNonOpponentTarget = isNonOpponentTargetCard(selectedCard);
+	// --- REGLAS DE SELECCIÓN DELEGADAS AL HOOK ---
+	const {
+		tooltipMessage,
+		isUnclickable,
+		canBeTargeted,
+		isCurrentlyBlocked,
+		isWaitingForSacrifice,
+		isNonOpponentTarget,
+		isReviveCard,
+		canCleanGlobally,
+	} = useOpponentTargeting(player, selectedCard, isMyTurn);
 
-	const isOutOfRange = selectedCard?.card_id === 1 && !player.is_in_range;
-	const isUnstealable = selectedCard?.card_id === 4 && player.cards_count === 0;
-	const isCurrentlyBlocked =
-		player.conditions?.is_blocked ?? (player as any).is_blocked ?? false;
-	const isSabotageUntargetable =
-		selectedCard?.card_id === 9 && player.cards_count === 0;
-
-	const isPlayerBlocked = selectedCard?.card_id === 6 && isCurrentlyBlocked;
-
-	let tooltipMessage = "";
-	let isUnclickable = false;
-
-	if (player.is_dead) {
-		tooltipMessage = "Este jugador ya está muerto.";
-		isUnclickable = true;
-	} else if (!player.is_online) {
-		tooltipMessage = "Este jugador está desconectado.";
-		isUnclickable = true;
-	} else if (isCardActive && isNonOpponentTarget) {
-		tooltipMessage =
-			selectedCard?.target === "self"
-				? "Esta carta es de auto-uso."
-				: "Esta carta no se usa sobre oponentes.";
-		isUnclickable = true;
-	} else if (isCardActive && isTargetingCard) {
-		if (isOutOfRange) {
-			tooltipMessage =
-				"Este jugador está demasiado lejos para tu rango actual.";
-			isUnclickable = true;
-		} else if (isUnstealable) {
-			tooltipMessage = "Este jugador no tiene cartas que robar.";
-			isUnclickable = true;
-		} else if (isPlayerBlocked) {
-			tooltipMessage = "Este jugador ya tiene un bloqueo activo.";
-			isUnclickable = true;
-		} else if (isSabotageUntargetable) {
-			tooltipMessage = "Este jugador no tiene cartas que descartar.";
-			isUnclickable = true;
-		}
-	}
-
-	if (isWaitingForSacrifice) {
-		tooltipMessage = "Debes elegir una carta para sacrificar antes de atacar.";
-		isUnclickable = true;
-	}
-
-	const canBeTargeted =
-		isCardActive && isTargetingCard && !isUnclickable && !isWaitingForSacrifice;
-	const isCleanMode = selectedCard?.card_id === 12 && isMyTurn;
-	const canCleanGlobally = isCleanMode && !player.is_dead && player.is_online;
-
+	// Resoluciones visuales
 	const avatarUrl = player.avatar?.startsWith("http")
 		? player.avatar
 		: player.avatar
@@ -184,10 +123,11 @@ export function OpponentCard({
                 relative flex flex-col items-center
                 ${styles.cardBase}
                 ${isThisOpponentTurn ? "ring-4 ring-[#cbbe34] shadow-[0_0_20px_rgba(203,190,52,0.6)] -translate-y-2" : ""}
-                ${player.is_dead ? "scale-95 border-2 border-red-900 bg-red-50/20 shadow-none opacity-80" : ""}
+                ${player.is_dead && !isReviveCard ? "scale-95 border-2 border-red-900 bg-red-50/20 shadow-none opacity-80" : ""}
                 ${!player.is_online && !player.is_dead ? "scale-95 border-gray-400 shadow-none opacity-90" : ""}
                 ${isUnclickable && !player.is_dead && player.is_online ? "scale-95 opacity-80" : ""}
                 ${canBeTargeted ? "hover:scale-110 ring-4 ring-blue-500 shadow-[0_0_25px_rgba(59,130,246,0.8)]" : ""}
+                ${isReviveCard && player.is_dead && canBeTargeted ? "ring-4 ring-green-500 shadow-[0_0_25px_rgba(34,197,94,0.8)]" : ""}
             `}
 		>
 			{/* TEXTO EXCLUSIVO PARA LECTOR DE PANTALLA */}
@@ -277,7 +217,7 @@ export function OpponentCard({
 					{showAvatar ? (
 						<img
 							src={avatarUrl}
-							alt="" // Vacio porque el nombre del jugador ya se lee en el h3 debajo
+							alt="" // Vacío porque el nombre del jugador ya se lee en el h3 debajo
 							className={styles.photoImage}
 							onError={() => setAvatarError(true)}
 							referrerPolicy="no-referrer"
