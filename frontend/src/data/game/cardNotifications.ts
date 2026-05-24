@@ -25,7 +25,7 @@ export const CARD_NOTIFICATION_DICT: Record<
 	12: { type: "default", name: "Recorte", icon: "discard", scope: "single" },
 	13: { type: "perk", name: "Riñonera", icon: "perk", scope: "self" },
 	14: { type: "perk", name: "Suerte", icon: "perk", scope: "self" },
-	15: { type: "default", name: "Monos Locos", icon: "discard", scope: "self" },
+	15: { type: "default", name: "Monos Locos", icon: "steal", scope: "opponents" },
 	16: { type: "perk", name: "Lanzapatatas 3000", icon: "perk", scope: "self" },
 	17: { type: "heal", name: "Resurrección", icon: "heal", scope: "single" },
 };

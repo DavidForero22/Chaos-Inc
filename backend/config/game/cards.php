@@ -215,13 +215,13 @@ return [
         // ─── 15. MONOS LOCOS ──────────────────
         [
             'id'               => 15,
-            'type'             => 'action',
-            'target'           => 'self',
+            'type'             => 'default',
+            'target'           => 'opponents',
             'base_name'        => 'Monos Locos',
             'display_name'     => 'Monos Locos',
             'description'      => 'Roba una carta por cada jugador vivo.',
             'lore'             => 'Monos entrenados en Gibraltar con un solo propósito: robar. Libéralos y contempla el arte del carterismo en su máximo esplendor.',
-            'icons'            => ['opponents', 'discard'],
+            'icons'            => ['opponents', 'steal'],
             'count'            => 1,
             'image'            => 'monkeys.png',
             'category'         => 'chaotic',
@@ -243,7 +243,7 @@ return [
         // ─── 17. RESURECCIÓN ─────
         [
             'id'               => 17,
-            'type'             => 'action',
+            'type'             => 'default',
             'target'           => 'opponent',
             'base_name'        => 'Resurección',
             'display_name'     => 'Resurección',
