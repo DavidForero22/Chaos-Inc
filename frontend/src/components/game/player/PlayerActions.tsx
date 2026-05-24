@@ -89,9 +89,6 @@ export function PlayerActions() {
 	// ¿Deberían estar deshabilitados los botones por el modo Info?
 	const isInteractionBlockedByInfo = isInfoMode || isDead;
 	const isCurrentlyOverLimit = isDiscardMode ? willBeOverLimit : isOverLimit;
-	console.log("canDiscard: ", canDiscard);
-	console.log("isInteractionBlockedByInfo: ", isInteractionBlockedByInfo);
-	console.log("hasSelectedCard: ", hasSelectedCard);
 	const isDiscardDisabled =
 		!canDiscard || isInteractionBlockedByInfo || hasSelectedCard;
 

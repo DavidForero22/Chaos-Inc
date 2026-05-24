@@ -1,6 +1,7 @@
 // frontend/src/hooks/game/useCardPlayability.ts
 import { useMemo } from "react";
 import type { CardInstance, GameData } from "../../../types/live-game";
+import { PASSIVE_CARD_IDS, STACKABLE_PASSIVE_CARD_IDS } from "../../../data/game/passiveCards";
 
 export function useCardPlayability(
 	gameData: GameData,
@@ -118,11 +119,9 @@ export function useCardPlayability(
 		const isCleanDisabled = card.card_id === 12 && !anyOpponentHasPerks;
 
 		let isPerkLimitReached = false;
-		if ([5, 11, 13, 14].includes(card.card_id)) {
-			// Escudo, Lejanía o Deposito: bloqueados si tiene 3 slots llenos
+		if (PASSIVE_CARD_IDS.has(card.card_id)) {
 			isPerkLimitReached = myActivePerksCount >= 3;
-		} else if (card.card_id === 10) {
-			// Visión: bloqueada por límite solo si NO la tenía ya (va a ocupar hueco nuevo)
+		} else if (STACKABLE_PASSIVE_CARD_IDS.has(card.card_id)) {
 			isPerkLimitReached =
 				myActivePerksCount >= 3 && (me.perks.vision_bonus ?? 0) === 0;
 		}
@@ -139,7 +138,9 @@ export function useCardPlayability(
 		const isLuckDisabled =
 			(card.card_id === 14 && me.perks.has_luck) || isPerkLimitReached;
 		const isChaosPerkDisabled =
-			(card.card_id === 16 && me.perks.has_potato_launcher) || isPerkLimitReached;
+			(card.card_id === 16 && me.perks.has_potato_launcher) ||
+			isPerkLimitReached;
+		const isChaoticAlone = card.category === "chaotic" && me.cards.length <= 1;
 
 		const isCardSpecificDisabled =
 			isHealDisabled ||
@@ -156,7 +157,8 @@ export function useCardPlayability(
 			isCleanDisabled ||
 			isStorageDisabled ||
 			isLuckDisabled ||
-			isChaosPerkDisabled;
+			isChaosPerkDisabled ||
+			isChaoticAlone;
 
 		// Evaluar condiciones especiales
 		const canUseDodgeNow =
