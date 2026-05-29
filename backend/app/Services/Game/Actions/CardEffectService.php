@@ -120,6 +120,15 @@ class CardEffectService
             'cards_stolen',
             1
         );
+
+        // Registrar el descubrimiento de la carta robada
+        $knownKey = "room:{$roomId}:player:{$playerId}:known_cards";
+        $newKey   = "room:{$roomId}:player:{$playerId}:new_cards";
+        $cardBaseId = (string) $stolenCard['card_id'];
+
+        if (!Redis::sismember($knownKey, $cardBaseId)) {
+            Redis::sadd($newKey, $cardBaseId);
+        }
     }
 
     public function applyShield(string $roomId, int $playerId): void

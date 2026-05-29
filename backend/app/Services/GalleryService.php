@@ -9,13 +9,15 @@ use App\Models\GameUser;
 use App\Models\Game;
 use App\Support\CardHelper;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GalleryService
 {
     public function getUserGalleryData(User $user): array
     {
         // 1. Cartas
-        $cardsCatalog = config('game.cards.cards', []);
+        $cardsCatalog = config('game.cards.cards', []);+
+        Log::info($cardsCatalog);
         $discoveredCardIds = UserDiscoveredCard::where('user_id', $user->id)
             ->pluck('card_id')
             ->flip();

@@ -108,6 +108,10 @@ class DebugService
         $handKey = "room:{$roomId}:player:{$playerId}:hand";
         $hand    = json_decode(Redis::get($handKey) ?: '[]', true);
 
+        // Preparar las claves de Redis para los descubrimientos
+        $knownKey = "room:{$roomId}:player:{$playerId}:known_cards";
+        $newKey   = "room:{$roomId}:player:{$playerId}:new_cards";
+
         foreach ($cardIds as $cardId) {
             $card = $cardMap->get((int) $cardId);
             if ($card) {
@@ -118,6 +122,11 @@ class DebugService
                 $cardArray['name']    = $cardArray['display_name'] ?? $cardArray['base_name'];
 
                 $hand[] = $cardArray;
+                // Registrar descubrimiento en el Debug Menu
+                $cardBaseId = (string) $cardId;
+                if (!Redis::sismember($knownKey, $cardBaseId)) {
+                    Redis::sadd($newKey, $cardBaseId);
+                }
             }
         }
 
