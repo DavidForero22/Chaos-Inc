@@ -123,6 +123,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		if (!keepRoom) {
 			localStorage.removeItem("active_room_id");
 			localStorage.removeItem("game_token");
+
+			cleanupRoomLocalStorage();
+
 			set({
 				room: null,
 				roomId: null,
@@ -135,6 +138,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		} else {
 			const currentRoom = get().room;
 			const roomId = currentRoom?.room_id ?? get().roomId;
+
+			cleanupRoomLocalStorage(roomId);
+
 			const nextIsFirstLoad = roomId
 				? !localStorage.getItem(getRoleRevealKey(roomId))
 				: true;
@@ -153,7 +159,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
 	// --- ACCIONES DE RED ---
 	fetchRoomData: async () => {
-		const roomId = get().roomId; // usar estado explícito
+		const roomId = get().roomId;
 		if (!roomId) return;
 
 		try {
@@ -247,6 +253,33 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 
 	setWasKicked: (value: boolean) => set({ wasKicked: value }),
 }));
+
+/**
+ * Función de barrido de basura en LocalStorage
+ */
+const cleanupRoomLocalStorage = (roomIdToKeep?: string | null) => {
+	const keysToRemove: string[] = [];
+
+	for (let i = 0; i < localStorage.length; i++) {
+		const key = localStorage.key(i);
+		if (!key) continue;
+
+		const isDeathModal = key.startsWith("death_modal_shown:");
+		const isRoleReveal = key.startsWith("role_reveal_shown:");
+
+		if (isDeathModal || isRoleReveal) {
+			// Si esta manteniendo la sala (keepRoom = true),
+			// NO borrar el role_reveal de ESTA sala para que no le salte la intro otra vez.
+			// (Pero la muerte sí se borra, por si juegan otra partida en la misma sala).
+			if (roomIdToKeep && key === getRoleRevealKey(roomIdToKeep)) {
+				continue;
+			}
+			keysToRemove.push(key);
+		}
+	}
+
+	keysToRemove.forEach((k) => localStorage.removeItem(k));
+};
 
 // Selector helper para obtener el roomId fácilmente
 export const useRoomId = () => useRoomStore((state) => state.roomId);

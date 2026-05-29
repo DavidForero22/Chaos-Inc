@@ -84,7 +84,7 @@ export function GameOverlayManager({
 				<GameOverModal
 					winnerRole={game.winner_role}
 					myRole={effectiveRole}
-					isActingBoss={isActingBoss} 
+					isActingBoss={isActingBoss}
 					onClose={handleCloseGameOver}
 				/>
 			)}
