@@ -33,6 +33,7 @@ class CardEffectService
         if ($hasShield) {
             // El escudo bloquea el ataque y se rompe
             Redis::hset($targetPerksKey, 'has_shield', 0);
+            Redis::hset("room:{$roomId}:player:{$targetId}:stats", 'dodged_or_defended', 1);
         } elseif ($hasDodge) {
             // Generar ID único para este ataque
             $attackToken = uniqid('single_attack_', true);
@@ -138,6 +139,7 @@ class CardEffectService
             'has_shield',
             1
         );
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyBlock(string $roomId, int $targetId): void
@@ -200,6 +202,7 @@ class CardEffectService
             if ($hasShield) {
                 // Escudo absorbe y se rompe
                 Redis::hset($targetPerksKey, 'has_shield', 0);
+                Redis::hset("room:{$roomId}:player:{$targetId}:stats", 'dodged_or_defended', 1);
 
                 $shieldUsers[] = (int) $targetId;
             } elseif ($hasDodge) {
@@ -333,6 +336,7 @@ class CardEffectService
             'vision_bonus',
             1
         );
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyDistance(string $roomId, int $playerId): void
@@ -342,6 +346,7 @@ class CardEffectService
             'has_distance',
             1
         );
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyClean(string $roomId, int $targetId, string $perkKey): void
@@ -351,6 +356,11 @@ class CardEffectService
             $perkKey,
             0
         );
+
+        // Si quitan la pasiva de Suerte, reiniciar racha
+        if ($perkKey === 'has_luck') {
+            Redis::hset("room:{$roomId}:player:{$targetId}:stats", 'luck_streak', 0);
+        }
     }
 
     public function applyStorage(string $roomId, int $playerId): void
@@ -360,6 +370,7 @@ class CardEffectService
             'has_storage',
             1
         );
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyLuck(string $roomId, int $playerId): void
@@ -369,6 +380,7 @@ class CardEffectService
             'has_luck',
             1
         );
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyChaoticDraw(string $roomId, int $playerId): void
@@ -463,6 +475,7 @@ class CardEffectService
     public function applyChaoticPassive(string $roomId, int $playerId): void
     {
         Redis::hset("room:{$roomId}:player:{$playerId}:perks", 'has_potato_launcher', 1);
+        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyChaoticRevive(string $roomId, string $targetId): void

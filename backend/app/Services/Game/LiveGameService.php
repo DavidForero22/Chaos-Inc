@@ -191,14 +191,17 @@ class LiveGameService
 
             // ---- 2. Estadísticas ----
             Redis::hmset("{$baseKey}:stats", [
-                'damage_dealt'    => 0,
-                'damage_received' => 0,
-                'healing_done'    => 0,
-                'cards_played'    => 0,
-                'passives_played' => 0,
-                'eliminations'    => 0,
-                'dodged_attacks'  => 0,
-                'cards_stolen'    => 0,
+                'damage_dealt'          => 0,
+                'damage_received'       => 0,
+                'healing_done'          => 0,
+                'cards_played'          => 0,
+                'passives_played'       => 0,
+                'eliminations'          => 0,
+                'dodged_attacks'        => 0,
+                'cards_stolen'          => 0,
+                'passive_equipped'      => 0,
+                'luck_streak'           => 0,
+                'dodged_or_defended'    => 0,
             ]);
 
             Redis::hmset("{$baseKey}:turn_state", [
@@ -209,12 +212,12 @@ class LiveGameService
             ]);
 
             Redis::hmset("{$baseKey}:perks", [
-                'has_shield'        => 0,
-                'has_storage'       => 0,
-                'has_luck'          => 0,
-                'has_distance'      => 0,
-                'is_blocked'        => 0,
-                'vision_bonus'      => 0,
+                'has_shield'            => 0,
+                'has_storage'           => 0,
+                'has_luck'              => 0,
+                'has_distance'          => 0,
+                'is_blocked'            => 0,
+                'vision_bonus'          => 0,
                 'has_potato_launcher'   => 0,
             ]);
 

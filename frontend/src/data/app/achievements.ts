@@ -45,7 +45,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		title: "Abajo con el Trabajo",
 		technicalDescription: "Gana una partida como Sindicalista.",
 		lore: "Casualmente a nadie le parecia buena idea hacer una huelga japonesa. Se nota la cultura española...",
-		image: "/achievements/ach_4_sketch.png",
+		image: "/achievements/ach_4.png",
 		active: true,
 	},
 	{
@@ -54,7 +54,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		technicalDescription:
 			"Gana siendo el último Sindicalista vivo en una partida de 6 jugadores.",
 		lore: "Tus compañeros renunciaron en la batalla por el convenio, pero tú te quedaste hasta el final como un héroe.",
-		image: "/achievements/ach_5_sketch.png",
+		image: "/achievements/ach_5.png",
 		active: true,
 	},
 	{
@@ -63,7 +63,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		technicalDescription:
 			"Gana una partida habiendo sido ascendido a Jefe Heredado.",
 		lore: "Finalmente podrás enchufar a tus primos en la empresa, la tía Juana ya estaba empezando a insistir demasiado.",
-		image: "/achievements/ach_6_sketch.png",
+		image: "/achievements/ach_6.png",
 		active: true,
 	},
 	{
@@ -72,7 +72,34 @@ export const ACHIEVEMENTS: Achievement[] = [
 		technicalDescription:
 			"Gana una partida sin haber equipado ninguna habilidad pasiva.",
 		lore: "Las pasivas están sobrevaloradas, no necesitas mas que habilidad y mentalidad de tiburon.",
-		image: "/achievements/ach_7_sketch.png",
+		image: "/achievements/ach_7.png",
+		active: true,
+	},
+	{
+		id: "ach_luck",
+		title: "Suerte del Principiante",
+		technicalDescription:
+			"Roba una carta extra con la pasiva 'Suerte' 3 rondas seguidas.",
+		lore: "Los astros se han alineado y en vez de tocarte la lotería, te ha tocado un logro en un juego web. ¡No te pongas triste!",
+		image: "/achievements/ach_8_sketch.png",
+		active: true,
+	},
+	{
+		id: "ach_no_defense",
+		title: "Pecho de Hierro",
+		technicalDescription:
+			"Gana una partida sin haber esquivado o bloqueado ningún ataque.",
+		lore: "Despues de tantos años en el gimnasio, que te lancen un microondas ya ni te afecta.",
+		image: "/achievements/ach_9_sketch.png",
+		active: true,
+	},
+	{
+		id: "ach_one_hp",
+		title: "Invencible",
+		technicalDescription:
+			"Gana una partida quedando a 1 punto de estrés de morir.",
+		lore: "Tienes el ojo del tigre o simplemente mucha suerte.",
+		image: "/achievements/ach_10_sketch.png",
 		active: true,
 	},
 	{
@@ -105,33 +132,6 @@ export const ACHIEVEMENTS: Achievement[] = [
 		title: "Empleado Indefinido",
 		technicalDescription: "Juega 25 partidas.",
 		lore: "Ya te has aprendido de memoria las plantas en las que el baño está averiado.",
-		image: "/achievements/ach_placeholder.png",
-		active: false,
-	},
-	{
-		id: "ach_gitana_luck",
-		title: "Suerte del Principiante",
-		technicalDescription:
-			"Roba una tercera carta con la pasiva 'Buenaventura Gitana' 4 rondas seguidas.",
-		lore: "Los astros se han alineado y en vez de tocarte la lotería, te ha tocado un logro en un juego web. ¡No te pongas triste!",
-		image: "/achievements/ach_placeholder.png",
-		active: false,
-	},
-	{
-		id: "ach_no_defense",
-		title: "Pecho de Hierro",
-		technicalDescription:
-			"Gana una partida sin haber esquivado o bloqueado ningún ataque.",
-		lore: "Despues de tantos años en el gimnasio, que te lancen un microondas ya ni te afecta.",
-		image: "/achievements/ach_placeholder.png",
-		active: false,
-	},
-	{
-		id: "ach_one_hp_clutch",
-		title: "Invencible",
-		technicalDescription:
-			"Gana una partida habiendo quedado con 1 solo punto de vida.",
-		lore: "Tienes el ojo del tigre o simplemente mucha suerte.",
 		image: "/achievements/ach_placeholder.png",
 		active: false,
 	},

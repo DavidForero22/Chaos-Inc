@@ -49,6 +49,7 @@ class TurnService
             $pInfoKey      = "room:{$roomId}:player:{$nextPlayerId}:info";
             $pTurnStateKey = "room:{$roomId}:player:{$nextPlayerId}:turn_state";
             $pPerksKey     = "room:{$roomId}:player:{$nextPlayerId}:perks";
+            $pStatsKey     = "room:{$roomId}:player:{$nextPlayerId}:stats";
 
             $isOnline = Redis::hget($pInfoKey, 'is_online') !== '0';
             $isDead   = Redis::hget($pInfoKey, 'is_dead') === '1';
@@ -67,22 +68,54 @@ class TurnService
                 $hasInertia = CastHelper::toBool(Redis::hget($pPerksKey, 'has_luck') ?? 0);
                 $drewExtra = false;
                 $logMessage = null;
+                $achievementsToNotify = [];
 
                 if ($hasInertia) {
                     // Tirar los dados: 50% de probabilidad
                     if (rand(1, 100) <= 50) {
                         $cardsToDraw = 3;
                         $drewExtra = true;
+                        Redis::hincrby($pStatsKey, 'luck_streak', 1);
+                        $luckStreak = (int) Redis::hget($pStatsKey, 'luck_streak');
+
+                        if ($luckStreak >= 3) {
+                            $userId  = Redis::hget($pInfoKey, 'user_id');
+                            $isGuest = Redis::hget($pInfoKey, 'is_guest') === '1';
+                            if (!$isGuest && $userId) {
+                                $newAchievements = app(AchievementService::class)
+                                    ->evaluateMidGameAchievements((int) $userId, [
+                                        'luck_streak' => $luckStreak,
+                                    ]);
+                                foreach ($newAchievements as $achId) {
+                                    $achievementsToNotify[] = [
+                                        'playerId'      => $nextPlayerId,
+                                        'achievementId' => $achId,
+                                    ];
+                                }
+                            }
+                        }
 
                         $playerName = Redis::hget("room:{$roomId}:player:{$nextPlayerId}:info", 'username') ?: "Jugador {$nextPlayerId}";
                         $logMessage = __('game.lucked_sucess', ['player' => $playerName]);
                         RoomLogger::info($roomId, "TurnService.php::advanceTurn: El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
+                    } else {
+                        // Reiniciar racha si no roba extra
+                        Redis::hset($pStatsKey, 'luck_streak', 0);
                     }
+                } else {
+                    // Si no tiene la pasiva, reiniciar racha
+                    Redis::hset($pStatsKey, 'luck_streak', 0);
                 }
                 $this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);
 
                 if ($drewExtra) {
-                    event(new RoomStateUpdated($roomId, $logMessage, null, null, $nextPlayerId));
+                    event(new RoomStateUpdated(
+                        $roomId,
+                        $logMessage,
+                        null,
+                        !empty($achievementsToNotify) ? $achievementsToNotify : null,
+                        $nextPlayerId
+                    ));
                 }
                 if ($hasWrapped) {
                     Redis::hincrby($roomStateKey, 'round_number', 1);

@@ -81,6 +81,7 @@ class GameReactionService
                 'dodged_attacks',
                 1
             );
+            Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'dodged_or_defended', 1);
         } elseif ($reaction === 'accept') {
             app(CombatService::class)->applyDamageAndCheck(
                 $roomId,
@@ -226,6 +227,7 @@ class GameReactionService
                 'dodged_attacks',
                 1
             );
+            Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'dodged_or_defended', 1);
         } elseif ($reaction === 'accept') {
             $this->combatService->applyDamageAndCheck(
                 $roomId,

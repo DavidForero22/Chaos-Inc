@@ -24,9 +24,9 @@ class AchievementSeeder extends Seeder
             ['id' => 'ach_failed_mass_attack'],
             ['id' => 'ach_play_10'],
             ['id' => 'ach_play_25'],
-            ['id' => 'ach_gitana_luck'],
+            ['id' => 'ach_luck'],
             ['id' => 'ach_no_defense'],
-            ['id' => 'ach_one_hp_clutch'],
+            ['id' => 'ach_one_hp'],
         ];
 
         DB::table('achievements')->insertOrIgnore($achievements);

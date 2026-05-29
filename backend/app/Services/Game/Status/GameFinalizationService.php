@@ -87,6 +87,9 @@ class GameFinalizationService
             }
 
             $role  = $pInfo['role'] ?? 'intern';
+            $maxHp = ($role === 'boss') ? 5 : 4;
+            $currentStress = (int) ($pInfo['stress'] ?? 0);
+            $remainingHp = $maxHp - $currentStress;
             $elims = (int) ($pStats['eliminations'] ?? 0);
             $totalEliminations += $elims;
 
@@ -113,6 +116,9 @@ class GameFinalizationService
                 'dodged_attacks'  => (int) ($pStats['dodged_attacks'] ?? 0),
                 'cards_stolen'    => (int) ($pStats['cards_stolen']   ?? 0),
                 'card_details'    => $cardUsage,
+                'passive_equipped' => (int) ($pStats['passive_equipped'] ?? 0),
+                'dodged_or_defended'     => (int) ($pStats['dodged_or_defended'] ?? 0),
+                'remaining_hp'    => $remainingHp,
             ];
         }
 

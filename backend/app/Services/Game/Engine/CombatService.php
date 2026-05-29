@@ -33,6 +33,8 @@ class CombatService
         if ($newStress >= $maxStress) {
             Redis::hset($targetInfoKey, 'is_dead', 1);
             Redis::hincrby($attackerStatsKey, 'eliminations', 1);
+            Redis::hset($targetStatsKey, 'luck_streak', 0);
+
 
             //  Guardar nombre de quien mató al jugador
             $killerName = Redis::hget($attackerInfoKey, 'username') ?: 'Desconocido';

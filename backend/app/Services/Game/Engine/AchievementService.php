@@ -67,6 +67,21 @@ class AchievementService
                 if ($isActingBoss) {
                     $achievementsToUnlock[] = 'ach_inherited_boss';
                 }
+
+                // 7. Sin Bolsillos (Ganar sin equipar pasivas)
+                if ((int)($player['passive_equipped'] ?? 0) === 0) {
+                    $achievementsToUnlock[] = 'ach_no_passives';
+                }
+
+                // 9. Pecho de Hierro (Ganar sin esquivar ni bloquear con escudo)
+                if ((int)($player['dodged_or_defended'] ?? 0) === 0) {
+                    $achievementsToUnlock[] = 'ach_no_defense';
+                }
+
+                // 10. Invencible (Ganar con 1 HP restante)
+                if ((int)($player['remaining_hp'] ?? 0) === 1) {
+                    $achievementsToUnlock[] = 'ach_one_hp';
+                }
             }
 
             // Desbloquear los logros en SQL (solo los nuevos)
@@ -95,4 +110,33 @@ class AchievementService
 
         return $achievementsUnlocked;
     }
+
+    /**
+     * Evalúa logros que se desbloquean en mitad de la partida.
+     * Devuelve los IDs de los logros recién desbloqueados (para notificar).
+     */
+    public function evaluateMidGameAchievements(int $userId, array $context): array
+    {
+        $user = User::find($userId);
+        if (!$user) return [];
+
+        $unlocked = [];
+
+        // Suerte del Principiante: racha de 3+ robos extra con Suerte
+        if (($context['luck_streak'] ?? 0) >= 3) {
+            $achievementId = 'ach_luck';
+            $alreadyHas = $user->achievements()
+                ->where('achievements.id', $achievementId)
+                ->exists();
+
+            if (!$alreadyHas) {
+                $user->achievements()->attach($achievementId, ['unlocked_at' => now()]);
+                $unlocked[] = $achievementId;
+            }
+        }
+
+
+        return $unlocked;
+    }
 }
+

@@ -171,6 +171,8 @@ class PlayerHandService
         }
 
         $playerPerksKey = "room:{$roomId}:player:{$playerId}:perks";
+        $playerStatsKey = "room:{$roomId}:player:{$playerId}:stats";
+
         $playerInfoKey  = "room:{$roomId}:player:{$playerId}:info";
 
         $playerName = Redis::hget($playerInfoKey, 'username') ?? "Player {$playerId}";
@@ -182,6 +184,10 @@ class PlayerHandService
         foreach ($perksToDiscard as $perkKey) {
             if (array_key_exists($perkKey, $allowedPerks)) {
                 Redis::hset($playerPerksKey, $perkKey, 0);
+                // Si descarta Suerte, reiniciar racha
+                if ($perkKey === 'has_luck') {
+                    Redis::hset($playerStatsKey, 'luck_streak', 0);
+                }
 
                 $discardedNames[] = $allowedPerks[$perkKey];
             }
