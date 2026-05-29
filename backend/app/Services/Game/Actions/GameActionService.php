@@ -24,7 +24,7 @@ class GameActionService
         $roomStateKey = "room:{$roomId}:state";
 
         if (!Redis::exists($roomStateKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
         $currentTurn = Redis::hget($roomStateKey, 'current_turn_player_id');

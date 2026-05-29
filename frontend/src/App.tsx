@@ -27,6 +27,9 @@ import UnauthorizedPage from "./pages/errors/UnauthorizedPage.tsx";
 import PageNotFoundPage from "./pages/errors/PageNotFoundPage.tsx";
 import { Toast } from "./components/ui/Toast/Toast.tsx";
 import UserNotFoundPage from "./pages/errors/UserNotFoundPage.tsx";
+import RoomFullPage from "./pages/errors/RoomFullPage.tsx";
+import GameAlreadyStartedPage from "./pages/errors/GameAlreadyStartedPage.tsx";
+import AlreadyInAnotherRoomPage from "./pages/errors/AlreadyInAnotherRoomPage.tsx";
 
 function App() {
 	useSessionGuard();
@@ -58,6 +61,15 @@ function App() {
 				<Route path="/social-error" element={<SocialLinkingErrorPage />} />
 				<Route path="/unauthorized" element={<UnauthorizedPage />} />
 				<Route path="/user-not-found" element={<UserNotFoundPage />} />
+				<Route path="/room-full" element={<RoomFullPage />} />
+				<Route
+					path="/game-already-started"
+					element={<GameAlreadyStartedPage />}
+				/>
+				<Route
+					path="/already-in-another-room"
+					element={<AlreadyInAnotherRoomPage />}
+				/>
 
 				{/* ── Rutas Trampapara URLs incorrectas ── */}
 				<Route

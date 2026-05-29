@@ -27,12 +27,15 @@ class LiveRoomService
 
     public function joinRoom(string $roomId, string $playerId, string $playerName, ?string $password = null): array
     {
-
         $currentRoom = Redis::get("player:{$playerId}:room");
 
         // Si el jugador ya está en otra sala distinta a la que intenta entrar
         if ($currentRoom && $currentRoom !== $roomId) {
-            throw new \Exception("Ya estás en otra partida en curso (Sala: {$currentRoom}).", 400);
+            throw new RoomException(
+                RoomException::ALREADY_IN_ANOTHER_ROOM,
+                "Ya estás en otra partida en curso (Sala: {$currentRoom}).",
+                400
+            );
         }
 
         $roomInfoKey  = "room:{$roomId}:info";
@@ -43,7 +46,11 @@ class LiveRoomService
             if ($currentRoom === $roomId) {
                 Redis::del("player:{$playerId}:room");
             }
-            throw new \Exception("La sala no existe o la partida ha finalizado.", 404);
+            throw new RoomException(
+                RoomException::ROOM_NOT_FOUND,
+                "La sala no existe o la partida ha finalizado.",
+                404
+            );
         }
 
         $roomInfo  = Redis::hgetall($roomInfoKey);
@@ -96,11 +103,11 @@ class LiveRoomService
         Redis::del("player:{$playerId}:room");
 
         if (!Redis::exists($roomInfoKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room with ID {$roomId} does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala con ID {$roomId} no existe.", 404);
         }
 
         if (!Redis::sismember("room:{$roomId}:players", $playerId)) {
-            throw new RoomException(RoomException::NOT_IN_ROOM, "Player ID {$playerId} is not in this room.", 409);
+            throw new RoomException(RoomException::NOT_IN_ROOM, "El jugador {$playerId} no está en esta sala.", 409);
         }
 
         // Obtener nombre para el log
@@ -127,22 +134,22 @@ class LiveRoomService
         $roomInfoKey = "room:{$roomId}:info";
 
         if (!Redis::exists($roomInfoKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
         $ownerId = (string) Redis::hget($roomInfoKey, 'owner_id');
         $adminId = (string) $adminId;
 
         if ($ownerId !== $adminId) {
-            throw new RoomException(RoomException::NOT_LEADER, "Only the room owner can kick players.", 403);
+            throw new RoomException(RoomException::NOT_LEADER, "Solo el lider de la sala puede expulsar a jugadores.", 403);
         }
 
         if ($adminId === $playerToKickId) {
-            throw new RoomException(RoomException::CANNOT_KICK_SELF, "You cannot kick yourself.", 422);
+            throw new RoomException(RoomException::CANNOT_KICK_SELF, "No te puedes expulsar a ti mismo.", 422);
         }
 
         if (!Redis::sismember("room:{$roomId}:players", (string) $playerToKickId)) {
-            throw new RoomException(RoomException::NOT_IN_ROOM, "The player is not in the room.", 404);
+            throw new RoomException(RoomException::NOT_IN_ROOM, "El jugador a expulsar no está en la sala.", 404);
         }
 
         Redis::srem("room:{$roomId}:players", $playerToKickId);
@@ -150,7 +157,10 @@ class LiveRoomService
         $this->tokenService->deletePlayerToken($roomId, $playerToKickId);
 
         event(new RoomListUpdated($roomId));
-        event(new RoomStateUpdated($roomId));
+        event(new RoomStateUpdated(
+            roomId: $roomId,
+            kickedPlayerId: $playerToKickId
+        ));
     }
 
     // =========================================================================
@@ -172,7 +182,7 @@ class LiveRoomService
 
         $currentPlayersCount = Redis::scard("room:{$roomId}:players");
         if ($currentPlayersCount >= $room['max_players']) {
-            throw new RoomException(RoomException::ROOM_FULL, "The room is full.", 409);
+            throw new RoomException(RoomException::ROOM_FULL, "La sala está llena.", 409);
         }
     }
 
@@ -183,7 +193,7 @@ class LiveRoomService
             if ($activeRoomId !== $currentRoomId && Redis::sismember("room:{$activeRoomId}:players", $playerId)) {
                 throw new RoomException(
                     RoomException::ALREADY_IN_ANOTHER_ROOM,
-                    "You are already in another game. Finish or quit the current one first.",
+                    "Ya estás en otra sala/partida.",
                     403
                 );
             }

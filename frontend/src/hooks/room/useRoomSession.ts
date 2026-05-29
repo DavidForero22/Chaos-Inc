@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useRoomStore } from "../../store/room/useRoomStore";
 import { useAuthStore } from "../../store/auth/useAuthStore";
-import { useAuth } from "../auth/useAuth";
 import { logWithTime } from "../../utils/logger";
+import { useToastStore } from "../../store/ui/useToastStore";
 
 export function useRoomSession(
 	roomId: string | undefined,
@@ -13,15 +13,17 @@ export function useRoomSession(
 ) {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const { id: myPlayerId } = useAuth();
+	const { showToast } = useToastStore();
 
 	const {
 		room,
 		isJoining,
 		needsPassword,
 		passwordError,
-		setRoomId, 
+		wasKicked,
+		setRoomId,
 		setIsJoining,
+		setWasKicked,
 		attemptJoin,
 		leaveRoom,
 		fetchRoomData,
@@ -29,14 +31,52 @@ export function useRoomSession(
 	} = useRoomStore();
 
 	const initAttempted = useRef(false);
+	const prevRoomIdRef = useRef<string | undefined>(roomId);
 
 	// Inicializar y limpiar
 	useEffect(() => {
 		setRoomId(roomId || null);
+		prevRoomIdRef.current = roomId;
 		return () => {
 			initAttempted.current = false;
 		};
 	}, [roomId, setRoomId, resetRoomStore]);
+
+	// --- FUNCIÓN CENTRALIZADA DE MANEJO DE ERRORES ---
+	const handleJoinResponse = async (result: any) => {
+		if (typeof result !== "object") {
+			if (result === "ERROR") setIsJoining(false);
+			return result;
+		}
+
+		const { type, message: errorMsg, status } = result;
+
+		if (type === "ROOM_NOT_FOUND") {
+			navigate("/room-not-found", { replace: true });
+		} else if (type === "ROOM_FULL") {
+			navigate("/room-full", { replace: true });
+		} else if (type === "GAME_ALREADY_STARTED") {
+			navigate("/game-already-started", { replace: true });
+		} else if (type === "ALREADY_IN_ANOTHER_ROOM") {
+			const match = errorMsg?.match(/Sala:\s*(\w+)/);
+			const otherRoomId = match ? match[1] : "desconocida";
+			navigate("/already-in-another-room", {
+				replace: true,
+				state: { roomId: otherRoomId },
+			});
+		} else if (type === "ALREADY_JOINED") {
+			await fetchRoomData();
+			setIsJoining(false);
+		} else if (status === 401 || status === 403) {
+			useAuthStore.getState().logout();
+			navigate("/", { replace: true });
+		} else {
+			setIsJoining(false);
+			console.error("Error no manejado al unirse:", result);
+		}
+
+		return result;
+	};
 
 	// Intentar entrar automáticamente si tiene sesión iniciada
 	useEffect(() => {
@@ -46,7 +86,6 @@ export function useRoomSession(
 			initAttempted.current = true;
 			const store = useRoomStore.getState();
 
-			// Si ya hay token, pedir los datos directamente.
 			if (store.hasToken) {
 				try {
 					await fetchRoomData();
@@ -61,34 +100,9 @@ export function useRoomSession(
 				}
 			}
 
-			// Si no hay token o falló la recuperación, hacer el Join tradicional
 			if (myPlayerName) {
-				try {
-					await attemptJoin("", myPlayerName);
-				} catch (err: any) {
-					const type = err.response?.data?.type;
-					const status = err.response?.status;
-					const errorMsg =
-						err.response?.data?.error || err.response?.data?.message;
-
-					if (type === "ROOM_NOT_FOUND" || status === 404) {
-						navigate("/room-not-found");
-					} else if (type === "ROOM_FULL" || type === "GAME_ALREADY_STARTED") {
-						alert(errorMsg || "Error al entrar a la sala.");
-						navigate("/");
-					} else if (type === "ALREADY_JOINED") {
-						await fetchRoomData();
-						setIsJoining(false);
-					} else if (status === 401 || status === 403) {
-						useAuthStore.getState().logout();
-						alert(
-							"Tu sesión ha expirado. Por favor, vuelve a introducir un nombre.",
-						);
-					} else {
-						setIsJoining(false);
-						console.error("Error no manejado al unirse:", err);
-					}
-				}
+				const result = await attemptJoin("", myPlayerName);
+				await handleJoinResponse(result);
 			} else {
 				setIsJoining(false);
 			}
@@ -104,19 +118,20 @@ export function useRoomSession(
 		setIsJoining,
 	]);
 
-	// Vigilante: si ya no está en la sala, salir sin llamar a /leave
+	// Vigilante de expulsión
 	useEffect(() => {
-		if (!room || !myPlayerId || isJoining || needsPassword) return;
-		const stillInRoom =
-			room.players?.some((player) => player.id === String(myPlayerId)) ?? true;
+		if (!wasKicked) return;
 
-		if (!stillInRoom) {
-			alert("Has sido expulsado de la sala.");
-			localStorage.removeItem("game_token");
-			resetRoomStore();
-			navigate("/");
-		}
-	}, [room, myPlayerId, isJoining, needsPassword, navigate, resetRoomStore]);
+		showToast(
+			"El líder de la sala te ha expulsado. Serás redirigido al menú principal.",
+			"warn",
+		);
+
+		localStorage.removeItem("game_token");
+		resetRoomStore();
+		setWasKicked(false); 
+		navigate("/rooms", { replace: true });
+	}, [wasKicked, resetRoomStore, showToast, setWasKicked, navigate]);
 
 	// Vigilante de redirección a partida
 	useEffect(() => {
@@ -141,7 +156,10 @@ export function useRoomSession(
 		isJoining,
 		needsPassword,
 		passwordError,
-		attemptJoin: (pwd: string = "") => attemptJoin(pwd, myPlayerName || ""),
+		attemptJoin: async (pwd: string = "") => {
+			const result = await attemptJoin(pwd, myPlayerName || "");
+			return handleJoinResponse(result);
+		},
 		handleLeaveRoom: async () => {
 			await leaveRoom();
 			navigate("/rooms");

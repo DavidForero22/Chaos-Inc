@@ -148,6 +148,7 @@ export function useLiveGame(roomId: string | undefined) {
 
 				await handleSync();
 			} catch (error: any) {
+				console.log(error.response);
 				const status = error.response?.status;
 				const errorType = error.response?.data?.type;
 
@@ -155,6 +156,8 @@ export function useLiveGame(roomId: string | undefined) {
 
 				if (status === 404 || errorType === "ROOM_NOT_FOUND") {
 					navigate("/room-not-found");
+				} else if (errorType === "GAME_ALREADY_STARTED") {
+					navigate("/game-already-started");
 				} else {
 					navigate("/");
 				}
@@ -165,7 +168,6 @@ export function useLiveGame(roomId: string | undefined) {
 
 		reconnect();
 	}, [roomId, myId, handleSync, navigate, setIsConnecting]);
-
 	// -- 4. AVISAR AL SERVIDOR AL CERRAR/NAVEGAR FUERA DE LA PARTIDA --
 	useLeaveOnUnload(roomId, () => {
 		return !isKickedRef.current && !useGameStore.getState().gameOver;

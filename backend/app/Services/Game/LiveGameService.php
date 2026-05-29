@@ -85,19 +85,19 @@ class LiveGameService
         $roomStateKey = "room:{$roomId}:state";
 
         if (!Redis::exists($roomStateKey)) {
-            throw new RoomException(RoomException::ROOM_NOT_FOUND, "The room does not exist.", 404);
+            throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
         $status = Redis::hget($roomStateKey, 'status');
 
         if (($status ?? 'waiting') === 'waiting') {
-            throw new GameException(GameException::GAME_NOT_STARTED, "The game has not started yet.", 400);
+            throw new GameException(GameException::GAME_NOT_STARTED, "La partida no ha empezado todavia.", 400);
         }
 
         $playerInfoKey = "room:{$roomId}:player:{$playerId}:info";
 
         if (!Redis::exists($playerInfoKey)) {
-            throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Player data not found.", 404);
+            throw new RoomException(RoomException::PLAYER_NOT_FOUND, "Datos del jugador no encontrados.", 404);
         }
 
         $playerName = Redis::hget($playerInfoKey, 'username') ?? "ID_{$playerId}";

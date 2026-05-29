@@ -18,29 +18,33 @@ class RoomStateUpdated implements ShouldBroadcastNow
     public ?array $cardAction;
     public ?array $achievementsUnlocked;
     public ?string $playerDrewExtraCard;
+    public ?string $kickedPlayerId;
 
     public function __construct(
         string $roomId,
         ?string $logMessage = null,
         ?array $cardAction = null,
         ?array $achievementsUnlocked = null,
-        ?string $playerDrewExtraCard = null
+        ?string $playerDrewExtraCard = null,
+        ?string $kickedPlayerId = null
     ) {
         $this->roomId = $roomId;
         $this->logMessage = $logMessage;
         $this->cardAction = $cardAction;
         $this->achievementsUnlocked = $achievementsUnlocked;
         $this->playerDrewExtraCard = $playerDrewExtraCard;
+        $this->kickedPlayerId = $kickedPlayerId;
     }
 
     public function broadcastWith(): array
     {
         return [
-            'roomId'      => $this->roomId,
-            'log_message' => $this->logMessage, // Para avisos del sistema (conexiones, etc)
-            'card_action' => $this->cardAction, // [ 'card_id' => 1, 'source' => 'Pepe', 'target' => 'Juan' ]
+            'roomId'                    => $this->roomId,
+            'log_message'               => $this->logMessage,
+            'card_action'               => $this->cardAction,
             'achievement_notifications' => $this->achievementsUnlocked,
             'player_drew_extra_card'    => $this->playerDrewExtraCard,
+            'kicked_player_id'          => $this->kickedPlayerId,
         ];
     }
 

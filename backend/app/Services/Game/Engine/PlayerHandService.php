@@ -63,7 +63,7 @@ class PlayerHandService
         if (!Redis::exists($roomStateKey)) {
             throw new RoomException(
                 RoomException::ROOM_NOT_FOUND,
-                "The room does not exist.",
+                "La sala no existe.",
                 404
             );
         }
@@ -144,7 +144,7 @@ class PlayerHandService
         if (!Redis::exists($roomStateKey)) {
             throw new RoomException(
                 RoomException::ROOM_NOT_FOUND,
-                "The room does not exist.",
+                "La sala no existe.",
                 404
             );
         }

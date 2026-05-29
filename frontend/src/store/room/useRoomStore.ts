@@ -8,6 +8,12 @@ import { useGameStore } from "../game/useGameStore";
 import { useGameActions } from "../game/useGameActions";
 import { useGameUIStore } from "../game/useGameUIStore";
 
+export type AttemptJoinResult =
+	| "JOINED"
+	| "PASSWORD_REQUIRED"
+	| "ERROR"
+	| { type: string; message: string; status?: number };
+
 const getRoleRevealKey = (roomId: string) => `role_reveal_shown:${roomId}`;
 
 const initialRoomId = localStorage.getItem("active_room_id");
@@ -24,6 +30,7 @@ interface RoomState {
 	needsPassword: boolean;
 	passwordError: string;
 	hasToken: boolean;
+	wasKicked: boolean;
 
 	// --- ACCIONES LOCALES ---
 	setRoom: (room: RoomData | null) => void;
@@ -31,13 +38,14 @@ interface RoomState {
 	setIsJoining: (val: boolean) => void;
 	setIsFirstLoad: (isFirstLoad: boolean) => void;
 	resetRoomStore: (keepRoom?: boolean) => void;
+	setWasKicked: (value: boolean) => void;
 
 	// --- ACCIONES DE RED ---
 	fetchRoomData: () => Promise<void>;
 	attemptJoin: (
 		password?: string,
 		myPlayerName?: string,
-	) => Promise<string | "JOINED" | "PASSWORD_REQUIRED">;
+	) => Promise<AttemptJoinResult>;
 	leaveRoom: () => Promise<void>;
 	startGame: () => Promise<void>;
 	kickPlayer: (playerIdToKick: string) => Promise<void>;
@@ -52,6 +60,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	needsPassword: false,
 	passwordError: "",
 	hasToken: !!localStorage.getItem("game_token"),
+	wasKicked: false,
 
 	// --- ACCIONES LOCALES ---
 	setRoom: (room) => {
@@ -165,7 +174,7 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 	},
 
 	attemptJoin: async (password = "", myPlayerName) => {
-		const roomId = get().roomId; // usar estado explícito
+		const roomId = get().roomId;
 		if (!roomId || !myPlayerName) return "ERROR";
 
 		set({ passwordError: "" });
@@ -186,7 +195,10 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 			set({ needsPassword: false, isJoining: false });
 			return "JOINED";
 		} catch (error: any) {
+			console.log(error.response);
 			const type = error.response?.data?.type;
+			const errorMsg = error.response?.data?.error || ""; // Obtener el mensaje también
+
 			if (type === "PASSWORD_REQUIRED" || type === "INCORRECT_PASSWORD") {
 				set({
 					needsPassword: true,
@@ -196,7 +208,13 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 				});
 				return "PASSWORD_REQUIRED";
 			}
-			throw error;
+
+			// En vez de hacer throw, devuelve un objeto o un string con el tipo de error
+			return {
+				type: type || "ERROR",
+				message: errorMsg,
+				status: error.response?.status,
+			};
 		}
 	},
 
@@ -226,6 +244,8 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 			player_to_kick_id: playerIdToKick,
 		});
 	},
+
+	setWasKicked: (value: boolean) => set({ wasKicked: value }),
 }));
 
 // Selector helper para obtener el roomId fácilmente

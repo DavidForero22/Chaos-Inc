@@ -45,23 +45,36 @@ export default function RoomList({
 						const isRoomFull = isFull(room);
 						const isSelected = selectedRoom === room.room_id;
 
+						// Clase condicional para oscurecer y cambiar cursor
+						const opacityStyle = isRoomFull
+							? { opacity: 0.5, cursor: "not-allowed" }
+							: {};
+
 						return (
 							<div
 								key={room.room_id}
-								onClick={() => onSelectRoom(room.room_id)}
+								// Bloquear onClick si está llena
+								onClick={() => {
+									if (!isRoomFull) onSelectRoom(room.room_id);
+								}}
 								onKeyDown={(e) => {
 									if (e.key === "Enter" || e.key === " ") {
 										e.preventDefault();
-										onSelectRoom(room.room_id);
+										// Bloquear selección por teclado si está llena
+										if (!isRoomFull) onSelectRoom(room.room_id);
 									}
 								}}
 								role="button"
-								tabIndex={0}
-								aria-label={`Sala ${room.name}, ${room.is_private === "1" ? "privada" : "pública"}, ${room.status === "waiting" ? "esperando jugadores" : "en partida"}, ${playerCount(room)} de ${room.max_players} jugadores`}
+								tabIndex={isRoomFull ? -1 : 0}
+								aria-label={`Sala ${room.name}, ${room.is_private === "1" ? "privada" : "pública"}, ${room.status === "waiting" ? "esperando jugadores" : "en partida"}, ${playerCount(room)} de ${room.max_players} jugadores${isRoomFull ? " (Llena)" : ""}`}
 								aria-selected={isSelected}
+								aria-disabled={isRoomFull}
+								style={opacityStyle}
 								className={`${styles.roomRow} ${
 									isSelected ? styles.roomRowSelected : ""
-								} ${isDebug ? "border-l-4 border-[#cbbe34] bg-[#cbbe34]/10" : ""}`}
+								} ${isDebug ? "border-l-4 border-[#cbbe34] bg-[#cbbe34]/10" : ""} ${
+									isRoomFull ? "pointer-events-none" : ""
+								}`}
 							>
 								{/* Columna izquierda: info principal */}
 								<div className={styles.roomInfo}>

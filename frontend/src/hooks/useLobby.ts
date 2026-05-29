@@ -69,14 +69,35 @@ export function useLobby() {
 		if (showLocalLoader) setIsLoadingRooms(true);
 		try {
 			const response = await api.get("/rooms", { hideLoader: true } as any);
-			const rooms: RoomData[] = response.data;
-			setRooms(rooms);
+			const newRooms: RoomData[] = response.data;
+			setRooms(newRooms);
+
+			// --- Validar si la sala seleccionada sigue disponible ---
+			setSelectedRoom((currentSelectedId) => {
+				if (!currentSelectedId) return null; // Si no hay nada seleccionado, no hacer nada
+
+				const selectedRoomData = newRooms.find(
+					(r) => r.room_id === currentSelectedId,
+				);
+
+				// Si la sala ya no existe o se ha llenado, quitar la selección
+				if (
+					!selectedRoomData ||
+					(selectedRoomData.players?.length || 0) >=
+						selectedRoomData.max_players
+				) {
+					return null;
+				}
+
+				return currentSelectedId; // Si existe y tiene hueco, mantener
+			});
+			// -------------------------------------------------------------
 
 			const currentRoomId = useRoomStore.getState().roomId;
 			const myId = useAuthStore.getState().id;
 
 			if (myId) {
-				const myRoom = rooms.find((room) =>
+				const myRoom = newRooms.find((room) =>
 					room.players?.some((player) => String(player.id) === String(myId)),
 				);
 
@@ -93,7 +114,7 @@ export function useLobby() {
 		} finally {
 			if (showLocalLoader) setIsLoadingRooms(false);
 		}
-	}, []);
+	}, []); 
 
 	useEffect(() => {
 		fetchRooms(true);

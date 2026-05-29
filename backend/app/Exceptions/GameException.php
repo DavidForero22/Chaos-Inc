@@ -6,7 +6,6 @@ use App\Support\RoomLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Log;
 
 class GameException extends Exception
 {

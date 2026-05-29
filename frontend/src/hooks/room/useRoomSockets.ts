@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
 import { useRoomStore } from "../../store/room/useRoomStore.ts";
+import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;
@@ -21,7 +22,19 @@ export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 			.leaving(() => {
 				fetchRoomData();
 			})
-			.listen(".RoomStateUpdated", () => fetchRoomData())
+			.listen(".RoomStateUpdated", (event: any) => {
+				const myPlayerId = useAuthStore.getState().id;
+
+				// Comprobar si el evento trae un expulsado y si eres tu
+				if (
+					event.kicked_player_id &&
+					String(event.kicked_player_id) === String(myPlayerId)
+				) {
+					useRoomStore.getState().setWasKicked(true);
+				} else {
+					fetchRoomData();
+				}
+			})
 			.listen(".GameStarted", () => {
 				navigate(`/game/${roomId}`);
 			});
