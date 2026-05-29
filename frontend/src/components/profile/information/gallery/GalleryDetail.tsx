@@ -1,7 +1,11 @@
 // src/components/profile/gallery/GalleryDetail.tsx
 
-
-import type { EnrichedCard, EnrichedEnding, EnrichedRole } from "../../../../types/gallery";
+import type {
+	EnrichedCard,
+	EnrichedEnding,
+	EnrichedRole,
+} from "../../../../types/gallery";
+import { CardStamps } from "./CardStamps";
 import styles from "./GalleryDetail.module.css";
 
 interface GalleryDetailProps {
@@ -54,7 +58,7 @@ export default function GalleryDetail({
 	if (isCard) {
 		isUnlocked = selectedItem.is_discovered;
 		name = selectedItem.display_name;
-		imageUrl =  `/cards/${selectedItem.image_path}`;
+		imageUrl = `/cards/${selectedItem.image_path}`;
 		unlockHint = selectedItem.unlockHint;
 		description = selectedItem.description;
 		lore = selectedItem.lore;
@@ -73,6 +77,7 @@ export default function GalleryDetail({
 		extraLoreText = selectedItem.description; // Extraer la descripción del final
 	}
 
+	console.log(selectedItem);
 	return (
 		<div className={styles.detailContainer}>
 			{isMobile && (
@@ -106,6 +111,7 @@ export default function GalleryDetail({
 					<>
 						{isCard && (
 							<div className={styles.cardInfo}>
+								<CardStamps card={selectedItem} />
 								<p className={styles.description}>{description}</p>
 								<div className={styles.separator}></div>
 								<p className={styles.lore}>{lore}</p>
@@ -118,20 +124,18 @@ export default function GalleryDetail({
 						)}
 						{isEnrichedRole(selectedItem) && (
 							<div className={styles.infoBlock}>
-								<p className={styles.infoBlockTitle}>
-									Rol descubierto.
-								</p>
+								<p className={styles.infoBlockTitle}>Rol descubierto.</p>
 								<div className={styles.separator}></div>
 								<p className={styles.extraLoreText}>{extraLoreText}</p>
 								<div className={styles.separator}></div>
-								<p className={styles.acknowledgments}>Agradecimientos a mi amigo Danitron</p>
+								<p className={styles.acknowledgments}>
+									Agradecimientos a mi amigo Danitron
+								</p>
 							</div>
 						)}
 						{isEnrichedEnding(selectedItem) && (
 							<div className={styles.infoBlock}>
-								<p className={styles.infoBlockTitle}>
-									Final descubierto.
-								</p>
+								<p className={styles.infoBlockTitle}>Final descubierto.</p>
 								<div className={styles.separator}></div>
 								<p className={styles.extraLoreText}>{extraLoreText}</p>
 							</div>

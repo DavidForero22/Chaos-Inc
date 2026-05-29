@@ -8,10 +8,11 @@ export interface GalleryCard {
 	description: string | null;
 	lore: string | null;
 	image_path: string | null;
-	type: string | null;
+	type: "attack" | "heal" | "perk" | "default" | null;
+	target: "self" | "opponent" | "opponents" | "all" | "none" | null;
 	is_discovered: boolean;
 	times_played: number;
-	category: string;
+	category: "normal" | "chaotic";
 }
 
 export interface GalleryResponse {

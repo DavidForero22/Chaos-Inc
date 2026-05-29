@@ -1,0 +1,68 @@
+/* src/components/gallery/CardStamps.module.css */
+
+.stampsContainer {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 12px;
+	align-items: center;
+    justify-content: center;
+}
+
+/* Base del Sello Burocrático */
+.stamp {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.75rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	padding: 2px 6px;
+	border: 2px solid;
+	border-radius: 4px;
+	background-color: rgba(255, 255, 255, 0.6);
+	user-select: none;
+}
+
+/* --- COLORES POR TIPO --- */
+
+.stampAttack {
+	border-color: #d32f2f;
+	color: #d32f2f;
+	background-color: rgba(211, 47, 47, 0.05);
+}
+
+.stampHeal {
+	border-color: #2e7d32;
+	color: #2e7d32;
+	background-color: rgba(46, 125, 50, 0.05);
+}
+
+.stampPerk {
+	border-color: #b45309; /* Un ámbar más oscuro para leerse bien */
+	color: #b45309;
+	background-color: rgba(249, 168, 37, 0.05);
+}
+
+.stampDefault {
+	border-color: #455a64;
+	color: #455a64;
+	background-color: rgba(69, 90, 100, 0.05);
+}
+
+/* --- COLOR DE OBJETIVO --- */
+/* Gris técnico, como una nota adjunta */
+.stampTarget {
+	border-color: #4b5563;
+	color: #4b5563;
+	border-style: dotted; /* Diferenciamos el objetivo con un borde punteado */
+	background-color: transparent;
+}
+
+/* --- COLOR CAÓTICO --- */
+.stampChaotic {
+	border-color: #c026d3;
+	color: #c026d3;
+	background-color: rgba(192, 38, 211, 0.05);
+	box-shadow: 2px 2px 0px rgba(192, 38, 211, 0.2);
+	margin-right: 4px;
+}

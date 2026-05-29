@@ -125,7 +125,7 @@
 }
 
 .separator {
-	height: 1px;
+	height: 1.5px;
 	background: linear-gradient(90deg, transparent, #d1c5b4, transparent);
 	width: 80%;
 	margin: 0 auto;
