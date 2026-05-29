@@ -97,7 +97,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 		id: "ach_one_hp",
 		title: "Invencible",
 		technicalDescription:
-			"Gana una partida quedando a 1 punto de estrés de morir.",
+			"Gana una partida a 1 punto de estrés de morir.",
 		lore: "Tienes el ojo del tigre o simplemente mucha suerte.",
 		image: "/achievements/ach_10_sketch.png",
 		active: true,

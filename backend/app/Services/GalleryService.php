@@ -17,7 +17,6 @@ class GalleryService
     {
         // 1. Cartas
         $cardsCatalog = config('game.cards.cards', []);+
-        Log::info($cardsCatalog);
         $discoveredCardIds = UserDiscoveredCard::where('user_id', $user->id)
             ->pluck('card_id')
             ->flip();

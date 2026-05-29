@@ -94,6 +94,7 @@ class GameFinalizationService
             $totalEliminations += $elims;
 
             $isActingBoss = (isset($pInfo['acting_boss']) && $pInfo['acting_boss'] == '1');
+            $effectiveRole = $isActingBoss ? 'boss' : $role;
             $isGuest = CastHelper::toBool($pInfo['is_guest'] ?? 1);
             $displayName = $pInfo['username'] ?? "Player_{$playerId}";
             $userId = $pInfo['user_id'] ?? $playerId;
@@ -103,7 +104,7 @@ class GameFinalizationService
                 'user_id'         => $userId,
                 'is_guest'        => $isGuest,
                 'display_name'    => $displayName,
-                'has_won'         => in_array($role, $winningRoles),
+                'has_won'      => in_array($effectiveRole, $winningRoles),
                 'role'            => $role,
                 'is_dead'         => $isDead,
                 'acting_boss'     => $isActingBoss,
@@ -380,12 +381,20 @@ class GameFinalizationService
 
         foreach (Redis::smembers("room:{$roomId}:players") as $playerId) {
             $info = Redis::hgetall("room:{$roomId}:player:{$playerId}:info");
-            $isDead = CastHelper::toBool($info['is_dead'] ?? 0);
-            $role = $info['role'] ?? 'none';
 
-            if (!$isDead && $role !== 'none') {
-                $rolesAlive[$role] = true;
+            $isDead   = CastHelper::toBool($info['is_dead'] ?? 0);
+            $isOnline = ($info['is_online'] ?? '1') !== '0';
+            $role     = $info['role'] ?? 'none';
+            $actingBoss = ($info['acting_boss'] ?? '0') === '1';
+
+            // Ignorar jugadores muertos u offline
+            if ($isDead || !$isOnline || $role === 'none') {
+                continue;
             }
+
+            // Si es acting_boss, cuenta como boss
+            $effectiveRole = $actingBoss ? 'boss' : $role;
+            $rolesAlive[$effectiveRole] = true;
         }
 
         $winnerRole = null;

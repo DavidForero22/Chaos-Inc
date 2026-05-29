@@ -13,17 +13,81 @@
 	letter-spacing: 1px;
 }
 
-/* El álbum de pegatinas */
+/* El álbum de pegatinas base (Sin estilo / 0%) */
 .stickersGrid {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 1.5rem;
 	padding: 1.5rem;
 	background-color: rgba(0, 0, 0, 0.02);
-	border: 1px dashed #2b2b2b;
-	border-radius: 2px;
+	/* Borde base punteado y fino para cuando no hay nivel */
+	border: 2px dashed #2b2b2b;
+	border-radius: 8px; /* Un poco más curvo ayuda al efecto 3D después */
 	min-height: 100px;
 	justify-content: center;
+	transition: all 0.4s ease-in-out;
+}
+
+/* 🥉 BRONCE: Marco cálido, mate y con relieve básico */
+.gridLevelBronze {
+	border: 4px solid #b87333; /* Borde sólido y más grueso */
+	background: linear-gradient(
+		135deg,
+		rgba(184, 115, 51, 0.1),
+		rgba(138, 51, 36, 0.05)
+	);
+	box-shadow:
+		0 4px 8px rgba(0, 0, 0, 0.2),
+		/* Sombra exterior para profundidad */ inset 0 0 15px
+			rgba(184, 115, 51, 0.2),
+		/* Brillo interior del metal */ inset 0 3px 6px rgba(0, 0, 0, 0.4); /* Sombra interior oscura (bisel del marco) */
+}
+
+/* 🥈 PLATA: Marco más grueso, brillo frío y elegante */
+.gridLevelSilver {
+	border: 5px solid #c0c0c0;
+	background: linear-gradient(
+		135deg,
+		rgba(192, 192, 192, 0.15),
+		rgba(112, 128, 144, 0.05)
+	);
+	box-shadow:
+		0 6px 12px rgba(0, 0, 0, 0.3),
+		/* Mayor profundidad */ 0 0 5px rgba(192, 192, 192, 0.3),
+		/* Ligero resplandor exterior */ inset 0 0 20px rgba(192, 192, 192, 0.25),
+		inset 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* 🥇 ORO: Marco imponente, dorado vibrante que casi parece iluminado */
+.gridLevelGold {
+	border: 6px solid #dbba00;
+	background: linear-gradient(
+		135deg,
+		rgba(255, 215, 0, 0.15),
+		rgba(218, 165, 32, 0.05)
+	);
+	box-shadow:
+		0 8px 16px rgba(0, 0, 0, 0.4),
+		0 0 10px rgba(255, 215, 0, 0.4),
+		/* Resplandor exterior dorado visible */ inset 0 0 25px
+			rgba(255, 215, 0, 0.3),
+		inset 0 5px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* 💎 PLATINO: Marco máximo, destello premium con tonos hielo/diamante */
+.gridLevelPlatinum {
+	border: 7px solid #e5e4e2;
+	background: linear-gradient(
+		135deg,
+		rgba(229, 228, 226, 0.2),
+		rgba(135, 206, 235, 0.1)
+	);
+	box-shadow:
+		0 12px 24px rgba(0, 0, 0, 0.5),
+		/* Sombra exterior muy dramática */ 0 0 15px rgba(229, 228, 226, 0.6),
+		/* Resplandor exterior blanco/platino */ 0 0 5px rgba(135, 206, 250, 0.5),
+		/* Toque sutil azulado exterior */ inset 0 0 35px rgba(229, 228, 226, 0.4),
+		inset 0 6px 12px rgba(0, 0, 0, 0.7); /* El marco se ve muy profundo */
 }
 
 /* ========================================
@@ -181,7 +245,7 @@
 	border-radius: 4px;
 	padding: 2rem;
 	width: 90%;
-	max-width: 450px;
+	max-width: 550px;
 	position: relative;
 	box-shadow: 8px 8px 0px rgba(43, 43, 43, 0.2);
 	animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
@@ -222,8 +286,8 @@
 }
 
 .modalIconWrapper {
-	width: 80px;
-	height: 80px;
+	width: 140px;
+	height: 140px;
 	flex-shrink: 0;
 }
 
@@ -231,9 +295,8 @@
 	width: 100%;
 	height: 100%;
 	object-fit: contain;
-	filter: drop-shadow(2px 0 0 white) drop-shadow(-2px 0 0 white)
-		drop-shadow(0 2px 0 white) drop-shadow(0 -2px 0 white)
-		drop-shadow(3px 4px 3px rgba(0, 0, 0, 0.2));
+	filter: drop-shadow(3px 4px 3px rgba(0, 0, 0, 0.2));
+	border-radius: 5px;
 }
 
 .modalIconLocked {
@@ -312,4 +375,25 @@
 	outline: 3px solid #0066cc;
 	outline-offset: 2px;
 	border-radius: 8px;
+}
+
+/* Progreso */
+.progressHeader {
+	display: inline-block;
+	justify-content: center;
+	padding: 0.4rem 1.2rem;
+	border-radius: 20px;
+	font-weight: 700;
+	font-size: 0.9rem;
+	letter-spacing: 0.5px;
+	margin-top: 1rem;
+	background: #f0f0f0;
+	color: #555;
+	border: 1px solid #ddd;
+}
+
+.progressText {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
 }

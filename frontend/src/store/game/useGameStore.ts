@@ -6,6 +6,7 @@ import type { GameData } from "../../types/live-game";
 import type { XpSummary } from "../../types/xp";
 import { useNotificationStore } from "../ui/useNotificationStore";
 import { useRoomStore } from "../room/useRoomStore";
+import { useGameUIStore } from "./useGameUIStore";
 
 export interface LogEntry {
 	id: string;
@@ -57,7 +58,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
 		if (isNowActingBoss && !wasActingBoss) {
 			// Importación dinámica para evitar dependencia circular
-			const { useGameUIStore } = require("./useGameUIStore");
 			useGameUIStore.getState().setShowActingBossModal(true);
 		}
 

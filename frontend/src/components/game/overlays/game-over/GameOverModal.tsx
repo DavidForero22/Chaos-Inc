@@ -16,12 +16,14 @@ import { XpSummaryCard } from "./XPSummaryCard.tsx";
 interface GameOverModalProps {
 	winnerRole: WinnerRole;
 	myRole: PlayerRole;
+	isActingBoss: boolean;
 	onClose: () => void;
 }
 
 export function GameOverModal({
 	winnerRole,
 	myRole,
+	isActingBoss,
 	onClose,
 }: GameOverModalProps) {
 	const headlineRef = useRef<HTMLHeadingElement>(null);
@@ -35,7 +37,8 @@ export function GameOverModal({
 	const config = RESULT_CONFIG[configKey];
 
 	// Calcular estados
-	const iWon = config.winners.includes(myRole);
+	const effectiveRole = isActingBoss ? "boss" : myRole;
+	const iWon = config.winners.includes(effectiveRole);
 	const isCancelled = configKey === "canceled";
 
 	// Logros desbloqueados en esta partida (solo del jugador)

@@ -11,7 +11,6 @@ import type { UserAchievement } from "../../../types/user.ts";
 import styles from "./ProfileAchievements.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
 
-
 interface ProfileAchievementsProps {
 	userAchievements?: UserAchievement[];
 }
@@ -86,6 +85,32 @@ export default function ProfileAchievements({
 		}
 	};
 
+	// Solo contar logros activos para el progreso
+	const activeAchievements = ACHIEVEMENTS.filter((a) => a.active);
+	const totalActive = activeAchievements.length;
+
+	// Logros desbloqueados que además estén activos
+	const unlockedActiveCount = userAchievements.filter((ua) =>
+		activeAchievements.some((a) => a.id === ua.id),
+	).length;
+
+	const percentage =
+		totalActive > 0 ? Math.round((unlockedActiveCount / totalActive) * 100) : 0;
+
+	// Determinar nivel visual
+	let gridLevelClass = "";
+	if (percentage === 0) {
+		gridLevelClass = styles.gridLevelNone;
+	} else if (percentage <= 25) {
+		gridLevelClass = styles.gridLevelBronze;
+	} else if (percentage <= 50) {
+		gridLevelClass = styles.gridLevelSilver;
+	} else if (percentage <= 99) {
+		gridLevelClass = styles.gridLevelGold;
+	} else {
+		gridLevelClass = styles.gridLevelPlatinum;
+	}
+
 	return (
 		<section aria-labelledby="achievements-heading" onKeyDown={handleKeyDown}>
 			<h1 id="achievements-heading" className={viewStyles.sectionLabel}>
@@ -93,8 +118,9 @@ export default function ProfileAchievements({
 			</h1>
 
 			<div className={styles.achievementsSection}>
+				
 				<div
-					className={styles.stickersGrid}
+					className={`${styles.stickersGrid} ${gridLevelClass}`}
 					role="list"
 					aria-label="Lista de logros"
 				>
@@ -132,10 +158,7 @@ export default function ProfileAchievements({
 										/>
 										<span className="sr-only">{title}</span>
 									</button>
-									<div
-										id={`achievement-desc-${ach.id}`}
-										className="sr-only"
-									>
+									<div id={`achievement-desc-${ach.id}`} className="sr-only">
 										{description}
 									</div>
 								</div>
@@ -173,6 +196,14 @@ export default function ProfileAchievements({
 							);
 						}
 					})}
+				</div>
+
+				<div className="flex justify-end">
+					<div className={styles.progressHeader}>
+						<span className={styles.progressText}>
+							{unlockedActiveCount}/{totalActive} – {percentage}%
+						</span>
+					</div>
 				</div>
 
 				{/* ── MODAL DE DETALLES DEL LOGRO ── */}

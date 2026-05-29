@@ -47,6 +47,9 @@ export function GameOverlayManager({
 		navigate("/");
 	};
 
+	const effectiveRole = me.conditions?.acting_boss ? "boss" : me.role;
+	const isActingBoss = me.conditions?.acting_boss === true;
+
 	const [showDeathModal, setShowDeathModal] = useState(false);
 	useEffect(() => {
 		if (me.is_dead) {
@@ -80,7 +83,8 @@ export function GameOverlayManager({
 			{gameOver && (
 				<GameOverModal
 					winnerRole={game.winner_role}
-					myRole={me.role}
+					myRole={effectiveRole}
+					isActingBoss={isActingBoss} 
 					onClose={handleCloseGameOver}
 				/>
 			)}
