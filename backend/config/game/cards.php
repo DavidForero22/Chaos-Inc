@@ -219,7 +219,7 @@ return [
             'target'           => 'opponents',
             'base_name'        => 'Monos Locos',
             'display_name'     => 'Monos Locos',
-            'description'      => 'Roba una carta por cada jugador vivo.',
+            'description'      => 'Roba cartas a todos los oponentes vivos. El robo es mayor cuantas menos jugadores queden (máximo 3 por jugador).',
             'lore'             => 'Monos entrenados en Gibraltar con un solo propósito: robar. Libéralos y contempla el arte del carterismo en su máximo esplendor.',
             'icons'            => ['opponents', 'steal'],
             'count'            => 1,

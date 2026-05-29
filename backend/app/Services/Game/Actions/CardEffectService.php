@@ -368,6 +368,8 @@ class CardEffectService
         $stolenCards = [];
         $stolenFrom = [];
 
+        // Recopilar primero quiénes son los oponentes válidos (vivos y online)
+        $validOpponents = [];
         foreach ($playerIds as $targetId) {
             $targetId = (string) $targetId;
 
@@ -375,38 +377,67 @@ class CardEffectService
             if ($targetId === (string) $playerId) continue;
 
             $info = Redis::hgetall("room:{$roomId}:player:{$targetId}:info");
-            // Solo robar a vivos y online
             if (($info['is_dead'] ?? 0) == 0 && ($info['is_online'] ?? 1) == 1) {
-                $handKey = "room:{$roomId}:player:{$targetId}:hand";
-                $hand = json_decode(Redis::get($handKey) ?: '[]', true);
-
-                if (!empty($hand)) {
-                    // Elegir carta aleatoria
-                    $randomIndex = array_rand($hand);
-                    $stolenCard = $hand[$randomIndex];
-
-                    // Eliminar del objetivo
-                    array_splice($hand, $randomIndex, 1);
-                    Redis::set($handKey, json_encode($hand));
-
-                    // Añadir al jugador actual
-                    $stolenCards[] = $stolenCard;
-                    $stolenFrom[] = $targetId;
-
-                    // Estadística de robo
-                    Redis::hincrby("room:{$roomId}:player:{$playerId}:stats", 'cards_stolen', 1);
-                }
+                $validOpponents[] = $targetId;
             }
         }
 
+        $opponentsCount = count($validOpponents);
+
+        // Si no hay oponentes válidos, no hacemos nada
+        if ($opponentsCount === 0) {
+            return;
+        }
+
+        // Lógica de balanceo dinámico 
+        $cardsToStealPerOpponent = 1;
+        if ($opponentsCount === 1) {
+            $cardsToStealPerOpponent = 3; // En un 1v1, le roba 3
+        } elseif ($opponentsCount === 2) {
+            $cardsToStealPerOpponent = 2; // En un 1v2, roba 2 a cada uno
+        } elseif ($opponentsCount >= 3) {
+            $cardsToStealPerOpponent = 1; // En partidas llenas, roba 1 a cada uno
+        }
+
+        // Ejecutar el asalto
+        foreach ($validOpponents as $targetId) {
+            $handKey = "room:{$roomId}:player:{$targetId}:hand";
+            $hand = json_decode(Redis::get($handKey) ?: '[]', true);
+
+            // Robar hasta el límite establecido (o hasta dejarlo sin cartas)
+            $stolenThisTurn = 0;
+            while (!empty($hand) && $stolenThisTurn < $cardsToStealPerOpponent) {
+                // Elegir carta aleatoria
+                $randomIndex = array_rand($hand);
+                $stolenCard = $hand[$randomIndex];
+
+                // Eliminar del objetivo
+                array_splice($hand, $randomIndex, 1);
+
+                // Añadir al botín general
+                $stolenCards[] = $stolenCard;
+                $stolenFrom[] = $targetId;
+
+                $stolenThisTurn++;
+            }
+
+            // Actualizar la mano del oponente en Redis si le ha robado algo
+            if ($stolenThisTurn > 0) {
+                Redis::set($handKey, json_encode($hand));
+
+                // Actualizar las estadísticas de robo del jugador actual
+                Redis::hincrby("room:{$roomId}:player:{$playerId}:stats", 'cards_stolen', $stolenThisTurn);
+            }
+        }
+
+        // Entregar las cartas al jugador que lanzó la carta
         if (!empty($stolenCards)) {
-            // Añadir a la mano del jugador actual
             $currentHandKey = "room:{$roomId}:player:{$playerId}:hand";
             $currentHand = json_decode(Redis::get($currentHandKey) ?: '[]', true);
             $currentHand = array_merge($currentHand, $stolenCards);
             Redis::set($currentHandKey, json_encode($currentHand));
 
-            // Registrar nuevos descubrimientos
+            // Registrar nuevos descubrimientos para la galería/logros
             $knownKey = "room:{$roomId}:player:{$playerId}:known_cards";
             $newKey   = "room:{$roomId}:player:{$playerId}:new_cards";
 
