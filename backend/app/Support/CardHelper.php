@@ -19,6 +19,7 @@ class CardHelper
                 'type'          => null,
                 'is_discovered' => false,
                 'times_played'  => 0,
+                'category'      => 'normal'
             ];
         }
 
@@ -34,6 +35,7 @@ class CardHelper
             'image_path'   => $card['image'] ?? null,
             'is_discovered' => true,
             'times_played'  => $timesPlayed,
+            'category'      => $card['category'] ?? 'normal',
         ];
     }
 

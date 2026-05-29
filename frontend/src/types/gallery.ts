@@ -11,6 +11,7 @@ export interface GalleryCard {
 	type: string | null;
 	is_discovered: boolean;
 	times_played: number;
+	category: string;
 }
 
 export interface GalleryResponse {

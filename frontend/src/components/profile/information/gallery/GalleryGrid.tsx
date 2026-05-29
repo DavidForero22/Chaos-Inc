@@ -79,17 +79,19 @@ export default function GalleryGrid({
 								${styles.itemImageContainer} 
 								${
 									isUnlocked && isEnrichedCard(item)
-										? {
-												attack:
-													"border-4 border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]",
-												heal: "border-4 border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]",
-												perk: "border-4 border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]",
-												default:
-													"border-4 border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]",
-											}[item.type || "default"]
+										? item.category === "chaotic"
+											? `border-4 border-[#c026d3] shadow-[0_0_12px_rgba(192,38,211,0.4)] bg-[#292524] ${styles.chaoticSticker}`
+											: {
+													attack:
+														"border-4 border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]",
+													heal: "border-4 border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]",
+													perk: "border-4 border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]",
+													default:
+														"border-4 border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]",
+												}[item.type || "default"]
 										: ""
 								}`}
-							>
+						>
 							{isUnlocked ? (
 								imageUrl ? (
 									<img
