@@ -234,7 +234,7 @@ return [
             'base_name'        => 'Lanzapatatas 3000',
             'display_name'     => 'Lanzapatatas 3000',
             'description'      => 'Permite realizar ataques básicos ilimitados (solo a distancia 1).',
-            'lore'             => 'Artillería pesada: un prototipo que devoraba el 70% de los ingresos mensuales de la empresa.',
+            'lore'             => 'Artillería pesada: un prototipo secreto que devoraba el 70% de los ingresos mensuales de la empresa. Las patatas que usa de munición son extremadamente peligrosas.',
             'icons'            => ['self', 'perk'],
             'count'            => 1,
             'image'            => 'potato_launcher.png',

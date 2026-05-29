@@ -47,20 +47,20 @@ interface CardProps {
 }
 
 // Función para mapear el color del borde según el TIPO de carta
-const getTypeBorderClass = (type: string) => {
+const getTypeBorderClass = (type: string, category: string) => {
+	if (category === "chaotic") {
+		return "!border-4 !border-[#c026d3] shadow-[0_0_15px_rgba(192,38,211,0.6)]";
+	}
+
 	switch (type) {
 		case "attack":
-			// Rojo Carmesí: Alerta y urgencia
 			return "!border-4 !border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]";
 		case "heal":
-			// Verde Esmeralda (ligeramente azulado): Restauración segura
 			return "!border-4 !border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]";
 		case "perk":
-			// Ámbar/Oro: Especialización y valor
 			return "!border-4 !border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]";
 		case "default":
 		default:
-			// Azul Cobalto/Slate: Utilidad burocrática y orden
 			return "!border-4 !border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]";
 	}
 };
@@ -79,8 +79,7 @@ export function Card({
 
 	let stateClass = "";
 	if (isMarkedForDiscard) stateClass = styles.markedForDiscard;
-	else if (isSacrificeSelected)
-		stateClass = styles.sacrificeSelected;
+	else if (isSacrificeSelected) stateClass = styles.sacrificeSelected;
 	else if (isSelected && !isDiscardMode && !isInfoMode)
 		stateClass = styles.selected;
 	else if (isHighlighted && !isDiscardMode && !isInfoMode)
@@ -92,7 +91,10 @@ export function Card({
 	const interactableClass = isInteractive
 		? styles.interactable
 		: styles.notInteractable;
-	const typeBorderClass = getTypeBorderClass(card.type);
+
+	// Asignar la clase base caótica para estilos de fondo y hover
+	const chaoticClass = card.category === "chaotic" ? styles.chaoticCard : "";
+	const typeBorderClass = getTypeBorderClass(card.type, card.category);
 
 	const selectedCardId = useGameUIStore((state) => state.selectedCardId);
 	const me = useGameStore((state) => state.gameData?.me);
@@ -100,11 +102,8 @@ export function Card({
 		me?.cards.find((c) => c.id === selectedCardId)?.target === "opponent";
 
 	const handleCardClick = () => {
-		if (isInfoMode) {
-			setShowInfo(true);
-		} else if (isSelectable && onClick) {
-			onClick();
-		}
+		if (isInfoMode) setShowInfo(true);
+		else if (isSelectable && onClick) onClick();
 	};
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -119,9 +118,8 @@ export function Card({
 	return (
 		<>
 			<div
-				className={`${styles.cardWrapper} ${interactableClass} ${stateClass}`}
+				className={`${styles.cardWrapper} ${interactableClass} ${stateClass} ${chaoticClass}`}
 			>
-				{/* EL CUERPO DE LA FICHA DE ARCHIVO */}
 				<div
 					className={`${styles.cardBody} ${typeBorderClass} transition-colors duration-300 relative overflow-hidden flex flex-col focus:outline-none focus:ring-4 focus:ring-blue-500`}
 					onClick={isInteractive ? handleCardClick : undefined}

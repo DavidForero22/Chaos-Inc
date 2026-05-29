@@ -147,3 +147,26 @@
 	line-height: 32px;
 	margin-bottom: 16px;
 }
+
+/* --- AVISO DE CARTA CAÓTICA --- */
+.chaoticWarning {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.95rem;
+    color: #86198f;
+    font-weight: 900;
+    line-height: 20px; 
+    
+    padding: 16px;
+    margin-top: 32px;
+    margin-bottom: 16px;
+    
+    border: 3px dashed #c026d3; 
+    background-color: rgba(192, 38, 211, 0.05);
+    box-shadow: 4px 4px 0px rgba(192, 38, 211, 0.15);
+    transform: rotate(-1.5deg);
+}
+
+.chaoticWarning h4 {
+    font-family: sans-serif;
+    letter-spacing: 1px;
+}

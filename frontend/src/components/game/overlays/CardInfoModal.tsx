@@ -6,8 +6,6 @@ import type { CardInstance } from "../../../types/live-game.ts";
 import { createPortal } from "react-dom";
 import styles from "./CardInfoModal.module.css";
 
-
-
 // Mapa de traducción para los tipos de carta
 const TYPE_MAP: Record<string, string> = {
 	attack: "Ataque",
@@ -137,6 +135,21 @@ export function CardInfoModal({ card, onClose }: CardInfoModalProps) {
 							{card.lore || "Una carta misteriosa con poderes desconocidos."}
 						</p>
 					</div>
+
+					{/* Aviso de Mecánica de Sacrificio para Cartas Caóticas */}
+					{card.category === "chaotic" && (
+						<div className={styles.chaoticWarning}>
+							<h4 className="text-lg mb-1">CARTA CAÓTICA</h4>
+							<p>
+								Para jugar esta carta debes <strong>sacrificar</strong> otra
+								carta de tu mano.
+							</p>
+							<p className="text-xs mt-2 opacity-80 uppercase tracking-widest">
+								* ¡No se pueden sacrificar otras cartas
+								caóticas!
+							</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>,

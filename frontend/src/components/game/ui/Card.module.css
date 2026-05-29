@@ -37,7 +37,7 @@
 }
 
 .sacrificeSelected .cardBody {
-	position: relative; 
+	position: relative;
 	overflow: hidden;
 	filter: saturate(1.4) contrast(1.2); /* Sobrecarga los colores del arte */
 	animation: volatile-glow 0.2s infinite ease-in-out;
@@ -193,5 +193,79 @@
 			0 0 30px rgba(239, 68, 68, 0.9),
 			inset 0 0 20px rgba(249, 115, 22, 0.8);
 		border-color: #ef4444 !important;
+	}
+}
+
+/* --- ESTILOS EXCLUSIVOS PARA CARTAS CAÓTICAS --- */
+
+.chaoticCard .cardBody {
+	box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Efecto Holográfico */
+.chaoticCard .cardBody::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		115deg,
+		transparent 10%,
+		rgba(255, 0, 0, 0.2) 20%,
+		rgba(255, 165, 0, 0.2) 35%,
+		rgba(255, 255, 0, 0.2) 50%,
+		rgba(0, 255, 0, 0.2) 65%,
+		rgba(0, 255, 255, 0.2) 75%,
+		rgba(138, 43, 226, 0.2) 85%,
+		transparent 95%
+	);
+	background-size: 300% 300%;
+
+	opacity: 1;
+	animation: holoShineIdle 15s infinite linear;
+
+	transition: opacity 0.3s ease;
+	mix-blend-mode: hard-light;
+	pointer-events: none;
+	z-index: 30;
+}
+
+.notInteractable.chaoticCard .cardBody::before {
+	animation: none;
+	opacity: 0.3;
+	background-position: 50% 50%;
+}
+
+/* 3. ANIMACIÓN HOVER */
+.chaoticCard.interactable:hover .cardBody::before {
+	opacity: 0.85;
+	animation: holoShineHover 0.8s ease-out forwards;
+}
+
+/* 4. ANIMACIÓN SELECCIONADA */
+.selected.chaoticCard .cardBody::before {
+	opacity: 0.95;
+	animation: holoShineSelected 4s infinite linear;
+}
+
+/* --- KEYFRAMES DE LOS MOVIMIENTOS FIJOS --- */
+
+@keyframes holoShineHover {
+	0% {
+		background-position: 0% 0%;
+	}
+	100% {
+		background-position: 100% 100%;
+	}
+}
+
+@keyframes holoShineSelected {
+	0% {
+		background-position: 100% 100%;
+	}
+	50% {
+		background-position: 0% 0%;
+	}
+	100% {
+		background-position: 100% 100%;
 	}
 }
