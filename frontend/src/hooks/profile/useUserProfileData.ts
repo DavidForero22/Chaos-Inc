@@ -1,6 +1,7 @@
 // src/hooks/profile/useUserProfileData.ts
 
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../../api/axios.ts";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 import type { GameRecord } from "../../types/api.ts";
@@ -9,6 +10,7 @@ import { getFullAvatarUrl } from "../../utils/avatar.ts";
 
 export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 	const { id: myId, isGuest } = useAuthStore();
+	const navigate = useNavigate();
 
 	const [games, setGames] = useState<GameRecord[]>([]);
 	const [profileUser, setProfileUser] = useState<UserRecord | null>(null);
@@ -60,12 +62,17 @@ export function useUserProfileData(userId: string | undefined, refreshKey = 0) {
 
 				await loadFriendRequests();
 			}
-		} catch (error) {
+		} catch (error: any) {
+			// Si es 404, redirigir a la página de usuario no encontrado
+			if (error?.response?.status === 404) {
+				navigate("/user-not-found", { replace: true });
+				return;
+			}
 			console.error("Error fetching user profile:", error);
 		} finally {
 			setLoading(false);
 		}
-	}, [userId, myId, isGuest]);
+	}, [userId, myId, isGuest, navigate]);
 
 	const loadFriendRequests = async () => {
 		setFriendsLoading(true);
