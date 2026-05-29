@@ -1,0 +1,84 @@
+/* src/components/profile/PlayerRow.module.css */
+
+.playerHeader {
+	display: grid;
+	grid-template-columns: 3fr 2fr 1fr 1fr;
+	font-size: 0.65rem;
+	font-weight: 900;
+	color: #777;
+	border-bottom: 1px solid #ccc;
+	padding-bottom: 4px;
+	margin-bottom: 6px;
+}
+
+.playerRow {
+	display: grid;
+	grid-template-columns: 3fr 2fr 1fr 1fr;
+	font-size: 0.75rem;
+	padding: 4px 0;
+	border-bottom: 1px dotted #ccc;
+	font-weight: normal;
+	transition: background-color 0.2s;
+}
+
+.playerRow:last-child {
+	border-bottom: none;
+}
+
+.playerWon {
+	font-weight: bold;
+	color: #1e3a8a;
+}
+
+.currentUserRow {
+	background-color: rgba(255, 235, 59, 0.15);
+	font-weight: bold;
+}
+
+.currentUserRow:hover {
+	background-color: rgba(255, 235, 59, 0.25);
+}
+
+.playerName {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-right: 10px;
+}
+
+.youIndicator {
+	font-weight: 900;
+	color: #1e3a8a;
+	font-size: 0.7rem;
+	letter-spacing: 0.5px;
+	vertical-align: middle;
+}
+
+.profileLink {
+	color: #2b2b2b;
+	text-decoration: none;
+	border-bottom: 1px dashed #2b2b2b;
+	transition: all 0.2s;
+}
+
+.profileLink:hover {
+	background-color: #ffeb3b;
+	border-bottom-style: solid;
+}
+
+.textCenter {
+	text-align: center;
+}
+
+@media (max-width: 600px) {
+	.playerHeader,
+	.playerRow {
+		grid-template-columns: 1fr 1fr;
+	}
+	.playerHeader span:nth-child(3),
+	.playerRow span:nth-child(3),
+	.playerHeader span:nth-child(4),
+	.playerRow span:nth-child(4) {
+		display: none;
+	}
+}

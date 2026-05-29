@@ -1,0 +1,70 @@
+/* src/components/profile/GameHistoryRow.module.css */
+
+.gameRecord {
+	border-bottom: 1px solid #2b2b2b;
+}
+.gameRecord:last-child {
+	border-bottom: none;
+}
+
+.gameRow {
+	display: grid;
+	grid-template-columns: 1.5fr 1.5fr 2fr 1fr 1fr;
+	padding: 12px 15px;
+	align-items: center;
+	cursor: pointer;
+	font-size: 0.8rem;
+	font-weight: bold;
+	transition: background-color 0.15s;
+}
+
+.gameRow:hover {
+	background-color: rgba(0, 0, 0, 0.05);
+}
+
+.gameRowWin {
+	border-left: 4px solid #1e3a8a;
+}
+.gameRowLoss {
+	border-left: 4px solid #d32f2f;
+}
+
+.gameDate {
+	color: #555;
+}
+
+.gameRole {
+	color: #2b2b2b;
+}
+
+.gameMeta {
+	color: #555;
+}
+
+.expandIcon {
+	font-weight: 900;
+}
+
+.resultWin {
+	color: #1e3a8a;
+	font-weight: 900;
+}
+
+.resultLoss {
+	color: #d32f2f;
+	font-weight: 900;
+}
+
+.textRight {
+	text-align: right;
+}
+
+@media (max-width: 600px) {
+	.gameRow {
+		grid-template-columns: 1fr 1fr 1fr;
+	}
+	.gameRow span:nth-child(2),
+	.gameRow span:nth-child(4) {
+		display: none;
+	}
+}

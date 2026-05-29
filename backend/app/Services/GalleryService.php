@@ -9,17 +9,16 @@ use App\Models\GameUser;
 use App\Models\Game;
 use App\Support\CardHelper;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class GalleryService
 {
     public function getUserGalleryData(User $user): array
     {
         // 1. Cartas
-        $cardsCatalog = config('game.cards.cards', []);+
+        $cardsCatalog = config('game.cards.cards', []);
         $discoveredCardIds = UserDiscoveredCard::where('user_id', $user->id)
             ->pluck('card_id')
-            ->flip();
+            ->values();
 
         $timesPlayed = DB::table('game_card_usage')
             ->where('user_id', $user->id)
@@ -27,15 +26,15 @@ class GalleryService
             ->groupBy('card_id')
             ->pluck('total', 'card_id');
 
-        $cards = []; 
+        $cards = [];
         foreach ($cardsCatalog as $card) {
             $cardId = $card['id'];
-            $isDiscovered = isset($discoveredCardIds[$cardId]);
+            $isDiscovered = $discoveredCardIds->contains($cardId);
 
             $cards[] = CardHelper::formatCard(
                 $card,
                 $isDiscovered,
-                $timesPlayed[$cardId] ?? 0
+                $timesPlayed->get($cardId, 0)
             );
         }
 
@@ -50,6 +49,7 @@ class GalleryService
         $gameIds = GameUser::where('user_id', $user->id)
             ->where('is_guest', false)
             ->pluck('game_id');
+
         $endingsUnlocked = Game::whereIn('id', $gameIds)
             ->distinct()
             ->pluck('winner_role')

@@ -77,7 +77,6 @@ export default function GalleryDetail({
 		extraLoreText = selectedItem.description; // Extraer la descripción del final
 	}
 
-	console.log(selectedItem);
 	return (
 		<div className={styles.detailContainer}>
 			{isMobile && (
