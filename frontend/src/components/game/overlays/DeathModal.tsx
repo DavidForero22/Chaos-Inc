@@ -38,8 +38,9 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 			ariaLabelledBy="death-title"
 			ariaDescribedBy="death-desc"
 		>
-			<div>
-				<div className="text-center border-b border-gray-700 pb-4 mb-4">
+			{/* Contenedor principal  */}
+			<div className="max-h-[80vh] overflow-y-auto px-1 custom-scrollbar">
+				<div className="text-center border-b border-gray-700 pb-4 mb-4 shrink-0">
 					<h2
 						id="death-title"
 						className="text-2xl font-black text-red-600 uppercase tracking-tight"
@@ -62,19 +63,19 @@ export function DeathModal({ onClose, killerName }: DeathModalProps) {
 					</p>
 
 					{/* BOTONES */}
-					<div className="flex justify-center gap-4 flex-wrap">
+					<div className="flex flex-col sm:flex-row justify-center items-center gap-4">
 						<button
 							ref={spectatorBtnRef}
 							type="button"
 							onClick={onClose}
-							className="px-5 py-2.5 rounded bg-blue-600 text-white font-bold uppercase tracking-wider transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a] shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+							className="w-full sm:w-auto px-5 py-2.5 rounded bg-blue-600 text-white font-bold uppercase tracking-wider transition-colors hover:bg-blue-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a] shadow-[0_0_15px_rgba(37,99,235,0.4)]"
 						>
 							Quedarse de espectador
 						</button>
 						<button
 							type="button"
 							onClick={handleLeaveGame}
-							className="px-5 py-2.5 rounded border border-red-600 bg-transparent text-red-500 font-bold uppercase tracking-wider transition-colors hover:bg-red-600/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]"
+							className="w-full sm:w-auto px-5 py-2.5 rounded border border-red-600 bg-transparent text-red-500 font-bold uppercase tracking-wider transition-colors hover:bg-red-600/10 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a1a1a]"
 						>
 							Abandonar partida
 						</button>
