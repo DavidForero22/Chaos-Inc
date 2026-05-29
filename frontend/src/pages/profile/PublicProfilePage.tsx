@@ -6,6 +6,7 @@ import { useAuthStore } from "../../store/auth/useAuthStore";
 import { useUserProfileData } from "../../hooks/profile/useUserProfileData";
 import RegisteredProfileView from "../../components/profile/RegisteredProfileView";
 import GuestProfileView from "../../components/profile/GuestProfileView";
+import GuestNotAvailableView from "../../components/profile/GuestNotAvailableView";
 import styles from "../../components/profile/Profile.module.css";
 import api from "../../api/axios";
 import { ProfileProvider } from "../../store/profile/useProfileStore";
@@ -33,10 +34,7 @@ export default function PublicProfilePage() {
 		friendsLoading,
 	} = useUserProfileData(userId, refreshKey);
 
-	const {
-		friends: myFriends,
-		fetchFriends,
-	} = useFriends();
+	const { friends: myFriends, fetchFriends } = useFriends();
 
 	useEffect(() => {
 		if (myId) {
@@ -45,13 +43,11 @@ export default function PublicProfilePage() {
 	}, [myId, fetchFriends]);
 
 	const refreshProfile = useCallback(async () => {
-		// Si es mi perfil, obtener datos actualizados y actualizar AuthStore
 		if (isMe && myId) {
 			try {
 				const response = await api.get(`/users/${myId}`);
 				const updatedUser = response.data.data ?? response.data;
 
-				// Actualizar AuthStore con los datos más recientes
 				setAuth(
 					updatedUser.id,
 					updatedUser.username,
@@ -67,11 +63,9 @@ export default function PublicProfilePage() {
 			}
 		}
 
-		// Incrementar refreshKey para recargar los datos del perfil
 		setRefreshKey((prev) => prev + 1);
 	}, [isMe, myId, setAuth]);
 
-	// Acciones manuales para no tener que llamar a useProfileData y duplicar peticiones
 	const handleLogout = async () => {
 		try {
 			await api.post("/logout");
@@ -110,6 +104,11 @@ export default function PublicProfilePage() {
 				<span className={styles.loadingText}>Cargando perfil...</span>
 			</main>
 		);
+	}
+
+	// Si el perfil cargado es de un invitado y no soy yo
+	if (profileUser?.isGuest && !isMe) {
+		return <GuestNotAvailableView username={profileUser.username} />;
 	}
 
 	const handleDeleteAccount = async () => {

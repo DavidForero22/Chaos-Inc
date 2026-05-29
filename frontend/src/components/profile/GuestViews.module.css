@@ -1,0 +1,102 @@
+/* src/components/profile/GuestViews.module.css */
+
+.wrapper {
+	max-width: 600px;
+	margin: 3rem auto;
+	padding: 2.5rem;
+	border: 2px solid #2b2b2b;
+	background-color: rgba(255, 255, 255, 0.5);
+	font-family: "Courier New", Courier, monospace;
+	color: #2b2b2b;
+	text-align: center;
+}
+
+.icon {
+	font-size: 2.5rem;
+	margin-bottom: 1rem;
+}
+
+.title {
+	font-size: 1.2rem;
+	font-weight: 900;
+	margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+	font-size: 0.8rem;
+	font-weight: bold;
+	color: #555;
+	margin: 0 0 1.5rem 0;
+	padding-bottom: 1.25rem;
+	border-bottom: 2px solid rgba(57, 62, 66, 0.2);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.message {
+	font-size: 0.9rem;
+	font-weight: bold;
+	margin: 0 0 1rem 0;
+	line-height: 1.5;
+	text-align: left;
+	border-left: 3px solid #ffeb3b;
+	padding-left: 1rem;
+}
+
+.message strong {
+	color: #d32f2f;
+}
+
+.description {
+	font-size: 0.8rem;
+	color: #555;
+	margin: 0 0 1.5rem 0;
+	line-height: 1.6;
+	text-align: left;
+	padding-left: 1rem;
+}
+
+.warning {
+	margin: 1.25rem 0;
+	padding: 12px 14px;
+	border: 1.5px solid rgba(203, 190, 52, 0.5);
+	background-color: rgba(203, 190, 52, 0.06);
+	font-size: 0.75rem;
+	color: #7a6f1a;
+	line-height: 1.6;
+	text-align: left;
+}
+
+.warning strong {
+	color: #5c5314;
+}
+
+.actions {
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 2px solid rgba(57, 62, 66, 0.2);
+}
+
+.logoutBtn {
+	background: transparent;
+	border: 2px solid #2b2b2b;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	font-weight: 900;
+	color: #2b2b2b;
+	cursor: pointer;
+	padding: 10px 24px;
+	transition: all 0.2s;
+	letter-spacing: 1px;
+}
+
+.logoutBtn:hover {
+	background-color: #d32f2f;
+	color: #fcf9f2;
+	border-color: #d32f2f;
+}
+
+.logoutBtn:focus-visible {
+	outline: 2px solid #1e3a8a;
+	outline-offset: 2px;
+}
