@@ -1,4 +1,5 @@
 import type { XpSummary } from "../../../../types/xp";
+import { useAuthStore } from "../../../../store/auth/useAuthStore"; 
 
 const RANK_LABEL: Record<string, string> = {
 	beginner: "Becario",
@@ -13,11 +14,29 @@ function getRank(level: number): string {
 }
 
 interface XpSummaryCardProps {
-	summary: XpSummary;
+	summary?: XpSummary | null; 
 	hasWon: boolean;
 }
 
 export function XpSummaryCard({ summary, hasWon }: XpSummaryCardProps) {
+	const isGuest = useAuthStore((s) => s.isGuest);
+
+	// Si es invitado, mostramos solo el mensaje
+	if (isGuest) {
+		return (
+			<div className="mt-4 border-t-2 border-black pt-4 font-serif text-black">
+				<p className="mt-3 text-sm text-center font-bold text-gray-800 bg-gray-200 p-3 rounded">
+					Crea una cuenta para ganar XP y guardar tus resultados.
+				</p>
+			</div>
+		);
+	}
+
+	// Si no es invitado, pero por algún motivo no hay summary, no renderizar nada
+	if (!summary || !summary.breakdown) {
+		return null;
+	}
+
 	const { breakdown, total_earned, account } = summary;
 	const progressPercent = account
 		? Math.min(100, Math.round((account.xp_current / account.xp_needed) * 100))
@@ -58,8 +77,8 @@ export function XpSummaryCard({ summary, hasWon }: XpSummaryCardProps) {
 				<span>+{total_earned} XP</span>
 			</div>
 
-			{/* Nivel y barra — solo para usuarios registrados */}
-			{account ? (
+			{/* Nivel y barra */}
+			{account && (
 				<div className="mt-4">
 					<div className="flex justify-between items-baseline mb-1 text-sm">
 						<span className="font-bold">
@@ -92,10 +111,6 @@ export function XpSummaryCard({ summary, hasWon }: XpSummaryCardProps) {
 						{account.level + 1}
 					</p>
 				</div>
-			) : (
-				<p className="mt-3 text-xs text-center text-gray-600 italic border-t border-gray-300 pt-3">
-					Crea una cuenta para guardar tus resultados
-				</p>
 			)}
 		</div>
 	);

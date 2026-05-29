@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./GameOverModal.module.css";
 import { RESULT_CONFIG } from "../../../../data/game/gameResults.ts";
-import type { WinnerRole, ConfigKey } from "../../../../data/game/gameResults.ts";
+import type {
+	WinnerRole,
+	ConfigKey,
+} from "../../../../data/game/gameResults.ts";
 import { useGameUIStore } from "../../../../store/game/useGameUIStore.ts";
 import { ACHIEVEMENTS } from "../../../../data/app/achievements.ts";
 import type { PlayerRole } from "../../../../types/live-game.ts";
@@ -219,7 +222,7 @@ export function GameOverModal({
 					>
 						{iWon ? "¡HAS GANADO!" : "¡HAS PERDIDO!"}
 
-						{xpSummary && <XpSummaryCard summary={xpSummary} hasWon={iWon} />}
+						<XpSummaryCard summary={xpSummary} hasWon={iWon} />
 					</div>
 				)}
 
