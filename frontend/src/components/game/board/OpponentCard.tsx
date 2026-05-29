@@ -237,7 +237,7 @@ export function OpponentCard({
 				</h3>
 
 				{/* Rol */}
-				{player.role !== "boss" && (
+				{player.role !== "boss" && player.role !== "hidden" && (
 					<span className="text-[10px] font-bold text-[#295c60] bg-[#295c60]/10 px-2 py-0.5 rounded mb-3 uppercase">
 						{player.role === "secretary"
 							? "Secretario"
@@ -247,7 +247,7 @@ export function OpponentCard({
 					</span>
 				)}
 				{player.role === "boss" && (
-					<span className="text-[10px] font-bold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded mb-3 uppercase">
+					<span className="text-[10px] font-bold text-yellow-800 bg-yellow-200 px-2 py-0.5 rounded mb-3 uppercase">
 						Jefe
 					</span>
 				)}

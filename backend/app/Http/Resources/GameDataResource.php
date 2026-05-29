@@ -31,6 +31,8 @@ class GameDataResource extends JsonResource
         $isEffectivelyOver = $finalizationService->isGameEffectivelyOver($roomId);
         $myRange = $combatService->getPlayerRange($roomId, $myPlayerId);
 
+        $isDebugRoom = ($roomInfo['is_debug'] ?? '0') === '1';
+
         foreach (Redis::smembers("room:{$roomId}:players") as $playerId) {
 
             $playerId = (string) $playerId;
@@ -70,7 +72,9 @@ class GameDataResource extends JsonResource
                 'stress'      => (int) ($pInfo['stress'] ?? 0),
                 'is_dead'     => CastHelper::toBool($pInfo['is_dead'] ?? 0),
                 'killer_name' => $pInfo['killer_name'] ?? null,
-                'role'        => (($pInfo['role'] ?? '') === 'boss') ? 'boss' : 'hidden',
+                'role'        => (($pInfo['role'] ?? '') === 'boss')
+                    ? 'boss'
+                    : ($isDebugRoom ? ($pInfo['role'] ?? 'hidden') : 'hidden'),
                 'is_online'   => CastHelper::toBool($pInfo['is_online'] ?? 1),
 
                 // :hand

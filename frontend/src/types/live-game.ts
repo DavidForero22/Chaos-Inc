@@ -3,7 +3,7 @@
 /**
  * Roles disponibles en el juego
  */
-export type PlayerRole = "boss" | "secretary" | "intern" | "union";
+export type PlayerRole = "boss" | "secretary" | "intern" | "union" | "hidden";
 export type WinnerRole = "boss" | "union" | "intern" | null;
 
 /**
