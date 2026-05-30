@@ -40,8 +40,7 @@ class RoomController extends Controller
             $roomData = $this->roomService->createRoom(
                 $request->validated(),
                 (string) $user->id,
-                $user->username,
-                $user->role === 'admin'
+                $user->username
             );
 
             return response()->json($roomData, 201);

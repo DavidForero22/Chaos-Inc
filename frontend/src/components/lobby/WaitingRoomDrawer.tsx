@@ -8,7 +8,6 @@ import {
 	FaCrown,
 } from "react-icons/fa";
 import type { RoomData } from "../../types/api";
-import { logWithTime } from "../../utils/logger";
 
 interface WaitingRoomDrawerProps {
 	room: RoomData;
@@ -36,15 +35,13 @@ export default function WaitingRoomDrawer({
 	const [isOpen, setIsOpen] = useState(true);
 	const isDebugRoom = room.is_debug === true;
 
-	logWithTime("WaitingRoomDrawr.tsx:: Datos de la sala: ", room, "info", true);
-
 	return (
 		<>
 			{/* BOTÓN FLOTANTE (Solo visible si el panel está cerrado) */}
 			{!isOpen && (
 				<button
 					onClick={() => setIsOpen(true)}
-					className="fixed right-0 top-1/3 z-40 bg-blue-600 text-white p-3 rounded-l-lg shadow-[-4px_0_15px_rgba(0,0,0,0.2)] flex items-center gap-2 hover:bg-blue-700 transition-transform transform hover:-translate-x-1"
+					className="fixed -right-2 top-25 pr-5 z-40 bg-blue-600 text-white p-3 rounded-l-lg shadow-[-4px_0_15px_rgba(0,0,0,0.2)] flex items-center gap-2 hover:bg-blue-700 transition-transform transform hover:-translate-x-1"
 					aria-label="Abrir panel de la sala"
 				>
 					<FaUsers size={20} />

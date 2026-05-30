@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import echo from "../../echo";
 import { useRoomStore } from "../../store/room/useRoomStore.ts";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
+import api from "../../api/axios.ts";
 
 interface UseRoomSocketsProps {
 	roomId: string | undefined;
@@ -19,8 +20,21 @@ export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 		const channel = echo.join(`room.${roomId}`);
 
 		channel
-			.leaving(() => {
+			.leaving((user: any) => {
 				fetchRoomData();
+
+				console.log("user: ", user);
+				console.log("user.id: ", user.id);
+
+				if (user && user.id) {
+					api
+						.post(`/rooms/${roomId}/report-disconnect`, {
+							disconnected_player_id: user.id,
+							disconnected_player_name:
+								user.username || user.name || "Invitado",
+						})
+						.catch(() => {});
+				}
 			})
 			.listen(".RoomStateUpdated", (event: any) => {
 				const myPlayerId = useAuthStore.getState().id;
