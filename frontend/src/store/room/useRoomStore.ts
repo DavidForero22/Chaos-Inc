@@ -168,6 +168,11 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 			} as any);
 			const currentRoom = res.data;
 
+			//  Si el roomId cambió mientras se hacía la petición, descartar
+			if (get().roomId !== roomId) {
+				return;
+			}
+
 			if (currentRoom) {
 				set({ room: currentRoom, roomId: currentRoom.room_id });
 			} else {

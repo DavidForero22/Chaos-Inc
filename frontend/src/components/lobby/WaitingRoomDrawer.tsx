@@ -8,6 +8,7 @@ import {
 	FaCrown,
 } from "react-icons/fa";
 import type { RoomData } from "../../types/api";
+import { logWithTime } from "../../utils/logger";
 
 interface WaitingRoomDrawerProps {
 	room: RoomData;
@@ -32,10 +33,10 @@ export default function WaitingRoomDrawer({
 	onShare,
 	copied,
 }: WaitingRoomDrawerProps) {
-	const [isOpen, setIsOpen] = useState(true); // Abierto por defecto cuando entras
+	const [isOpen, setIsOpen] = useState(true);
 	const isDebugRoom = room.is_debug === true;
 
-	console.log(room);
+	logWithTime("WaitingRoomDrawr.tsx:: Datos de la sala: ", room , 'info', true);
 
 	return (
 		<>
