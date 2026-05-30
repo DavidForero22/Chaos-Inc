@@ -36,7 +36,7 @@ export default function WaitingRoomDrawer({
 	const [isOpen, setIsOpen] = useState(true);
 	const isDebugRoom = room.is_debug === true;
 
-	logWithTime("WaitingRoomDrawr.tsx:: Datos de la sala: ", room , 'info', true);
+	logWithTime("WaitingRoomDrawr.tsx:: Datos de la sala: ", room, "info", true);
 
 	return (
 		<>
@@ -132,6 +132,7 @@ export default function WaitingRoomDrawer({
 													src={player.avatar}
 													alt=""
 													className="w-full h-full object-cover"
+													referrerPolicy="no-referrer"
 												/>
 											) : (
 												player.name.substring(0, 2).toUpperCase()
