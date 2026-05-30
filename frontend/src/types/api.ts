@@ -4,6 +4,8 @@
 export interface RoomPlayer {
 	id: string;
 	name: string;
+	avatar?: string | null;
+	level: number;
 }
 
 /**
@@ -17,8 +19,8 @@ export interface RoomData {
 	owner_name: string;
 	status: string;
 	players: RoomPlayer[];
-	is_private?: string;
-	is_debug?: string;
+	is_private: boolean;
+	is_debug: boolean;
 }
 
 /**

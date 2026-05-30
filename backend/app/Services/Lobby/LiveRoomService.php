@@ -71,7 +71,15 @@ class LiveRoomService
 
             Redis::sadd("room:{$roomId}:players", $playerId);
             Redis::setex("player:{$playerId}:room", 86400, $roomId);
-            Redis::hset("room:{$roomId}:player:{$playerId}:info", 'username', $playerName);
+
+            $isGuest = !is_numeric($playerId); 
+            $playerInfoToSave = [
+                'username' => $playerName,
+                'user_id'  => $isGuest ? '' : $playerId,
+                'avatar'   => ''
+            ];
+
+            Redis::hmset("room:{$roomId}:player:{$playerId}:info", $playerInfoToSave);
 
             event(new RoomListUpdated($roomId));
             event(new RoomStateUpdated($roomId));

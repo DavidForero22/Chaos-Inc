@@ -6,6 +6,9 @@ namespace App\Services\Admin;
 use App\Events\RoomListUpdated;
 use App\Events\RoomStateUpdated;
 use App\Exceptions\RoomException;
+use App\Http\Resources\RoomResource;
+use App\Models\User;
+use App\Services\Game\Engine\ExperienceService;
 use App\Support\CastHelper;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
@@ -120,37 +123,56 @@ class RoomService
             throw new RoomException(RoomException::ROOM_NOT_FOUND, "La sala no existe.", 404);
         }
 
-        // Transformar los IDs en objetos [{id, name}]
+        // Transformar los IDs en objetos [{id, name, avatar, level}]
         $formattedPlayers = [];
         if (!empty($playerIds)) {
             $namesResponse = Redis::pipeline(function ($pipe) use ($roomId, $playerIds) {
                 foreach ($playerIds as $pid) {
-                    $pipe->hget("room:{$roomId}:player:{$pid}:info", 'username');
+                    $pipe->hmget("room:{$roomId}:player:{$pid}:info", ['username', 'avatar', 'user_id']);
                 }
             });
 
             foreach ($playerIds as $index => $pid) {
-                $name = $namesResponse[$index];
+                $playerInfo = $namesResponse[$index];
+                $name   = $playerInfo['username'] ?? $playerInfo[0] ?? null;
+                $avatar = $playerInfo['avatar']   ?? $playerInfo[1] ?? null;
+                $userId = $playerInfo['user_id']  ?? $playerInfo[2] ?? null;
+
+                $level = 1;
+
+                // Si es un usuario registrado (no invitado), intenta sacar su nivel/avatar de BD si no estaba en la info de la sala.
+                if ($userId) {
+                    static $cache = [];
+                    if (!array_key_exists($userId, $cache)) {
+                        $user = \App\Models\User::select('avatar', 'total_xp')->find($userId);
+                        $cache[$userId] = $user;
+                    }
+
+                    $userModel = $cache[$userId];
+                    if ($userModel) {
+                        if (!$avatar) $avatar = $userModel->avatar;
+                        $level = ExperienceService::levelFromXp((int) $userModel->total_xp);
+                    }
+                }
+
                 $formattedPlayers[] = [
-                    'id'   => $pid,
-                    'name' => $name ?: "ID_{$pid}"
+                    'id'     => $pid,
+                    'name'   => $name ?: "ID_{$pid}",
+                    'avatar' => $avatar,
+                    'level'  => $level
                 ];
             }
         }
 
-        // 3. Construir el resultado
+        // Construir el resultado
         $room = array_merge($infoData, $stateData);
         $room['room_id'] = $roomId;
         $room['players'] = $formattedPlayers;
 
-        if (isset($room['is_private'])) {
-            $room['is_private'] = CastHelper::toBool($room['is_private']);
-        }
-
-        return $room;
+        return (new RoomResource($room))->resolve();
     }
 
-    public function createRoom(array $data, string $ownerId, string $ownerName, bool $isAdmin = false): array
+    public function createRoom(array $data, string $ownerId, string $ownerName): array
     {
         // Usar el ID para comprobar si el jugador ya está en una sala
         $currentRoom = Redis::get("player:{$ownerId}:room");
@@ -181,8 +203,13 @@ class RoomService
         Redis::sadd("active_rooms", $roomId);
 
         Redis::setex("player:{$ownerId}:room", 86400, $roomId);
-        Redis::hset("room:{$roomId}:player:{$ownerId}:info", 'username', $ownerName);
+        $playerInfoToSave = [
+            'username' => $ownerName,
+            'user_id'  => $ownerId,
+            'avatar'   => '' // Se rellenará desde la BD en getRoom
+        ];
 
+        Redis::hmset("room:{$roomId}:player:{$ownerId}:info", $playerInfoToSave);
         // Expiraciones
         Redis::expire("room:{$roomId}:info", 86400);
         Redis::expire("room:{$roomId}:state", 86400);

@@ -17,7 +17,6 @@ interface CreateRoomModalProps {
 
 export default function CreateRoomModal({
 	onClose,
-	user,
 }: CreateRoomModalProps) {
 	const navigate = useNavigate();
 	const { role } = useAuth();
@@ -58,9 +57,7 @@ export default function CreateRoomModal({
 			});
 
 			onClose();
-			navigate(`/rooms/${response.data.room_id}`, {
-				state: { playerName: user },
-			});
+			navigate("/rooms");
 		} catch {
 			setError("Hubo un error al crear la sala.");
 		} finally {

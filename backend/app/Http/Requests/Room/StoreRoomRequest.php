@@ -3,12 +3,31 @@
 namespace App\Http\Requests\Room;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class StoreRoomRequest extends FormRequest
 {
+    /**
+     * Determina si el usuario está autorizado a realizar esta petición.
+     */
     public function authorize(): bool
     {
+        $user = $this->user();
+
+        // Si no hay usuario o es un invitado, denegar el permiso
+        if (!$user || $user->is_guest) {
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * Lanza una excepción con un mensaje personalizado cuando falla authorize()
+     */
+    protected function failedAuthorization()
+    {
+        throw new AuthorizationException('Los invitados no tienen permiso para crear salas. Regístrate para acceder a esta función.');
     }
 
     public function rules(): array

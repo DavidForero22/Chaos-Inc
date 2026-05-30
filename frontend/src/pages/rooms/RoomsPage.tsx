@@ -6,7 +6,6 @@ import { useLobby } from "../../hooks/useLobby";
 import RoomList from "../../components/rooms/RoomList";
 import CreateRoomModal from "../../components/rooms/CreateRoomModal";
 import GuestNameModal from "../../components/lobby/GuestNameModal";
-import ActiveGameWarning from "../../components/rooms/ActiveGameWarning";
 import styles from "./RoomsPage.module.css";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
 
@@ -222,10 +221,6 @@ export default function RoomsPage() {
 				/>
 			)}
 
-			{/* AVISO DE PARTIDA EN CURSO: Solo se muestra si NO estamos validando y realmente hay sala */}
-			{!isValidatingRoom && activeRoomId && (
-				<ActiveGameWarning roomId={activeRoomId} />
-			)}
 		</main>
 	);
 }

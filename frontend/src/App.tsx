@@ -7,7 +7,6 @@ import {
 
 // -- PÁGINAS --
 import RoomsPage from "./pages/rooms/RoomsPage.tsx";
-import WaitingRoomPage from "./pages/waitingRoom/WaitingRoomPage.tsx";
 import GameBoardPage from "./pages/GameBoardPage.tsx";
 import ProfilePage from "./pages/profile/ProfilePage.tsx";
 import AdminPage from "./pages/AdminPage.tsx";
@@ -30,6 +29,8 @@ import UserNotFoundPage from "./pages/errors/UserNotFoundPage.tsx";
 import RoomFullPage from "./pages/errors/RoomFullPage.tsx";
 import GameAlreadyStartedPage from "./pages/errors/GameAlreadyStartedPage.tsx";
 import AlreadyInAnotherRoomPage from "./pages/errors/AlreadyInAnotherRoomPage.tsx";
+import { GlobalRoomManager } from "./components/lobby/GlobalRoomManager.tsx";
+import RoomJoinInterceptor from "./components/lobby/RoomJoinInterceptor.tsx";
 
 function App() {
 	useSessionGuard();
@@ -53,7 +54,7 @@ function App() {
 				</Route>
 
 				{/* ── Rutas con diseño propio ── */}
-				<Route path="/rooms/:id" element={<WaitingRoomPage />} />
+				<Route path="/rooms/:id" element={<RoomJoinInterceptor />} />
 				<Route path="/game/:id" element={<GameBoardPage />} />
 
 				{/* ── Páginas de Error Explícitas ── */}
@@ -79,6 +80,7 @@ function App() {
 				<Route path="*" element={<PageNotFoundPage />} />
 			</Routes>
 			{/* ── COMPONENTES GLOBALES ── */}
+			<GlobalRoomManager />
 			<GlobalLoader />
 			<AchievementNotification />
 			<Toast />
