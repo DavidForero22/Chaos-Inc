@@ -12,7 +12,7 @@ const TYPE_LABELS: Record<string, string> = {
 	attack: "ATAQUE",
 	heal: "CURACIÓN",
 	perk: "PASIVA",
-	default: "GENERAL",
+	default: "UTILIDAD",
 };
 
 const TARGET_LABELS: Record<string, string> = {

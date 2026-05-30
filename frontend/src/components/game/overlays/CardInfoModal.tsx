@@ -11,7 +11,7 @@ const TYPE_MAP: Record<string, string> = {
 	attack: "Ataque",
 	heal: "Curación",
 	perk: "Pasiva",
-	default: "General",
+	default: "Utilidad",
 };
 
 interface CardInfoModalProps {
