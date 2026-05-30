@@ -33,8 +33,17 @@ export function useLobby() {
 
 	// -- VALIDAR SI LA SALA SIGUE ACTIVA --
 	const checkActiveRoom = useCallback(async () => {
-		const currentRoomId = useRoomStore.getState().roomId;
+		const state = useRoomStore.getState();
+		const currentRoomId = state.roomId;
+		const isJoining = state.isJoining;
+
 		if (!currentRoomId) {
+			setIsValidatingRoom(false);
+			return;
+		}
+
+		// Evitar validar si el usuario está en el proceso de unirse por enlace
+		if (isJoining) {
 			setIsValidatingRoom(false);
 			return;
 		}
@@ -100,13 +109,10 @@ export function useLobby() {
 				const myRoom = newRooms.find((room) =>
 					room.players?.some((player) => String(player.id) === String(myId)),
 				);
-
+				// Si el servidor dice que el jugador está en una sala distinta a la actual,
+				// actualizar el roomId (útil para sincronización entre pestañas)
 				if (myRoom && myRoom.room_id !== currentRoomId) {
-					// Actualizar el roomId global con la sala donde realmente está el jugador
 					useRoomStore.getState().setRoomId(myRoom.room_id);
-				} else if (!myRoom && currentRoomId) {
-					// El jugador ya no está en ninguna sala, limpiar el roomId
-					useRoomStore.getState().setRoomId(null);
 				}
 			}
 		} catch (error) {
@@ -114,7 +120,7 @@ export function useLobby() {
 		} finally {
 			if (showLocalLoader) setIsLoadingRooms(false);
 		}
-	}, []); 
+	}, []);
 
 	useEffect(() => {
 		fetchRooms(true);
@@ -136,7 +142,7 @@ export function useLobby() {
 		const roomInfo = rooms.find((r) => r.room_id === selectedRoom);
 		let password = "";
 
-		if (roomInfo?.is_private === "1") {
+		if (roomInfo?.is_private === true) {
 			password = prompt("Esta sala es privada. Introduce la contraseña:") || "";
 		}
 

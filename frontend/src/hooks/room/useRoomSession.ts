@@ -21,7 +21,6 @@ export function useRoomSession(
 		needsPassword,
 		passwordError,
 		wasKicked,
-		setRoomId,
 		setIsJoining,
 		setWasKicked,
 		attemptJoin,
@@ -35,12 +34,11 @@ export function useRoomSession(
 
 	// Inicializar y limpiar
 	useEffect(() => {
-		setRoomId(roomId || null);
 		prevRoomIdRef.current = roomId;
 		return () => {
 			initAttempted.current = false;
 		};
-	}, [roomId, setRoomId, resetRoomStore]);
+	}, [roomId, resetRoomStore]);
 
 	// --- FUNCIÓN CENTRALIZADA DE MANEJO DE ERRORES ---
 	const handleJoinResponse = async (result: any) => {
@@ -100,11 +98,13 @@ export function useRoomSession(
 				}
 			}
 
-			if (myPlayerName) {
-				const result = await attemptJoin("", myPlayerName);
+			const authStore = useAuthStore.getState();
+			const isRegisteredUser = !!authStore.user && !authStore.isGuest;
+
+			if (isRegisteredUser || myPlayerName) {
+				// Pasar el myPlayerName si existe, o un string genérico si es registrado
+				const result = await attemptJoin("", myPlayerName || "registrado");
 				await handleJoinResponse(result);
-			} else {
-				setIsJoining(false);
 			}
 		};
 
@@ -129,7 +129,7 @@ export function useRoomSession(
 
 		localStorage.removeItem("game_token");
 		resetRoomStore();
-		setWasKicked(false); 
+		setWasKicked(false);
 		navigate("/rooms", { replace: true });
 	}, [wasKicked, resetRoomStore, showToast, setWasKicked, navigate]);
 

@@ -184,9 +184,9 @@ export const useRoomStore = create<RoomState>((set, get) => ({
 		}
 	},
 
-	attemptJoin: async (password = "", myPlayerName) => {
+	attemptJoin: async (password = "") => {
 		const roomId = get().roomId;
-		if (!roomId || !myPlayerName) return "ERROR";
+		if (!roomId) return "ERROR";
 
 		set({ passwordError: "" });
 
