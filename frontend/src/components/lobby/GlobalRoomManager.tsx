@@ -6,9 +6,8 @@ import { useRoom } from "../../hooks/room/useRoom";
 import { useLoadingStore } from "../../store/ui/useLoadingStore";
 
 import GuestNameModal from "./GuestNameModal";
-import RoomPasswordBoard from "./RoomPasswordBoard";
+import RoomPasswordBoard from "./RoomPasswordModal";
 import WaitingRoomDrawer from "./WaitingRoomDrawer";
-import { logWithTime } from "../../utils/logger";
 
 // Rutas donde NO queremos que se vea el widget (porque la UI propia ya lo gestiona)
 const EXCLUDED_PATHS = [
@@ -97,7 +96,6 @@ export function GlobalRoomManager() {
 	};
 
 	const handleLeave = async () => {
-		logWithTime("GlobalRoomManager.tsx - Se está saliendo de la sala", null, 'info', true)
 		startLoading("Saliendo...");
 		await handleLeaveRoom();
 		stopLoading();

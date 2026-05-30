@@ -180,12 +180,12 @@ class LiveRoomService
         $this->ensurePlayerNotInOtherRooms($playerId, $roomId);
 
         if ($room['status'] === 'in_game') {
-            throw new GameException(GameException::GAME_ALREADY_STARTED, "The game has already begun.", 403);
+            throw new GameException(GameException::GAME_ALREADY_STARTED, "La partida ya ha empezado.", 403);
         }
 
         if ($room['is_private'] === '1') {
-            if (!$password) throw new RoomException(RoomException::PASSWORD_REQUIRED, "Password required.", 403);
-            if (!Hash::check($password, $room['password'])) throw new RoomException(RoomException::INCORRECT_PASSWORD, "Incorrect password.", 403);
+            if (!$password) throw new RoomException(RoomException::PASSWORD_REQUIRED, "Esta sala está protegida con contraseña.", 403);
+            if (!Hash::check($password, $room['password'])) throw new RoomException(RoomException::INCORRECT_PASSWORD, "Contraseña incorrecta.", 403);
         }
 
         $currentPlayersCount = Redis::scard("room:{$roomId}:players");

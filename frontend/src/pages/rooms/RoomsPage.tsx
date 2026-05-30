@@ -8,6 +8,7 @@ import CreateRoomModal from "../../components/rooms/CreateRoomModal";
 import GuestNameModal from "../../components/lobby/GuestNameModal";
 import styles from "./RoomsPage.module.css";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
+import RoomPasswordBoard from "../../components/lobby/RoomPasswordModal.tsx";
 
 export default function RoomsPage() {
 	const {
@@ -27,14 +28,41 @@ export default function RoomsPage() {
 	const [showCreateModal, setShowCreateModal] = useState(false);
 	const [showGuestModal, setShowGuestModal] = useState(false);
 
-	const { user, isGuest } = useAuthStore();
+	const [showPasswordModal, setShowPasswordModal] = useState(false);
+	const [passwordError, setPasswordError] = useState("");
 
+	const { user, isGuest } = useAuthStore();
 	const isAlreadyInRoom = !!activeRoomId;
 	const canCreateRoom = !!user && !isGuest;
 
+	const executeJoin = async (password: string = "") => {
+		setPasswordError(""); // Limpiar errores previos
+		try {
+			await handleJoinRoom(password);
+			setShowPasswordModal(false);
+		} catch (error: any) {
+			const errorMsg =
+				error.response?.data?.error || "Error al unirse a la sala";
+			if (showPasswordModal) {
+				setPasswordError(errorMsg); // Si el modal está abierto, mostrar el error ahí
+			} else {
+				alert(errorMsg); // Fallback para salas públicas que fallen
+			}
+		}
+	};
+
+	const checkPasswordAndJoin = () => {
+		const roomInfo = filteredRooms.find((r) => r.room_id === selectedRoom);
+		if (roomInfo?.is_private) {
+			setShowPasswordModal(true);
+		} else {
+			executeJoin("");
+		}
+	};
+
 	const onJoinClick = () => {
 		if (user) {
-			handleJoinRoom();
+			checkPasswordAndJoin();
 		} else {
 			setShowGuestModal(true);
 		}
@@ -42,7 +70,7 @@ export default function RoomsPage() {
 
 	const handleGuestSuccess = () => {
 		setShowGuestModal(false);
-		handleJoinRoom();
+		checkPasswordAndJoin(); // Una vez tiene nombre, comprobamos si la sala pide clave
 	};
 
 	const isJoinDisabled =
@@ -214,6 +242,7 @@ export default function RoomsPage() {
 					user={user}
 				/>
 			)}
+
 			{showGuestModal && (
 				<GuestNameModal
 					onClose={() => setShowGuestModal(false)}
@@ -221,6 +250,17 @@ export default function RoomsPage() {
 				/>
 			)}
 
+			{showPasswordModal && selectedRoom && (
+				<RoomPasswordBoard
+					roomId={selectedRoom}
+					error={passwordError}
+					onCancel={() => {
+						setShowPasswordModal(false);
+						setPasswordError("");
+					}}
+					onSubmit={executeJoin}
+				/>
+			)}
 		</main>
 	);
 }

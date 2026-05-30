@@ -137,16 +137,9 @@ export function useLobby() {
 		};
 	}, [fetchRooms, checkActiveRoom]);
 
-	const handleJoinRoom = async () => {
+	const handleJoinRoom = async (password: string = "") => {
 		if (!selectedRoom) return;
-		const roomInfo = rooms.find((r) => r.room_id === selectedRoom);
-		let password = "";
 
-		if (roomInfo?.is_private === true) {
-			password = prompt("Esta sala es privada. Introduce la contraseña:") || "";
-		}
-
-		// Loader global bloqueante con mensaje
 		startLoading("Entrando a la sala...");
 		try {
 			const response = await api.post(`/rooms/${selectedRoom}/join`, {
@@ -156,7 +149,8 @@ export function useLobby() {
 				state: { playerName: response.data.player },
 			});
 		} catch (error: any) {
-			alert(error.response?.data?.error || "Error al unirse a la sala.");
+			console.log(error.response)
+			throw error;
 		} finally {
 			stopLoading();
 		}
