@@ -7,7 +7,7 @@ export default function TurnFlow() {
 				4. Flujo de Turnos
 			</h3>
 			<p className="mb-4 text-gray-700">
-				Cada turno de jugador se divide en tres fases. Los turnos tienen un tiempo limite, no puedes quedarte decidiendo por mucho tiempo.
+				Cada turno se divide en tres fases. Los turnos tienen un tiempo limite, no puedes quedarte decidiendo por mucho tiempo.
 			</p>
 
 			<ol className="list-decimal pl-6 space-y-4 text-gray-700 marker:font-bold marker:text-gray-900">
@@ -25,10 +25,9 @@ export default function TurnFlow() {
 				<li>
 					<strong>Fase de Descarte:</strong>
 					<br />
-					Al finalizar, si tiene más cartas en la mano que su capacidad de
-					estrés actual, <strong>deberá descartarse</strong> de
-					las sobrantes hasta igualar dicho límite antes de ceder el turno al
-					siguiente empleado.
+					Al finalizar, si tiene más cartas en la mano que su capacidad máxima, <strong>deberá descartarse</strong> de
+					las sobrantes hasta estar dentro del rango límite antes de ceder el turno al
+					siguiente jugador.
 				</li>
 			</ol>
 		</section>

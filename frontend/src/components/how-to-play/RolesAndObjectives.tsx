@@ -56,18 +56,15 @@ function RoleCard({
 		<article
 			className={`flex flex-col sm:flex-row items-start sm:items-center p-5 ${currentTheme.bg} border-l-8 ${currentTheme.borderLeft} rounded-lg shadow-sm gap-6 sm:gap-8 mt-6`}
 		>
-			{/* CONTENEDOR DE LA IMAGEN (Relativo para anclar los elementos absolutos) */}
 			<div className="relative w-24 h-24 shrink-0 mx-auto sm:mx-0">
-				{/* 1. Fondo circular y borde (Se queda anclado en el fondo) */}
 				<div
 					className={`absolute inset-0 bg-white rounded-full border-4 ${currentTheme.borderImg} shadow-inner`}
 				></div>
 
-				{/* 2. Imagen del personaje (Sobresale del contenedor) */}
 				<img
 					src={roleIcons[iconName]}
 					alt={role}
-					className="absolute z-10 w-32 h-32 max-w-25 object-contain -top-6  drop-shadow-xl transition-transform duration-300 hover:scale-105"
+					className="absolute z-10 w-32 h-32 max-w-25 object-contain -top-6  drop-shadow-xl transition-transform duration-300"
 				/>
 			</div>
 
@@ -104,7 +101,7 @@ export default function RolesAndObjectives() {
 					iconName="boss"
 					colorTheme="yellow"
 					objective="Eliminar a todos los Sindicalistas y a la Becaria."
-					description="El CEO de la empresa. Su identidad es pública y todos saben quién es. Su misión es seguir manteniendo su empresa a flote, acabando con el Sindicato de trabajadores y con la astuta Becaria."
+					description="El CEO de la empresa, Oswaldo Calzas. Su identidad es pública y todos saben quién es. Su misión es seguir manteniendo su empresa a flote, acabando con el Sindicato de trabajadores y con la astuta Becaria."
 				/>
 
 				<RoleCard
@@ -113,7 +110,7 @@ export default function RolesAndObjectives() {
 					iconName="secretary"
 					colorTheme="blue"
 					objective="Proteger al Jefe."
-					description="El lacayo del Jefe. Su lealtad a la empresa es incuestionable y hará todo lo necesario con tal de mantener su puesto. Gana la partida si el Jefe sobrevive, incluso si él mismo ha sido derrotado."
+					description="El lacayo del Jefe, Gusi Baboncia. Su lealtad a la empresa es incuestionable y hará todo lo necesario con tal de mantener su puesto. Gana la partida si el Jefe sobrevive, incluso si él mismo ha sido derrotado."
 				/>
 
 				<RoleCard
@@ -122,7 +119,7 @@ export default function RolesAndObjectives() {
 					iconName="union"
 					colorTheme="red"
 					objective="Eliminar al Jefe."
-					description="Conocen todos los trapos sucios de Chaos Inc. y no tienen otro deseo que el cierre de la empresa. No estarán tranquilos hasta tener la cabeza del Jefe. No les interesa acabar con el secretario."
+					description="Defensores de los derechos de los trabjadores, Torete y Samuel. Conocen todos los trapos sucios de Chaos Inc. y no tienen otro deseo que el cierre de la empresa. Su único objetivo es tener la cabeza del jefe. No les interesa acabar con el secretario o la becaria."
 				/>
 
 				<RoleCard
@@ -131,7 +128,7 @@ export default function RolesAndObjectives() {
 					iconName="intern"
 					colorTheme="green"
 					objective="Ser el único superviviente."
-					description="No cobra, trabaja 14 horas y está harta. Su plan es dejar que los demás se destruyan entre sí para, al final, quedarse con la empresa. Si el Sindicato cierra la empresa antes de adueñarse de ella, ¡se acabó!"
+					description="La novata de la oficina, Petrana. No cobra, trabaja 14 horas y está harta. Su plan es dejar que los demás se destruyan entre sí para, al final, quedarse con la empresa. Debe evitar que el sindicato gane para poder enfrentarse al secretario y al jefe."
 				/>
 			</div>{" "}
 		</section>

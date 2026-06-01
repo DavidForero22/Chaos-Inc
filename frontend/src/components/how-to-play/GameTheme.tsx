@@ -8,22 +8,14 @@ export default function GameTheme() {
 			</h3>
 			<div className="space-y-3 text-gray-700 leading-relaxed">
 				<p>
-					<strong>Chaos Inc.</strong> es un juego de suerte, astucia y
-					habilidad.
+					<strong>Chaos Inc.</strong> es un juego de cartas de engaño, astucia y
+					supervivencia en una empresa corrupta con el mismo nombre del juego.
 				</p>
-
 				<p>
-					Todos los jugadores tendrán un rol que no podrán revelar al resto de
-					compañeros, a excepción del <strong>Jefe</strong>, el cual será el
-					único rol visible. Cada rol tiene un objetivo distinto para ganar la
-					partida.
-				</p>
-
-				<p>
-					Tendrás que aumentar el estrés a tus oponentes (atacándoles) para
-					derrotarles. Si su nivel de estrés llega al límite, sufrirán un{" "}
-					<em>Burnout</em> y serán eliminados. Los jugadores tendrán a mano
-					diferentes acciones para sobrevivir al caos.
+					A excepción del <strong>Jefe</strong>, cuyo rol es público, el resto
+					de jugadores mantendrán su rol en secreto. Tu meta será usar los
+					recursos disponibles para derrotar a tus rivales y cumplir con la
+					condición de victoria de tu rol.
 				</p>
 			</div>
 		</section>

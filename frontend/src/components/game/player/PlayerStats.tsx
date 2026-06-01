@@ -96,7 +96,7 @@ export function PlayerStats({
 						className={`${styles.formRow} items-center pb-1 mb-2 border-none`}
 					>
 						<dt className={styles.formLabel}>Pasivas</dt>
-						<dd className="m-0 w-full">
+						<dd className="m-0 w-full flex justify-end">
 							{/* Lista semántica para las pasivas */}
 							<ul
 								aria-label="Tus pasivas equipadas"

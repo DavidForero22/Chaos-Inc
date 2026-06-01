@@ -176,7 +176,7 @@ export function OpponentCard({
 				{/* Indicador de rango */}
 				{!player.is_dead && player.is_online && (
 					<div className="absolute top-3 left-2 text-[11px] text-[#393e42] font-black bg-gray-200 px-1.5 py-0.5 rounded shadow-sm border border-gray-300">
-						<span aria-hidden="true">📍</span> {player.distance}m
+						<span aria-hidden="true">📍</span> {player.distance}
 					</div>
 				)}
 

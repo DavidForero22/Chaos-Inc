@@ -15,18 +15,48 @@ export default function CoreMechanics() {
 					<h4 className="font-bold text-lg text-gray-900 mb-2">A. Estrés</h4>
 					<p>
 						En lugar de puntos de vida tradicionales, los jugadores cuentan con
-						una barra de <strong>Estrés</strong> (iniciando en 0). Si su nivel
-						de estrés alcanza el límite máximo permitido, sufrirá un{" "}
-						<em>Burnout</em>, solicitando una baja por estrés de la empresa y
-						eliminandose inmediatamente de la partida.
+						una barra de <strong>Estrés</strong>. Si el nivel alcanza el límite
+						máximo permitido, el empleado sufrirá un <em>Burnout</em> (baja por
+						estrés), eliminandose inmediatamente de la partida.{" "}
 					</p>
-					<div className="flex justify-center my-10">
+					<p>
+						Todos los jugadores tienen un máximo de{" "}
+						<strong>4 puntos de estrés</strong>, a excepción del jefe que puede
+						tener hasta <strong>5 puntos de estrés</strong>
+					</p>
+					<div className="flex justify-center flex-col text-center my-10">
 						<img src="/mixed/stress-guide.png" />
+						<p className="text-sm mt-4 italic">Dibujo conceptual del estrés</p>
+
+						<div className="flex justify-center">
+							<img src="/mixed/stress-example.png" className="w-90 mt-8" />
+						</div>
+						<p className="text-sm mt-4 italic">
+							Indicador de estrés en la interfaz de la partida
+						</p>
 					</div>
 					<p className="mb-4">
-						A más estrés, menos cartas podrás conservar en tu mano al terminar
-						el turno.
+						A más estrés, menos cartas podrás conservar en tu mano al terminar el turno. Si tu número de cartas{" "}
+						<strong>excede el limite de tu mano</strong>, deberás descartar cartas hasta estar por debajo del límite.
 					</p>{" "}
+					<div className="flex justify-center flex-col text-center my-10">
+						<div className="flex justify-center">
+							<img src="/mixed/stress-low-example.png" className="w-110" />
+						</div>
+						<p className="text-sm mt-4 italic">
+							Limite de cartas teniendo un estrés bajo (6)
+						</p>
+
+						<div className="flex justify-center">
+							<img
+								src="/mixed/stress-high-example.png"
+								className="w-110 mt-8"
+							/>
+						</div>
+						<p className="text-sm mt-4 italic">
+							Limite de cartas teniendo un estrés alto (2, el jugador excede el límite)
+						</p>
+					</div>
 				</div>
 				<div>
 					<h4 className="font-bold text-lg text-gray-900 mb-2">B. Alcance</h4>
@@ -50,8 +80,28 @@ export default function CoreMechanics() {
 						</li>
 					</ul>
 
-					<div className="flex justify-center my-10">
-						<img src="/mixed/range-guide.png" />
+					<div className="flex justify-center flex-col text-center my-10">
+						<img src="/mixed/distance-guide.png" />
+						<p className="text-sm mt-4 italic">
+							Dibujo conceptual de distancia de jugadores
+						</p>
+						<div className="flex justify-center mt-8">
+							<img src="/mixed/distance-example.png" className="w-140" />
+						</div>
+						<p className="text-sm mt-4 italic">
+							En la interfaz del juego, la distancia a la que está un jugador de
+							tí se indica en la carta del oponente.
+						</p>
+						<div className="flex justify-center mt-8">
+							<img
+								src="/mixed/distance-invalid-example.gif"
+								className="w-100"
+							/>
+						</div>
+						<p className="text-sm mt-4 italic">
+							Al elegir una carta de ataque, los jugadores fuera de tu alcance
+							se deshabilitarán.
+						</p>
 					</div>
 				</div>
 				<div>
@@ -67,25 +117,25 @@ export default function CoreMechanics() {
 								type: "Ataques",
 								color: "bg-red-50",
 								border: "border-red-500",
-								text: "Aumentan el estrés a los oponentes de forma inmediata.",
+								text: "Aumentan el estrés a los oponentes.",
 							},
 							{
 								type: "Salud",
 								color: "bg-green-50",
 								border: "border-green-500",
-								text: "Cartas esenciales para reducir tu estrés y evitar el Burnout.",
+								text: "Reducen tu cantidad de estrés.",
 							},
 							{
 								type: "Pasivas",
 								color: "bg-yellow-50",
 								border: "border-yellow-400",
-								text: "Efectos constantes. Máximo 3 equipadas. ¡Cuidado con el 'Recorte'!",
+								text: "Efectos constantes. Máximo 3 equipadas. Los oponentes te las pueden quitar con la carta 'Recorte'",
 							},
 							{
 								type: "Utilidad",
 								color: "bg-gray-100",
 								border: "border-gray-500",
-								text: "Robar cartas, esquivar ataques o bloquear turnos enemigos.",
+								text: "Robar cartas, esquivar ataques, bloquear turnos enemigos...",
 							},
 						].map((card) => (
 							<div
@@ -110,8 +160,9 @@ export default function CoreMechanics() {
 					</p>
 				</div>{" "}
 				<p>
-					El borde de las cartas representará su tipo y los iconos de la parte
-					inferior indican de forma resumida el efecto de la carta. Hay una guía de iconos dentro de las partidas para facilitar la lectura de estos.
+					El borde de las cartas representa su tipo y los iconos de la parte
+					inferior indican el efecto de la carta. Hay una guía
+					de iconos dentro de las partidas para facilitar la lectura de estos.
 				</p>
 				<div className="flex justify-center my-10">
 					<img src="/mixed/cards_example.png" />
