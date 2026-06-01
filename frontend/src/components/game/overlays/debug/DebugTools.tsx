@@ -102,7 +102,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 		}
 	}, [activeModal, isRendered]);
 
-	const isDebug = String(room?.is_debug) === "1";
+	const isDebug = room?.is_debug;
 	if (!isDebug) {
 		return null;
 	}

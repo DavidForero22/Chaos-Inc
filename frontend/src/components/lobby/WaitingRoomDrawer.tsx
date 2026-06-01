@@ -34,7 +34,7 @@ export default function WaitingRoomDrawer({
 	copied,
 }: WaitingRoomDrawerProps) {
 	const [isOpen, setIsOpen] = useState(true);
-	const isDebugRoom = room.is_debug === true;
+	const isDebugRoom = room.is_debug;
 
 	// --- LÓGICA DE INICIO ---
 	const currentPlayers = room.players?.length || 0;

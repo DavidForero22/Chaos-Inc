@@ -41,7 +41,7 @@ export default function RoomList({
 			{!isLoading && (
 				<div role="list" aria-label="Lista de salas disponibles">
 					{rooms.map((room) => {
-						const isDebug = room.is_debug === "1";
+						const isDebug = room.is_debug;
 						const isRoomFull = isFull(room);
 						const isSelected = selectedRoom === room.room_id;
 
@@ -66,7 +66,7 @@ export default function RoomList({
 								}}
 								role="button"
 								tabIndex={isRoomFull ? -1 : 0}
-								aria-label={`Sala ${room.name}, ${room.is_private === "1" ? "privada" : "pública"}, ${room.status === "waiting" ? "esperando jugadores" : "en partida"}, ${playerCount(room)} de ${room.max_players} jugadores${isRoomFull ? " (Llena)" : ""}`}
+								aria-label={`Sala ${room.name}, ${room.is_private ? "privada" : "pública"}, ${room.status === "waiting" ? "esperando jugadores" : "en partida"}, ${playerCount(room)} de ${room.max_players} jugadores${isRoomFull ? " (Llena)" : ""}`}
 								aria-selected={isSelected}
 								aria-disabled={isRoomFull}
 								style={opacityStyle}
@@ -80,7 +80,7 @@ export default function RoomList({
 								<div className={styles.roomInfo}>
 									<div className={styles.roomName}>
 										<span className={styles.roomPrivateIcon} aria-hidden="true">
-											{room.is_private === "1" ? "🔒" : "○"}
+											{room.is_private ? "🔒" : "○"}
 										</span>
 										<span>{room.name}</span>
 

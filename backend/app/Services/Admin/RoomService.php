@@ -101,7 +101,7 @@ class RoomService
             unset($roomData['player_ids']);
             $roomData['players'] = $formattedPlayers;
 
-            $formattedRooms[] = $roomData;
+            $formattedRooms[] = (new RoomResource($roomData))->resolve();
         }
 
         return $formattedRooms;

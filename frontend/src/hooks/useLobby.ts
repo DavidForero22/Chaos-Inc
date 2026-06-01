@@ -149,7 +149,7 @@ export function useLobby() {
 				state: { playerName: response.data.player },
 			});
 		} catch (error: any) {
-			console.log(error.response)
+			console.log(error.response);
 			throw error;
 		} finally {
 			stopLoading();

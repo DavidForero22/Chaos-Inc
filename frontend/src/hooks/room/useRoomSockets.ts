@@ -22,10 +22,7 @@ export function useRoomSockets({ roomId }: UseRoomSocketsProps) {
 		channel
 			.leaving((user: any) => {
 				fetchRoomData();
-
-				console.log("user: ", user);
-				console.log("user.id: ", user.id);
-
+				
 				if (user && user.id) {
 					api
 						.post(`/rooms/${roomId}/report-disconnect`, {

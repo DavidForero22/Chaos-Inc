@@ -16,7 +16,7 @@ export const logWithTime = (
 	const room = useRoomStore.getState().room;
 
 	//  Comprobar si es una sala de debug (manejamos posibles formatos de string/booleano)
-	const isDebug = String(room?.is_debug) === "1";
+	const isDebug = room?.is_debug;
 
 	// No es juego debug y no se ha pedido explicitamente mostrar datos
 	if (!isDebug && !forceDebug) {
