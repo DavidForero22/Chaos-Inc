@@ -1,3 +1,4 @@
+// src/components/rooms/WaitingRoomDrawer.tsx
 import { useState } from "react";
 import {
 	FaShareAlt,
@@ -35,6 +36,12 @@ export default function WaitingRoomDrawer({
 	const [isOpen, setIsOpen] = useState(true);
 	const isDebugRoom = room.is_debug === true;
 
+	// --- LÓGICA DE INICIO ---
+	const currentPlayers = room.players?.length || 0;
+	const MIN_PLAYERS = 3;
+	const canStart = currentPlayers >= MIN_PLAYERS;
+	const missingForMin = Math.max(0, MIN_PLAYERS - currentPlayers);
+
 	return (
 		<>
 			{/* BOTÓN FLOTANTE (Solo visible si el panel está cerrado) */}
@@ -46,12 +53,12 @@ export default function WaitingRoomDrawer({
 				>
 					<FaUsers size={20} />
 					<span className="font-bold">
-						{room.players?.length || 0}/{room.max_players}
+						{currentPlayers}/{room.max_players}
 					</span>
 				</button>
 			)}
 
-			{/* OVERLAY OSCURO (Opcional, para centrar la atención en móvil. En PC no bloquea el resto) */}
+			{/* OVERLAY OSCURO */}
 			{isOpen && (
 				<div
 					className="fixed inset-0 bg-black/20 z-40 sm:hidden"
@@ -107,7 +114,7 @@ export default function WaitingRoomDrawer({
 					<div className="flex justify-between items-end mb-4 border-b border-gray-300 pb-2">
 						<h3 className="font-bold text-gray-700">JUGADORES</h3>
 						<span className="font-black text-blue-600">
-							{room.players?.length || 0} / {room.max_players}
+							{currentPlayers} / {room.max_players}
 						</span>
 					</div>
 
@@ -195,17 +202,18 @@ export default function WaitingRoomDrawer({
 				<footer className="p-4 bg-gray-100 border-t-2 border-black flex flex-col gap-3">
 					<button
 						onClick={onStart}
-						disabled={missingPlayers > 0 || !isOwner}
+						// Botón deshabilitado si no llegamos a 3 jugadores o si no es el dueño
+						disabled={!canStart || !isOwner}
 						className={`w-full py-3 rounded font-black uppercase tracking-wider text-sm transition-all ${
-							missingPlayers > 0 || !isOwner
+							!canStart || !isOwner
 								? "bg-gray-300 text-gray-500 cursor-not-allowed"
 								: "bg-green-600 text-white border-2 border-green-800 shadow-[4px_4px_0_0_#166534] hover:translate-y-1 hover:shadow-[0_0_0_0_#166534]"
 						}`}
 					>
 						{!isOwner
 							? "Esperando al líder..."
-							: missingPlayers > 0
-								? `Faltan ${missingPlayers}`
+							: !canStart
+								? `Faltan ${missingForMin} mínimo`
 								: "Empezar Partida"}
 					</button>
 
