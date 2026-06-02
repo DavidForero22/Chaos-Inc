@@ -17,7 +17,7 @@ export default function CoreMechanics() {
 						En lugar de puntos de vida tradicionales, los jugadores cuentan con
 						una barra de <strong>Estrés</strong>. Si el nivel alcanza el límite
 						máximo permitido, el empleado sufrirá un <em>Burnout</em> (baja por
-						estrés), eliminandose inmediatamente de la partida.{" "}
+						estrés), eliminándose inmediatamente de la partida.{" "}
 					</p>
 					<p>
 						Todos los jugadores tienen un máximo de{" "}
@@ -25,36 +25,51 @@ export default function CoreMechanics() {
 						tener hasta <strong>5 puntos de estrés</strong>
 					</p>
 					<div className="flex justify-center flex-col text-center my-10">
-						<img src="/mixed/stress-guide.png" />
+						<img
+							src="/mixed/stress-guide.png"
+							alt="Dibujo conceptual de la barra de estrés"
+						/>
 						<p className="text-sm mt-4 italic">Dibujo conceptual del estrés</p>
 
 						<div className="flex justify-center">
-							<img src="/mixed/stress-example.png" className="w-90 mt-8" />
+							<img
+								src="/mixed/stress-example.png"
+								className="w-90 mt-8"
+								alt="Ejemplo de indicador de estrés en la interfaz"
+							/>
 						</div>
 						<p className="text-sm mt-4 italic">
 							Indicador de estrés en la interfaz de la partida
 						</p>
 					</div>
 					<p className="mb-4">
-						A más estrés, menos cartas podrás conservar en tu mano al terminar el turno. Si tu número de cartas{" "}
-						<strong>excede el limite de tu mano</strong>, deberás descartar cartas hasta estar por debajo del límite.
+						A más estrés, menos cartas podrás conservar en tu mano al terminar
+						el turno. Si tu número de cartas{" "}
+						<strong>excede el límite de tu mano</strong>, deberás descartar
+						cartas hasta estar por debajo del límite.
 					</p>{" "}
 					<div className="flex justify-center flex-col text-center my-10">
 						<div className="flex justify-center">
-							<img src="/mixed/stress-low-example.png" className="w-110" />
+							<img
+								src="/mixed/stress-low-example.png"
+								className="w-110"
+								alt="Ejemplo de límite de cartas con estrés bajo (6 cartas)"
+							/>
 						</div>
 						<p className="text-sm mt-4 italic">
-							Limite de cartas teniendo un estrés bajo (6)
+							Límite de cartas teniendo un estrés bajo (6)
 						</p>
 
 						<div className="flex justify-center">
 							<img
 								src="/mixed/stress-high-example.png"
 								className="w-110 mt-8"
+								alt="Ejemplo de límite de cartas con estrés alto (2 cartas, excede el límite)"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
-							Limite de cartas teniendo un estrés alto (2, el jugador excede el límite)
+							Límite de cartas teniendo un estrés alto (2, el jugador excede el
+							límite)
 						</p>
 					</div>
 				</div>
@@ -81,21 +96,29 @@ export default function CoreMechanics() {
 					</ul>
 
 					<div className="flex justify-center flex-col text-center my-10">
-						<img src="/mixed/distance-guide.png" />
+						<img
+							src="/mixed/distance-guide.png"
+							alt="Dibujo conceptual de la distancia entre jugadores"
+						/>
 						<p className="text-sm mt-4 italic">
 							Dibujo conceptual de distancia de jugadores
 						</p>
 						<div className="flex justify-center mt-8">
-							<img src="/mixed/distance-example.png" className="w-140" />
+							<img
+								src="/mixed/distance-example.png"
+								className="w-140"
+								alt="Interfaz mostrando la distancia a un jugador indicada en su carta"
+							/>
 						</div>
 						<p className="text-sm mt-4 italic">
 							En la interfaz del juego, la distancia a la que está un jugador de
-							tí se indica en la carta del oponente.
+							ti se indica en la carta del oponente.
 						</p>
 						<div className="flex justify-center mt-8">
 							<img
 								src="/mixed/distance-invalid-example.gif"
 								className="w-100"
+								alt="Jugadores fuera de alcance deshabilitados al seleccionar una carta de ataque"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -161,11 +184,14 @@ export default function CoreMechanics() {
 				</div>{" "}
 				<p>
 					El borde de las cartas representa su tipo y los iconos de la parte
-					inferior indican el efecto de la carta. Hay una guía
-					de iconos dentro de las partidas para facilitar la lectura de estos.
+					inferior indican el efecto de la carta. Hay una guía de iconos dentro
+					de las partidas para facilitar la lectura de estos.
 				</p>
 				<div className="flex justify-center my-10">
-					<img src="/mixed/cards_example.png" />
+					<img
+						src="/mixed/cards_example.png"
+						alt="Ejemplos de cartas con diferentes bordes e iconos"
+					/>
 				</div>
 			</div>
 		</section>

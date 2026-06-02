@@ -119,7 +119,7 @@ export default function RolesAndObjectives() {
 					iconName="union"
 					colorTheme="red"
 					objective="Eliminar al Jefe."
-					description="Defensores de los derechos de los trabjadores, Torete y Samuel. Conocen todos los trapos sucios de Chaos Inc. y no tienen otro deseo que el cierre de la empresa. Su único objetivo es tener la cabeza del jefe. No les interesa acabar con el secretario o la becaria."
+					description="Defensores de los derechos de los trabajadores, Torete y Samuel. Conocen todos los trapos sucios de Chaos Inc. y no tienen otro deseo que el cierre de la empresa. Su único objetivo es tener la cabeza del jefe. No les interesa acabar con el secretario o la becaria."
 				/>
 
 				<RoleCard

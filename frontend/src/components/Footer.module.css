@@ -1,0 +1,73 @@
+.postItContainer {
+	margin-top: 4rem; /* Espacio entre la libreta y el post-it */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	z-index: 5;
+}
+
+.postIt {
+	position: relative;
+	background-color: #fdfd96; /* Amarillo pastel clásico de Post-it */
+	width: 200px;
+	padding: 2rem 1.5rem 1.5rem 1.5rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 1.2rem;
+
+	/* Rotación ligera para que parezca pegado con prisas */
+	transform: rotate(-3deg);
+
+	/* Sombra realista: más intensa abajo a la derecha simulando que se levanta un poco */
+	box-shadow:
+		2px 4px 6px rgba(0, 0, 0, 0.3),
+		8px 10px 15px rgba(0, 0, 0, 0.2);
+
+	/* Pequeño detalle para hacer la esquina inferior derecha algo curva */
+	border-bottom-right-radius: 40px 5px;
+
+	font-family: "Courier New", Courier, monospace;
+	color: #393e42;
+}
+
+/* Tira de celo semitransparente arriba */
+.tape {
+	position: absolute;
+	top: -10px;
+	left: 50%;
+	transform: translateX(-50%) rotate(2deg);
+	width: 80px;
+	height: 25px;
+	background-color: rgba(255, 255, 255, 0.4);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	z-index: 2;
+}
+
+.title {
+	font-size: 1.2rem;
+	font-weight: bold;
+	margin: 0;
+	text-transform: uppercase;
+	border-bottom: 2px dashed rgba(57, 62, 66, 0.4);
+	padding-bottom: 0.2rem;
+}
+
+.links {
+	display: flex;
+	gap: 1.2rem;
+}
+
+.iconLink {
+	color: #393e42;
+	transition:
+		color 0.2s ease,
+		transform 0.2s ease;
+	display: inline-block;
+}
+
+.iconLink:hover {
+	color: #000;
+	transform: translateY(-3px) scale(1.1); /* Efecto de saltito al hacer hover */
+}

@@ -4,6 +4,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/ui/Navbar/Navbar";
 import styles from "./NotebookLayout.module.css";
+import Footer from "../components/Footer";
 
 export default function NotebookLayout() {
 
@@ -26,6 +27,8 @@ export default function NotebookLayout() {
 					<Outlet />
 				</div>
 			</main>
+
+			<Footer/>
 		</div>
 	);
 }

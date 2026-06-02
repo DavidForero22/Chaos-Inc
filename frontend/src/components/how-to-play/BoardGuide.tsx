@@ -1,4 +1,4 @@
-// src/components/how-to-play/BoardLayout.tsx
+// src/components/how-to-play/BoardGuide.tsx
 
 export default function BoardLayout() {
 	return (
@@ -15,7 +15,7 @@ export default function BoardLayout() {
 			<div className="mb-8 flex justify-center">
 				<img
 					src="/mixed/ui-players.png"
-					alt="Ejemplo del tablero de la oficina"
+					alt="Jugadores en el tablero mostrando distancia, cartas en mano, estrés, pasivas, jefe y turno actual"
 					className="w-100 h-auto object-cover"
 				/>
 			</div>
@@ -31,7 +31,7 @@ export default function BoardLayout() {
 			<div className="mb-8 flex justify-center">
 				<img
 					src="/mixed/ui-stats.png"
-					alt="Ejemplo del tablero de la oficina"
+					alt="Información personal del jugador: rol, estrés, alcance, pasivas y efectos de estado"
 					className="w-70 h-auto object-cover"
 				/>
 			</div>
@@ -46,7 +46,7 @@ export default function BoardLayout() {
 			<div className="mb-8 flex justify-center">
 				<img
 					src="/mixed/ui-player-hand.png"
-					alt="Ejemplo del tablero de la oficina"
+					alt="Mano del jugador con cartas y botones de Inspeccionar, Descartar y Terminar Turno"
 					className="w-160 h-auto object-cover"
 				/>
 			</div>
@@ -62,7 +62,7 @@ export default function BoardLayout() {
 			<div className="mb-8 flex justify-center">
 				<img
 					src="/mixed/ui-buttons.png"
-					alt="Ejemplo del tablero de la oficina"
+					alt="Botones de menú: salir, chat/historial y guía de iconos"
 					className="w-60 h-auto object-cover"
 				/>
 			</div>
@@ -76,7 +76,7 @@ export default function BoardLayout() {
 			<div className="mb-8 flex justify-center">
 				<img
 					src="/mixed/ui-room-status.png"
-					alt="Ejemplo del tablero de la oficina"
+					alt="Estado de la sala: cartas restantes en mazo, ID de sala y número de ronda"
 					className="w-50 h-auto object-cover"
 				/>
 			</div>
