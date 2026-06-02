@@ -3,14 +3,11 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../docker/Dockerfile.dev
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      dockerfile: ../docker/Dockerfile.prod
+    args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
     ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:8000
+      - "5173:80"
     depends_on:
       - backend
     networks:
