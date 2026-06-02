@@ -11,42 +11,84 @@ export default function KnowMorePage() {
 			>
 				SABER MÁS
 			</h1>
+
 			<h2 className="text-xl mb-8 opacity-80 border-b border-gray-400 pb-2 font-bold">
 				Sobre Chaos Inc.
 			</h2>
 
 			<div className="space-y-4">
 				<p>
-					Fundada con la visión de que el estrés extremo fomenta la máxima
-					productividad, <strong>Chaos Inc.</strong> es pionera en la
-					implementación de entornos de trabajo hostiles.
+					Chaos Inc. ha sido desarrollado por una única persona, naciendo como
+					un proyecto de fin de curso para un grado de formación profesional
+					superior en Desarrollo de Aplicaciones Web en el centro educativo
+					U-Tad.
 				</p>
-
 				<p>
-					Nuestra misión no es crear productos, sino observar cómo los seres
-					humanos interactúan bajo presiones burocráticas absurdas. Creemos
-					firmemente que de la paranoia nace la excelencia corporativa.
+					Está basado en el juego de mesa BANG!, con diferencias en las
+					mecánicas de juego y la temática. No se busca plagiar el juego
+					original, sino presentar nuevas ideas y cambios en las bases del
+					mismo.
 				</p>
+			</div>
 
-				<h3 className="text-lg font-bold mt-6">Historial de Versiones</h3>
-				<p>
-					El desarrollo de <strong>Chaos Inc.</strong> ha sido largo y laborioso al estar sobre
-					los hombros de un único desarrollador. Me parecía una buena práctica
-					registrar las diferentes versiones que han ido surgiendo para poder
-					consultar el avance del proyecto con el tiempo.
-				</p>
+			<h2 className="text-xl mb-8 opacity-80 border-b border-gray-400 pb-2 mt-10 font-bold">
+				Agradecimientos especiales
+			</h2>
 
-				<Changelog />
+			<p>
+				Agradezco el esfuerzo de las personas que contribuyeron en el desarrollo
+				del proyecto:
+			</p>
 
-				<br />
-				<br />
-				<div className="bg-gray-400/20 p-4 rounded border border-gray-400/50">
-					<p className="font-bold text-sm mb-2">CONTACTO (No funcional)</p>
-					<p className="text-sm opacity-80">
-						Si experimenta problemas técnicos, por favor envíe un fax al
-						departamento de IT. Si no tiene fax, su problema no es prioritario.
-					</p>
+			<div className="grid grid-cols-2 my-10 p-4">
+				<div className="flex flex-col items-center">
+					<img
+						src="acknowledgments/dani.png"
+						alt="Avatar de Danitron"
+						className="w-32 rounded-lg"
+					/>
+					<a
+						className="mt-2 text-lg font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
+						href="https://discord.dog/1025390449550164000"
+						target="_blank"
+						rel="noopener noreferrer"
+						title="Perfil de Discord de Danitron"
+					>
+						Danitron
+					</a>
+					<p className="mt-2 text-xs italic">(Artista de los roles)</p>
 				</div>
+
+				<div className="flex flex-col justify-end items-center">
+					<img
+						src="acknowledgments/isa.png"
+						alt="Avatar de Payasy"
+						className="w-30 rounded-lg"
+					/>
+					<a
+						className="mt-2 text-lg font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
+						href="https://vgen.co/unapayasy"
+						target="_blank"
+						rel="noopener noreferrer"
+						title="Página de comisiones de Payasy"
+					>
+						Payasy
+					</a>
+					<p className="mt-2 text-xs italic">(Artista de los logros)</p>
+				</div>
+			</div>
+
+			<h2 className="text-xl mb-8 opacity-80 border-b border-gray-400 pb-2 mt-10 font-bold">
+				Historial de versiones
+			</h2>
+
+			<p>
+				Se han registrado las diferentes versiones del proyecto con el paso del
+				tiempo.
+			</p>
+
+			<div className="mt-6">
+				<Changelog />
 			</div>
 		</div>
 	);
