@@ -30,17 +30,14 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      SERVER_NAME: ":8000" 
-      DB_DATABASE: ${MYSQL_DATABASE}
-      DB_USERNAME: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-    command: >
-      sh -c "php artisan storage:link &&
-             php artisan config:clear && 
-             php artisan cache:clear && 
-             php artisan migrate --force && 
-             frankenphp run --config /etc/caddy/Caddyfile"
+        DB_DATABASE: ${MYSQL_DATABASE}
+        DB_USERNAME: ${MYSQL_USER}
+        DB_PASSWORD: ${MYSQL_PASSWORD}
+        REDIS_PASSWORD: ${REDIS_PASSWORD}
+        APP_URL: ${API_URL}
+        FRONTEND_URL: ${FRONTEND_URL}
+        SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
     depends_on:
       redis:
         condition: service_started
@@ -71,6 +68,9 @@ services:
       DB_USERNAME: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
 
@@ -94,6 +94,9 @@ services:
       DB_USERNAME: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
     deploy:
@@ -121,6 +124,9 @@ services:
       DB_USERNAME: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
       REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
 

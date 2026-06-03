@@ -104,10 +104,10 @@ export default function RoomsPage() {
 					className="text-4xl mb-6 font-black"
 					style={{ color: "var(--color-lomo)" }}
 				>
-					LISTADO DE SALAS
+					SALAS
 				</h1>
 				<h2 className="text-xl mb-6 opacity-80 border-b border-gray-400 pb-2 font-bold">
-					Seleccione una sala activa.
+					Listado de salas áctivas.
 				</h2>
 
 				{/* Buscador + Filtros */}

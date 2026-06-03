@@ -9,11 +9,11 @@ export default function MainMenuPage() {
 				className="text-4xl mb-6 font-black"
 				style={{ color: "var(--color-lomo)" }}
 			>
-				CHAOS INC.
+				Inicio
 			</h1>
 
 			<h2 className="text-xl mb-8 opacity-80 border-b border-gray-400 pb-2 font-bold">
-				Manual de Orientación General
+				Bienvenido a la empresa
 			</h2>
 
 			{/* Imagen de portada */}
