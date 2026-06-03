@@ -4,10 +4,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import type { FriendSummary } from "../../../types/user";
-import { getFullAvatarUrl } from "../../../utils/avatar"; // 🔥 Importar helper
+import { getFullAvatarUrl } from "../../../utils/avatar";
 import styles from "./FriendList.module.css";
 import viewStyles from "../RegisteredProfileView.module.css";
 import { useProfileStore } from "../../../store/profile/useProfileStore";
+import { levelFromXp } from "../../../utils/experience";
 
 const VISIBLE_DEFAULT = 6;
 
@@ -19,13 +20,10 @@ function getInitials(username: string): string {
 	return username.slice(0, 2).toUpperCase();
 }
 
-function getLevelFromXp(xp: number): number {
-	return Math.floor(Math.sqrt(xp / 100)) + 1;
-}
+
 
 function FriendCard({ friend }: { friend: FriendSummary }) {
-	const level = getLevelFromXp(friend.totalXp ?? 0);
-	// 🔥 Normalizar la URL del avatar
+	const level = levelFromXp(friend.totalXp ?? 0);
 	const avatarUrl = getFullAvatarUrl(friend.avatar);
 
 	return (
