@@ -3,11 +3,12 @@
 import type { MyData } from "../../types/live-game.ts";
 
 export type DisplayRole = MyData["role"];
+export type DisplayableRole = Exclude<DisplayRole, "hidden">;
 
 /**
  * Traduccion de las claves de los roles
  */
-export const ROLE_LABELS: Record<DisplayRole, string> = {
+export const ROLE_LABELS: Record<DisplayableRole, string> = {
 	boss: "Jefe",
 	secretary: "Secretariado",
 	intern: "Becaria",
@@ -15,7 +16,7 @@ export const ROLE_LABELS: Record<DisplayRole, string> = {
 };
 
 export const ROLE_CONFIG: Record<
-	DisplayRole,
+	DisplayableRole,
 	{
 		label: string;
 		color: string;

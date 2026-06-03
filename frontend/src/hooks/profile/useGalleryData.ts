@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { ROLE_CONFIG, type DisplayRole } from "../../data/game/roles";
+import { ROLE_CONFIG, type DisplayableRole } from "../../data/game/roles";
 import {
 	RESULT_CONFIG,
 	type ConfigKey as EndingKey,
 } from "../../data/game/gameResults";
-import type { EnrichedCard, EnrichedEnding, EnrichedRole, GalleryCard } from "../../types/gallery";
+import type {
+	EnrichedCard,
+	EnrichedEnding,
+	EnrichedRole,
+	GalleryCard,
+} from "../../types/gallery";
 
 export function useGalleryData() {
 	const [cards, setCards] = useState<EnrichedCard[]>([]);
@@ -28,6 +33,7 @@ export function useGalleryData() {
 					roles: rawRoles,
 					endings: rawEndings,
 				} = responseData;
+
 				const enrichedCards: EnrichedCard[] = rawCards.map(
 					(card: GalleryCard) => ({
 						...card,
@@ -38,7 +44,7 @@ export function useGalleryData() {
 				);
 
 				// Enriquecer roles
-				const allRoles: DisplayRole[] = [
+				const allRoles: DisplayableRole[] = [
 					"boss",
 					"secretary",
 					"intern",

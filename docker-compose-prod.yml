@@ -2,10 +2,14 @@ services:
   # FRONTEND (React + Vite)
   frontend:
     build:
-      context: ./frontend
-      dockerfile: ../docker/Dockerfile.prod
-    args:
-        - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
+      context: ./
+      dockerfile: ./docker/Dockerfile.prod
+      args:
+        - VITE_API_URL=${API_URL}
+        - VITE_REVERB_APP_KEY=tyazklael8i55u4u8d1q
+        - VITE_REVERB_HOST=${DOMAIN}
+        - VITE_REVERB_PORT=8080 
+        - VITE_REVERB_SCHEME=http 
     ports:
       - "5173:80"
     depends_on:
@@ -27,16 +31,20 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      SERVER_NAME: ":8000"
-    command: >
-      sh -c "php artisan storage:link &&
-             php artisan config:clear && 
-             php artisan cache:clear && 
-             php artisan migrate --force && 
-             frankenphp run --config /etc/caddy/Caddyfile"
+        DB_DATABASE: ${MYSQL_DATABASE}
+        DB_USERNAME: ${MYSQL_USER}
+        DB_PASSWORD: ${MYSQL_PASSWORD}
+        REDIS_PASSWORD: ${REDIS_PASSWORD}
+        APP_URL: ${API_URL}
+        FRONTEND_URL: ${FRONTEND_URL}
+        # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
+        SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     networks:
       - chaos-inc-net
 
@@ -51,10 +59,21 @@ services:
       - "8080:8080"
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
+      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
     networks:
       - chaos-inc-net
 
@@ -67,10 +86,21 @@ services:
       - ./backend:/var/www/html
     command: php artisan queue:work --tries=3 --timeout=90 --memory=128 --sleep=1
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
+      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
     networks:
       - chaos-inc-net
     deploy:
@@ -85,11 +115,23 @@ services:
       - ./backend:/var/www/html
     command: php artisan schedule:work
     depends_on:
-      - mysql
-      - redis
-      - backend
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      backend:
+        condition: service_started
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      APP_URL: ${API_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
+      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
     networks:
       - chaos-inc-net
 
@@ -110,6 +152,11 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - chaos-inc-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   # CACHÉ/TIEMPO REAL (Redis)
   redis:

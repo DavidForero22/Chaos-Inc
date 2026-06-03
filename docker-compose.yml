@@ -30,7 +30,11 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      SERVER_NAME: ":8000"
+      SERVER_NAME: ":8000" 
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     command: >
       sh -c "php artisan storage:link &&
              php artisan config:clear && 
@@ -38,8 +42,10 @@ services:
              php artisan migrate --force && 
              frankenphp run --config /etc/caddy/Caddyfile"
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     networks:
       - chaos-inc-net
 
@@ -54,10 +60,17 @@ services:
       - "8080:8080"
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
 
@@ -70,10 +83,17 @@ services:
       - ./backend:/var/www/html
     command: php artisan queue:work --tries=3 --timeout=90 --memory=128 --sleep=1
     depends_on:
-      - mysql
-      - redis
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
     deploy:
@@ -88,11 +108,19 @@ services:
       - ./backend:/var/www/html
     command: php artisan schedule:work
     depends_on:
-      - mysql
-      - redis
-      - backend
+      redis:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+      backend:
+        condition: service_started
     env_file:
       - ./backend/.env
+    environment:
+      DB_DATABASE: ${MYSQL_DATABASE}
+      DB_USERNAME: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - chaos-inc-net
 
@@ -113,6 +141,11 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - chaos-inc-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
 
   # CACHÉ/TIEMPO REAL (Redis)
   redis:

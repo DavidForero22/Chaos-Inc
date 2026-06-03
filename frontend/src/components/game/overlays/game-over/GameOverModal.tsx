@@ -174,7 +174,7 @@ export function GameOverModal({
 							>
 								{config.winners.map((role) => (
 									<li key={role} className="font-bold">
-										{ROLE_LABELS[role]}
+										{role !== "hidden" ? ROLE_LABELS[role] : ""}
 									</li>
 								))}
 							</ul>

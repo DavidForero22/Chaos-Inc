@@ -1,13 +1,14 @@
 FROM dunglas/frankenphp:1-php8.4
 
-# Instalar dependencias del sistema
+# Instalar dependencias del sistema y netcat
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
     zip \
     unzip \
-    curl
+    curl \
+    netcat-openbsd
 
 # Instalar extensiones de PHP
 RUN pecl install redis && docker-php-ext-enable redis
@@ -29,5 +30,12 @@ COPY ./backend /var/www/html
 # Generar el autoloader optimizado
 RUN composer dump-autoload --optimize
 
-# Permisos para Laravel (Evita errores de escritura en logs y caché)
+# Permisos para Laravel
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Configuración del Entrypoint
+COPY ./docker/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Establecer el script como el punto de entrada
+ENTRYPOINT ["docker-entrypoint.sh"]

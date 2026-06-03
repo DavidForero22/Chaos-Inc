@@ -7,7 +7,6 @@ import type { MyData } from "../../../types/live-game.ts";
 import styles from "./RoleRevealModal.module.css";
 import { ROLE_CONFIG } from "../../../data/game/roles.ts";
 
-
 interface RoleRevealModalProps {
 	role: MyData["role"];
 	onClose: () => void;
@@ -15,6 +14,7 @@ interface RoleRevealModalProps {
 }
 
 export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
+	if (role === "hidden") return null;
 	const config = ROLE_CONFIG[role];
 
 	// Refs y Estados para el scroll
