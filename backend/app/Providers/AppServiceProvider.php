@@ -32,18 +32,18 @@ class AppServiceProvider extends ServiceProvider
 
         // Límite general para la API (Navegación normal)
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(35)->by($request->user()?->id ?: $request->ip());
         });
 
         // Límite estricto para Autenticación (Previene fuerza bruta y bots)
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(15)->by($request->ip());
+            return Limit::perMinute(10)->by($request->ip());
         });
 
         // Límite generoso para el juego (Evita spam masivo, pero permite jugar fluido)
         RateLimiter::for('game-actions', function (Request $request) {
             // Usar el token de la partida para identificar al jugador, o la IP como respaldo
-            return Limit::perMinute(150)->by($request->header('X-Game-Token') ?: $request->ip());
+            return Limit::perMinute(50)->by($request->header('X-Game-Token') ?: $request->ip());
         });
 
         Event::listen(SocialiteWasCalled::class, function (SocialiteWasCalled $event) {

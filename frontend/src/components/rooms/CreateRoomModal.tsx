@@ -60,7 +60,11 @@ export default function CreateRoomModal({ onClose }: CreateRoomModalProps) {
 			navigate("/rooms");
 		} catch (err: any) {
 			console.log(err.response);
-			setError("Hubo un error al crear la sala.");
+			const errorMessage =
+				err.response?.data?.message ||
+				err.response?.data?.error ||
+				"Hubo un error al crear la sala.";
+			setError(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
