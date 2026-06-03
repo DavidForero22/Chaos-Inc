@@ -17,6 +17,7 @@ class RoomResource extends JsonResource
             'room_id'     => $room['room_id'],
             'name'        => $room['name'] ?? 'Sala sin nombre',
             'max_players' => (int) ($room['max_players'] ?? 6),
+            'turn_timeout' => (int) ($room['turn_timeout'] ?? 80),
             'owner_id'    => (string) ($room['owner_id'] ?? ''),
             'owner_name'  => $room['owner_name'] ?? 'Desconocido',
             'status'      => $room['status'] ?? 'waiting',

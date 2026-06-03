@@ -235,6 +235,61 @@ class RoomService
         return $roomDataResponse;
     }
 
+    public function updateRoom(string $roomId, array $data, string $userId): array
+    {
+        $infoKey = "room:{$roomId}:info";
+        $stateKey = "room:{$roomId}:state";
+        $playersKey = "room:{$roomId}:players";
+
+        if (!Redis::exists($infoKey)) {
+            throw new \Exception("La sala no existe.", 404);
+        }
+
+        $currentInfo = Redis::hgetall($infoKey);
+        $currentState = Redis::hgetall($stateKey);
+
+        // Validar que es el dueño
+        if ($currentInfo['owner_id'] !== $userId) {
+            throw new \Exception("No tienes permiso para editar esta sala.", 403);
+        }
+
+        // Validar que la sala no ha empezado
+        if ($currentState['status'] !== 'waiting') {
+            throw new \Exception("No se puede editar una sala que ya ha comenzado.", 400);
+        }
+
+        // Validar aforo vs jugadores actuales
+        $currentPlayersCount = Redis::scard($playersKey);
+        if ($data['max_players'] < $currentPlayersCount) {
+            throw new \Exception("El aforo máximo no puede ser menor a la cantidad de jugadores actuales ({$currentPlayersCount}).", 400);
+        }
+
+        // Lógica de la contraseña
+        $password = $currentInfo['password']; // Por defecto, mantener la que hay
+
+        if (!$data['is_private']) {
+            $password = ''; // Si se hace pública, borrar la contraseña
+        } elseif (!empty($data['password'])) {
+            $password = Hash::make($data['password']); // Si envían una nueva, hashear
+        }
+
+        $updatedInfo = [
+            'name'         => $data['name'],
+            'is_private'   => $data['is_private'] ? '1' : '0',
+            'password'     => $password,
+            'max_players'  => $data['max_players'],
+            'turn_timeout' => $data['turn_timeout'],
+            'is_debug'     => isset($data['is_debug']) && $data['is_debug'] ? '1' : '0',
+        ];
+
+        Redis::hmset($infoKey, $updatedInfo);
+
+        event(new RoomListUpdated($roomId));
+        event(new RoomStateUpdated($roomId));
+
+        return array_merge($currentInfo, $updatedInfo);
+    }
+
     public function deleteRoom(string $roomId): void
     {
         $roomInfoKey = "room:{$roomId}:info";

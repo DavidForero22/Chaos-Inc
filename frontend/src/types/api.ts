@@ -15,6 +15,7 @@ export interface RoomData {
 	room_id: string;
 	name: string;
 	max_players: number;
+	turn_timeout: number;
 	owner_id: string;
 	owner_name: string;
 	status: string;

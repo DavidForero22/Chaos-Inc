@@ -1,5 +1,5 @@
 // src/components/rooms/CreateRoomFormFields.tsx
-import React from "react";
+import React, { useState } from "react";
 import styles from "../ui/ModalLayout.module.css";
 
 interface FormData {
@@ -15,13 +15,17 @@ interface CreateRoomFormFieldsProps {
 	formData: FormData;
 	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 	isAdmin: boolean;
+	isEditing: boolean;
 }
 
 export default function CreateRoomFormFields({
 	formData,
 	setFormData,
 	isAdmin,
+	isEditing,
 }: CreateRoomFormFieldsProps) {
+	const [keepPassword, setKeepPassword] = useState(true);
+
 	return (
 		<>
 			{/* Campo 1: Nombre */}
@@ -56,44 +60,95 @@ export default function CreateRoomFormFields({
 					<label className={styles.label} id="privacy-label">
 						Privacidad
 					</label>
-					<label
+
+					<div
 						style={{
 							display: "flex",
 							alignItems: "center",
-							gap: "8px",
+							gap: "16px",
 							marginTop: "8px",
-							cursor: "pointer",
 						}}
 					>
-						<input
-							type="checkbox"
-							checked={formData.is_private}
-							onChange={(e) =>
-								setFormData({ ...formData, is_private: e.target.checked })
-							}
-							style={{ cursor: "pointer" }}
-							aria-labelledby="privacy-label"
-						/>
-						<span
+						{/* Checkbox: Sala Privada */}
+						<label
 							style={{
-								fontSize: "0.8rem",
-								color: "#393e42",
-								fontWeight: "bold",
+								display: "flex",
+								alignItems: "center",
+								gap: "8px",
+								cursor: "pointer",
 							}}
 						>
-							Sala Privada
-						</span>
-					</label>
+							<input
+								type="checkbox"
+								checked={formData.is_private}
+								onChange={(e) =>
+									setFormData({ ...formData, is_private: e.target.checked })
+								}
+								style={{ cursor: "pointer" }}
+								aria-labelledby="privacy-label"
+							/>
+							<span
+								style={{
+									fontSize: "0.8rem",
+									color: "#393e42",
+									fontWeight: "bold",
+								}}
+							>
+								Sala Privada
+							</span>
+						</label>
 
+						{/* Checkbox: Mantener Contraseña */}
+						{isEditing && formData.is_private && (
+							<label
+								style={{
+									display: "flex",
+									alignItems: "center",
+									gap: "8px",
+									cursor: "pointer",
+								}}
+							>
+								<input
+									type="checkbox"
+									checked={keepPassword}
+									onChange={(e) => {
+										setKeepPassword(e.target.checked);
+										// Si decide mantenerla, limpiar el input por si había escrito algo
+										if (e.target.checked) {
+											setFormData({ ...formData, password: "" });
+										}
+									}}
+									style={{ cursor: "pointer" }}
+								/>
+								<span
+									style={{
+										fontSize: "0.8rem",
+										color: "#393e42",
+										fontWeight: "bold",
+									}}
+								>
+									Mantener contraseña
+								</span>
+							</label>
+						)}
+					</div>
+
+					{/* Input de Contraseña */}
 					{formData.is_private && (
 						<div>
 							<input
 								id="room-password"
 								className={styles.input}
-								style={{ marginTop: "8px" }}
+								style={{
+									marginTop: "8px",
+									opacity: isEditing && keepPassword ? 0.5 : 1,
+									cursor: isEditing && keepPassword ? "not-allowed" : "text",
+								}}
 								type="password"
-								placeholder="Contraseña"
-								required
+								placeholder="••••••••"
+								// Solo es obligatorio si no esta editando, o si edita pero descarta "Mantener"
+								required={!isEditing || !keepPassword}
+								disabled={isEditing && keepPassword}
 								minLength={8}
 								maxLength={128}
 								value={formData.password}
@@ -140,7 +195,11 @@ export default function CreateRoomFormFields({
 				<span className={styles.annexNum}>4.</span>
 				<div className={styles.fieldWrap}>
 					<label className={styles.label} htmlFor="turn-timeout">
-						Tiempo Límite de Turno:
+						Tiempo Límite de Turno:{" "}
+						<span style={{ color: "#295c60", fontSize: "0.9rem" }}>
+							{/* Mostrar el valor en segundos */}
+							{`${formData.turn_timeout} Segundos`}
+						</span>
 					</label>
 					<input
 						id="turn-timeout"

@@ -7,8 +7,11 @@ import {
 	FaTimes,
 	FaUsers,
 	FaCrown,
+	FaEdit,
+	FaClock, // <-- Nuevo icono importado
 } from "react-icons/fa";
 import type { RoomData } from "../../types/api";
+import EditRoomModal from "../rooms/EditRoomModal";
 
 interface WaitingRoomDrawerProps {
 	room: RoomData;
@@ -34,6 +37,7 @@ export default function WaitingRoomDrawer({
 	copied,
 }: WaitingRoomDrawerProps) {
 	const [isOpen, setIsOpen] = useState(true);
+	const [showEditModal, setShowEditModal] = useState(false);
 	const isDebugRoom = room.is_debug;
 
 	// --- LÓGICA DE INICIO ---
@@ -93,20 +97,52 @@ export default function WaitingRoomDrawer({
 						<span className="text-xs font-bold text-gray-500 font-mono tracking-wider">
 							ID: {room.room_id}
 						</span>
-						<button
-							onClick={onShare}
-							className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded transition-colors ${copied ? "bg-green-100 text-green-700" : "bg-gray-200 hover:bg-blue-100 hover:text-blue-700"}`}
-						>
-							{copied ? <FaCheck /> : <FaShareAlt />}
-							{copied ? "¡Copiado!" : "Compartir"}
-						</button>
+						<div className="flex gap-2">
+							{/* BOTÓN EDITAR */}
+							{isOwner && (
+								<button
+									onClick={() => setShowEditModal(true)}
+									className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+									title="Editar opciones de la sala"
+								>
+									<FaEdit />
+									Editar
+								</button>
+							)}
+
+							{/* BOTÓN COMPARTIR */}
+							<button
+								onClick={onShare}
+								className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded transition-colors ${
+									copied
+										? "bg-green-100 text-green-700"
+										: "bg-gray-200 hover:bg-blue-100 hover:text-blue-700"
+								}`}
+							>
+								{copied ? <FaCheck /> : <FaShareAlt />}
+								{copied ? "¡Copiado!" : "Compartir"}
+							</button>
+						</div>
 					</div>
 
-					{isDebugRoom && (
-						<div className="mt-2 flex items-center gap-2 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded border border-yellow-300 w-fit">
-							<FaTools /> Pruebas
+					{/* Pruebas y Tiempo Límite */}
+					<div className="mt-3 flex items-center justify-between">
+						<div>
+							{isDebugRoom && (
+								<div className="flex items-center gap-2 bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded border border-yellow-300 w-fit">
+									<FaTools /> Pruebas
+								</div>
+							)}
 						</div>
-					)}
+
+						<div
+							className="flex items-center gap-1.5 bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded border border-gray-300"
+							title="Tiempo límite por turno"
+						>
+							<FaClock className="text-gray-400" />
+							<span>{room.turn_timeout || 80}s / turno</span>
+						</div>
+					</div>
 				</header>
 
 				{/* LISTA DE JUGADORES */}
@@ -152,7 +188,6 @@ export default function WaitingRoomDrawer({
 													</span>
 												)}
 											</span>
-											{/* Si tienes nivel del backend, ponlo aquí. Si no, quita este span */}
 											<span className="text-[10px] text-gray-500 uppercase tracking-wide">
 												Nivel {player.level || 1}
 											</span>
@@ -225,6 +260,10 @@ export default function WaitingRoomDrawer({
 					</button>
 				</footer>
 			</div>
+
+			{showEditModal && (
+				<EditRoomModal room={room} onClose={() => setShowEditModal(false)} />
+			)}
 		</>
 	);
 }

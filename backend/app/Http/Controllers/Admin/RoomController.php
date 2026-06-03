@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\StoreRoomRequest;
+use App\Http\Requests\Room\UpdateRoomRequest;
 use App\Services\Admin\RoomService;
-use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
@@ -44,6 +44,22 @@ class RoomController extends Controller
             );
 
             return response()->json($roomData, 201);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
+        }
+    }
+
+    public function update(UpdateRoomRequest $request, string $id)
+    {
+        try {
+            $user = $request->user();
+            $roomData = $this->roomService->updateRoom(
+                $id,
+                $request->validated(),
+                (string) $user->id
+            );
+
+            return response()->json($roomData, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode() ?: 400);
         }
