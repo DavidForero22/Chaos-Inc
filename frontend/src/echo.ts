@@ -14,6 +14,8 @@ declare global {
 
 window.Pusher = Pusher;
 
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const echoInstance = new Echo({
 	broadcaster: "reverb",
 	key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -28,7 +30,7 @@ const echoInstance = new Echo({
 		return {
 			authorize: (socketId: string, callback: Function) => {
 				api
-					.post("http://localhost:8000/broadcasting/auth", {
+					.post(`${baseURL}/broadcasting/auth`, {
 						socket_id: socketId,
 						channel_name: channel.name,
 					})
@@ -36,7 +38,11 @@ const echoInstance = new Echo({
 						callback(false, response.data);
 					})
 					.catch((error) => {
-						logWithTime("echo.ts::.catch - Error autorizando canal de Echo", error, "error");
+						logWithTime(
+							"echo.ts::.catch - Error autorizando canal de Echo",
+							error,
+							"error",
+						);
 						callback(true, error);
 					});
 			},

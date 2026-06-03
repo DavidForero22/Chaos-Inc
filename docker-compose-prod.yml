@@ -38,7 +38,7 @@ services:
         APP_URL: ${API_URL}
         FRONTEND_URL: ${FRONTEND_URL}
         # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
-        SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
+        SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
     depends_on:
       redis:
@@ -73,7 +73,7 @@ services:
       APP_URL: ${API_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
-      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
 
@@ -100,7 +100,7 @@ services:
       APP_URL: ${API_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
-      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
     deploy:
@@ -131,7 +131,7 @@ services:
       APP_URL: ${API_URL}
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
-      SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
+      SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
     networks:
       - chaos-inc-net
 

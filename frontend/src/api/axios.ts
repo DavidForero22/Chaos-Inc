@@ -6,8 +6,10 @@ import { useAuthStore } from "../store/auth/useAuthStore.ts";
 import { useLoadingStore } from "../store/ui/useLoadingStore.ts";
 import { logWithTime } from "../utils/logger.ts";
 
+const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 const api = axios.create({
-	baseURL: "http://localhost:8000/api/v1",
+	baseURL: `${baseURL}/api/v1`,
 	withCredentials: true,
 	withXSRFToken: true,
 	headers: {
@@ -21,7 +23,7 @@ const api = axios.create({
  */
 export const getCsrfCookie = async () => {
 	// La ruta de sanctum suele estar en la raíz de la API (fuera de v1), por eso usamos una URL absoluta
-	await axios.get("http://localhost:8000/sanctum/csrf-cookie", {
+	await axios.get(`${baseURL}/sanctum/csrf-cookie`, {
 		withCredentials: true,
 		withXSRFToken: true,
 	});
