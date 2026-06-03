@@ -195,6 +195,49 @@
 	color: rgba(210, 212, 209, 0.75);
 }
 
+/* =====================================================
+   BOTÓN SCROLL TO TOP
+   ===================================================== */
+
+.scrollToTopBtn {
+	position: fixed;
+	bottom: 2rem;
+	right: 2rem;
+	width: 65px;
+	height: 65px;
+	border-radius: 50%;
+	background-color: var(--nb-lomo);
+	color: var(--nb-papel);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1.65rem;
+	border: 2px solid transparent;
+	cursor: pointer;
+	z-index: 100;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+	/* Transición suave para todos los estados */
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scrollToTopBtn:hover {
+	background-color: #2a2e31; /* Un tono un poco más oscuro al pasar el ratón */
+	transform: scale(1.1) translateY(0);
+}
+
+/* --- Estados de la animación --- */
+.scrollToTopBtn.hidden {
+	opacity: 0;
+	visibility: hidden; /* Evita que sea clickeable cuando es invisible */
+	transform: translateY(20px) scale(0.9);
+}
+
+.scrollToTopBtn.visible {
+	opacity: 1;
+	visibility: visible;
+	transform: translateY(0) scale(1);
+}
+
 /* Media Query para móviles */
 @media (max-width: 768px) {
 	.pageWrapper {
@@ -224,5 +267,13 @@
 	/* Ocultar linea roja en movil para mejorar legibilidad */
 	.notebookPaper::before {
 		display: none;
+	}
+
+	.scrollToTopBtn {
+		bottom: 1.5rem;
+		right: 1.5rem;
+		width: 45px;
+		height: 45px;
+		font-size: 1.1rem;
 	}
 }
