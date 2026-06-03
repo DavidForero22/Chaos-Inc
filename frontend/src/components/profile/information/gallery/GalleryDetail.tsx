@@ -47,7 +47,6 @@ export default function GalleryDetail({
 	if (!selectedItem) {
 		return (
 			<div className={styles.emptyDetail}>
-				<div className={styles.emptyStamp}></div>
 				<p>Selecciona un objeto para ver sus detalles</p>
 			</div>
 		);

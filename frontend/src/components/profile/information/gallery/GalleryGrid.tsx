@@ -31,7 +31,6 @@ function isEnrichedEnding(item: any): item is EnrichedEnding {
 	return item && item.ending !== undefined;
 }
 
-
 export default function GalleryGrid({
 	activeTab,
 	cards,
@@ -50,74 +49,93 @@ export default function GalleryGrid({
 
 	const gridClass = activeTab === "cards" ? styles.cardsGrid : styles.wideGrid;
 
+	// Conteo de desbloqueados
+	const unlockedCount = items.filter((item) => {
+		if (isEnrichedCard(item)) return item.is_discovered;
+		if (isEnrichedRole(item)) return item.isUnlocked;
+		if (isEnrichedEnding(item)) return item.isUnlocked;
+		return (item as EnrichedExtra).is_unlocked;
+	}).length;
+	const totalCount = items.length;
+
 	return (
-		<div className={`${styles.gridContainer} ${gridClass}`}>
-			{items.map((item) => {
-				let id: string | number;
-				let isUnlocked: boolean;
-				let displayName: string;
-				let imageUrl: string | null | undefined;
+		<div className={styles.gridWrapper}>
+			<div className={`${styles.gridContainer} ${gridClass}`}>
+				{items.map((item) => {
+					let id: string | number;
+					let isUnlocked: boolean;
+					let displayName: string;
+					let imageUrl: string | null | undefined;
 
-				if (isEnrichedCard(item)) {
-					id = item.id;
-					isUnlocked = item.is_discovered;
-					displayName = item.display_name;
-					imageUrl = `/cards/${item.image_path}`;
-				} else if (isEnrichedRole(item)) {
-					id = item.role;
-					isUnlocked = item.isUnlocked;
-					displayName = item.label;
-					imageUrl = item.image;
-				} else if (isEnrichedEnding(item)) {
-					id = item.ending;
-					isUnlocked = item.isUnlocked;
-					displayName = item.name;
-					imageUrl = item.image;
-				} else {
-					id = item.id;
-					isUnlocked = item.is_unlocked;
-					displayName = item.name;
-					if (item.image) {
+					if (isEnrichedCard(item)) {
+						id = item.id;
+						isUnlocked = item.is_discovered;
+						displayName = item.display_name;
+						imageUrl = `/cards/${item.image_path}`;
+					} else if (isEnrichedRole(item)) {
+						id = item.role;
+						isUnlocked = item.isUnlocked;
+						displayName = item.label;
 						imageUrl = item.image;
-					} else if (item.images && item.images.length > 0) {
-						imageUrl = item.images[0];
+					} else if (isEnrichedEnding(item)) {
+						id = item.ending;
+						isUnlocked = item.isUnlocked;
+						displayName = item.name;
+						imageUrl = item.image;
 					} else {
-						imageUrl = null;
+						id = item.id;
+						isUnlocked = item.is_unlocked;
+						displayName = item.name;
+						if (item.image) {
+							imageUrl = item.image;
+						} else if (item.images && item.images.length > 0) {
+							imageUrl = item.images[0];
+						} else {
+							imageUrl = null;
+						}
 					}
-				}
 
-				const isSelected = selectedItemId === id;
+					const isSelected = selectedItemId === id;
 
-				return (
-					<button
-						key={id}
-						className={`${styles.itemWrapper} ${isUnlocked ? styles.unlockedSticker : styles.lockedSlot} ${isSelected ? styles.selectedItem : ""}`}
-						onClick={() => onItemClick(id)}
-						aria-label={isUnlocked ? displayName : "Elemento bloqueado"}
-						aria-pressed={isSelected}
-					>
-						<div className={styles.itemImageContainer}>
-							{isUnlocked ? (
-								imageUrl ? (
-									<img
-										src={imageUrl}
-										alt={displayName}
-										className={styles.stickerImage}
-										loading="lazy"
-									/>
+					return (
+						<button
+							key={id}
+							className={`${styles.itemWrapper} ${isUnlocked ? styles.unlockedSticker : styles.lockedSlot} ${isSelected ? styles.selectedItem : ""}`}
+							onClick={() => onItemClick(id)}
+							aria-label={isUnlocked ? displayName : "Elemento bloqueado"}
+							aria-pressed={isSelected}
+						>
+							<div className={styles.itemImageContainer}>
+								{isUnlocked ? (
+									imageUrl ? (
+										<img
+											src={imageUrl}
+											alt={displayName}
+											className={styles.stickerImage}
+											loading="lazy"
+										/>
+									) : (
+										<div className={styles.placeholderSticker}>
+											{displayName.charAt(0)}
+										</div>
+									)
 								) : (
-									<div className={styles.placeholderSticker}>
-										{displayName.charAt(0)}
-									</div>
-								)
-							) : (
-								<div className={styles.missingSilhouette}>?</div>
+									<div className={styles.missingSilhouette}>?</div>
+								)}
+							</div>
+							{isUnlocked && (
+								<div className={styles.itemName}>{displayName}</div>
 							)}
-						</div>
-						{isUnlocked && <div className={styles.itemName}>{displayName}</div>}
-					</button>
-				);
-			})}
+						</button>
+					);
+				})}
+			</div>
+
+			<p className={styles.unlockCounter} aria-live="polite">
+				<span className={styles.unlockCountNumber}>{unlockedCount}</span>
+				{unlockedCount === 1 ? " desbloqueado de " : " desbloqueados de "}
+				<span>{totalCount}</span>
+			</p>
 		</div>
 	);
 }

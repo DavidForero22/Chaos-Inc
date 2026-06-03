@@ -19,15 +19,6 @@
 	margin-top: 40px;
 }
 
-.emptyStamp {
-	width: 80px;
-	height: 80px;
-	border: 3px dashed #d1c5b4;
-	border-radius: 50%;
-	margin-bottom: 16px;
-	opacity: 0.5;
-}
-
 .detailHeader {
 	display: flex;
 	flex-direction: column;

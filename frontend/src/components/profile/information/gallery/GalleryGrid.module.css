@@ -31,7 +31,7 @@
 .itemImageContainer {
 	flex: 1;
 	width: 100%;
-	min-height: 0; 
+	min-height: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -170,6 +170,27 @@
 .itemWrapper:has(.chaoticSticker) .itemName {
 	color: #86198f;
 	text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.gridWrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+.unlockCounter {
+	margin-top: 16px;
+	text-align: right;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	color: #9a8a75;
+	font-style: italic;
+	flex-shrink: 0;
+}
+
+.unlockCountNumber {
+	font-weight: 900;
+	color: #b85c1a;
 }
 
 @media (max-width: 1040px) {
