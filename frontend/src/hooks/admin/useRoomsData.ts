@@ -1,23 +1,9 @@
-// src/hooks/admin/useRoomsData.ts
-
 import { useState, useCallback } from "react";
 import api from "../../api/axios";
-
-export interface RoomRecord {
-	room_id: string;
-	name: string;
-	owner_id: string;
-	owner_name: string;
-	is_private: boolean;
-	max_players: string;
-	turn_timeout: string;
-	is_debug: boolean;
-	status: string;
-	players: Array<{ id: string; name: string }>;
-}
+import type { RoomData } from "../../types/api"; 
 
 export function useRoomsData() {
-	const [rooms, setRooms] = useState<RoomRecord[]>([]);
+	const [rooms, setRooms] = useState<RoomData[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	const fetchRooms = useCallback(async () => {
@@ -34,7 +20,6 @@ export function useRoomsData() {
 
 	const deleteRoom = async (roomId: string) => {
 		await api.delete(`/rooms/${roomId}`);
-		// Refrescar lista después de borrar
 		await fetchRooms();
 	};
 

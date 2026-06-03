@@ -54,10 +54,14 @@ class RoomController extends Controller
     {
         try {
             $user = $request->user();
+            // Comprobamos si el usuario actual es admin
+            $isAdmin = $user->role === 'admin';
+
             $roomData = $this->roomService->updateRoom(
                 $id,
                 $request->validated(),
-                (string) $user->id
+                (string) $user->id,
+                $isAdmin
             );
 
             return response()->json($roomData, 200);

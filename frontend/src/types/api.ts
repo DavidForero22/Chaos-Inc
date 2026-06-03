@@ -62,16 +62,6 @@ export interface GameRecord {
 	players: GameParticipant[];
 }
 
-export interface RoomRecord {
-	room_id: string;
-	name: string;
-	status: string;
-	owner_id: string;
-	owner_name: string;
-	max_players: string;
-	players: string[];
-}
-
 export interface CardCatalogItem {
 	id: number;
 	type: string;

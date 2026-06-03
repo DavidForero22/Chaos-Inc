@@ -235,7 +235,7 @@ class RoomService
         return $roomDataResponse;
     }
 
-    public function updateRoom(string $roomId, array $data, string $userId): array
+    public function updateRoom(string $roomId, array $data, string $userId, bool $isAdmin = false): array
     {
         $infoKey = "room:{$roomId}:info";
         $stateKey = "room:{$roomId}:state";
@@ -248,8 +248,8 @@ class RoomService
         $currentInfo = Redis::hgetall($infoKey);
         $currentState = Redis::hgetall($stateKey);
 
-        // Validar que es el dueño
-        if ($currentInfo['owner_id'] !== $userId) {
+        // Validar que es el dueño o que sea un admin
+        if (!$isAdmin && $currentInfo['owner_id'] !== $userId) {
             throw new \Exception("No tienes permiso para editar esta sala.", 403);
         }
 
@@ -264,9 +264,7 @@ class RoomService
             throw new \Exception("El aforo máximo no puede ser menor a la cantidad de jugadores actuales ({$currentPlayersCount}).", 400);
         }
 
-        // Lógica de la contraseña
-        $password = $currentInfo['password']; // Por defecto, mantener la que hay
-
+        $password = $currentInfo['password'];
         if (!$data['is_private']) {
             $password = '';
         } else {
