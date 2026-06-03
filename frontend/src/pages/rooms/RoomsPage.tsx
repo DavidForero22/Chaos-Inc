@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useState } from "react";
-import { useLobby } from "../../hooks/useLobby";
+import { useLobby } from "../../hooks/lobby/useLobby.ts";
 import RoomList from "../../components/rooms/RoomList";
 import CreateRoomModal from "../../components/rooms/CreateRoomModal";
 import GuestNameModal from "../../components/lobby/GuestNameModal";
