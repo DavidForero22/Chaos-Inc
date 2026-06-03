@@ -1,11 +1,12 @@
 // src/components/rooms/CreateRoomFormFields.tsx
-import React, { useState } from "react";
+import React from "react";
 import styles from "../ui/ModalLayout.module.css";
 
 interface FormData {
 	name: string;
 	is_private: boolean;
 	password: string;
+	keep_password: boolean;
 	max_players: number;
 	turn_timeout: number;
 	is_debug: boolean;
@@ -16,6 +17,7 @@ interface CreateRoomFormFieldsProps {
 	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 	isAdmin: boolean;
 	isEditing: boolean;
+	originalIsPrivate: boolean;
 }
 
 export default function CreateRoomFormFields({
@@ -23,9 +25,8 @@ export default function CreateRoomFormFields({
 	setFormData,
 	isAdmin,
 	isEditing,
+	originalIsPrivate,
 }: CreateRoomFormFieldsProps) {
-	const [keepPassword, setKeepPassword] = useState(true);
-
 	return (
 		<>
 			{/* Campo 1: Nombre */}
@@ -97,9 +98,8 @@ export default function CreateRoomFormFields({
 								Sala Privada
 							</span>
 						</label>
-
 						{/* Checkbox: Mantener Contraseña */}
-						{isEditing && formData.is_private && (
+						{isEditing && formData.is_private && originalIsPrivate && (
 							<label
 								style={{
 									display: "flex",
@@ -110,13 +110,13 @@ export default function CreateRoomFormFields({
 							>
 								<input
 									type="checkbox"
-									checked={keepPassword}
+									checked={formData.keep_password}
 									onChange={(e) => {
-										setKeepPassword(e.target.checked);
-										// Si decide mantenerla, limpiar el input por si había escrito algo
-										if (e.target.checked) {
-											setFormData({ ...formData, password: "" });
-										}
+										setFormData({
+											...formData,
+											keep_password: e.target.checked,
+											password: e.target.checked ? "" : formData.password,
+										});
 									}}
 									style={{ cursor: "pointer" }}
 								/>
@@ -130,7 +130,7 @@ export default function CreateRoomFormFields({
 									Mantener contraseña
 								</span>
 							</label>
-						)}
+						)}{" "}
 					</div>
 
 					{/* Input de Contraseña */}
@@ -141,14 +141,17 @@ export default function CreateRoomFormFields({
 								className={styles.input}
 								style={{
 									marginTop: "8px",
-									opacity: isEditing && keepPassword ? 0.5 : 1,
-									cursor: isEditing && keepPassword ? "not-allowed" : "text",
+									opacity: isEditing && formData.keep_password ? 0.5 : 1,
+									cursor:
+										isEditing && formData.keep_password
+											? "not-allowed"
+											: "text",
 								}}
 								type="password"
 								placeholder="••••••••"
 								// Solo es obligatorio si no esta editando, o si edita pero descarta "Mantener"
-								required={!isEditing || !keepPassword}
-								disabled={isEditing && keepPassword}
+								required={!isEditing || !formData.keep_password}
+								disabled={isEditing && formData.keep_password}
 								minLength={8}
 								maxLength={128}
 								value={formData.password}

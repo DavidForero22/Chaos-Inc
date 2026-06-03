@@ -27,6 +27,7 @@ export default function CreateRoomModal({ onClose }: CreateRoomModalProps) {
 		name: "",
 		is_private: false,
 		password: "",
+		keep_password: false,
 		max_players: 4,
 		turn_timeout: 80,
 		is_debug: false,
@@ -57,7 +58,8 @@ export default function CreateRoomModal({ onClose }: CreateRoomModalProps) {
 
 			onClose();
 			navigate("/rooms");
-		} catch {
+		} catch (err: any) {
+			console.log(err.response);
 			setError("Hubo un error al crear la sala.");
 		} finally {
 			setIsLoading(false);
@@ -78,6 +80,8 @@ export default function CreateRoomModal({ onClose }: CreateRoomModalProps) {
 				formData={formData}
 				setFormData={setFormData}
 				isAdmin={isAdmin}
+				isEditing={false}
+				originalIsPrivate={false}
 			/>
 
 			{error && (

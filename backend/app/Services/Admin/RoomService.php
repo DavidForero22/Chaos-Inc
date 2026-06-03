@@ -268,9 +268,13 @@ class RoomService
         $password = $currentInfo['password']; // Por defecto, mantener la que hay
 
         if (!$data['is_private']) {
-            $password = ''; // Si se hace pública, borrar la contraseña
-        } elseif (!empty($data['password'])) {
-            $password = Hash::make($data['password']); // Si envían una nueva, hashear
+            $password = '';
+        } else {
+            if (isset($data['keep_password']) && $data['keep_password']) {
+                $password = $currentInfo['password'];
+            } else {
+                $password = Hash::make($data['password']);
+            }
         }
 
         $updatedInfo = [

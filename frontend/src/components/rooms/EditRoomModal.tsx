@@ -1,3 +1,4 @@
+// src/components/rooms/EditRoomModal.tsx
 import { useState } from "react";
 import api from "../../api/axios";
 import ModalLayout from "../ui/ModalLayout";
@@ -22,8 +23,9 @@ export default function EditRoomModal({ room, onClose }: EditRoomModalProps) {
 		name: room.name,
 		is_private: room.is_private,
 		password: "",
+		keep_password: room.is_private, 
 		max_players: room.max_players,
-		turn_timeout: room.turn_timeout,
+		turn_timeout: room.turn_timeout || 80,
 		is_debug: room.is_debug || false,
 	});
 
@@ -35,9 +37,11 @@ export default function EditRoomModal({ room, onClose }: EditRoomModalProps) {
 			await api.put(`/rooms/${room.room_id}`, formData);
 			onClose();
 		} catch (err: any) {
-			setError(
-				err.response?.data?.error || "Hubo un error al actualizar la sala.",
-			);
+			const errorMessage =
+				err.response?.data?.message ||
+				err.response?.data?.error ||
+				"Hubo un error al actualizar la sala.";
+			setError(errorMessage);
 		} finally {
 			setIsLoading(false);
 		}
@@ -58,6 +62,7 @@ export default function EditRoomModal({ room, onClose }: EditRoomModalProps) {
 				setFormData={setFormData}
 				isAdmin={isAdmin}
 				isEditing={true}
+				originalIsPrivate={room.is_private}
 			/>
 
 			{error && (

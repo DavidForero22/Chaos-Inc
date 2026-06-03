@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Room\StoreRoomRequest;
 use App\Http\Requests\Room\UpdateRoomRequest;
 use App\Services\Admin\RoomService;
+use Illuminate\Support\Facades\Log;
 
 class RoomController extends Controller
 {
