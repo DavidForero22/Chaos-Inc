@@ -1,160 +1,268 @@
 /* src/layouts/ErrorLayout.module.css */
 
-.wallBackground {
-    min-height: 100vh;
-    /* Color temporal de pared aburrida */
-    background-color: #8b939c; 
-    
-    /* ── CUANDO TENGAS TU TEXTURA DE PARED, DESCOMENTA ESTO ── */
-    /* background-image: url('/path/a/tu/textura-pared.png'); */
-    /* background-size: cover; */
-    /* background-position: center; */
-    /* background-blend-mode: multiply; */
+:root {
+    --sign-yellow: #facc15;
+    --sign-yellow-dark: #ca8a04;
+    --sign-red: #dc2626;
+    --sign-black: #111827;
+}
 
+/* --- LA HABITACIÓN (Pared + Base del Suelo) --- */
+.sceneBackground {
+    min-height: 100vh;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
-    position: relative;
-    overflow: hidden;
+    padding: 3rem 1.5rem;
+    
+    /* LA PARED: Blanco hueso / Gris súper claro */
+    background-color: #6593c0; 
+    
+    /* Textura de gotelé muy sutil en tonos grises */
+    background-image: radial-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 20px 20px;
+    
+    z-index: 0;
 }
 
-.paper {
-    position: relative;
-    background-color: #fdfbf7;
-    width: 100%;
-    max-width: 28rem;
-    padding: 2.5rem 2rem;
-    border-radius: 2px;
-    transform: rotate(1deg);
-    color: #1f2937;
-    font-family: monospace;
-    
-    /* Efecto 3D del papel: sombra cercana, sombra lejana e iluminación interior (vignette) */
-    box-shadow: 
-        0 4px 6px -1px rgba(0, 0, 0, 0.1),
-        15px 20px 30px rgba(0, 0, 0, 0.2),
-        inset 0 0 60px rgba(0, 0, 0, 0.03);
-    
-    /* Ligera textura de ruido/líneas de impresora barata */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-    background-size: 100% 2.5rem;
-}
-
-.tape {
+/* 🔥 EL SUELO: Dibujado usando un pseudo-elemento 🔥 */
+.sceneBackground::before {
+    content: "";
     position: absolute;
-    top: -18px;
-    left: 50%;
-    transform: translateX(-50%) rotate(-2.5deg);
-    width: 130px;
-    height: 38px;
-    background-color: rgba(255, 255, 255, 0.3);
+    bottom: 0;
+    left: 0;
+    width: 100%;
     
-    /* Simula la textura rugosa del celofán con líneas diagonales */
-    background-image: repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 2px,
-        rgba(255, 255, 255, 0.15) 2px,
-        rgba(255, 255, 255, 0.15) 4px
-    );
+    /* Ocupa el 28% inferior de la pantalla (justo detrás de las patas) */
+    height: 28vh; 
+    min-height: 220px;
     
-    /* Bordes dentados simulados típicos de la cinta cortada */
-    border-left: 2px dashed rgba(255, 255, 255, 0.5);
-    border-right: 2px dashed rgba(255, 255, 255, 0.5);
+    /* Fondo oscuro de las baldosas/madera */
+    background-color: #1f1d1a;
     
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    backdrop-filter: blur(2px);
-    z-index: 10;
-    opacity: 0.9;
+    /* Textura del suelo (las líneas que ya teníamos) */
+    background-image: 
+        linear-gradient(90deg, rgba(0, 0, 0, 0.25) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(0, 0, 0, 0.25) 1px, transparent 1px);
+    background-size: 120px 30px;
+    
+    /* El Rodapié / Zócalo: Línea gruesa oscura que separa pared y suelo */
+    border-top: 14px solid #111;
+    
+    /* Sombra interna para oscurecer la esquina de la habitación */
+    box-shadow: inset 0 40px 50px rgba(0, 0, 0, 0.4);
+    
+    z-index: -1; 
 }
 
-.content {
+/* --- A PARTIR DE AQUÍ, TODO TU CÓDIGO ANTERIOR SE MANTIENE --- */
+.sign3dContainer {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    perspective: 1400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.signBoard {
+    width: 100%;
+    transform: rotateX(15deg);
+    transform-origin: bottom center;
+    z-index: 10;
+}
+
+.handleWrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: -4px;
+}
+
+.handle {
+    width: 42%;
+    height: 60px;
+    border: 24px solid var(--sign-yellow-dark);
+    border-bottom: none;
+    border-radius: 24px 24px 0 0;
+    background-color: transparent;
+    box-shadow: inset 0 4px 4px rgba(255, 255, 255, 0.2);
+}
+
+.contentBody {
+    position: relative;
+    background-color: var(--sign-yellow);
+    border: 14px solid var(--sign-yellow-dark);
+    border-top: 4px solid var(--sign-yellow-dark);
+    border-radius: 8px 8px 24px 24px;
+    min-height: 650px; 
+    padding: 2.5rem 2rem 5rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    margin-top: 1rem;
+    box-shadow: 
+        inset 0 15px 25px rgba(255, 255, 255, 0.4),
+        inset 0 -15px 30px rgba(0, 0, 0, 0.15),
+        0 10px 25px rgba(0, 0, 0, 0.4);
+    clip-path: polygon(
+        0% 0%, 100% 0%, 100% 100%, 82% 100%, 50% 92%, 18% 100%, 0% 100%
+    );
 }
 
-.icon {
-    font-size: 3.5rem;
-    color: #dc2626;
-    margin-bottom: 1rem;
-    /* Efecto de tinta corrida leve en el icono */
-    filter: drop-shadow(0 2px 4px rgba(220, 38, 38, 0.2));
-}
-
-.stamp {
-    font-size: 0.75rem;
-    color: #6b7280;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-    padding-bottom: 0.5rem;
+.contentBody::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
     width: 100%;
+    height: 130px;
+    background-image: repeating-linear-gradient(
+        to bottom, rgba(202, 138, 4, 0.25) 0px, rgba(202, 138, 4, 0.25) 4px, transparent 4px, transparent 16px
+    );
+    pointer-events: none;
+    z-index: 0; 
+}
+
+.cautionText, .title, .triangleContainer, .descriptionBox, .button {
+    z-index: 1;
+}
+
+.cautionText {
+    font-size: 2.8rem;
+    font-weight: 1000;
+    color: var(--sign-black);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+    line-height: 1;
 }
 
 .title {
-    font-size: 1.5rem;
-    font-weight: 900;
-    color: #b91c1c;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1e293b;
     text-transform: uppercase;
-    letter-spacing: -0.025em;
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    max-width: 90%;
+}
+
+.triangleContainer {
+    position: relative;
+    width: 170px;
+    height: 150px;
+    margin-bottom: 2rem;
+}
+
+.triangleSvg {
+    width: 100%;
+    height: 100%;
+}
+
+.trianglePolygon {
+    fill: transparent;
+    stroke: var(--sign-red);
+    stroke-width: 8;
+    stroke-linejoin: round;
+}
+
+.iconOverlay {
+    position: absolute;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -40%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.innerIcon {
+    font-size: 3rem;
+    color: var(--sign-red); 
+}
+
+.fallbackIcon {
+    font-size: 4rem;
+    font-weight: 700;
+    font-family: 'Arial', sans-serif;
+    color: var(--sign-red);
+    line-height: 1;
 }
 
 .descriptionBox {
-    font-size: 0.875rem;
-    line-height: 1.6;
-    color: #374151;
-    margin-bottom: 2rem;
-    width: 100%;
+    margin-bottom: auto;
+    width: 90%;
 }
 
-@media (min-width: 768px) {
-    .descriptionBox {
-        font-size: 1rem;
-    }
+.mainDescription {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #27272a;
+    line-height: 1.4;
+    margin-bottom: 0.75rem;
 }
 
 .subtitle {
-    margin-top: 2rem;
-    font-size: 0.75rem;
-    color: #4b5563;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--sign-red);
     text-transform: uppercase;
-    letter-spacing: -0.025em;
-    border-left: 4px solid rgba(0, 0, 0, 0.2);
-    padding-left: 0.75rem;
-    font-style: italic;
-    text-align: left;
+    letter-spacing: 0.02em;
 }
 
 .button {
-    padding: 0.75rem 1.5rem;
-    background-color: #393e42;
-    color: #d2d4d1;
-    font-weight: 700;
+    margin-top: 2rem;
+    padding: 1rem 1.5rem;
+    background-color: var(--sign-black);
+    color: var(--sign-yellow);
+    font-weight: 900;
     text-transform: uppercase;
-    font-size: 0.875rem;
-    letter-spacing: 0.05em;
-    transition: all 0.2s ease-in-out;
-    border: 2px solid transparent;
-    border-radius: 2px;
-    width: 100%;
+    font-size: 0.85rem;
+    letter-spacing: 0.06em;
+    border-radius: 4px;
+    width: 85%;
     text-decoration: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 4px 0px #000;
+    transition: all 0.1s ease;
+    margin-bottom: 1.5rem; 
 }
 
 .button:hover {
-    background-color: #2a2d30;
-    border-color: #9ca3af;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    background-color: #1f2937;
 }
 
 .button:active {
-    transform: translateY(1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transform: translateY(4px);
+    box-shadow: 0 0px 0px #000;
+}
+
+.floorShadow {
+    position: absolute;
+    bottom: -25px;
+    width: 95%;
+    height: 55px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    filter: blur(14px);
+    transform: rotateX(85deg);
+    z-index: 1;
+}
+
+@media (max-width: 480px) {
+    .sign3dContainer {
+        max-width: 320px;
+    }
+    .cautionText {
+        font-size: 2.3rem;
+    }
+    .contentBody {
+        border-width: 10px;
+        padding: 2rem 1rem 4rem 1rem;
+        min-height: 550px;
+    }
+    .triangleContainer {
+        width: 130px;
+        height: 115px;
+    }
 }

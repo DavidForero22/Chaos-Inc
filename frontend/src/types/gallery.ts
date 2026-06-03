@@ -19,6 +19,7 @@ export interface GalleryResponse {
 	cards: GalleryCard[];
 	roles: DisplayRole[]; // ej: ["boss", "secretary", ...]
 	endings: EndingKey[]; // ej: ["boss", "canceled", ...]
+	extras: EnrichedExtra[];
 }
 
 // Datos procesados para la UI
@@ -42,4 +43,14 @@ export interface EnrichedEnding {
 	unlockHint: string;
 	isUnlocked: boolean;
 	description: string;
+}
+
+export interface EnrichedExtra {
+	id: number;
+	name: string;
+	description: string;
+	achievements_required: number;
+	is_unlocked: boolean;
+	image: string | null; // una imagen, puede ser null
+	images?: string[] | null; // múltiples imágenes (opcional)
 }

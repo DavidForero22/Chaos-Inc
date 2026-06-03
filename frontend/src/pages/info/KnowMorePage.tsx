@@ -36,7 +36,7 @@ export default function KnowMorePage() {
 			</h2>
 
 			<p>
-				Agradezco el esfuerzo de las personas que contribuyeron en el desarrollo
+				Agradezco el esfuerzo de estas personas que contribuyeron en el desarrollo
 				del proyecto:
 			</p>
 
@@ -48,7 +48,7 @@ export default function KnowMorePage() {
 						className="w-32 rounded-lg"
 					/>
 					<a
-						className="mt-2 text-lg font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
+						className="mt-2 text-xl font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
 						href="https://discord.dog/1025390449550164000"
 						target="_blank"
 						rel="noopener noreferrer"
@@ -66,7 +66,7 @@ export default function KnowMorePage() {
 						className="w-30 rounded-lg"
 					/>
 					<a
-						className="mt-2 text-lg font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
+						className="mt-2 text-xl font-bold underline transform transition-transform hover:scale-105 cursor-pointer"
 						href="https://vgen.co/unapayasy"
 						target="_blank"
 						rel="noopener noreferrer"

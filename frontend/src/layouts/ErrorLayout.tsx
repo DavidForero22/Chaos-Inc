@@ -1,8 +1,8 @@
+// src/layouts/ErrorLayout.tsx
 // Accesibilidad comprobada: SI
 
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
-import { FiAlertTriangle } from "react-icons/fi";
 import styles from "./ErrorLayout.module.css";
 
 interface ErrorLayoutProps {
@@ -20,47 +20,63 @@ export default function ErrorLayout({
 	buttonText = "Volver al puesto de trabajo",
 	returnPath = "/",
 }: ErrorLayoutProps) {
+
+
 	return (
 		<div
-			className={styles.wallBackground}
+			className={styles.sceneBackground}
 			role="main"
 			aria-label="Página de error"
 		>
-			<div className={styles.paper}>
-				{/* La Cinta Adhesiva (Celofán realista) - Decorativa */}
-				<div className={styles.tape} aria-hidden="true" role="presentation" />
-
-				<div className={styles.content}>
-					{/* Icono decorativo */}
-					<FiAlertTriangle className={styles.icon} aria-hidden="true" />
-
-					{/* Etiqueta semántica de estado */}
-					<p className={styles.stamp} aria-label="Tipo de comunicación">
-						Comunicado Oficial
-					</p>
-
-					{/* Título principal del error */}
-					<h1 className={styles.title}>{title}</h1>
-
-					{/* Descripción del error */}
-					<div
-						className={styles.descriptionBox}
-						role="status"
-						aria-live="polite"
-					>
-						<p>{description}</p>
-						<p className={styles.subtitle}>{subtitle}</p>
+			<div className={styles.sign3dContainer}>
+				<div className={styles.signBoard}>
+					<div className={styles.handleWrapper}>
+						<div className={styles.handle}></div>
 					</div>
 
-					{/* Botón de acción principal */}
-					<Link
-						to={returnPath}
-						className={styles.button}
-						aria-label={buttonText}
-					>
-						{buttonText}
-					</Link>
+					<div className={styles.contentBody}>
+						<p className={styles.cautionText}>CUIDADO</p>
+
+						<h1 className={styles.title}>{title}</h1>
+
+						<div className={styles.triangleContainer}>
+							<svg
+								viewBox="0 0 100 90"
+								className={styles.triangleSvg}
+								aria-hidden="true"
+							>
+								<polygon
+									points="50,10 90,80 10,80"
+									className={styles.trianglePolygon}
+								/>
+							</svg>
+							<div className={styles.iconOverlay}>
+								<span className={styles.fallbackIcon} aria-hidden="true">
+									!
+								</span>
+							</div>
+						</div>
+
+						<div
+							className={styles.descriptionBox}
+							role="status"
+							aria-live="polite"
+						>
+							<p className={styles.mainDescription}>{description}</p>
+							<p className={styles.subtitle}>{subtitle}</p>
+						</div>
+
+						<Link
+							to={returnPath}
+							className={styles.button}
+							aria-label={buttonText}
+						>
+							{buttonText}
+						</Link>
+					</div>
 				</div>
+
+				<div className={styles.floorShadow}></div>
 			</div>
 		</div>
 	);

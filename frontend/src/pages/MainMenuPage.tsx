@@ -1,78 +1,72 @@
 // src/pages/MainMenuPage.tsx
 // Accesibilidad comprobada: SI
 
+import { NavLink } from "react-router-dom";
+
 export default function MainMenuPage() {
 	return (
-		<div className="pl-6 pb-10">
+		<main className="pl-6 pb-10">
 			{/* Título principal */}
 			<h1
 				className="text-4xl mb-6 font-black"
 				style={{ color: "var(--color-lomo)" }}
 			>
-				CHAOS INC.
+				Inicio
 			</h1>
 
+			{/* Subtítulo semántico (cambiado para evitar redundancia con el h1) */}
 			<h2 className="text-xl mb-8 opacity-80 border-b border-gray-400 pb-2 font-bold">
-				Manual de Orientación General
+				Introducción
 			</h2>
 
-			{/* Imagen de portada */}
-			<div
-				className="w-full mb-8 flex items-center justify-center rounded border-2 border-dashed border-gray-400/40 bg-gray-400/10"
-				style={{ aspectRatio: "21/9" }}
-			>
-				<span className="text-sm italic opacity-50">
-					[ Espacio para Imagen de Portada ]
-				</span>
-			</div>
-
 			{/* Cuerpo del manual */}
-			<div className="space-y-6">
+			<div className="space-y-6 text-gray-800 leading-relaxed">
 				<p>
-					Bienvenido a Chaos Inc. Si está leyendo esta libreta, significa que ha
-					sobrevivido a la fase 1 del proceso de selección o que, por el
-					contrario, ha robado material de oficina confidencial.
-				</p>
-
-				<p>
-					El objetivo principal de esta compañía no es la eficiencia productiva,
-					sino la gestión controlada de las dinámicas de poder en la oficina. Su
-					papel, ya sea como Jefe, Secretario, Becaria o miembro del Sindicato,
-					requerirá astucia, cartas de acción y una tolerancia por encima de la
-					media al estrés laboral.
+					Bienvenido a Chaos Inc. Si estás leyendo esta libreta, significa que
+					perteneces al pequeño y selecto grupo de intelectuales que decidieron
+					jugar a este juego. ¡Felicidades!
 				</p>
 
 				<p>
-					Las salas de reuniones (pestaña azul) son el campo de batalla. En
-					ellas, se le asignará un rol oculto. No confíe en nadie. El Becaria
-					podría estar planeando una revolución y el Sindicato podría estar
-					negociando a sus espaldas.
+					Chaos Inc. es un juego de roles ocultos para 3 a 6 personas, con una
+					duración de 15 a 30 minutos. Todos los jugadores tendrán un rol
+					secreto y un objetivo que no podrán revelar, a excepción del Jefe. No
+					te fíes de nadie; tus aliados pueden acabar siendo enemigos
+					disfrazados.
 				</p>
-
-				{/* Saltos de línea para mantener el ritmo de los renglones de la libreta */}
-				<br />
-				<br />
-				<br />
-				<br />
-
-				<p className="text-center opacity-50 italic">
-					[Página intencionadamente dejada en blanco por el comité de censura
-					corporativa]
-				</p>
-
-				<br />
-				<br />
-				<br />
 
 				<p>
-					Si su nivel de estrés alcanza niveles críticos, por favor diríjase al
-					departamento de Recursos Humanos. Probablemente no le ayudarán, pero
-					existe un formulario (Anexo C-4) para solicitar una carta de curación
-					que será procesada en 3-5 días hábiles.
+					Si necesitas aprender a jugar para no ser brutalmente humillado por
+					profesionales, puedes{" "}
+					<NavLink
+						to="/how-to-play"
+						className="underline font-bold hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 rounded-sm"
+					>
+						consultar el reglamento
+					</NavLink>{" "}
+					del juego.
 				</p>
 
-				<p>Recuerde: Sobrevivir a la ronda es ganar. Buena suerte.</p>
+				<p>
+					Si quieres crear o buscar partidas, accede al{" "}
+					<NavLink
+						to="/rooms"
+						className="underline font-bold hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 rounded-sm"
+					>
+						listado de salas
+					</NavLink>
+					.
+				</p>
+
+				<hr className="border-gray-300 my-8" />
+
+				<p className="italic text-sm text-gray-600">
+					Este juego ha sido creado por una única persona y se encuentra en
+					desarrollo, por lo que podrían presentarse errores imprevistos.
+					Agradecería que se me comunicasen estos fallos o cualquier sugerencia
+					en lugar de maldecir a mis ancestros :).
+				</p>
 			</div>
-		</div>
+		</main>
 	);
 }

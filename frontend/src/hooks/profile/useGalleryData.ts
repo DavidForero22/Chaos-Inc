@@ -10,6 +10,7 @@ import {
 import type {
 	EnrichedCard,
 	EnrichedEnding,
+	EnrichedExtra,
 	EnrichedRole,
 	GalleryCard,
 } from "../../types/gallery";
@@ -18,6 +19,7 @@ export function useGalleryData() {
 	const [cards, setCards] = useState<EnrichedCard[]>([]);
 	const [roles, setRoles] = useState<EnrichedRole[]>([]);
 	const [endings, setEndings] = useState<EnrichedEnding[]>([]);
+	const [extras, setExtras] = useState<EnrichedExtra[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
@@ -79,6 +81,7 @@ export function useGalleryData() {
 				setCards(enrichedCards);
 				setRoles(enrichedRoles);
 				setEndings(enrichedEndings);
+				setExtras(responseData.extras);
 			} catch (err: any) {
 				setError(err.response?.data?.message || "Error al cargar la galería");
 				console.error("Gallery error:", err);
@@ -90,5 +93,5 @@ export function useGalleryData() {
 		fetchGallery();
 	}, []);
 
-	return { cards, roles, endings, loading, error };
+	return { cards, roles, endings, extras, loading, error };
 }

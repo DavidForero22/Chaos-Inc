@@ -1,0 +1,130 @@
+/* src/components/profile/gallery/GalleryViewerModal.module.css */
+
+.viewerWrapper {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 20px;
+	background: #352e26;
+	border: 4px solid #3e2a1f;
+	border-radius: 8px;
+	padding: 35px 32px 32px;
+	max-width: 90vw;
+	max-height: 90vh;
+	box-shadow:
+		0 30px 60px rgba(0, 0, 0, 0.8),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.closeBtn {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background: rgba(255, 255, 255, 0.08);
+	color: #d4c4a8;
+	border: none;
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.closeBtn:hover {
+	background: rgba(255, 255, 255, 0.18);
+	color: #fff;
+	transform: scale(1.1);
+}
+
+.viewerTitle {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 1.5rem;
+	font-weight: 900;
+	text-transform: uppercase;
+	letter-spacing: 3px;
+	color: #be8054;
+	margin: 0;
+}
+
+.imageArea {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	overflow: hidden;
+}
+
+.viewerImage {
+	max-width: min(80vw, 900px);
+	max-height: 65vh;
+	object-fit: contain;
+	display: block;
+	border-radius: 2px;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* Controles de paginación */
+.pageControls {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.pageBtn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	color: #d4c4a8;
+	font-size: 1.1rem;
+	width: 40px;
+	height: 40px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.15s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pageBtn:hover:not(:disabled) {
+	background: rgba(184, 92, 26, 0.3);
+	border-color: #b85c1a;
+	color: #fff;
+}
+
+.pageBtn:disabled {
+	opacity: 0.25;
+	cursor: default;
+}
+
+.pageCounter {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.85rem;
+	color: #9a8a75;
+	min-width: 60px;
+	text-align: center;
+}
+
+.noImage {
+	color: #9a8a75;
+	font-style: italic;
+	font-family: "Courier New", Courier, monospace;
+	padding: 40px;
+}
+
+@media (max-width: 768px) {
+	.viewerWrapper {
+		padding: 40px 16px 24px;
+		max-width: 95vw;
+	}
+
+	.viewerImage {
+		max-width: 90vw;
+		max-height: 65vh;
+	}
+}
