@@ -56,10 +56,42 @@ class GalleryService
             ->map(fn($role) => $role ?? 'canceled')
             ->values();
 
+        // 4. Extras desbloqueables por logros
+        $totalAchievements = DB::table('achievement_user')
+            ->where('user_id', $user->id)
+            ->count();
+
+        $extrasConfig = config('gallery.extras', []);
+        $extras = [];
+
+        foreach ($extrasConfig as $extra) {
+            $isUnlocked = $totalAchievements >= $extra['achievements_required'];
+
+            $formatted = [
+                'id' => $extra['id'],
+                'name' => $extra['name'],
+                'achievements_required' => $extra['achievements_required'],
+                'is_unlocked' => $isUnlocked,
+            ];
+
+            if ($isUnlocked) {
+                $formatted['description'] = $extra['description'] ?? '';
+                // Añadir barra inicial a las rutas de imagen
+                $formatted['image'] = isset($extra['image']) ? '/' . $extra['image'] : null;
+                $formatted['images'] = isset($extra['images'])
+                    ? array_map(fn($img) => '/' . $img, $extra['images'])
+                    : null;
+            }
+
+            $extras[] = $formatted;
+        }
+
+
         return [
             'cards'    => $cards,
             'roles'    => $rolesUnlocked,
             'endings'  => $endingsUnlocked,
+            'extras'   => $extras,
         ];
     }
 }

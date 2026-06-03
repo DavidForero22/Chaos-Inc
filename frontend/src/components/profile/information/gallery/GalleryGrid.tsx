@@ -1,21 +1,24 @@
 import type {
 	EnrichedCard,
 	EnrichedEnding,
+	EnrichedExtra,
 	EnrichedRole,
 } from "../../../../types/gallery";
 import styles from "./GalleryGrid.module.css";
 
-type TabId = "cards" | "roles" | "endings";
+type TabId = "cards" | "roles" | "endings" | "extras";
 
 interface GalleryGridProps {
 	activeTab: TabId;
 	cards: EnrichedCard[];
 	roles: EnrichedRole[];
 	endings: EnrichedEnding[];
+	extras: EnrichedExtra[];
 	selectedItemId: string | number | null;
 	onItemClick: (id: string | number) => void;
 }
 
+// Type guards
 function isEnrichedCard(item: any): item is EnrichedCard {
 	return item && item.is_discovered !== undefined;
 }
@@ -24,18 +27,26 @@ function isEnrichedRole(item: any): item is EnrichedRole {
 	return item && item.role !== undefined;
 }
 
+function isEnrichedEnding(item: any): item is EnrichedEnding {
+	return item && item.ending !== undefined;
+}
+
+
 export default function GalleryGrid({
 	activeTab,
 	cards,
 	roles,
 	endings,
+	extras,
 	selectedItemId,
 	onItemClick,
 }: GalleryGridProps) {
-	let items: (EnrichedCard | EnrichedRole | EnrichedEnding)[] = [];
+	let items: (EnrichedCard | EnrichedRole | EnrichedEnding | EnrichedExtra)[] =
+		[];
 	if (activeTab === "cards") items = cards;
 	else if (activeTab === "roles") items = roles;
-	else items = endings;
+	else if (activeTab === "endings") items = endings;
+	else items = extras;
 
 	const gridClass = activeTab === "cards" ? styles.cardsGrid : styles.wideGrid;
 
@@ -57,11 +68,22 @@ export default function GalleryGrid({
 					isUnlocked = item.isUnlocked;
 					displayName = item.label;
 					imageUrl = item.image;
-				} else {
+				} else if (isEnrichedEnding(item)) {
 					id = item.ending;
 					isUnlocked = item.isUnlocked;
 					displayName = item.name;
 					imageUrl = item.image;
+				} else {
+					id = item.id;
+					isUnlocked = item.is_unlocked;
+					displayName = item.name;
+					if (item.image) {
+						imageUrl = item.image;
+					} else if (item.images && item.images.length > 0) {
+						imageUrl = item.images[0];
+					} else {
+						imageUrl = null;
+					}
 				}
 
 				const isSelected = selectedItemId === id;
@@ -74,24 +96,7 @@ export default function GalleryGrid({
 						aria-label={isUnlocked ? displayName : "Elemento bloqueado"}
 						aria-pressed={isSelected}
 					>
-						<div
-							className={`
-								${styles.itemImageContainer} 
-								${
-									isUnlocked && isEnrichedCard(item)
-										? item.category === "chaotic"
-											? `border-4 border-[#c026d3] shadow-[0_0_12px_rgba(192,38,211,0.4)] bg-[#292524] ${styles.chaoticSticker}`
-											: {
-													attack:
-														"border-4 border-[#D32F2F] shadow-[0_0_12px_rgba(211,47,47,0.4)]",
-													heal: "border-4 border-[#2E7D32] shadow-[0_0_12px_rgba(46,125,50,0.4)]",
-													perk: "border-4 border-[#F9A825] shadow-[0_0_12px_rgba(249,168,37,0.4)]",
-													default:
-														"border-4 border-[#455A64] shadow-[0_0_12px_rgba(69,90,100,0.4)]",
-												}[item.type || "default"]
-										: ""
-								}`}
-						>
+						<div className={styles.itemImageContainer}>
 							{isUnlocked ? (
 								imageUrl ? (
 									<img

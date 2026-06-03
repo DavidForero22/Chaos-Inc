@@ -14,6 +14,7 @@ class GalleryResource extends JsonResource
             'cards'    => $this['cards'],
             'roles'    => $this['roles'],
             'endings'  => $this['endings'],
+            'extras'  => $this['extras'],
         ];
     }
 }

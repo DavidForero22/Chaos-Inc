@@ -175,7 +175,7 @@
 }
 
 .acknowledgments {
-	font-size: 0.70rem;
+	font-size: 0.7rem;
 	line-height: 1.6;
 	color: #6b5a45;
 	text-align: justify;
@@ -193,6 +193,44 @@
 	cursor: pointer;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	margin-bottom: 20px;
+}
+
+/* Wrapper clickable para imágenes de roles/finales/extras */
+.viewableImage {
+	cursor: zoom-in;
+	position: relative;
+	overflow: hidden;
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+.viewableImage:hover {
+	transform: rotate(0deg) scale(1.03); /* sobreescribe el rotate(-1deg) base */
+	box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Overlay semitransparente que aparece en hover */
+.imageHoverOverlay {
+	position: absolute;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.8rem;
+	font-weight: 900;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	border-radius: 2px;
+}
+
+.viewableImage:hover .imageHoverOverlay {
+	opacity: 1;
 }
 
 @media (max-width: 1040px) {

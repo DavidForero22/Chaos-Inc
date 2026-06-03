@@ -25,16 +25,19 @@
 	transition: all 0.2s ease;
 	outline: none;
 	width: 100%;
+	height: 160px;
 }
 
 .itemImageContainer {
+	flex: 1;
 	width: 100%;
-	aspect-ratio: 2/3; /* Proporción vertical para cartas */
+	min-height: 0; 
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	position: relative;
 	border-radius: 6px;
+	overflow: hidden;
 }
 
 .wideGrid .itemImageContainer {
@@ -106,6 +109,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	flex-shrink: 0;
 }
 
 /* --- CARTAS CAÓTICAS --- */
