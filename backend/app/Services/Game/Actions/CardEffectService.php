@@ -139,7 +139,6 @@ class CardEffectService
             'has_shield',
             1
         );
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyBlock(string $roomId, int $targetId): void
@@ -336,7 +335,6 @@ class CardEffectService
             'vision_bonus',
             1
         );
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyDistance(string $roomId, int $playerId): void
@@ -346,7 +344,6 @@ class CardEffectService
             'has_distance',
             1
         );
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyClean(string $roomId, int $targetId, string $perkKey): void
@@ -370,7 +367,6 @@ class CardEffectService
             'has_storage',
             1
         );
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyLuck(string $roomId, int $playerId): void
@@ -380,7 +376,6 @@ class CardEffectService
             'has_luck',
             1
         );
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyChaoticDraw(string $roomId, int $playerId): void
@@ -475,7 +470,6 @@ class CardEffectService
     public function applyChaoticPassive(string $roomId, int $playerId): void
     {
         Redis::hset("room:{$roomId}:player:{$playerId}:perks", 'has_potato_launcher', 1);
-        Redis::hset("room:{$roomId}:player:{$playerId}:stats", 'passive_equipped', 1);
     }
 
     public function applyChaoticRevive(string $roomId, string $targetId): void

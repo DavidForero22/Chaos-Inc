@@ -69,7 +69,7 @@ class AchievementService
                 }
 
                 // 7. Sin Bolsillos (Ganar sin equipar pasivas)
-                if ((int)($player['passive_equipped'] ?? 0) === 0) {
+                if ((int)($player['passives_played'] ?? 0) === 0) {
                     $achievementsToUnlock[] = 'ach_no_passives';
                 }
 
