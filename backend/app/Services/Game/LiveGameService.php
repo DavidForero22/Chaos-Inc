@@ -199,7 +199,6 @@ class LiveGameService
                 'eliminations'          => 0,
                 'dodged_attacks'        => 0,
                 'cards_stolen'          => 0,
-                'passive_equipped'      => 0,
                 'luck_streak'           => 0,
                 'dodged_or_defended'    => 0,
             ]);
