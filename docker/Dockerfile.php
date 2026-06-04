@@ -37,5 +37,8 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 COPY ./docker/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Añadir el caddyfile directamente a la imagen
+COPY ./docker/Caddyfile /etc/caddy/Caddyfile
+
 # Establecer el script como el punto de entrada
 ENTRYPOINT ["docker-entrypoint.sh"]
