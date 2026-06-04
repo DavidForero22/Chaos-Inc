@@ -68,14 +68,9 @@ class AnalyticsService
      */
     private function getTopCards(): array
     {
-        $cardsConfig = config('game.cards.cards', []);
-        // Mapear id -> display_name
-        $cardNames = [];
-        foreach ($cardsConfig as $card) {
-            $cardNames[$card['id']] = $card['display_name'];
-        }
-
-        $top = GameCardUsage::select('card_id', DB::raw('SUM(times_played) as total'))
+        // Delegar el JOIN a la base de datos
+        $top = GameCardUsage::with('card')
+            ->select('card_id', DB::raw('SUM(times_played) as total'))
             ->groupBy('card_id')
             ->orderBy('total', 'desc')
             ->limit(10)
@@ -83,13 +78,14 @@ class AnalyticsService
 
         $result = [];
         foreach ($top as $item) {
-            $cardId = (int) $item->card_id;
             $result[] = [
-                'id'    => $cardId,
-                'name'  => $cardNames[$cardId] ?? 'Carta desconocida',
+                'id'    => (int) $item->card_id,
+                // Extraer el nombre directamente de la relación
+                'name'  => $item->card->base_name ?? 'Carta desconocida',
                 'total' => (int) $item->total,
             ];
         }
+
         return $result;
     }
 

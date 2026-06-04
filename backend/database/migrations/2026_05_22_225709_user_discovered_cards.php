@@ -11,11 +11,13 @@ return new class extends Migration
         Schema::create('user_discovered_cards', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedInteger('card_id'); // ID numérico de la carta (1..n)
+
+            $table->unsignedInteger('card_id');
+            $table->foreign('card_id')->references('id')->on('cards')->cascadeOnDelete();
+
             $table->timestamp('discovered_at')->useCurrent();
 
             $table->unique(['user_id', 'card_id']);
-            $table->index('card_id');
         });
     }
 

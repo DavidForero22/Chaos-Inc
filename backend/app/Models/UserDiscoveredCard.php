@@ -27,4 +27,9 @@ class UserDiscoveredCard extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function card(): BelongsTo
+    {
+        return $this->belongsTo(Card::class);
+    }
 }
