@@ -197,7 +197,7 @@ services:
   # MySQL — interno, sin puerto expuesto al host
   # ----------------------------------------------------------
   mysql:
-    image: mysql:8.0-alpine
+    image: mysql:8.0
     container_name: chaosinc_db
     restart: always
     command: --log_bin_trust_function_creators=1
