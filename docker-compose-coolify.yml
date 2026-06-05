@@ -35,11 +35,6 @@ services:
     networks:
       - chaos-inc-net
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
   # ----------------------------------------------------------
   # BACKEND (Laravel + FrankenPHP)
@@ -128,11 +123,6 @@ services:
     networks:
       - chaos-inc-net
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
 
   # ----------------------------------------------------------
   # REVERB (WebSockets)
@@ -177,12 +167,6 @@ services:
     networks:
       - chaos-inc-net
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/up"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-
 
   # ----------------------------------------------------------
   # WORKER (colas Redis) — 3 réplicas como servicios separados
