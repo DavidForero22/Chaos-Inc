@@ -1,5 +1,4 @@
 // src/echo.ts
-
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 import api from "./api/axios";
@@ -14,23 +13,21 @@ declare global {
 
 window.Pusher = Pusher;
 
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
 const echoInstance = new Echo({
 	broadcaster: "reverb",
 	key: import.meta.env.VITE_REVERB_APP_KEY,
 	wsHost: import.meta.env.VITE_REVERB_HOST,
-	wsPort: Number(import.meta.env.VITE_REVERB_PORT ?? 80),
+	wsPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
 	wssPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
 	forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
 	enabledTransports: ["ws", "wss"],
 
-	// Autorización limpia y delegada en Axios
+	// Usar URL relativa
 	authorizer: (channel: any) => {
 		return {
 			authorize: (socketId: string, callback: Function) => {
 				api
-					.post(`${baseURL}/broadcasting/auth`, {
+					.post("/broadcasting/auth", {
 						socket_id: socketId,
 						channel_name: channel.name,
 					})
@@ -39,7 +36,7 @@ const echoInstance = new Echo({
 					})
 					.catch((error) => {
 						logWithTime(
-							"echo.ts::.catch - Error autorizando canal de Echo",
+							"echo.ts - Error autorizando canal de Echo",
 							error,
 							"error",
 						);

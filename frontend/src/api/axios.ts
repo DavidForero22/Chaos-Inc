@@ -6,7 +6,11 @@ import { useAuthStore } from "../store/auth/useAuthStore.ts";
 import { useLoadingStore } from "../store/ui/useLoadingStore.ts";
 import { logWithTime } from "../utils/logger.ts";
 
-const baseURL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const sanitizeUrl = (url: string) => url.replace(/\/$/, "");
+
+const baseURL = sanitizeUrl(
+	import.meta.env.VITE_API_URL || "http://localhost:8000",
+);
 
 const api = axios.create({
 	baseURL: `${baseURL}/api/v1`,

@@ -5,12 +5,21 @@ set -e
 if [ "$1" = "frankenphp" ]; then
     echo "Preparando el backend..."
     
-    # Forzar al script a esperar a que el puerto TCP esté abierto
-    echo "Esperando a que MySQL abra el puerto de red 3306..."
-    while ! nc -z mysql 3306; do
+    # Esperar a MySQL
+    echo "Esperando a que MySQL esté listo..."
+    max_attempts=30
+    attempt=0
+    until nc -z mysql 3306 || [ $attempt -eq $max_attempts ]; do
+      attempt=$((attempt + 1))
       sleep 1
     done
-    echo "MySQL está completamente listo para recibir conexiones!"
+    
+    if [ $attempt -eq $max_attempts ]; then
+      echo "ERROR: MySQL no respondió después de 30 segundos"
+      exit 1
+    fi
+    
+    echo "MySQL está listo!"
     
     # Crear enlace de storage si no existe
     php artisan storage:link || true
@@ -26,5 +35,5 @@ if [ "$1" = "frankenphp" ]; then
     echo "Backend listo. Arrancando servidor..."
 fi
 
-# Ejecutar el comando original que se le pasó al contenedor
+# Ejecutar el comando original
 exec "$@"
