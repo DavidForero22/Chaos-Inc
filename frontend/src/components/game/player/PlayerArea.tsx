@@ -176,7 +176,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 						onClick={() => handleTabClick("stats")}
 						className={`${styles.mobileTab} ${activeTab === "stats" ? styles.activeTab : ""} focus:outline-none focus-visible:ring-2 focus-visible:ring-[#393e42]`}
 					>
-						Expediente
+						Estado
 					</button>
 					<button
 						role="tab"
@@ -210,7 +210,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					<PlayerBanners me={me} />
 				</div>
 
-				{/* Panel 1: Estadísticas (Expediente) */}
+				{/* Panel 1: Estado */}
 				<div
 					id="panel-stats"
 					role="tabpanel"

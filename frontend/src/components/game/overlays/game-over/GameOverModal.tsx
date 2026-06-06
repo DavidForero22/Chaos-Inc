@@ -34,14 +34,20 @@ export function GameOverModal({
 	const [showArrow, setShowArrow] = useState(false);
 	const xpSummary = useGameStore((s) => s.xpSummary);
 
+	console.log(winnerRole);
+
+	// Resolver configuración a prueba de fallos
+	const normalizedRole = winnerRole?.trim().toLowerCase() as ConfigKey;
+
 	// Resolver configuración
-	const configKey: ConfigKey =
-		winnerRole === "canceled" || !winnerRole ? "canceled" : winnerRole;
+	const configKey: ConfigKey = RESULT_CONFIG[normalizedRole]
+		? normalizedRole
+		: "canceled";
 	const config = RESULT_CONFIG[configKey];
 
 	// Calcular estados
 	const effectiveRole = isActingBoss ? "boss" : myRole;
-	const iWon = config.winners.includes(effectiveRole);
+	const iWon = config?.winners?.includes(effectiveRole) ?? false;
 	const isCancelled = configKey === "canceled";
 
 	// Logros desbloqueados en esta partida (solo del jugador)

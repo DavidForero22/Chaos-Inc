@@ -87,9 +87,9 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 
 					{/* Texto vertical (Solo se ve en PC/Landscape) */}
 					{/* Oculto al lector de pantalla porque es puramente decorativo */}
-					<div className="hidden md:flex h-full flex-col justify-end items-center pb-32 relative z-10">
+					<div className="hidden md:flex h-full flex-col justify-center items-center relative z-10">
 						<span className="text-black/30 font-black text-4xl tracking-widest uppercase -rotate-90 whitespace-nowrap">
-							Expediente
+							Informe Secreto
 						</span>
 					</div>
 				</div>
@@ -102,7 +102,7 @@ export function RoleRevealModal({ role, onClose }: RoleRevealModalProps) {
 						ref={scrollRef}
 						onScroll={handleScroll}
 						tabIndex={0}
-						aria-label="Contenido del expediente"
+						aria-label="Contenido del informe"
 					>
 						<div className={styles.redMargin} aria-hidden="true" />
 						{/* Contenido scrolleable */}
