@@ -12,6 +12,7 @@ use App\Http\Controllers\Lobby\DebugController;
 use App\Http\Controllers\Lobby\LiveGameController;
 use App\Http\Controllers\Lobby\LiveRoomController;
 use App\Http\Middleware\IsDebugRoom;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 | Ruta de check
 |--------------------------------------------------------------------------
 */
+
 Route::get('/health', function () {
     return response()->json(['status' => 'healthy', 'message' => 'Chaos Inc. API is running'], 200);
 });
@@ -30,6 +32,8 @@ Route::get('/health', function () {
 */
 
 Route::prefix('v1')->group(function () {
+
+    Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
     // Rutas de autenticacion (5 por minuto)
     Route::middleware(['throttle:auth'])->group(function () {
