@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     curl \
-    netcat-openbsd
+    netcat-openbsd \
+    dos2unix
 
 # Instalar extensiones de PHP
 RUN pecl install redis && docker-php-ext-enable redis
@@ -35,6 +36,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 # Configuración del Entrypoint
 COPY ./docker/docker-entrypoint.sh /usr/local/bin/
+RUN dos2unix /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Añadir el caddyfile directamente a la imagen
