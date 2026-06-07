@@ -49,4 +49,18 @@ const echoInstance = new Echo({
 
 window.Echo = echoInstance;
 
+// Desconecta el socket cuando la página se oculta o se va a guardar en caché
+window.addEventListener("pagehide", () => {
+	if (echoInstance) {
+		echoInstance.disconnect();
+	}
+});
+
+// Reconecta el socket cuando la página se restaura desde la caché
+window.addEventListener("pageshow", (event) => {
+	if (event.persisted && echoInstance) {
+		echoInstance.connect();
+	}
+});
+
 export default echoInstance;

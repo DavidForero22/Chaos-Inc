@@ -45,7 +45,11 @@ export default function RoomsTab() {
 
 	if (loading) {
 		return (
-			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
+			<div
+				className="pl-6 pb-10 flex justify-center items-center h-[60vh]"
+				role="status"
+				aria-live="polite"
+			>
 				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#295c60]"></div>
 				<span className="ml-3 font-mono">Cargando salas activas...</span>
 			</div>
@@ -54,9 +58,9 @@ export default function RoomsTab() {
 
 	return (
 		<div className="flex flex-col gap-4 relative">
-			<h3 className="font-bold text-lg underline decoration-2 uppercase mb-2">
+			<h2 className="font-bold text-lg underline decoration-2 uppercase mb-2">
 				Salas Activas
-			</h3>
+			</h2>
 
 			{rooms.length === 0 ? (
 				<p className="py-8 text-center text-sm opacity-50 italic uppercase tracking-widest">
@@ -126,6 +130,7 @@ export default function RoomsTab() {
 										<button
 											onClick={() => setEditingRoom(room)}
 											disabled={room.status === "playing"}
+											aria-label={`Editar sala ${room.name}`}
 											className="px-4 py-2 bg-amber-500 text-white text-xs font-bold uppercase cursor-pointer rounded hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors w-full text-center"
 											title={
 												room.status === "playing"
@@ -135,16 +140,16 @@ export default function RoomsTab() {
 										>
 											EDITAR SALA
 										</button>
-
 										<button
 											onClick={() => handleDelete(room.room_id)}
 											disabled={deletingId === room.room_id}
+											aria-label={`Eliminar sala ${room.name}`}
 											className="px-4 py-2 bg-red-600 text-white text-xs font-bold uppercase cursor-pointer rounded hover:bg-red-700 disabled:opacity-50 transition-colors w-full text-center"
 										>
 											{deletingId === room.room_id
 												? "ELIMINANDO..."
 												: "ELIMINAR SALA"}
-										</button>
+										</button>{" "}
 									</div>
 								</div>
 							</div>

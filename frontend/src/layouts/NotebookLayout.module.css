@@ -4,22 +4,22 @@
 
 /* --- VARIABLES PROPIAS DEL NOTEBOOK --- */
 :root {
-	--nb-papel: #d2d4d1;
-	--nb-lineas: rgba(146, 158, 156, 0.35);
-	--nb-lomo: #393e42;
-	--nb-texto: #393e42;
-	--nb-margen: rgba(220, 50, 50, 0.2);
+	--nb-paper: #d2d4d1;
+	--nb-lines: rgba(146, 158, 156, 0.35);
+	--nb-loin: #393e42;
+	--ng-text: #393e42;
+	--nb-margin: rgba(220, 50, 50, 0.2);
 
-	--nb-tab-inicio: #cbbe34;
-	--nb-tab-inicio-text: #393e42;
-	--nb-tab-salas: #2b5c61;
-	--nb-tab-salas-text: #d2d4d1;
-	--nb-tab-saber: #999184;
-	--nb-tab-saber-text: #393e42;
+	--nb-tab-home: #cbbe34;
+	--nb-tab-home-text: #393e42;
+	--nb-tab-rooms: #2b5c61;
+	--nb-tab-rooms-text: #d2d4d1;
+	--nb-tab-know: #999184;
+	--nb-tab-know-text: #393e42;
 	--nb-tab-howto: #86b648;
 	--nb-tab-howto-text: #333638;
-	--nb-tab-perfil: #393e42;
-	--nb-tab-perfil-text: #d2d4d1;
+	--nb-tab-profile: #393e42;
+	--nb-tab-profile-text: #d2d4d1;
 }
 
 /* --- WRAPPER DE PÁGINA (La "pared") --- */
@@ -30,9 +30,7 @@
 	align-items: center;
 	padding: 5rem 1.5rem 4rem 1.5rem;
 	font-family: "Courier New", Courier, monospace;
-	color: var(--nb-texto);
-
-	/* Textura de madera simulada con CSS */
+	color: var(--ng-text);
 	background-image: url("/background_1.jpg");
 }
 
@@ -53,7 +51,7 @@
 .notebookSpine {
 	width: 45px;
 	flex-shrink: 0;
-	background-color: var(--nb-lomo);
+	background-color: var(--nb-loin);
 	border-radius: 8px 0 0 8px;
 	background-image: repeating-linear-gradient(
 		rgba(255, 255, 255, 0.05) 0px,
@@ -67,10 +65,10 @@
 /* --- HOJA DE PAPEL (Área de contenido) --- */
 .notebookPaper {
 	flex: 1;
-	background-color: var(--nb-papel);
+	background-color: var(--nb-paper);
 	border-radius: 0 8px 8px 0;
 	padding: 2rem 4rem;
-	min-height: 600px;
+	min-height: 900px;
 	position: relative;
 	overflow: hidden;
 
@@ -78,8 +76,8 @@
 	background-image: repeating-linear-gradient(
 		transparent,
 		transparent 31px,
-		var(--nb-lineas) 31px,
-		var(--nb-lineas) 32px
+		var(--nb-lines) 31px,
+		var(--nb-lines) 32px
 	);
 	line-height: 32px;
 }
@@ -92,7 +90,7 @@
 	bottom: 0;
 	left: 3.5rem;
 	width: 2px;
-	background-color: var(--nb-margen);
+	background-color: var(--nb-margin);
 	pointer-events: none;
 }
 
@@ -114,7 +112,7 @@
 	font-size: 0.75rem;
 	font-weight: bold;
 	letter-spacing: 0.5px;
-	color: var(--nb-texto);
+	color: var(--ng-text);
 	text-decoration: none;
 	opacity: 0.7;
 	transition: opacity 0.2s;
@@ -128,14 +126,14 @@
 	width: 28px;
 	height: 28px;
 	border-radius: 50%;
-	background-color: var(--nb-lomo);
-	color: var(--nb-papel);
+	background-color: var(--nb-loin);
+	color: var(--nb-paper);
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 0.65rem;
 	font-weight: bold;
-	border: 1.5px solid var(--nb-lomo);
+	border: 1.5px solid var(--nb-loin);
 }
 
 .authButtons {
@@ -150,22 +148,22 @@
 	letter-spacing: 0.5px;
 	text-transform: uppercase;
 	padding: 4px 10px;
-	border: 1.5px solid var(--nb-lomo);
+	border: 1.5px solid var(--nb-loin);
 	border-radius: 3px;
 	cursor: pointer;
 	transition: all 0.15s ease;
 	background: transparent;
-	color: var(--nb-texto);
+	color: var(--ng-text);
 }
 
 .authBtn:hover {
-	background-color: var(--nb-lomo);
-	color: var(--nb-papel);
+	background-color: var(--nb-loin);
+	color: var(--nb-paper);
 }
 
 .authBtnPrimary {
-	background-color: var(--nb-lomo);
-	color: var(--nb-papel);
+	background-color: var(--nb-loin);
+	color: var(--nb-paper);
 }
 
 .authBtnPrimary:hover {
@@ -206,8 +204,8 @@
 	width: 65px;
 	height: 65px;
 	border-radius: 50%;
-	background-color: var(--nb-lomo);
-	color: var(--nb-papel);
+	background-color: var(--nb-loin);
+	color: var(--nb-paper);
 	display: flex;
 	justify-content: center;
 	align-items: center;

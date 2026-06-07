@@ -48,6 +48,8 @@ Se necesitan **3 archivos `.env`**, uno por cada capa del proyecto. Cada carpeta
 
 ```bash
 docker-compose -f docker-compose-prod.yml up -d --build
+
+docker-compose up -d --build # Para desarrollo local
 ```
 
 Esto construirá las imágenes, creará las redes y levantará todos los servicios en segundo plano.
@@ -55,7 +57,9 @@ Esto construirá las imágenes, creará las redes y levantará todos los servici
 **Reset completo:** Si necesitas destruir los contenedores y volúmenes para empezar desde cero:
 
 ```bash
- docker-compose -f docker-compose-prod.yml down -v
+docker-compose -f docker-compose-prod.yml down -v
+
+docker-compose down -v # Para desarrollo local
 ```
 
 ---

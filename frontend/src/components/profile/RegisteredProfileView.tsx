@@ -126,7 +126,7 @@ export default function RegisteredProfileView() {
 	}, [notMyProfile, displayUser]);
 
 	return (
-		<main
+		<div
 			className={styles.dossierContainer}
 			aria-label={notMyProfile ? `Perfil de ${displayUser}` : "Mi perfil"}
 		>
@@ -255,6 +255,6 @@ export default function RegisteredProfileView() {
 					</div>
 				</div>
 			</div>
-		</main>
+		</div>
 	);
 }

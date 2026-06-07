@@ -45,7 +45,11 @@ export default function GamesTab() {
 
 	if (loading)
 		return (
-			<div className="pl-6 pb-10 flex justify-center items-center h-[60vh]">
+			<div
+				className="pl-6 pb-10 flex justify-center items-center h-[60vh]"
+				role="status"
+				aria-live="polite"
+			>
 				<div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#295c60]"></div>
 				<span className="ml-3 font-mono">Cargando partidas...</span>
 			</div>
@@ -54,18 +58,22 @@ export default function GamesTab() {
 	return (
 		<div className="flex flex-col gap-4">
 			{/* Cabecera */}
-			<h3 className="font-bold text-lg underline decoration-2 uppercase mb-2">
+			<h2 className="font-bold text-lg underline decoration-2 uppercase mb-2">
 				Registros de Partidas Finalizadas
-			</h3>
+			</h2>
 
 			{/* ── Barra de filtros ── */}
 			<div className="flex flex-wrap gap-3 items-end border-y-2 border-dashed border-gray-400/50 py-3">
 				{/* Filtro rol ganador */}
 				<div className="w-44">
-					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
+					<label
+						htmlFor="filter-winner"
+						className="block text-xs font-bold uppercase opacity-60 mb-1"
+					>
 						Rol ganador
 					</label>
 					<select
+						id="filter-winner"
 						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer text-sm"
 						value={winnerFilter}
 						onChange={(e) => {
@@ -84,10 +92,14 @@ export default function GamesTab() {
 
 				{/* Filtro nº jugadores */}
 				<div className="w-36">
-					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
+					<label
+						htmlFor="filter-players"
+						className="block text-xs font-bold uppercase opacity-60 mb-1"
+					>
 						Nº jugadores
 					</label>
 					<select
+						id="filter-players"
 						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer text-sm"
 						value={playerCount}
 						onChange={(e) => {

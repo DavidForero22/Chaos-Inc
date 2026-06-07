@@ -41,24 +41,30 @@ export default function AnalyticsDashboard({
 	return (
 		<div className="space-y-6">
 			{/* Selector de rango de días */}
-			<div className="flex justify-end items-center gap-2 mb-4">
-				<label
-					htmlFor="daysRange"
-					className="text-sm font-bold uppercase opacity-70"
-				>
-					Rango:
-				</label>
-				<select
-					id="daysRange"
-					value={days}
-					onChange={(e) => setDays(Number(e.target.value))}
-					className="bg-transparent border-b-2 border-gray-400 px-2 py-1 text-sm focus:outline-none focus:border-[#295c60] cursor-pointer"
-				>
-					<option value={7}>Últimos 7 días</option>
-					<option value={30}>Últimos 30 días</option>
-					<option value={60}>Últimos 60 días</option>
-					<option value={0}>Todo el historial</option>
-				</select>
+			<div className="flex justify-between items-end mb-2">
+				<h2 className="font-bold text-lg underline decoration-2 uppercase">
+					Analíticas del servidor
+				</h2>
+
+				<div className="flex items-center gap-2">
+					<label
+						htmlFor="daysRange"
+						className="text-sm font-bold uppercase opacity-70 pb-1"
+					>
+						Rango:
+					</label>
+					<select
+						id="daysRange"
+						value={days}
+						onChange={(e) => setDays(Number(e.target.value))}
+						className="bg-transparent border-b-2 border-gray-400 px-2 py-1 text-sm focus:outline-none focus:border-[#295c60] cursor-pointer"
+					>
+						<option value={7}>Últimos 7 días</option>
+						<option value={30}>Últimos 30 días</option>
+						<option value={60}>Últimos 60 días</option>
+						<option value={0}>Todo el historial</option>
+					</select>
+				</div>
 			</div>
 
 			{/* Grid: 2 columnas en desktop, 1 en móvil */}

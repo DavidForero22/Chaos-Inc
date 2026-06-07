@@ -4,84 +4,108 @@ import {
 	Route,
 	Navigate,
 } from "react-router-dom";
+import { Suspense, lazy } from "react";
 
-// -- PÁGINAS --
-import RoomsPage from "./pages/rooms/RoomsPage.tsx";
-import GameBoardPage from "./pages/GameBoardPage.tsx";
-import ProfilePage from "./pages/profile/ProfilePage.tsx";
-import AdminPage from "./pages/AdminPage.tsx";
-import RoomNotFoundPage from "./pages/errors/RoomNotFoundPage.tsx";
-import HowToPlayPage from "./pages/info/HowToPlayPage.tsx";
-import KnowMorePage from "./pages/info/KnowMorePage.tsx";
-import SocialLinkingErrorPage from "./pages/errors/SocialLinkingErrorPage.tsx";
-
+// -- IMPORTACIONES SÍNCRONAS (Componentes globales y Layouts siempre visibles) --
 import { GlobalLoader } from "./components/ui/GlobalLoader.tsx";
-import MainMenuPage from "./pages/MainMenuPage.tsx";
 import NotebookLayout from "./layouts/NotebookLayout.tsx";
 import { useSessionGuard } from "./hooks/useSessionGuard.ts";
-import PublicProfilePage from "./pages/profile/PublicProfilePage.tsx";
 import { AchievementNotification } from "./components/ui/AchievementNotification.tsx";
 import AdminGuard from "./components/admin/AdminGuard.tsx";
-import UnauthorizedPage from "./pages/errors/UnauthorizedPage.tsx";
-import PageNotFoundPage from "./pages/errors/PageNotFoundPage.tsx";
 import { Toast } from "./components/ui/Toast/Toast.tsx";
-import UserNotFoundPage from "./pages/errors/UserNotFoundPage.tsx";
-import RoomFullPage from "./pages/errors/RoomFullPage.tsx";
-import GameAlreadyStartedPage from "./pages/errors/GameAlreadyStartedPage.tsx";
-import AlreadyInAnotherRoomPage from "./pages/errors/AlreadyInAnotherRoomPage.tsx";
 import { GlobalRoomManager } from "./components/lobby/GlobalRoomManager.tsx";
 import RoomJoinInterceptor from "./components/lobby/RoomJoinInterceptor.tsx";
+
+// -- IMPORTACIONES PEREZOSAS --
+// Solo se descargarán cuando el usuario intente acceder a esa ruta
+const MainMenuPage = lazy(() => import("./pages/MainMenuPage.tsx"));
+const RoomsPage = lazy(() => import("./pages/rooms/RoomsPage.tsx"));
+const GameBoardPage = lazy(() => import("./pages/GameBoardPage.tsx"));
+const ProfilePage = lazy(() => import("./pages/profile/ProfilePage.tsx"));
+const PublicProfilePage = lazy(
+	() => import("./pages/profile/PublicProfilePage.tsx"),
+);
+const AdminPage = lazy(() => import("./pages/AdminPage.tsx"));
+const HowToPlayPage = lazy(() => import("./pages/info/HowToPlayPage.tsx"));
+const KnowMorePage = lazy(() => import("./pages/info/KnowMorePage.tsx"));
+
+// Páginas de Error (Lazy)
+const RoomNotFoundPage = lazy(
+	() => import("./pages/errors/RoomNotFoundPage.tsx"),
+);
+const SocialLinkingErrorPage = lazy(
+	() => import("./pages/errors/SocialLinkingErrorPage.tsx"),
+);
+const UnauthorizedPage = lazy(
+	() => import("./pages/errors/UnauthorizedPage.tsx"),
+);
+const PageNotFoundPage = lazy(
+	() => import("./pages/errors/PageNotFoundPage.tsx"),
+);
+const UserNotFoundPage = lazy(
+	() => import("./pages/errors/UserNotFoundPage.tsx"),
+);
+const RoomFullPage = lazy(() => import("./pages/errors/RoomFullPage.tsx"));
+const GameAlreadyStartedPage = lazy(
+	() => import("./pages/errors/GameAlreadyStartedPage.tsx"),
+);
+const AlreadyInAnotherRoomPage = lazy(
+	() => import("./pages/errors/AlreadyInAnotherRoomPage.tsx"),
+);
 
 function App() {
 	useSessionGuard();
 
 	return (
 		<Router>
-			<Routes>
-				{/* ── Rutas con el diseño de libreta ── */}
-				<Route element={<NotebookLayout />}>
-					<Route path="/" element={<MainMenuPage />} />
-					<Route path="/rooms" element={<RoomsPage />} />
-					<Route path="/profile" element={<ProfilePage />} />
-					<Route path="/profile/:userId" element={<PublicProfilePage />} />
-					<Route path="/how-to-play" element={<HowToPlayPage />} />
-					<Route path="/know-more" element={<KnowMorePage />} />
+			{/* Suspense muestra el GlobalLoader mientras se descarga el JS de la página destino */}
+			<Suspense fallback={<GlobalLoader />}>
+				<Routes>
+					{/* ── Rutas con el diseño de libreta ── */}
+					<Route element={<NotebookLayout />}>
+						<Route path="/" element={<MainMenuPage />} />
+						<Route path="/rooms" element={<RoomsPage />} />
+						<Route path="/profile" element={<ProfilePage />} />
+						<Route path="/profile/:userId" element={<PublicProfilePage />} />
+						<Route path="/how-to-play" element={<HowToPlayPage />} />
+						<Route path="/know-more" element={<KnowMorePage />} />
 
-					{/* ── Ruta protegida para administradores ── */}
-					<Route element={<AdminGuard />}>
-						<Route path="/admin" element={<AdminPage />} />
+						{/* ── Ruta protegida para administradores ── */}
+						<Route element={<AdminGuard />}>
+							<Route path="/admin" element={<AdminPage />} />
+						</Route>
 					</Route>
-				</Route>
 
-				{/* ── Rutas con diseño propio ── */}
-				<Route path="/rooms/:id" element={<RoomJoinInterceptor />} />
-				<Route path="/game/:id" element={<GameBoardPage />} />
+					{/* ── Rutas con diseño propio ── */}
+					<Route path="/rooms/:id" element={<RoomJoinInterceptor />} />
+					<Route path="/game/:id" element={<GameBoardPage />} />
 
-				{/* ── Páginas de Error Explícitas ── */}
-				<Route path="/room-not-found" element={<RoomNotFoundPage />} />
-				<Route path="/social-error" element={<SocialLinkingErrorPage />} />
-				<Route path="/unauthorized" element={<UnauthorizedPage />} />
-				<Route path="/user-not-found" element={<UserNotFoundPage />} />
-				<Route path="/room-full" element={<RoomFullPage />} />
-				<Route
-					path="/game-already-started"
-					element={<GameAlreadyStartedPage />}
-				/>
-				<Route
-					path="/already-in-another-room"
-					element={<AlreadyInAnotherRoomPage />}
-				/>
+					{/* ── Páginas de Error Explícitas ── */}
+					<Route path="/room-not-found" element={<RoomNotFoundPage />} />
+					<Route path="/social-error" element={<SocialLinkingErrorPage />} />
+					<Route path="/unauthorized" element={<UnauthorizedPage />} />
+					<Route path="/user-not-found" element={<UserNotFoundPage />} />
+					<Route path="/room-full" element={<RoomFullPage />} />
+					<Route
+						path="/game-already-started"
+						element={<GameAlreadyStartedPage />}
+					/>
+					<Route
+						path="/already-in-another-room"
+						element={<AlreadyInAnotherRoomPage />}
+					/>
 
-				{/* ── Rutas Trampapara URLs incorrectas ── */}
-				<Route
-					path="/rooms/*"
-					element={<Navigate to="/room-not-found" replace />}
-				/>
-				<Route path="*" element={<PageNotFoundPage />} />
-			</Routes>
+					{/* ── Rutas Trampa para URLs incorrectas ── */}
+					<Route
+						path="/rooms/*"
+						element={<Navigate to="/room-not-found" replace />}
+					/>
+					<Route path="*" element={<PageNotFoundPage />} />
+				</Routes>
+			</Suspense>
+
 			{/* ── COMPONENTES GLOBALES ── */}
 			<GlobalRoomManager />
-			<GlobalLoader />
 			<AchievementNotification />
 			<Toast />
 		</Router>

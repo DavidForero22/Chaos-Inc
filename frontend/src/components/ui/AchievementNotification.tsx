@@ -27,28 +27,23 @@ function AchievementNotificationItem({
 
 	const title = achievement?.title ?? achievementId;
 	const description = achievement?.technicalDescription ?? "";
-	const image = achievement?.image ?? "/achievements/ach_placeholder.png";
+	const image = achievement?.image ?? "/achievements/ach_placeholder.jpg";
 
 	return (
 		<div
 			className={`pointer-events-auto w-80 rounded-xl border-2 border-amber-400 bg-amber-50/95 px-4 py-3 shadow-lg ${
 				isExiting ? styles.toastExit : styles.toastEnter
 			}`}
-			role="alert"
+			role="status"
 			aria-live="polite"
 			aria-atomic="true"
-			aria-label={`Logro desbloqueado: ${title}. ${description}`}
 		>
 			<h4 className="text-xs font-black uppercase tracking-wide text-amber-700">
 				¡Logro desbloqueado!
 			</h4>
 
 			<div className="mt-2 flex items-center gap-3">
-				<img
-					src={image}
-					alt={title}
-					className="h-12 w-12 shrink-0 object-contain"
-				/>
+				<img src={image} alt="" className="h-12 w-12 shrink-0 object-contain" />
 				<div className="min-w-0">
 					<p className="text-sm font-bold text-stone-900">{title}</p>
 					<p className="text-xs text-stone-600">{description}</p>
@@ -63,17 +58,12 @@ export function AchievementNotification() {
 		(state) => state.notifications,
 	);
 
-	// Agrupar notificaciones para mejor accesibilidad
-	const hasNotifications = notifications.length > 0;
 
 	return (
 		<div
 			className="fixed bottom-4 right-4 z-101 flex flex-col items-end gap-3 pointer-events-none"
-			aria-live="polite"
-			aria-atomic="false"
-			aria-label={
-				hasNotifications ? "Notificaciones de logros" : "Sin notificaciones"
-			}
+			role="region" 
+			aria-label="Notificaciones de logros"
 		>
 			{notifications.map((notif) => (
 				<AchievementNotificationItem

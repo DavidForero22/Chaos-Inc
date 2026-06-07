@@ -8,7 +8,7 @@ import {
 	FaUsers,
 	FaCrown,
 	FaEdit,
-	FaClock, // <-- Nuevo icono importado
+	FaClock,
 } from "react-icons/fa";
 import type { RoomData } from "../../types/api";
 import EditRoomModal from "../rooms/EditRoomModal";
@@ -88,6 +88,7 @@ export default function WaitingRoomDrawer({
 						<button
 							onClick={() => setIsOpen(false)}
 							className="p-1 hover:bg-gray-200 rounded"
+							aria-label="Cerrar panel"
 						>
 							<FaTimes size={20} />
 						</button>
@@ -222,10 +223,10 @@ export default function WaitingRoomDrawer({
 						{Array.from({ length: missingPlayers }).map((_, i) => (
 							<li
 								key={`empty-${i}`}
-								className="flex items-center gap-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded p-2 opacity-60"
+								className="flex items-center gap-3 bg-gray-50 border-2 border-dashed border-gray-400 rounded p-2 opacity-80"
 							>
-								<div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse" />
-								<span className="text-sm italic font-medium text-gray-400">
+								<div className="w-10 h-10 bg-gray-300 rounded-full animate-pulse" />
+								<span className="text-sm italic font-medium text-gray-600">
 									Esperando...
 								</span>
 							</li>
@@ -241,7 +242,7 @@ export default function WaitingRoomDrawer({
 						disabled={!canStart || !isOwner}
 						className={`w-full py-3 rounded font-black uppercase tracking-wider text-sm transition-all ${
 							!canStart || !isOwner
-								? "bg-gray-300 text-gray-500 cursor-not-allowed"
+								? "bg-gray-400 text-gray-800 cursor-not-allowed"
 								: "bg-green-600 text-white border-2 border-green-800 shadow-[4px_4px_0_0_#166534] hover:translate-y-1 hover:shadow-[0_0_0_0_#166534]"
 						}`}
 					>
@@ -254,7 +255,7 @@ export default function WaitingRoomDrawer({
 
 					<button
 						onClick={onLeave}
-						className="w-full py-2 text-sm font-bold text-red-600 uppercase hover:bg-red-100 rounded transition-colors"
+						className="w-full py-2 text-sm font-bold text-red-700 uppercase hover:bg-red-100 rounded transition-colors"
 					>
 						Abandonar Sala
 					</button>

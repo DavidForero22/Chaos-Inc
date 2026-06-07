@@ -39,7 +39,7 @@ export default function RoomList({
 
 			{/* ── LISTA DE SALAS ── */}
 			{!isLoading && (
-				<div role="list" aria-label="Lista de salas disponibles">
+				<div role="listbox" aria-label="Lista de salas disponibles">
 					{rooms.map((room) => {
 						const isDebug = room.is_debug;
 						const isRoomFull = isFull(room);
@@ -64,7 +64,7 @@ export default function RoomList({
 										if (!isRoomFull) onSelectRoom(room.room_id);
 									}
 								}}
-								role="button"
+								role="option"
 								tabIndex={isRoomFull ? -1 : 0}
 								aria-label={`Sala ${room.name}, ${room.is_private ? "privada" : "pública"}, ${room.status === "waiting" ? "esperando jugadores" : "en partida"}, ${playerCount(room)} de ${room.max_players} jugadores${isRoomFull ? " (Llena)" : ""}`}
 								aria-selected={isSelected}

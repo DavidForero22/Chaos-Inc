@@ -32,7 +32,7 @@ export default function ProfilePage() {
 
 	if (!id) {
 		return (
-			<main
+			<div
 				className={styles.loadingWrapper}
 				role="status"
 				aria-live="polite"
@@ -41,7 +41,7 @@ export default function ProfilePage() {
 				<span aria-live="polite">
 					Debes tener una cuenta activa para acceder al perfil.
 				</span>
-			</main>
+			</div>
 		);
 	}
 
@@ -52,7 +52,7 @@ export default function ProfilePage() {
 
 	// Mientras calcula si es invitado o hace el redirect
 	return (
-		<main
+		<div
 			className={styles.loadingWrapper}
 			role="status"
 			aria-live="polite"
@@ -63,6 +63,6 @@ export default function ProfilePage() {
 			<span className={styles.loadingText}>
 				Accediendo a la base de datos...
 			</span>
-		</main>
+		</div>
 	);
 }

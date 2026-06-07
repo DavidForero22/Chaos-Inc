@@ -31,7 +31,7 @@ export default function ProfileAchievements({
 	const unactiveAch: UnactiveAchievement = {
 		title: "Próximamente...",
 		technicalDescription: "¡Estamos trabajando en ello!",
-		image: "/achievements/ach_placeholder.png",
+		image: "/achievements/ach_placeholder.jpg",
 	};
 
 	const unlockedMap = new Map<string, string>();
@@ -118,7 +118,6 @@ export default function ProfileAchievements({
 			</h1>
 
 			<div className={styles.achievementsSection}>
-				
 				<div
 					className={`${styles.stickersGrid} ${gridLevelClass}`}
 					role="list"
@@ -155,6 +154,9 @@ export default function ProfileAchievements({
 											alt=""
 											aria-hidden="true"
 											className={styles.achSticker}
+											width="64"
+											height="64"
+											loading="lazy"
 										/>
 										<span className="sr-only">{title}</span>
 									</button>
@@ -186,6 +188,9 @@ export default function ProfileAchievements({
 											alt=""
 											aria-hidden="true"
 											className={styles.lockedSticker}
+											width="64"
+											height="64"
+											loading="lazy"
 										/>
 										<div className={styles.lockedOverlay} aria-hidden="true">
 											<span>?</span>

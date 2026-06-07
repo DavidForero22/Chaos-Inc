@@ -72,7 +72,7 @@
 	text-align: center;
 	font-family: "Courier New", Courier, monospace;
 	font-size: 0.85rem;
-	color: #989083;
+	color: #5e584e;
 	font-style: italic;
 	line-height: 32px;
 }
@@ -139,7 +139,7 @@
 	padding: 1px 7px;
 	border-radius: 2px;
 	background-color: rgba(203, 190, 52, 0.15);
-	color: #8a7d20;
+	color: #6b6118;
 	border: 1px solid rgba(203, 190, 52, 0.5);
 }
 
@@ -152,14 +152,14 @@
 	padding: 1px 7px;
 	border-radius: 2px;
 	background-color: rgba(152, 144, 131, 0.15);
-	color: #6b6358;
+	color: #4d473f;
 	border: 1px solid rgba(152, 144, 131, 0.4);
 }
 
 .roomOwner {
 	font-family: "Courier New", Courier, monospace;
 	font-size: 0.7rem;
-	color: #8f9e9b;
+	color: #576360;
 	line-height: 1.4;
 }
 
@@ -190,7 +190,7 @@
 .roomId {
 	font-family: "Courier New", Courier, monospace;
 	font-size: 0.75rem;
-	color: #989083;
+	color: #5e584e;
 	letter-spacing: 1px;
 	border-bottom: 1px dotted rgba(152, 144, 131, 0.5);
 	padding-bottom: 2px;
@@ -204,7 +204,7 @@
 }
 
 .roomCapacityFull {
-	color: #989083;
+	color: #5e584e;
 }
 
 /* Media Query para móviles */

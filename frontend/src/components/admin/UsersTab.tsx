@@ -157,9 +157,9 @@ export default function UsersTab() {
 		<div className="flex flex-col gap-4">
 			{/* Cabecera + botón alta */}
 			<div className="flex justify-between items-end mb-2">
-				<h3 className="font-bold text-lg underline decoration-2 uppercase">
-					Registro de Empleados
-				</h3>
+				<h2 className="font-bold text-lg underline decoration-2 uppercase">
+					Registros de Empleados
+				</h2>
 				<button
 					onClick={() => setShowCreate(!showCreate)}
 					className="px-4 py-2 border-2 border-[#295c60] text-[#295c60] font-bold text-xs uppercase cursor-pointer hover:bg-[#295c60] hover:text-[#d2d4d1] transition-colors"
@@ -172,23 +172,31 @@ export default function UsersTab() {
 			{showCreate && (
 				<div className="bg-gray-400/10 border-2 border-dashed border-[#295c60]/50 p-4 flex flex-wrap gap-4 items-end mb-4">
 					<div className="flex-1 min-w-37.5">
-						<label className="block text-xs font-bold uppercase opacity-70 mb-1">
+						<label
+							htmlFor="create-username"
+							className="block text-xs font-bold uppercase opacity-70 mb-1"
+						>
 							Nombre
 						</label>
 						<input
+							id="create-username"
 							className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
 							value={createData.username}
 							onChange={(e) =>
 								setCreateData({ ...createData, username: e.target.value })
 							}
-							placeholder="Identificador"
+							placeholder="Nombre de usuario"
 						/>
 					</div>
 					<div className="flex-1 min-w-37.5">
-						<label className="block text-xs font-bold uppercase opacity-70 mb-1">
+						<label
+							htmlFor="create-email"
+							className="block text-xs font-bold uppercase opacity-70 mb-1"
+						>
 							Email
 						</label>
 						<input
+							id="create-email"
 							className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
 							value={createData.email}
 							onChange={(e) =>
@@ -198,10 +206,14 @@ export default function UsersTab() {
 						/>
 					</div>
 					<div className="flex-1 min-w-37.5">
-						<label className="block text-xs font-bold uppercase opacity-70 mb-1">
-							Clave
+						<label
+							htmlFor="create-password"
+							className="block text-xs font-bold uppercase opacity-70 mb-1"
+						>
+							Contraseña
 						</label>
 						<input
+							id="create-password"
 							type="password"
 							className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
 							value={createData.password}
@@ -212,10 +224,14 @@ export default function UsersTab() {
 						/>
 					</div>
 					<div className="w-24">
-						<label className="block text-xs font-bold uppercase opacity-70 mb-1">
-							Cargo
+						<label
+							htmlFor="create-role"
+							className="block text-xs font-bold uppercase opacity-70 mb-1"
+						>
+							Rol
 						</label>
 						<select
+							id="create-role"
 							className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer"
 							value={createData.role}
 							onChange={(e) =>
@@ -239,10 +255,14 @@ export default function UsersTab() {
 			<div className="flex flex-wrap gap-3 items-end border-y-2 border-dashed border-gray-400/50 py-3">
 				{/* Búsqueda */}
 				<div className="flex-1 min-w-48">
-					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
+					<label
+						htmlFor="search-user"
+						className="block text-xs font-bold uppercase opacity-60 mb-1"
+					>
 						Buscar
 					</label>
 					<input
+						id="search-user"
 						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60] text-sm"
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
@@ -252,10 +272,14 @@ export default function UsersTab() {
 
 				{/* Filtro rol */}
 				<div className="w-36">
-					<label className="block text-xs font-bold uppercase opacity-60 mb-1">
-						Cargo
+					<label
+						htmlFor="filter-role"
+						className="block text-xs font-bold uppercase opacity-60 mb-1"
+					>
+						Rol
 					</label>
 					<select
+						id="filter-role"
 						className="w-full bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer text-sm"
 						value={roleFilter}
 						onChange={(e) => handleRole(e.target.value as RoleFilter)}
@@ -264,7 +288,7 @@ export default function UsersTab() {
 						<option value="user">Usuario</option>
 						<option value="admin">Administrador</option>
 						<option value="guest">Invitado</option>
-					</select>
+					</select>{" "}
 				</div>
 
 				{/* Ordenación */}
@@ -317,6 +341,7 @@ export default function UsersTab() {
 								{editingId === u.id ? (
 									<div className="flex flex-wrap gap-4 items-end bg-gray-400/10 p-3 -mx-3 rounded">
 										<input
+											aria-label="Editar nombre de usuario"
 											className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
 											value={editData.username}
 											onChange={(e) =>
@@ -324,6 +349,7 @@ export default function UsersTab() {
 											}
 										/>
 										<input
+											aria-label="Editar correo electrónico"
 											className="flex-1 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none focus:border-[#295c60]"
 											value={editData.email}
 											onChange={(e) =>
@@ -331,6 +357,7 @@ export default function UsersTab() {
 											}
 										/>
 										<select
+											aria-label="Editar rol"
 											className="w-32 bg-transparent border-b-2 border-gray-400 px-2 py-1 outline-none cursor-pointer"
 											value={editData.role}
 											onChange={(e) =>
@@ -339,7 +366,7 @@ export default function UsersTab() {
 										>
 											<option value="user">Usuario</option>
 											<option value="admin">Administrador</option>
-										</select>
+										</select>{" "}
 										<div className="flex gap-2">
 											<button
 												onClick={() => setEditingId(null)}
