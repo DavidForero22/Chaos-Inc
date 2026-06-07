@@ -43,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         // Límite generoso para el juego (Evita spam masivo, pero permite jugar fluido)
         RateLimiter::for('game-actions', function (Request $request) {
             // Usar el token de la partida para identificar al jugador, o la IP como respaldo
-            return Limit::perMinute(50)->by($request->header('X-Game-Token') ?: $request->ip());
+            return Limit::perMinute(60)->by($request->header('X-Game-Token') ?: $request->ip());
         });
 
         Event::listen(SocialiteWasCalled::class, function (SocialiteWasCalled $event) {

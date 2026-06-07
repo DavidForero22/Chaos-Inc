@@ -97,7 +97,7 @@ export default function GameBoardPage() {
 					title={`Mazo: ${board.game.deck_count} cartas restantes`}
 				>
 					<span
-						className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5"
+						className="text-[9px] font-bold text-gray-700 uppercase tracking-wider mb-0.5"
 						aria-hidden="true"
 					>
 						Mazo

@@ -26,16 +26,18 @@ export default function CoreMechanics() {
 					</p>
 					<div className="flex justify-center flex-col text-center my-10">
 						<img
-							src="/mixed/stress-guide.png"
+							src="/guide/stress-guide.png"
 							alt="Dibujo conceptual de la barra de estrés"
+							loading="lazy"
 						/>
 						<p className="text-sm mt-4 italic">Dibujo conceptual del estrés</p>
 
 						<div className="flex justify-center">
 							<img
-								src="/mixed/stress-example.png"
+								src="/guide/stress-example.png"
 								className="w-90 mt-8"
 								alt="Ejemplo de indicador de estrés en la interfaz"
+								loading="lazy"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -51,9 +53,10 @@ export default function CoreMechanics() {
 					<div className="flex justify-center flex-col text-center my-10">
 						<div className="flex justify-center">
 							<img
-								src="/mixed/stress-low-example.png"
+								src="/guide/stress-low-example.png"
 								className="w-110"
 								alt="Ejemplo de límite de cartas con estrés bajo (6 cartas)"
+								loading="lazy"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -62,9 +65,10 @@ export default function CoreMechanics() {
 
 						<div className="flex justify-center">
 							<img
-								src="/mixed/stress-high-example.png"
+								src="/guide/stress-high-example.png"
 								className="w-110 mt-8"
 								alt="Ejemplo de límite de cartas con estrés alto (2 cartas, excede el límite)"
+								loading="lazy"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -97,17 +101,19 @@ export default function CoreMechanics() {
 
 					<div className="flex justify-center flex-col text-center my-10">
 						<img
-							src="/mixed/distance-guide.png"
+							src="/guide/distance-guide.png"
 							alt="Dibujo conceptual de la distancia entre jugadores"
+							loading="lazy"
 						/>
 						<p className="text-sm mt-4 italic">
 							Dibujo conceptual de distancia de jugadores
 						</p>
 						<div className="flex justify-center mt-8">
 							<img
-								src="/mixed/distance-example.png"
+								src="/guide/distance-example.png"
 								className="w-140"
 								alt="Interfaz mostrando la distancia a un jugador indicada en su carta"
+								loading="lazy"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -116,9 +122,10 @@ export default function CoreMechanics() {
 						</p>
 						<div className="flex justify-center mt-8">
 							<img
-								src="/mixed/distance-invalid-example.gif"
+								src="/guide/distance-invalid-example.jpg"
 								className="w-100"
 								alt="Jugadores fuera de alcance deshabilitados al seleccionar una carta de ataque"
+								loading="lazy"
 							/>
 						</div>
 						<p className="text-sm mt-4 italic">
@@ -189,8 +196,9 @@ export default function CoreMechanics() {
 				</p>
 				<div className="flex justify-center my-10">
 					<img
-						src="/mixed/cards_example.png"
+						src="/guide/cards_example.png"
 						alt="Ejemplos de cartas con diferentes bordes e iconos"
+						loading="lazy"
 					/>
 				</div>
 			</div>

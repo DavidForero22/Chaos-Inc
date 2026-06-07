@@ -13,7 +13,9 @@ export function useGameTimers() {
 	const { id: myId } = useAuth();
 
 	const gameData = useGameStore((state) => state.gameData);
-	const reactToMultiAttack = useGameActions((state) => state.reactToMultiAttack);
+	const reactToMultiAttack = useGameActions(
+		(state) => state.reactToMultiAttack,
+	);
 
 	// Traer solo los setters de Zustand
 	const setMultiAttackSecondsLeft = useTimerStore(
@@ -99,6 +101,7 @@ export function useGameTimers() {
 
 		const initialTime = calculateTimeLeft();
 		setTurnTimeLeft(initialTime);
+		logWithTime("useGameTimers.ts - Temporizador puesto para: ", initialTime);
 
 		const interval = setInterval(() => {
 			const currentSecondsLeft = calculateTimeLeft();

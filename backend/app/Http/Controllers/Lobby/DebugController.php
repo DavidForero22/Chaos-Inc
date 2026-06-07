@@ -17,8 +17,9 @@ class DebugController extends Controller
         try {
             $applied = $this->debugService->processDebugAction($id, $request->validated());
         } catch (\Exception $e) {
-            $status = ($e->getCode() >= 400 && $e->getCode() < 600)
-                ? $e->getCode()
+            $code = $e->getCode();
+            $status = (is_numeric($code) && $code >= 400 && $code < 600)
+                ? (int) $code
                 : 422;
 
             return response()->json(['message' => $e->getMessage()], $status);

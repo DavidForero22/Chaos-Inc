@@ -127,8 +127,7 @@ export function Card({
 					role={isInteractive ? "button" : "article"}
 					tabIndex={isTargetingMode ? -1 : isInteractive ? 0 : undefined}
 					aria-label={ariaLabel}
-					aria-selected={isSelected}
-					aria-disabled={!isInteractive}
+					aria-pressed={isInteractive && isSelectable ? isSelected : undefined}
 					title={card.description}
 				>
 					<div className="w-full h-10 flex items-center justify-center px-1 z-10">

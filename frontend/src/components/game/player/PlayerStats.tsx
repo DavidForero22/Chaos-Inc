@@ -106,6 +106,7 @@ export function PlayerStats({
 									perk.isEmpty ? (
 										<li key={perk.id}>
 											<span
+												role="img"
 												aria-label="Ranura de pasiva vacía"
 												className={`${styles.perkSlot} ${styles.perkSlotEmpty} w-7 h-7 text-sm flex items-center justify-center`}
 											>

@@ -296,7 +296,7 @@ class LiveGameService
             $roomId,
             $bossPlayerId,
             $turnId
-        )->delay((clone $expireAt)->addSeconds(3));
+        )->delay($timeout + 3);
 
         if ($bossPlayerId !== '') {
             $this->deckService->drawCardsForPlayer($roomId, $bossPlayerId, 2);

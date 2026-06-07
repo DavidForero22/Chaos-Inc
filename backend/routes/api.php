@@ -35,14 +35,14 @@ Route::prefix('v1')->group(function () {
 
     Broadcast::routes(['middleware' => ['auth:sanctum']]);
 
-    // Rutas de autenticacion (5 por minuto)
+    // Rutas de autenticacion
     Route::middleware(['throttle:auth'])->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/guest-login', [AuthController::class, 'guestLogin']);
     });
 
-    // Rutas publicas (120 por minuto)
+    // Rutas publicas 
     Route::middleware(['throttle:api'])->group(function () {
         Route::get('/rooms', [RoomController::class, 'index']);
         Route::get('/rooms/{id}', [RoomController::class, 'show']);
@@ -57,7 +57,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum'])->group(function () {
 
         // ==========================================================
-        // ESCUDO JUEGO: Rutas de juego y salas (300 por minuto)
+        // ESCUDO JUEGO: Rutas de juego y salas
         // ==========================================================
         Route::middleware(['throttle:game-actions'])->group(function () {
             Route::post('/rooms/{id}/join', [LiveRoomController::class, 'join']);
@@ -88,7 +88,7 @@ Route::prefix('v1')->group(function () {
         });
 
         // ==========================================================
-        // ESCUDO API (Privado): Rutas de perfil y admin (120 por minuto)
+        // ESCUDO API (Privado): Rutas de perfil y admin
         // ==========================================================
         Route::middleware(['throttle:api'])->group(function () {
             Route::get('/me', [AuthController::class, 'me']);

@@ -72,7 +72,7 @@ class LiveRoomService
             Redis::sadd("room:{$roomId}:players", $playerId);
             Redis::setex("player:{$playerId}:room", 86400, $roomId);
 
-            $isGuest = !is_numeric($playerId); 
+            $isGuest = !is_numeric($playerId);
             $playerInfoToSave = [
                 'username' => $playerName,
                 'user_id'  => $isGuest ? '' : $playerId,
@@ -129,7 +129,7 @@ class LiveRoomService
             if (!Redis::exists($disconnectKey)) {
                 Redis::setex($disconnectKey, 10, 'pending');
 
-                ProcessDisconnectionJob::dispatch($roomId, $playerId, $playerName)
+                ProcessDisconnectionJob::dispatch($roomId, $playerId)
                     ->delay(now('UTC')->addSeconds(4));
             }
         } else {

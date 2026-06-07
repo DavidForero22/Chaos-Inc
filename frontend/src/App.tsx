@@ -53,13 +53,20 @@ const AlreadyInAnotherRoomPage = lazy(
 	() => import("./pages/errors/AlreadyInAnotherRoomPage.tsx"),
 );
 
+// ── Cargador estático para la navegación ──
+const PageTransitionLoader = () => (
+	<div className="fixed inset-0 z-50 flex items-center justify-center bg-[#393e42] text-white font-mono">
+		<div className="animate-pulse">Cargando página...</div>
+	</div>
+);
+
 function App() {
 	useSessionGuard();
 
 	return (
 		<Router>
 			{/* Suspense muestra el GlobalLoader mientras se descarga el JS de la página destino */}
-			<Suspense fallback={<GlobalLoader />}>
+			<Suspense fallback={<PageTransitionLoader />}>
 				<Routes>
 					{/* ── Rutas con el diseño de libreta ── */}
 					<Route element={<NotebookLayout />}>
@@ -108,6 +115,7 @@ function App() {
 			<GlobalRoomManager />
 			<AchievementNotification />
 			<Toast />
+			<GlobalLoader />
 		</Router>
 	);
 }

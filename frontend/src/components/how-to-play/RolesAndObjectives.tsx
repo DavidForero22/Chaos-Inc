@@ -64,6 +64,7 @@ function RoleCard({
 				<img
 					src={roleIcons[iconName]}
 					alt={role}
+					loading="lazy"
 					className="absolute z-10 w-32 h-32 max-w-25 object-contain -top-6  drop-shadow-xl transition-transform duration-300"
 				/>
 			</div>

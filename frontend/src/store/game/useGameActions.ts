@@ -54,6 +54,7 @@ export const useGameActions = create<GameActionsState>((set, get) => ({
 					...(perkKey && { perk_key: perkKey }),
 					...(sacrificeCardId && { sacrifice_card_id: sacrificeCardId }),
 				},
+				{ hideLoader: true } as any,
 			);
 			applyGameData(res.data);
 			set({ isActionLocked: false });

@@ -117,7 +117,7 @@
 .chartTitle {
 	font-size: 0.7rem;
 	font-weight: 900;
-	color: #6b7280;
+	color: #545964;
 	letter-spacing: 2px;
 	margin: 0 0 0.5rem 0;
 	text-align: center;
@@ -139,8 +139,8 @@
 .noDataStamp {
 	font-size: 2.5rem;
 	font-weight: 900;
-	color: #6b7280;
-	border: 4px solid #6b7280;
+	color: #545964;
+	border: 4px solid #545964;
 	padding: 0 0.75rem;
 	letter-spacing: 5px;
 	font-family: "Courier New", Courier, monospace;
@@ -150,7 +150,7 @@
 .noDataText {
 	font-size: 0.75rem;
 	font-weight: 900;
-	color: #6b7280;
+	color: #545964;
 	text-align: center;
 	letter-spacing: 1px;
 	margin: 0;
