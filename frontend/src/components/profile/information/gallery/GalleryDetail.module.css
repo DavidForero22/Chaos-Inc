@@ -29,6 +29,8 @@
 /* Imagen por defecto (Cartas) */
 .detailImageWrapper {
 	width: 240px;
+	max-width: 450px;
+	
 	background: white;
 	padding: 12px;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -40,6 +42,7 @@
 /* Modificador para imágenes apaisadas (Roles y Finales) */
 .detailImageWrapper.wideImage {
 	width: 450px;
+	max-height: 267px;
 }
 
 /* Placeholder cuando está bloqueado */

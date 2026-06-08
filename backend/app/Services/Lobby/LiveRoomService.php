@@ -130,7 +130,7 @@ class LiveRoomService
                 Redis::setex($disconnectKey, 10, 'pending');
 
                 ProcessDisconnectionJob::dispatch($roomId, $playerId)
-                    ->delay(now('UTC')->addSeconds(4));
+                    ->delay(4);
             }
         } else {
             $this->processLobbyLeave($roomId, $playerId, $room);

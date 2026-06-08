@@ -17,8 +17,8 @@ export default function TopCardsChart({ data }: Props) {
 			chartInstance.current = echarts.init(chartRef.current);
 		}
 
-		const names = data.map((card) => card.name);
-		const totals = data.map((card) => card.total);
+		const names = data.map((card) => card.name).reverse();
+		const totals = data.map((card) => card.total).reverse();
 
 		const option: echarts.EChartsOption = {
 			tooltip: {

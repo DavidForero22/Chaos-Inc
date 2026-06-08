@@ -191,7 +191,7 @@ export default function GalleryDetail({
 						{(isRole || isEnding) && (
 							<div className={styles.infoBlock}>
 								<p className={styles.infoBlockTitle}>
-									{isRole ? "Rol descubierto." : "Final descubierto."}
+									{isRole ? "Rol descubierto" : "Final descubierto"}
 								</p>
 								<div className={styles.separator}></div>
 								<p className={styles.extraLoreText}>{extraLoreText}</p>
@@ -209,7 +209,7 @@ export default function GalleryDetail({
 							<div className={styles.infoBlock}>
 								<p className={styles.infoBlockTitle}>Contenido extra</p>
 								<div className={styles.separator}></div>
-								<p className={styles.description}>{selectedItem.description}</p>
+								<p className={styles.extraLoreText}>{selectedItem.description}</p>
 							</div>
 						)}
 					</>

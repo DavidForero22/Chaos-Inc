@@ -90,7 +90,14 @@ class LiveRoomController extends Controller
     public function reportDisconnect(string $roomId, Request $request)
     {
         $targetPlayerId = (string) $request->input('disconnected_player_id');
+        $disconnectKey = "room:{$roomId}:disconnecting:{$targetPlayerId}";
 
+        // Si ya existe el lock, ignorar 
+        if (Redis::exists($disconnectKey)) {
+            return response()->json(['status' => 'ignored', 'reason' => 'already_processing']);
+        }
+
+        // Comprobar socket
         $pusher = Broadcast::driver()->getPusher();
         $channelName = "presence-room.{$roomId}";
 
@@ -106,14 +113,12 @@ class LiveRoomController extends Controller
             return response()->json(['status' => 'ignored', 'reason' => 'player_still_connected']);
         }
 
-        // Control de spam en Redis 
-        $disconnectKey = "room:{$roomId}:disconnecting:{$targetPlayerId}";
-
-        if (!Redis::exists($disconnectKey)) {
-            Redis::setex($disconnectKey, 10, 'pending');
+        // Usar setnx para evitar race conditions
+        if (Redis::setnx($disconnectKey, 'pending')) {
+            Redis::expire($disconnectKey, 10);
 
             ProcessDisconnectionJob::dispatch($roomId, $targetPlayerId)
-                ->delay(now('UTC')->addSeconds(4));
+                ->delay(4); 
         }
 
         return response()->json(['status' => 'pending_grace_period']);

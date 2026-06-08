@@ -61,7 +61,7 @@ export const RESULT_CONFIG: Record<
 	},
 	canceled: {
 		name: "Partida Cancelada",
-		unlockHint: "Abandona una partida o que se cancele por falta de jugadores",
+		unlockHint: "Quedate en una partida que se cancele por falta de jugadores.",
 		headline: "¡NUNCA PASA NADA!",
 		image: "/game-result/game_result_cancelled.jpg",
 		subtitle: "También en la sección del tiempo: Nublado",

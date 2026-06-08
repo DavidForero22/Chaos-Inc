@@ -20,6 +20,18 @@ class TurnService
 
     public function advanceTurn(string $roomId): void
     {
+        // Prevenir ejecuciones paralelas
+        $lockKey = "room:{$roomId}:advancing_turn";
+
+        if (Redis::exists($lockKey)) {
+            RoomLogger::info($roomId, "TurnService.php::advanceTurn - Lock activo, saltando ejecución paralela");
+            return;
+        }
+
+        // Adquirir lock por 3 segundos
+        Redis::setex($lockKey, 3, '1');
+
+        try {
         $roomStateKey = "room:{$roomId}:state";
         $roomInfoKey  = "room:{$roomId}:info";
         $turnOrderStr = Redis::get("room:{$roomId}:turn_order");
@@ -104,12 +116,10 @@ class TurnService
                         $playerName = Redis::hget($pInfoKey, 'username') ?: "Jugador {$nextPlayerId}";
                         $logMessage = __('game.lucked_sucess', ['player' => $playerName]);
                         RoomLogger::info($roomId, "TurnService.php::advanceTurn: El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
-                    } else {
-                        // Reiniciar racha si no roba extra
+                        } else {
                         Redis::hset($pStatsKey, 'luck_streak', 0);
                     }
-                } else {
-                    // Si no tiene la pasiva, reiniciar racha
+                    } else {
                     Redis::hset($pStatsKey, 'luck_streak', 0);
                 }
 
@@ -132,13 +142,10 @@ class TurnService
                 // --- MINIJUEGO O TURNO NORMAL ---
                 $isBlocked = Redis::hget($pPerksKey, 'is_blocked') === '1';
 
-                if ($isBlocked) {
-                    // Minijuego (Bloqueado)
+                    if ($isBlocked) {
                     Redis::hset($pPerksKey, 'is_blocked', 0);
                     $colors = ['red', 'blue', 'green', 'yellow'];
-                    $correct = $colors[array_rand($colors)];
-
-                    // Generar un token único
+                        $correct = $colors[array_rand($colors)];
                     $challengeId = uniqid('luck_', true);
 
                     Redis::setex(
@@ -150,13 +157,11 @@ class TurnService
                         ])
                     );
 
-                    // Pausa: El turno no debe tener un cronómetro
-                    Redis::hset($roomStateKey, 'turn_expires_at', 0);
+                        Redis::hset($roomStateKey, 'turn_expires_at', 0);
 
-                    ResolveLuckChallengeJob::dispatch($roomId, $nextPlayerId, $challengeId)
-                        ->delay(now('UTC')->addSeconds(18));
-                } else {
-                    // Usa el mismo timestamp para el job
+                        ResolveLuckChallengeJob::dispatch($roomId, $nextPlayerId, $challengeId)
+                            ->delay(18);
+                    } else {
                     RoomLogger::info(
                         $roomId,
                         "TurnService.php::advanceTurn - Iniciando turno para jugador {$nextPlayerId}, expira a: {$expiresAt} (timeout: {$timeout}s)"
@@ -169,20 +174,34 @@ class TurnService
                 break;
             }
         }
+        } finally {
+            // Liberar liberar el lock, incluso si hay excepciones
+            Redis::del($lockKey);
+        }
     }
+
 
     public function checkAndAdvanceTurnOnDisconnect(string $roomId, string $disconnectedPlayerId): void
     {
-        $currentTurnId = Redis::hget("room:{$roomId}:state", 'current_turn_player_id');
+        $roomStateKey = "room:{$roomId}:state";
+        $currentTurnPlayerId = Redis::hget($roomStateKey, 'current_turn_player_id');
 
-        if ($currentTurnId === $disconnectedPlayerId) {
-            AutoEndTurnJob::dispatch(
+        if ($currentTurnPlayerId === $disconnectedPlayerId) {
+            // Verifica si hay un lock activo
+            $lockKey = "room:{$roomId}:advancing_turn";
+
+            // Si ya hay un proceso avanzando el turno, no hacer nada
+            if (!Redis::exists($lockKey)) {
+                $this->advanceTurn($roomId);
+            } else {
+                RoomLogger::info(
                 $roomId,
-                $disconnectedPlayerId,
-                uniqid('disconnect_', true)
-            )->delay(0);
+                    "TurnService.php::checkAndAdvanceTurnOnDisconnect - Lock detectado, esperando que otro proceso avance"
+                );
+            }
         }
     }
+
 
     public function endTurn(string $roomId, string $playerId): void
     {

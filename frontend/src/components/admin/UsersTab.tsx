@@ -315,7 +315,7 @@ export default function UsersTab() {
 								: "border-gray-400 text-gray-500 hover:border-[#295c60] hover:text-[#295c60]"
 						}`}
 					>
-						Alta
+						Creación
 						<SortArrow active={sortField === "joinedAt"} dir={sortDir} />
 					</button>
 				</div>
@@ -413,7 +413,7 @@ export default function UsersTab() {
 											<p className="text-sm opacity-70 mt-1">
 												<span className="font-bold">Email:</span>{" "}
 												{u.email || "Oculto"} <span className="mx-2">|</span>{" "}
-												<span className="font-bold">Alta:</span>{" "}
+												<span className="font-bold">Creación:</span>{" "}
 												{new Date(u.joinedAt).toLocaleDateString("es-ES")}
 											</p>
 										</div>

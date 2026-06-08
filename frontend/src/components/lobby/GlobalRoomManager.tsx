@@ -39,8 +39,6 @@ export function GlobalRoomManager() {
 		kickPlayer,
 	} = useRoom(roomId || undefined);
 
-	console.log(room);
-
 	const [copied, setCopied] = useState(false);
 
 	// Verificar si esta en una ruta excluida
