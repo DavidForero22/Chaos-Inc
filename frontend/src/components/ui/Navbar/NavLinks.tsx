@@ -2,9 +2,10 @@
 // Accesibilidad comprobada: SI
 
 import { NavLink } from "react-router-dom";
-import { FaRegUser, FaQuestion, FaBook, FaFolder } from "react-icons/fa";
+import { FaQuestion, FaBook, FaFolder, FaTrophy } from "react-icons/fa";
 import { IoHome, IoGameController } from "react-icons/io5";
 import styles from "./Navbar.module.css";
+import { GoPersonFill } from "react-icons/go";
 
 interface NavLinksProps {
 	isMobile?: boolean;
@@ -57,6 +58,15 @@ export function NavLinks({
 			</NavLink>
 
 			<NavLink
+				to="/leaderboard"
+				className={getLinkClass(styles.tabLeaderboard)}
+				onClick={onItemClick}
+				aria-label="Clasificación de jugadores"
+			>
+				<FaTrophy  aria-hidden="true" /> Clasificación
+			</NavLink>
+
+			<NavLink
 				to="/how-to-play"
 				className={getLinkClass(styles.tabHowTo)}
 				onClick={onItemClick}
@@ -97,7 +107,7 @@ export function NavLinks({
 						onClick={onItemClick}
 						aria-label={isGuest ? "Perfil de invitado" : "Ver mi perfil"}
 					>
-						<FaRegUser aria-hidden="true" /> {isGuest ? "Invitado" : "Perfil"}
+						<GoPersonFill  aria-hidden="true" /> {isGuest ? "Invitado" : "Perfil"}
 					</NavLink>
 				</div>
 			) : (

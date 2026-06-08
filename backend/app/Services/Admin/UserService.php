@@ -131,4 +131,16 @@ class UserService
             return $user;
         });
     }
+
+    /**
+     * Obtiene el top 10 de usuarios registrados con más experiencia.
+     */
+    public function getTopTenUsers()
+    {
+        return User::select(['id', 'username', 'avatar', 'total_xp'])
+            ->where('is_guest', false)
+            ->orderBy('total_xp', 'desc')
+            ->take(10)
+            ->get();
+    }
 }

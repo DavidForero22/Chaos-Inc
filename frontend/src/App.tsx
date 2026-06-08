@@ -15,6 +15,7 @@ import AdminGuard from "./components/admin/AdminGuard.tsx";
 import { Toast } from "./components/ui/Toast/Toast.tsx";
 import { GlobalRoomManager } from "./components/lobby/GlobalRoomManager.tsx";
 import RoomJoinInterceptor from "./components/lobby/RoomJoinInterceptor.tsx";
+import LeaderboardPage from "./pages/leaderboard/LeaderboardPage.tsx";
 
 // -- IMPORTACIONES PEREZOSAS --
 // Solo se descargarán cuando el usuario intente acceder a esa ruta
@@ -72,6 +73,7 @@ function App() {
 					<Route element={<NotebookLayout />}>
 						<Route path="/" element={<MainMenuPage />} />
 						<Route path="/rooms" element={<RoomsPage />} />
+						<Route path="/leaderboard" element={<LeaderboardPage />} />
 						<Route path="/profile" element={<ProfilePage />} />
 						<Route path="/profile/:userId" element={<PublicProfilePage />} />
 						<Route path="/how-to-play" element={<HowToPlayPage />} />

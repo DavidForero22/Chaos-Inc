@@ -11,7 +11,7 @@ export default function MainMenuPage() {
 				className="text-4xl mb-6 font-black"
 				style={{ color: "var(--color-lomo)" }}
 			>
-				Inicio
+				INICIO
 			</h1>
 
 			{/* Subtítulo semántico (cambiado para evitar redundancia con el h1) */}

@@ -143,6 +143,11 @@
 	cursor: not-allowed;
 }
 
+.controlsDiv {
+	display: flex;
+	justify-content: end;
+}
+
 /* Buscador + filtros en grid */
 .controlsGrid {
 	display: grid;

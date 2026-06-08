@@ -39,7 +39,7 @@
 	position: relative;
 	display: flex;
 	width: 100%;
-	max-width: 1100px;
+	max-width: 1200px;
 	box-shadow:
 		15px 15px 40px rgba(0, 0, 0, 0.4),
 		-5px 5px 20px rgba(0, 0, 0, 0.2);

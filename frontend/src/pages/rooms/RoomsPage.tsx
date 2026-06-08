@@ -107,54 +107,64 @@ export default function RoomsPage() {
 					SALAS
 				</h1>
 				<h2 className="text-xl mb-6 opacity-80 border-b border-gray-400 pb-2 font-bold">
-					Listado de salas áctivas.
+					Listado de salas áctivas
 				</h2>
 
-				{/* Buscador + Filtros */}
-				<div className={styles.controlsGrid}>
-					{/* Buscador */}
-					<div className={styles.searchBlock}>
-						<label htmlFor="room-name-search" className="sr-only">
-							Buscar sala por nombre
-						</label>
-						<input
-							id="room-name-search"
-							type="text"
-							placeholder="Buscar por nombre..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className={styles.searchInput}
-							aria-label="Buscar sala por nombre"
-						/>
-					</div>
+				{/* Cuerpo del manual */}
+				<div className="space-y-6 text-gray-800 leading-relaxed mb-10">
+					<p>
+						Crea una partida para jugar con tus amigos o unete a salas
+						existentes.
+					</p>
+				</div>
 
-					{/* Filtros */}
-					<div
-						className={styles.filters}
-						role="group"
-						aria-label="Filtros de estado de sala"
-					>
-						{(["all", "waiting", "in_game"] as const).map((f) => (
-							<button
-								key={f}
-								onClick={() => setFilterStatus(f)}
-								className={`${styles.filterBtn} ${
-									f === "all"
-										? styles.filterAll
+				{/* Buscador + Filtros */}
+				<div className={styles.controlsDiv}>
+					<div className={styles.controlsGrid}>
+						{/* Buscador */}
+						<div className={styles.searchBlock}>
+							<label htmlFor="room-name-search" className="sr-only">
+								Buscar sala por nombre
+							</label>
+							<input
+								id="room-name-search"
+								type="text"
+								placeholder="Buscar por nombre..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className={styles.searchInput}
+								aria-label="Buscar sala por nombre"
+							/>
+						</div>
+
+						{/* Filtros */}
+						<div
+							className={styles.filters}
+							role="group"
+							aria-label="Filtros de estado de sala"
+						>
+							{(["all", "waiting", "in_game"] as const).map((f) => (
+								<button
+									key={f}
+									onClick={() => setFilterStatus(f)}
+									className={`${styles.filterBtn} ${
+										f === "all"
+											? styles.filterAll
+											: f === "waiting"
+												? styles.filterWaiting
+												: styles.filterInGame
+									} ${filterStatus === f ? styles.filterActive : ""}`}
+									aria-label={`Mostrar salas ${f === "all" ? "todas" : f === "waiting" ? "en espera" : "en partida"}`}
+									aria-pressed={filterStatus === f}
+								>
+									{f === "all"
+										? "Todas"
 										: f === "waiting"
-											? styles.filterWaiting
-											: styles.filterInGame
-								} ${filterStatus === f ? styles.filterActive : ""}`}
-								aria-label={`Mostrar salas ${f === "all" ? "todas" : f === "waiting" ? "en espera" : "en partida"}`}
-								aria-pressed={filterStatus === f}
-							>
-								{f === "all"
-									? "Todas"
-									: f === "waiting"
-										? "Esperando"
-										: "En Partida"}
-							</button>
-						))}
+											? "Esperando"
+											: "En Partida"}
+								</button>
+							))}
+						</div>
 					</div>
 				</div>
 			</header>

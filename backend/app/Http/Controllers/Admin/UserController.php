@@ -7,9 +7,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateAvatarRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-
+use App\Http\Resources\LeaderBoardResource;
 use App\Http\Resources\UserResource;
 use App\Services\Admin\UserService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -118,5 +119,17 @@ class UserController extends Controller
 
         $this->userService->deleteUser($id);
         return response()->noContent();
+    }
+
+    /**
+     * Devuelve la clasificación global (Top 10).
+     */
+    public function leaderboard(): JsonResponse
+    {
+        $topUsers = $this->userService->getTopTenUsers();
+
+        return response()->json(
+            LeaderBoardResource::collection($topUsers)
+        );
     }
 }

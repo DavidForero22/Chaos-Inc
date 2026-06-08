@@ -47,6 +47,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/rooms', [RoomController::class, 'index']);
         Route::get('/rooms/{id}', [RoomController::class, 'show']);
         Route::get('/cards', [GameController::class, 'getCards']);
+        Route::get('/leaderboard', [UserController::class, 'leaderboard']);
     });
 
     /*
