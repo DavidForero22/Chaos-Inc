@@ -20,10 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
 
         $middleware->web(append: [
-            \Illuminate\Http\Middleware\HandleCors::class,
+            // \Illuminate\Http\Middleware\HandleCors::class,
         ]);
         $middleware->api(append: [
-            \Illuminate\Http\Middleware\HandleCors::class,
+            // \Illuminate\Http\Middleware\HandleCors::class,
         ]);
         $middleware->validateCsrfTokens(except: [
             'broadcasting/auth',
