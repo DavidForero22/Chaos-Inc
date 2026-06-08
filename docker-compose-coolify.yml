@@ -24,10 +24,11 @@ services:
       context: ./
       dockerfile: ./docker/Dockerfile.prod
       args:
-        - VITE_API_URL=${VITE_API_URL}
-        - VITE_REVERB_HOST=${VITE_REVERB_HOST}
-        - VITE_REVERB_PORT=${VITE_REVERB_PORT}
-        - VITE_REVERB_SCHEME=${VITE_REVERB_SCHEME}
+      - VITE_API_URL=${API_URL}
+      - VITE_REVERB_APP_KEY=${REVERB_APP_KEY}     
+      - VITE_REVERB_HOST=${DOMAIN}
+      - VITE_REVERB_PORT=443                      
+      - VITE_REVERB_SCHEME=wss
     expose:
       - "80"
     depends_on:
@@ -76,8 +77,8 @@ services:
       SESSION_ENCRYPT: 'false'
       SESSION_PATH: /
       SESSION_EXPIRE_ON_CLOSE: 'true'
-      SESSION_DOMAIN: '${DOMAIN}'
-      SANCTUM_STATEFUL_DOMAINS: '${DOMAIN}'
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
+      SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS}
       BROADCAST_CONNECTION: reverb
       QUEUE_CONNECTION: redis
       CACHE_STORE: file
@@ -158,7 +159,7 @@ services:
       REVERB_HOST: reverb
       REVERB_PORT: "8080"
       REVERB_SCHEME: http
-      SESSION_DOMAIN: ${DOMAIN}
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
       SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
     networks:
       - chaos-inc-net
@@ -194,7 +195,7 @@ services:
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       QUEUE_CONNECTION: redis
-      SESSION_DOMAIN: ${DOMAIN}
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
     networks:
       - chaos-inc-net
     restart: unless-stopped
@@ -237,7 +238,7 @@ services:
       REDIS_PORT: "6379"
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       QUEUE_CONNECTION: redis
-      SESSION_DOMAIN: ${DOMAIN}
+      SESSION_DOMAIN: ${SESSION_DOMAIN}
     networks:
       - chaos-inc-net
     restart: unless-stopped
