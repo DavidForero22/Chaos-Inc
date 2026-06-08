@@ -18,7 +18,7 @@ export interface RoomData {
 	turn_timeout: number;
 	owner_id: string;
 	owner_name: string;
-	status: string;
+	status: "waiting" | "in_game";
 	players: RoomPlayer[];
 	is_private: boolean;
 	is_debug: boolean;

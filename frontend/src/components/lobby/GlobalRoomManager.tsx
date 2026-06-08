@@ -8,8 +8,9 @@ import { useLoadingStore } from "../../store/ui/useLoadingStore";
 import GuestNameModal from "./GuestNameModal";
 import RoomPasswordBoard from "./RoomPasswordModal";
 import WaitingRoomDrawer from "./WaitingRoomDrawer";
+import ActiveGameBanner from "./ActiveGameBanner";
 
-// Rutas donde NO queremos que se vea el widget (porque la UI propia ya lo gestiona)
+// Rutas donde no se ve el widget
 const EXCLUDED_PATHS = [
 	"/game",
 	"/room-not-found",
@@ -24,11 +25,9 @@ export function GlobalRoomManager() {
 	const location = useLocation();
 	const { startLoading, stopLoading } = useLoadingStore();
 
-	// Obtenemos el roomId global. Si es null, no estamos en ninguna sala.
 	const roomId = useRoomStore((state) => state.roomId);
 	const currentUserId = useAuthStore((state) => state.id);
 
-	// Ejecutamos el hook maestro de la sala (esto mantiene los websockets vivos globalmente)
 	const {
 		room,
 		user,
@@ -40,16 +39,18 @@ export function GlobalRoomManager() {
 		kickPlayer,
 	} = useRoom(roomId || undefined);
 
+	console.log(room);
+
 	const [copied, setCopied] = useState(false);
 
-	// 1. Verificamos si estamos en una ruta excluida (ej: Ya empezó la partida)
+	// Verificar si esta en una ruta excluida
 	const isExcluded = EXCLUDED_PATHS.some((path) =>
 		location.pathname.startsWith(path),
 	);
+
 	if (isExcluded || !roomId) return null;
 
-	// 2. Modales de Ingreso (Prioridad Alta)
-	// Si necesitas clave, renderizamos tu modal de clave por encima de todo
+	// Si necesitas contraseña
 	if (needsPassword) {
 		return (
 			<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -63,7 +64,7 @@ export function GlobalRoomManager() {
 		);
 	}
 
-	// Si eres invitado y necesitas nombre
+	// Si no está registrado
 	if (!user) {
 		return (
 			<div className="fixed inset-0 z-100 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -75,9 +76,14 @@ export function GlobalRoomManager() {
 		);
 	}
 
-	// 3. Renderizamos el Panel Lateral si tenemos datos de la sala
 	if (!room) return null;
 
+	// Si la partida ya empezó
+	if (room.status === "in_game") {
+		return <ActiveGameBanner roomId={room.room_id} roomName={room.name} />;
+	}
+
+	// Lógica del Drawer para cuando el status es "waiting"
 	const isOwner = String(room.owner_id) === String(currentUserId);
 	const missingPlayers = Math.max(
 		0,
@@ -86,7 +92,6 @@ export function GlobalRoomManager() {
 
 	const handleShare = async () => {
 		try {
-			// Genera el enlace de invitación
 			await navigator.clipboard.writeText(
 				`${window.location.origin}/rooms/${roomId}`,
 			);
