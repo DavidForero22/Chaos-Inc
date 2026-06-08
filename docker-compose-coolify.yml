@@ -45,7 +45,7 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.php
     expose:
-      - "8000"
+      - "80"
     command: frankenphp run --config /etc/caddy/Caddyfile
     environment:
       APP_NAME: 'Chaos Inc.'
@@ -57,7 +57,7 @@ services:
       APP_TIMEZONE: UTC
       APP_LOCALE: es
       FRANKENPHP_CONFIG: 'worker ./public/index.php'
-      SERVER_NAME: ':8000'
+      SERVER_NAME: ':80'
       LOG_CHANNEL: stack
       LOG_STACK: single
       LOG_LEVEL: error
