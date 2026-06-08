@@ -2,11 +2,20 @@
     log {
         level ERROR
     }
+    # Asegura que Caddy maneje correctamente el protocolo HTTP/1.1 de los WebSockets
+    frankenphp
 }
 
 :8000 {
     root * /var/www/html/public
     php_server
+
+    # Permitir los WebSockets y proxies
+    header {
+        # Mantener vivos los headers necesarios para WebSockets
+        X-Forwarded-Proto {http.request.scheme}
+        X-Forwarded-For {http.request.remote.host}
+    }
 
     log {
         format filter {

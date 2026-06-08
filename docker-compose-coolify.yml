@@ -46,11 +46,7 @@ services:
       dockerfile: ./docker/Dockerfile.php
     expose:
       - "8000"
-    command:
-      - frankenphp
-      - run
-      - '--config'
-      - /etc/caddy/Caddyfile
+    command: frankenphp run --config /etc/caddy/Caddyfile
     environment:
       APP_NAME: 'Chaos Inc.'
       APP_ENV: production
