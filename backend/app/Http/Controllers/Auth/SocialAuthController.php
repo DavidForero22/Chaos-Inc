@@ -54,7 +54,6 @@ class SocialAuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
         } catch (\Exception $e) {
-            // El usuario canceló o hubo un error en el proveedor
             Log::error("SocialAuthController.php::callback() - Error al conectar con el proveedor (Socialite).", [
                 'message' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -73,7 +72,35 @@ class SocialAuthController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            return redirect("{$frontendUrl}/social-error?error=oauth_failed");
+
+            // Por defecto
+            $errorCode = 'oauth_failed';
+            $message = $e->getMessage();
+
+            // Capturar si el servicio lanzó la excepción manual de "Ya vinculado a otro"
+            if ($message === 'VND_ALREADY_LINKED_TO_OTHER') {
+                $errorCode = 'provider_taken';
+            }
+            // Capturar si la base de datos lanzó una violación de restricción única (Error 1062 de MySQL)
+            elseif ($e instanceof \Illuminate\Database\QueryException) {
+                $errorInfo = $e->errorInfo;
+                $mysqlError = $errorInfo[1] ?? 0;
+
+                if ($mysqlError == 1062) {
+                    if (str_contains($message, 'users_email_unique')) {
+                        // El email ya le pertenece a otra cuenta independiente
+                        $errorCode = 'email_taken';
+                    } elseif (
+                        str_contains($message, 'social_accounts_user_id_provider_name_unique') ||
+                        str_contains($message, 'social_accounts_provider_name_provider_id_unique')
+                    ) {
+                        // La cuenta de Google/Discord ya está amarrada a otro usuario
+                        $errorCode = 'provider_taken';
+                    }
+                }
+            }
+
+            return redirect("{$frontendUrl}/social-error?error={$errorCode}");
         }
 
         Auth::guard('web')->login($user, remember: true);
@@ -82,7 +109,7 @@ class SocialAuthController extends Controller
         // Recuperar la URL de retorno, si no hay, ir a la raíz
         $returnTo = request()->session()->pull('oauth_return_to', '/');
 
-        // Redirigir al frontend a la sala correspondiente (o al menú)
+        // Redirigir al frontend con éxito
         return redirect("{$frontendUrl}{$returnTo}?login=success");
     }
 

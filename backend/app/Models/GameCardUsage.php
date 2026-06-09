@@ -14,6 +14,7 @@ class GameCardUsage extends Model
         'game_id',
         'user_id',
         'card_id',
+        'card_name',
         'times_played',
     ];
 

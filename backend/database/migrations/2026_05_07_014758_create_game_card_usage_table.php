@@ -17,6 +17,8 @@ return new class extends Migration
             $table->unsignedInteger('card_id');
             $table->foreign('card_id')->references('id')->on('cards')->cascadeOnDelete();
 
+            $table->string('card_name');
+
             $table->integer('times_played')->default(1);
 
             $table->timestamps();

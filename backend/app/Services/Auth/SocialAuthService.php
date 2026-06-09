@@ -146,22 +146,31 @@ class SocialAuthService
 
     private function generateUsername(string $displayName): string
     {
+        // Limpiar caracteres extraños
         $base = preg_replace('/[^A-Za-z0-9_]/', '', str_replace(' ', '_', $displayName));
         $base = $base ?: 'user';
         $base = substr($base, 0, 12);
+        $baseLower = strtolower($base);
 
-        $existingUsernames = User::where('username', 'REGEXP', '^' . preg_quote($base) . '(_[0-9]+)?$')
+        $existingUsernames = User::where('username', 'LIKE', $base . '%')
             ->pluck('username')
+            ->filter(function ($username) use ($baseLower) {
+                return preg_match('/^' . preg_quote($baseLower, '/') . '(_[0-9]+)?$/i', strtolower($username));
+            })
             ->toArray();
 
+        // Si no hay colisiones, el nombre base está libre
         if (empty($existingUsernames)) {
             return $base;
         }
 
-        if (!in_array($base, $existingUsernames)) {
+        // Comprobación estricta ignorando mayúsculas/minúsculas
+        $lowercaseUsernames = array_map('strtolower', $existingUsernames);
+        if (!in_array($baseLower, $lowercaseUsernames)) {
             return $base;
         }
 
+        // Calcular el sufijo más alto
         $maxSuffix = 1;
         foreach ($existingUsernames as $username) {
             if (preg_match('/_([0-9]+)$/', $username, $matches)) {

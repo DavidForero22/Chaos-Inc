@@ -73,14 +73,18 @@ class GameService
                 if (!empty($player['card_details']) && is_array($player['card_details']) && $player['user_id'] !== null) {
                     $cardUsages = [];
                     $gameCards = collect(config('game.cards.cards', []));
+
                     foreach ($player['card_details'] as $cardKey => $timesPlayed) {
                         // Limpiar el prefijo "card_" que viene de Redis para dejar solo el ID numérico
-                        $cleanCardId = str_replace('card_', '', $cardKey);
+                        $cleanCardId = (int) str_replace('card_', '', $cardKey);
+                        $cardConfig = $gameCards->firstWhere('id', $cleanCardId);
+                        $cardName = $cardConfig['display_name'] ?? "Carta #{$cleanCardId}";
 
                         $cardUsages[] = [
                             'game_id'      => $game->id,
                             'user_id'      => $player['user_id'],
                             'card_id'      => $cleanCardId,
+                            'card_name'    => $cardName, // 
                             'times_played' => (int) $timesPlayed,
                             'created_at'   => now(),
                             'updated_at'   => now(),
