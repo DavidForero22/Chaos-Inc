@@ -14,8 +14,6 @@ services:
       - "5173:80"
     depends_on:
       - backend
-    networks:
-      - chaos-inc-net
 
   # BACKEND (Laravel)
   backend:
@@ -41,8 +39,6 @@ services:
         condition: service_started
       mysql:
         condition: service_healthy
-    networks:
-      - chaos-inc-net
 
   # CONEXIÓN (Reverb)
   reverb:
@@ -68,8 +64,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
       SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
-    networks:
-      - chaos-inc-net
 
   # TRABAJADOR DE COLAS
   worker:
@@ -93,8 +87,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
       SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
-    networks:
-      - chaos-inc-net
     deploy:
       replicas: 3
 
@@ -122,8 +114,6 @@ services:
       FRONTEND_URL: ${FRONTEND_URL}
       # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
       SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
-    networks:
-      - chaos-inc-net
 
   # BASE DE DATOS (MySQL)
   mysql:
@@ -140,8 +130,6 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - chaos-inc-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -160,12 +148,6 @@ services:
              wait"
     ports:
       - "6379:6379"
-    networks:
-      - chaos-inc-net
-
-networks:
-  chaos-inc-net:
-    driver: bridge
 
 volumes:
   db_data:
