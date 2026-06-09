@@ -9,45 +9,9 @@
     root * /var/www/html/public
     php_server
 
-    # CORS preflight (OPTIONS)
-    @cors_preflight method OPTIONS
-    handle @cors_preflight {
-        header Access-Control-Allow-Origin "{http.request.header.Origin}"
-        header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        header Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With"
-        header Access-Control-Allow-Credentials "true"
-        header Access-Control-Max-Age "3600"
-        respond 204
-    }
-
-    # CORS para requests normales (no OPTIONS)
-    @not_options {
-        not method OPTIONS
-    }
-    handle @not_options {
-        header Access-Control-Allow-Origin "{http.request.header.Origin}"
-        header Access-Control-Allow-Credentials "true"
-        header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-        header Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With"
-    }
-
-    # Headers globales (sin duplicar CORS)
+    # Pasar la información real de la IP y el protocolo a Laravel
     header {
         X-Forwarded-Proto {http.request.scheme}
         X-Forwarded-For {http.request.remote.host}
-    }
-
-    log {
-        format filter {
-            wrap console
-            fields {
-                request>headers delete
-                resp_headers delete
-                request>remote_port delete
-                request>client_ip delete
-                user_id delete
-                bytes_read delete
-            }
-        }
     }
 }

@@ -23,7 +23,7 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.php
     ports:
-      - "8000:8000"
+      - "8000:80"
     env_file:
       - ./backend/.env
     environment:
@@ -35,7 +35,7 @@ services:
         FRONTEND_URL: ${FRONTEND_URL}
         # SESSION_DOMAIN: ${DOMAIN} # En un despliege real, hay que poner aqui el dominio del a web.
         SANCTUM_STATEFUL_DOMAINS: "${DOMAIN},localhost:5173,127.0.0.1:5173,localhost,127.0.0.1"
-    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+    command: frankenphp run --config /etc/caddy/Caddyfile
     depends_on:
       redis:
         condition: service_started
