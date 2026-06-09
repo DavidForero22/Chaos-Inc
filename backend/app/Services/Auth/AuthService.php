@@ -74,8 +74,10 @@ class AuthService
         // Detectar si la cuenta existe pero es OAuth (sin contraseña propia)
         $candidate = User::where('email', $email)->first();
 
-        if ($candidate && $candidate->isOAuthUser()) {
-            $providerName = ucfirst($candidate->provider);
+        if ($candidate && empty($candidate->password)) {
+            $socialAccount = $candidate->socialAccounts()->first();
+            $providerName = $socialAccount ? ucfirst($socialAccount->provider_name) : 'una red social';
+
             throw new UserException(
                 UserException::INVALID_DATA,
                 "Esta cuenta usa {$providerName} para iniciar sesión. Usa el botón correspondiente.",
