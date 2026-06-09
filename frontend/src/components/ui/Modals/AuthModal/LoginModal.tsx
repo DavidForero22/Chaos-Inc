@@ -188,6 +188,11 @@ export default function LoginModal({
 				</button>
 			</div>
 
+			<p className="mt-4 italic text-sm text-gray-500
+">
+				Si no recuerdas tu contraseña o correo electrónico, contacta con un administrador.
+			</p>
+
 			{/* Mensaje de error */}
 			{error && (
 				<p className={styles.error} role="alert">
