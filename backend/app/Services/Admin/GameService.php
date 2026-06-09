@@ -11,7 +11,7 @@ class GameService
 {
     public function getAllGames($perPage = 20, array $filters = [])
     {
-        $query = Game::with(['participants', 'cardUsages.card'])->get();
+        $query = Game::with(['participants', 'cardUsages.card']);
 
         // Filtro: Ganador
         if (!empty($filters['winner']) && $filters['winner'] !== 'all') {
@@ -24,9 +24,11 @@ class GameService
             $query->has('participants', '=', $count);
         }
 
-        // Ordenación por fecha
-        $sortDir = (!empty($filters['sort']) && $filters['sort'] === 'asc') ? 'asc' : 'desc';
-        $query->orderBy('created_at', $sortDir);
+        // Ordenación dinámica
+        $sortField = (!empty($filters['sortField']) && $filters['sortField'] === 'winnerRole') ? 'winner_role' : 'created_at';
+        $sortDir = (!empty($filters['sortDir']) && $filters['sortDir'] === 'asc') ? 'asc' : 'desc';
+
+        $query->orderBy($sortField, $sortDir);
 
         return $query->paginate($perPage);
     }

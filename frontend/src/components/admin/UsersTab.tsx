@@ -434,7 +434,6 @@ export default function UsersTab() {
 													<button
 														onClick={() => {
 															setEditingId(u.id);
-															// ── FIX TYPE ERROR: Fallback para el email a un string vacío
 															setEditData({
 																username: u.username,
 																email: u.email || "",
