@@ -127,23 +127,23 @@ class AnalyticsService
 
     /**
      * Estadísticas de métodos de acceso.
-     * - google: usuarios con social_account provider = 'google'
-     * - discord: usuarios con provider = 'discord'
-     * - email: usuarios sin ninguna social_account
+     * - google: usuarios activos con social_account provider = 'google'
+     * - discord: usuarios activos con provider = 'discord'
+     * - email: usuarios activos sin ninguna social_account
      */
     private function getSocialAuthStats(): array
     {
-        // Contar usuarios con Google
-        $googleCount = SocialAccount::where('provider_name', 'google')
-            ->distinct('user_id')
-            ->count('user_id');
+        // Contar usuarios activos que tienen cuenta de Google
+        $googleCount = User::whereHas('socialAccounts', function ($query) {
+            $query->where('provider_name', 'google');
+        })->count();
 
-        // Contar usuarios con Discord
-        $discordCount = SocialAccount::where('provider_name', 'discord')
-            ->distinct('user_id')
-            ->count('user_id');
+        // Contar usuarios activos que tienen cuenta de Discord
+        $discordCount = User::whereHas('socialAccounts', function ($query) {
+            $query->where('provider_name', 'discord');
+        })->count();
 
-        // Usuarios registrados (no invitados) que no tienen ninguna social account
+        // Usuarios registrados (no invitados) y activos que no tienen ninguna social account
         $emailCount = User::where('is_guest', false)
             ->whereDoesntHave('socialAccounts')
             ->count();

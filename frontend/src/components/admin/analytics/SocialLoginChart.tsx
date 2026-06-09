@@ -10,13 +10,13 @@ interface Props {
 const methodLabels = {
 	google: "Google",
 	discord: "Discord",
-	email: "Email",
+	email: "Manual",
 };
 
 const methodLabelsFull = {
 	google: "Google",
 	discord: "Discord",
-	email: "Email / Password",
+	email: "Email / Contraseña",
 };
 
 const methodColors = {
@@ -132,11 +132,11 @@ export default function SocialLoginChart({ data }: Props) {
 							{
 								type: "text",
 								left: "center",
-								top: "middle",
+								top: "40%",
 								style: {
 									text: `${total}`,
 									fill: "#333",
-									fontSize: 24,
+									fontSize: 26,
 									fontWeight: "bold",
 								},
 								z: 100,
@@ -144,11 +144,11 @@ export default function SocialLoginChart({ data }: Props) {
 							{
 								type: "text",
 								left: "center",
-								top: "65%",
+								top: "48%",
 								style: {
 									text: "total usuarios",
 									fill: "#666",
-									fontSize: 10,
+									fontSize: 12,
 								},
 								z: 100,
 							},

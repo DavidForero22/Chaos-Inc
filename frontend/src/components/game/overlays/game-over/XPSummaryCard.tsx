@@ -73,7 +73,7 @@ export function XpSummaryCard({ summary, hasWon }: XpSummaryCardProps) {
 
 			{/* Total */}
 			<div className="flex justify-between items-center mt-3 pt-2 border-t border-gray-400 font-bold text-base">
-				<span>EXP OBTENIDA</span>
+				<span>EXP TOTAL OBTENIDA</span>
 				<span>+{total_earned} XP</span>
 			</div>
 
