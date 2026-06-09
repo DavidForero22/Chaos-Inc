@@ -128,6 +128,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('/analytics', [AnalyticsController::class, 'dashboard']);
                 Route::post('/users', [UserController::class, 'store']);
                 Route::post('/games', [GameController::class, 'store']);
+                Route::post('/users/{user}/temp-password', [UserController::class, 'generateTempPassword']);
                 Route::delete('/rooms/{id}', [RoomController::class, 'destroy']);
             });
         });

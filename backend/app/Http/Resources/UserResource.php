@@ -25,6 +25,7 @@ class UserResource extends JsonResource
         return [
             'id'       => $this->id,
             'username' => $this->username,
+            'hasPassword' => !is_null($this->password),
 
             // El email solo viaja en el JSON si tiene permiso. 
             // Si no, la clave 'email' ni siquiera existirá en la respuesta.

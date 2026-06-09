@@ -1,7 +1,7 @@
 // src/components/lobby/RoomPasswordModal.tsx
 
 import { useState } from "react";
-import ModalLayout from "../ui/ModalLayout";
+import ModalLayout from "../ui/Modals/ModalLayout";
 
 interface RoomPasswordBoardProps {
 	roomId: string;

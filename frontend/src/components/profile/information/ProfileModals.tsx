@@ -2,7 +2,7 @@
 import { useRef, type FormEvent } from "react";
 import { useAuthStore } from "../../../store/auth/useAuthStore";
 import { useProfileStore } from "../../../store/profile/useProfileStore.tsx";
-import ModalLayout from "../../ui/ModalLayout";
+import ModalLayout from "../../ui/Modals/ModalLayout.tsx";
 import FriendRequestsModal from "./FriendRequestsModal";
 import styles from "./UserInfo.module.css";
 import GalleryModal from "./gallery/GalleryModal.tsx";

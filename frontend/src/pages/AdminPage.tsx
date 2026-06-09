@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth/useAuthStore";
 
-import UsersTab from "../components/admin/UsersTab";
+import UsersTab from "../components/admin/users/UsersTab";
 import GamesTab from "../components/admin/GamesTab";
 import RoomsTab from "../components/admin/RoomsTab";
 import AnalyticsDashboard from "../components/admin/analytics/AnalyticsDashboard";

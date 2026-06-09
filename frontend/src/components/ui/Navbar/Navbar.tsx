@@ -3,8 +3,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../../store/auth/useAuthStore.ts";
-import LoginModal from "../AuthModal/LoginModal";
-import RegisterModal from "../AuthModal/RegisterModal";
+import LoginModal from "../Modals/AuthModal/LoginModal.tsx";
+import RegisterModal from "../Modals/AuthModal/RegisterModal.tsx";
 import { NavLinks } from "./NavLinks";
 import styles from "./Navbar.module.css";
 

@@ -4,13 +4,15 @@
 namespace App\Services\Admin;
 
 use App\Models\User;
-use Exception;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\Encoders\WebpEncoder;
 use Intervention\Image\ImageManager;
+use Illuminate\Support\Str;
 
 class UserService
 {
@@ -60,14 +62,73 @@ class UserService
 
     public function updateUser($id, array $data)
     {
+        Log::info("Datos recibidos para actualizar el usuario", $data);
         $user = User::findOrFail($id);
 
+        // EXTRAER CAMPOS DE ACCIÓN
+        $unlinkGoogle       = Arr::pull($data, 'unlinkGoogle', false);
+        $unlinkDiscord      = Arr::pull($data, 'unlinkDiscord', false);
+        $resetAvatar        = Arr::pull($data, 'resetAvatar', false);
+        $resetXp            = Arr::pull($data, 'resetXp', false);
+        $activeAchievements = Arr::pull($data, 'activeAchievements');
+
+        // SINCRONIZAR LOGROS CON FECHA (PIVOT)
+        if (is_array($activeAchievements)) {
+            $syncData = [];
+            // Cargar los logros actuales para no sobrescribir su fecha original
+            $currentAchievements = $user->achievements->keyBy('id');
+
+            foreach ($activeAchievements as $achId) {
+                if ($currentAchievements->has($achId)) {
+                    // Si ya lo tenía, conservar su fecha
+                    $syncData[$achId] = ['unlocked_at' => $currentAchievements->get($achId)->pivot->unlocked_at];
+                } else {
+                    // Si es un logro nuevo asignado por el admin, poner la fecha de hoy
+                    $syncData[$achId] = ['unlocked_at' => now()];
+                }
+            }
+
+            $user->achievements()->sync($syncData);
+        }
+
+        // PROCESAR ACCIONES DE SEGURIDAD Y PROGRESO
+        if ($unlinkGoogle) {
+            $user->socialAccounts()->where('provider_name', 'google')->delete();
+        }
+
+        if ($unlinkDiscord) {
+            $user->socialAccounts()->where('provider_name', 'discord')->delete();
+        }
+
+        if ($resetAvatar) {
+            $data['avatar'] = null;
+        }
+
+        if ($resetXp) {
+            $data['total_xp'] = 0;
+        }
+
+        // ACTUALIZAR EL RESTO DE DATOS
         if (isset($data['password'])) {
             $data['password'] = Hash::make($data['password']);
         }
 
         $user->update($data);
+
         return $user;
+    }
+
+    public function generateTempPassword($id)
+    {
+        $user = User::findOrFail($id);
+
+        $rawPassword = Str::random(10);
+
+        $user->update([
+            'password' => Hash::make($rawPassword)
+        ]);
+
+        return $rawPassword;
     }
 
     public function updateAvatar($id, array $data)

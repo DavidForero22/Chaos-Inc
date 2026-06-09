@@ -1,7 +1,7 @@
 // src/components/profile/FriendRequestsModal.tsx
 
 import { useState } from "react";
-import ModalLayout from "../../ui/ModalLayout";
+import ModalLayout from "../../ui/Modals/ModalLayout";
 import type { FriendRequest } from "../../../types/user";
 import { getFullAvatarUrl } from "../../../utils/avatar";
 

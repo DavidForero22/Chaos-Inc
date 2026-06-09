@@ -2,7 +2,7 @@
 // Accesibilidad comprobada: SI
 
 import { useState, type FormEvent } from "react";
-import ModalLayout from "../../ui/ModalLayout";
+import ModalLayout from "../../ui/Modals/ModalLayout.tsx";
 import styles from "./EditProfileModal.module.css";
 import type { UserRecord } from "../../../types/user.ts";
 

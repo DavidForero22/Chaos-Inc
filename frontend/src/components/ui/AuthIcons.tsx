@@ -1,5 +1,5 @@
 // src/components/ui/AuthModal/AuthIcons.tsx
-import styles from "../ModalLayout.module.css";
+import styles from "../ui/Modals/ModalLayout.module.css";
 
 export const GoogleIcon = () => (
 	<svg

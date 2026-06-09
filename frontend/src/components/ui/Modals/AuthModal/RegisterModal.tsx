@@ -1,10 +1,10 @@
 // Accesibilidad comprobada: SI
 
 import { useState } from "react";
-import { useAuth } from "../../../hooks/auth/useAuth.ts";
+import { useAuth } from "../../../../hooks/auth/useAuth.ts";
 import ModalLayout from "../ModalLayout.tsx";
 import styles from "../ModalLayout.module.css";
-import { GoogleIcon, DiscordIcon } from "./AuthIcons";
+import { GoogleIcon, DiscordIcon } from "../../AuthIcons.tsx";
 
 const BACKEND_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
