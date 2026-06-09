@@ -9,6 +9,47 @@ export interface VersionRecord {
 
 export const CHANGELOG_DATA: VersionRecord[] = [
 	{
+		id: 6,
+		version: "1.0.0",
+		date: "10-06-2026",
+		description: "Lanzamiento Inicial.",
+		notes: [
+			"Lo que en un principio iba a ser agregar niveles de jugador acabó alargándose y resultando ser la actualización más grande del juego. Con todos estos cambios, creo que hay suficiente contenido como para ser un sitio web algo profundo.",
+			"En este punto intenté desplegar el sitio web en un servidor real (gracias a NowarLab) para que más gente pudiese acceder y jugar, y han sido los días más desesperantes de mi vida. Vaya infierno...",
+			"La galería y la clasificación de jugadores fue un añadido casi de último segundo, la verdad. Con todo esto quitado, me quedan 2 días para preparar la documentación, la presentación y rezar para que no me suspendan xd.",
+		],
+		changes: [
+			// 1. Creado / Agregado
+			"Agregados niveles de perfil.",
+			"Agregados 4 logros.",
+			"Agregado sistema de amistad.",
+			"Agregada galería de coleccionables.",
+			"Agregadas animaciones a las ventanas emergentes.",
+			"Agregadas 3 cartas tipo caóticas.",
+			"Agregada página de cómo jugar.",
+			"Agregada edición de sala para el líder.",
+			"Agregada página de clasificación de usuarios.",
+			"Terminada página de agradecimientos.",
+			"Agregado pie de página al sitio web.",
+
+			// 2. Modificaciones
+			"Agregadas y rediseñadas páginas de error.",
+			"Pantallas de fin de juego actualizadas.",
+			"Expandido panel de administración.",
+
+			// 3. Eliminación / Reemplazo
+			"Reemplazada página de sala de espera por un desplegable.",
+
+			// 4. Correcciones
+			"Corregidos perfiles de invitados que se mostraban como usuarios normales.",
+			"Corregidos niveles de jugador en la lista de amigos que mostraban un nivel incorrecto.",
+			"Corrección de errores.",
+
+			// 5. Accesibilidad
+			"Mejoras de accesibilidad y diseño móvil.",
+		],
+	},
+	{
 		id: 5,
 		version: "0.5.0",
 		date: "17-05-2026",
@@ -20,15 +61,22 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 			"También tuvimos que censurar cierto detalle en la ilustración del rol del jefe... Si algún día este juego se hace famoso (lo dudo), esto será tema para un iceberg de internet.",
 		],
 		changes: [
+			// 1. Creado / Agregado
 			"Agregado registro de versiones en 'Saber más'.",
 			"Agregada ilustración de rol de jugador (Progreso: 4/4).",
 			"Agregadas ilustraciones para las cartas.",
 			"Agregadas pantallas de fin de juego (Progreso: 4/4).",
 			"Agregado mensaje de muerte.",
 			"Agregado un menú de depuración para admins.",
+
+			// 2. Modificaciones
 			"Modificados los jugadores muertos para que sean más legibles.",
-			"Mejoras de accesibilidad.",
+
+			// 3. Correcciones
 			"Corrección de errores.",
+
+			// 4. Accesibilidad
+			"Mejoras de accesibilidad.",
 		],
 	},
 	{
@@ -37,11 +85,12 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 		date: "10-05-2026",
 		description: "Perfiles y logros.",
 		notes: [
-			"Esta versión se centró principalmente en mejorar los perfiles, los cuales eran el punto más flojo que tenía la web. En cambio ahora, es un apartado mucho más complejo (avatares, redes sociales conectadas, logros, gráficos, visualización de otros perfiles...). Soy un poco friki con el tema de logros y estadísticas, asi que no pude resitir la tentación de incluirlo en el proyecto.",
-			"Intenté mejorar la seguridad de los datos de las partidas porque, y me acabó pasando igual que en la versión anterior, me cargué TODO el servidor y necesité dos días enteros para repararlo... La madre que me parió.",
-			"Cada vez queda menos para la fecha de entrega del proyecto y tengo dudas de si debería descartar el chat de la partida o intentar sacar tiempo para implementarlo. Lo que sí me gustaría agregar es un sistema de niveles y cartas legendarias, espero que me dé tiempo.",
+			"Esta versión se centró principalmente en mejorar los perfiles, los cuales eran el punto más flojo que tenía la web. En cambio ahora, es un apartado mucho más complejo (avatares, redes sociales conectadas, logros, gráficos, visualización de otros perfiles...). Soy un poco friki con el tema de logros y estadísticas, así que no pude resistir la tentación de incluirlo en el proyecto.",
+			"Intenté mejorar la seguridad de los datos de las partidas porque —y me acabó pasando igual que en la versión anterior— me cargué TODO el servidor y necesité dos días enteros para repararlo... La madre que me parió.",
+			"Cada vez queda menos para la fecha de entrega del proyecto y tengo dudas de si debería descartar el chat de la partida o intentar sacar tiempo para implementarlo. Lo que sí me gustaría agregar es un sistema de niveles y cartas legendarias; espero que me dé tiempo.",
 		],
 		changes: [
+			// 1. Creado / Agregado
 			"Agregados 6 logros.",
 			"Agregados gráficos a los perfiles con nuevas estadísticas.",
 			"Agregadas páginas de errores.",
@@ -49,11 +98,17 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 			"Agregada sincronización con Discord y Google.",
 			"Agregada edición de perfil.",
 			"Agregados avatares de perfil.",
+
+			// 2. Modificaciones / Mejoras
 			"Página de perfiles renovada con un nuevo estilo.",
 			"Historial de partidas mejorado.",
-			"Mejoras de usabilidad.",
 			"Mejoras de seguridad.",
+
+			// 3. Correcciones
 			"Corrección de errores.",
+
+			// 4. Usabilidad / Accesibilidad
+			"Mejoras de usabilidad.",
 		],
 	},
 	{
@@ -69,14 +124,21 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 			"Lo más divertido de esta versión con diferencia fue realizar la imagen de fin de juego. Espero no llevarme una denuncia de derechos de autor por usar un póster de Mortadelo y Filemón de base (?.",
 		],
 		changes: [
+			// 1. Creado / Agregado
 			"Agregado botón para salir de la sala.",
 			"Agregada pantalla de fin de juego (Progreso: 1/4).",
 			"Agregada ilustración de rol de jugador (Progreso: 3/4).",
-			"Agregados notificaciones de acciones durante la partida.",
+			"Agregadas notificaciones de acciones durante la partida.",
 			"Agregado modo 'Info' para pantallas pequeñas.",
+
+			// 2. Modificaciones / Mejoras
 			"Cartas y pantallas de fin de juego tematizadas.",
 			"Interfaz optimizada para dispositivos móviles y tablets.",
+
+			// 3. Eliminacion
 			"Descartadas variantes de cartas.",
+
+			// 4. Correcciones
 			"Correcciones de errores en el cliente y en el servidor.",
 		],
 	},
@@ -88,13 +150,16 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 		notes: [
 			"Tras terminar la parte más difícil del desarrollo, comencé a preparar el diseño final del sitio web y su versión móvil. Tuve una crisis artística al no saber cómo tematizar el sitio web, hasta que a base de dibujar bocetos en Paint comencé a hacerme una idea de qué quería realmente.",
 			"En un principio, las páginas principales iban a tener de cuerpo una carpeta de pinza y el fondo sería una pared; de hecho, saqué una foto de la pared de mi propia habitación. No me terminó de convencer, hasta que se me ocurrió que el cuerpo fuese una libreta, los enlaces fuesen marcapáginas y el fondo una mesa de madera.",
-			"Mientras revisaba el código, me di cuenta de graves errores de optimización que había cometido en la versión anterior. En un cambio brusco de planes, empecé a trabajar intensamente en la optimización del servidor. Gracias al cielo que me dio por revisar el servidor, ahora el juego y el sitio web van 4 veces más fluidos.",
+			"Mientras revisaba el código, me di cuenta de graves errores de optimización que había cometido en la versión anterior. En un cambio brusco de planes, empecé a trabajar intensamente en la optimización del servidor. Gracias al cielo que me dio por revisar el servidor; ahora el juego y el sitio web van 4 veces más fluidos.",
 			"Le pregunté a un amigo si me podría hacer ilustraciones de los roles del juego al empezar la partida; sé que tenemos un humor roñoso parecido, así que me hacía una idea de lo que saldría. En cuanto me envió el primer dibujo terminado supe que no me había equivocado de persona. Cuando acabe el proyecto tendré que regalarle un juego o algo porque este tío se lo merece.",
 		],
 		changes: [
+			// 1. Creado / Agregado
 			"Agregadas variantes de cartas para mayor diversidad.",
 			"Agregada guía de iconos de cartas en la interfaz.",
 			"Agregadas ilustraciones de roles de jugador (Progreso: 2/4).",
+
+			// 2. Modificaciones / Rediseños / Optimizaciones
 			"Rediseño total del sitio web con soporte para móviles.",
 			"Mejoras en la experiencia de juego e interfaz de usuario.",
 			"Optimización considerable del rendimiento en cliente y servidor.",
@@ -107,15 +172,18 @@ export const CHANGELOG_DATA: VersionRecord[] = [
 		date: "07-04-2026",
 		description: "Base del juego completada y funcional.",
 		notes: [
-			"Antes de siquiera llegar a pensar en esta idea para mi proyecto de fin de curso, barajé otras opciones como una aplicación informativa de ejercicios, una aplicación informativa de paleontología, una aplicación informativa de astronomía... No sé qué me dio con las páginas informativas en ese entonces. El caso es que un día, hablando con un amigo, le estaba comentando sobre un juego de mesa (BANG!) que jugábamos en los descansos de clase que me gustaba bastante y, en algún punto, llegamos a acabar hablando de lo guay que estaría hacer mi propia versión de ese juego. Al pensarlo dos veces, me di cuenta de la tremenda idea que habíamos sacado con la tontería. ",
-			"Empecé a desarrollar la documentación del proyecto a mediados de enero. Hasta febrero estuve investigando qué tecnologías usar y cómo estructurar las bases de datos. Quería tener las bases del proyecto bien planteadas para que, al desarrollarlo, tuviera más claro qué debo hacer.",
+			"Antes de siquiera llegar a pensar en esta idea para mi proyecto de fin de curso, barajé otras opciones como una aplicación informativa de ejercicios, una aplicación informativa de paleontología, una aplicación informativa de astronomía... No sé qué me dio con las páginas informativas en ese entonces. El caso es que un día, hablando con un amigo, le estaba comentando sobre un juego de mesa (BANG!) que jugábamos en los descansos de clase que me gustaba bastante y, en algún punto, llegamos a acabar hablando de lo guay que estaría hacer mi propia versión de ese juego. Al pensarlo dos veces, me di cuenta de la tremenda idea que habíamos sacado con la tontería.",
+			"Empecé a desarrollar la documentación del proyecto a mediados de enero. Hasta febrero estuve investigando qué tecnologías usar y cómo estructurar las bases de datos. Quería tener las bases del proyecto bien planteadas para que, al desarrollarlo, tuviera más claro qué debía hacer.",
 			"Esta primera versión fue con diferencia la que más tiempo del desarrollo total se llevó. Principalmente fue el sistema de desconexión lo que más guerra me dio. El hecho de diseñar el flujo de desconexión y reconexión en una partida ya fue complicado de entender, pero adaptarlo a código ha sido algo con lo que tengo pesadillas todavía. No sería hasta la versión 0.3 cuando logré tener un sistema de desconexiones realmente eficaz.",
 		],
 		changes: [
+			// 1. Creado / Agregado
 			"Desarrollo del motor de juego base con las primeras 15 cartas.",
-			"Implementado sistema de reconexión y gestión de sesiones para invitados.",
 			"Agregado modo de gestión de datos para administradores.",
 			"Agregado sistema de historial y estadísticas básicas de jugadores.",
+
+			// 2. Modificaciones / Implementaciones de flujo
+			"Implementado sistema de reconexión y gestión de sesiones para invitados.",
 		],
 	},
 ];
