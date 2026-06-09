@@ -100,6 +100,8 @@ services:
     expose:
       - "80"
     command: php artisan reverb:start --host=0.0.0.0 --port=80
+    healthcheck:
+      disable: true
     depends_on:
       redis:
         condition: service_started
