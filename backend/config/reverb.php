@@ -90,7 +90,7 @@ return [
 
                 'webhooks' => [
                     [
-                        'url' => env('REVERB_WEBHOOK_URL', 'http://backend:8000/api/v1/webhooks/reverb'),
+                        'url' => env('REVERB_WEBHOOK_URL', 'http://backend/api/v1/webhooks/reverb'),
                         'event_types' => ['member_removed', 'member_added'],
                     ],
                 ],
