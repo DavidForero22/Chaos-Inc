@@ -33,8 +33,6 @@ services:
       - "80"
     depends_on:
       - backend
-    networks:
-      - chaos-inc-net
     restart: unless-stopped
 
   # ----------------------------------------------------------
@@ -117,8 +115,6 @@ services:
         condition: service_started
       mysql:
         condition: service_healthy
-    networks:
-      - chaos-inc-net
     restart: unless-stopped
 
   # ----------------------------------------------------------
@@ -161,8 +157,6 @@ services:
       REVERB_SCHEME: http
       SESSION_DOMAIN: ${SESSION_DOMAIN}
       SANCTUM_STATEFUL_DOMAINS: ${DOMAIN}
-    networks:
-      - chaos-inc-net
     restart: unless-stopped
 
   # ----------------------------------------------------------
@@ -196,8 +190,6 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       QUEUE_CONNECTION: redis
       SESSION_DOMAIN: ${SESSION_DOMAIN}
-    networks:
-      - chaos-inc-net
     restart: unless-stopped
 
   worker-1:
@@ -239,8 +231,6 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       QUEUE_CONNECTION: redis
       SESSION_DOMAIN: ${SESSION_DOMAIN}
-    networks:
-      - chaos-inc-net
     restart: unless-stopped
 
   # ----------------------------------------------------------
@@ -258,8 +248,6 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - chaos-inc-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 5s
@@ -278,12 +266,6 @@ services:
              sleep 2;
              valkey-cli -a ${REDIS_PASSWORD} flushall;
              wait"
-    networks:
-      - chaos-inc-net
-
-networks:
-  chaos-inc-net:
-    driver: bridge
 
 volumes:
   db_data:
