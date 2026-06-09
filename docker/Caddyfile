@@ -15,3 +15,7 @@
         X-Forwarded-For {http.request.remote.host}
     }
 }
+
+ws.chaosinc.monolook.dev {
+    reverse_proxy reverb:8080
+}
