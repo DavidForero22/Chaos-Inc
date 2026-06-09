@@ -20,6 +20,7 @@ class User extends Authenticatable
         'role',
         'is_guest',
         'avatar',
+        'total_xp',
     ];
 
     protected $hidden = ['password', 'remember_token'];

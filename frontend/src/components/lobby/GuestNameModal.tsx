@@ -3,11 +3,11 @@
 import { useState } from "react";
 import api, { getCsrfCookie } from "../../api/axios";
 import { useAuthStore } from "../../store/auth/useAuthStore.ts";
-import ModalLayout from "../ui/ModalLayout";
-import styles from "../ui/ModalLayout.module.css";
-import LoginModal from "../ui/AuthModal/LoginModal";
-import RegisterModal from "../ui/AuthModal/RegisterModal";
-import { DiscordIcon, GoogleIcon } from "../ui/AuthModal/AuthIcons";
+import ModalLayout from "../ui/Modals/ModalLayout.tsx";
+import styles from "../ui/Modals/ModalLayout.module.css";
+import LoginModal from "../ui/Modals/AuthModal/LoginModal.tsx";
+import RegisterModal from "../ui/Modals/AuthModal/RegisterModal.tsx";
+import { DiscordIcon, GoogleIcon } from "../ui/AuthIcons";
 
 interface GuestNameModalProps {
 	onClose: () => void;

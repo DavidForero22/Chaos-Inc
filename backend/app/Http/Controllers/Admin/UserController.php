@@ -51,8 +51,8 @@ class UserController extends Controller
             'friendOf',
         ];
 
-        // Relaciones privadas (Cuentas sociales vinculadas)
-        if ($request->user() && $request->user()->id == $id) {
+        // Permitir ver cuentas sociales si es el propio usuario o si es un administrador
+        if ($request->user() && ($request->user()->id == $id || $request->user()->role === 'admin')) {
             $relationsToLoad[] = 'socialAccounts';
         }
 
@@ -92,6 +92,22 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Perfil actualizado con éxito.',
             'user' => new UserResource($user)
+        ], 200);
+    }
+
+    public function generateTempPassword(Request $request, $id)
+    {
+        $authUser = $request->user();
+
+        if ($authUser->role !== 'admin') {
+            return response()->json(['message' => 'Acceso denegado. Solo administradores.'], 403);
+        }
+
+        $rawPassword = $this->userService->generateTempPassword($id);
+
+        return response()->json([
+            'message' => 'Contraseña temporal generada con éxito.',
+            'temp_password' => $rawPassword, 
         ], 200);
     }
 

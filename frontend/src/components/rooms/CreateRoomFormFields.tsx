@@ -1,6 +1,6 @@
 // src/components/rooms/CreateRoomFormFields.tsx
 import React from "react";
-import styles from "../ui/ModalLayout.module.css";
+import styles from "../ui/Modals/ModalLayout.module.css";
 
 interface FormData {
 	name: string;

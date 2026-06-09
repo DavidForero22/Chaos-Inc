@@ -1,8 +1,8 @@
 // src/components/rooms/EditRoomModal.tsx
 import { useState } from "react";
 import api from "../../api/axios";
-import ModalLayout from "../ui/ModalLayout";
-import styles from "../ui/ModalLayout.module.css";
+import ModalLayout from "../ui/Modals/ModalLayout";
+import styles from "../ui/Modals/ModalLayout.module.css";
 import { useAuth } from "../../hooks/auth/useAuth";
 import type { RoomData } from "../../types/api";
 import CreateRoomFormFields from "./CreateRoomFormFields";
@@ -23,7 +23,7 @@ export default function EditRoomModal({ room, onClose }: EditRoomModalProps) {
 		name: room.name,
 		is_private: room.is_private,
 		password: "",
-		keep_password: room.is_private, 
+		keep_password: room.is_private,
 		max_players: room.max_players,
 		turn_timeout: room.turn_timeout || 80,
 		is_debug: room.is_debug || false,

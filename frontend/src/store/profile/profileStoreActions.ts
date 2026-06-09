@@ -160,10 +160,15 @@ export const createProfileActions = (
 	},
 
 	confirmUnlink: async () => {
-		const { providerToUnlink, userId } = get();
+		const { providerToUnlink, userId, unlinkPassword } = get();
 		if (!providerToUnlink || !userId) return;
 		try {
-			const response = await api.post(`/auth/unlink/${providerToUnlink}`);
+			const response = await api.delete(
+				`/users/${userId}/social/${providerToUnlink}`,
+				{
+					data: unlinkPassword ? { password: unlinkPassword } : undefined,
+				},
+			);
 
 			const updatedUser = response.data.user;
 			if (updatedUser) {
@@ -181,13 +186,20 @@ export const createProfileActions = (
 					);
 			}
 
-			set({ showUnlinkModal: false, showForcePasswordModal: false });
+			// Limpiar estados del modal y contraseña
+			set({
+				showUnlinkModal: false,
+				showForcePasswordModal: false,
+				unlinkPassword: "",
+				unlinkPasswordError: "",
+			});
+
 			get().refreshProfile();
 			useToastStore
 				.getState()
 				.showToast(`Cuenta de ${providerToUnlink} desvinculada`, "success");
 		} catch (err: any) {
-			if (err.response?.status === 403) {
+			if (err.response?.status === 403 || err.response?.status === 428) {
 				set({ showForcePasswordModal: true });
 			} else {
 				useToastStore

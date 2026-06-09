@@ -22,12 +22,13 @@ class GameController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['winner', 'players', 'sort']);
+        $filters = $request->only(['winner', 'players', 'sortField', 'sortDir']);
 
         $games = $this->gameService->getAllGames(20, $filters);
 
         return GameResource::collection($games);
     }
+
 
     public function store(StoreGameRequest $request)
     {

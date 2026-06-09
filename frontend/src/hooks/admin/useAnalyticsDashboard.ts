@@ -1,6 +1,6 @@
-// src/hooks/admin/useAnalyticsDashboard.ts
 import { useState, useEffect, useCallback } from "react";
 import api from "../../api/axios";
+import { useAnalyticsStore } from "../../store/admin/useAnalyticsStore";
 
 export interface WinRateData {
 	boss: number;
@@ -44,7 +44,7 @@ interface UseAnalyticsDashboardReturn {
 	data: AnalyticsDashboardData | null;
 	loading: boolean;
 	error: string | null;
-	refresh: () => void;
+	refresh: () => Promise<void>; // Lo hacemos promesa para que el botón sepa cuándo termina
 	days: number;
 	setDays: (days: number) => void;
 }
@@ -52,29 +52,52 @@ interface UseAnalyticsDashboardReturn {
 export function useAnalyticsDashboard(
 	initialDays: number = 30,
 ): UseAnalyticsDashboardReturn {
+	// Conectamos el Store
+	const cache = useAnalyticsStore((state) => state.cache);
+	const setCache = useAnalyticsStore((state) => state.setCache);
+
 	const [data, setData] = useState<AnalyticsDashboardData | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [days, setDays] = useState(initialDays);
 
-	const fetchData = useCallback(async () => {
-		setLoading(true);
-		setError(null);
-		try {
-			const response = await api.get(`/analytics?days=${days}`, {
-				hideLoader: true,
-			} as any);
-			setData(response.data);
-		} catch (err: any) {
-			setError(err.response?.data?.message || "Error al cargar las analíticas");
-			console.error("Analytics fetch error:", err);
-		} finally {
-			setLoading(false);
-		}
-	}, [days]);
+	const fetchData = useCallback(
+		async (forceRefresh: boolean = false) => {
+			// Comprobar caché (TTL: 5 minutos = 300,000 ms)
+			const cachedData = cache[days];
+			const isCacheValid =
+				cachedData && Date.now() - cachedData.timestamp < 300000;
 
-	const refresh = useCallback(() => {
-		fetchData();
+			if (!forceRefresh && isCacheValid) {
+				setData(cachedData.data);
+				setLoading(false);
+				return;
+			}
+
+			// Si no hay caché o fuerza recarga, ir al servidor
+			setLoading(true);
+			setError(null);
+			try {
+				const response = await api.get(`/analytics?days=${days}`, {
+					hideLoader: true,
+				} as any);
+
+				setData(response.data);
+				setCache(days, response.data);
+			} catch (err: any) {
+				setError(
+					err.response?.data?.message || "Error al cargar las analíticas",
+				);
+				console.error("Analytics fetch error:", err);
+			} finally {
+				setLoading(false);
+			}
+		},
+		[days, cache, setCache],
+	);
+
+	const refresh = useCallback(async () => {
+		await fetchData(true);
 	}, [fetchData]);
 
 	useEffect(() => {

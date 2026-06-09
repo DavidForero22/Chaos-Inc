@@ -31,6 +31,7 @@ export interface FriendRequest {
 export interface UserRecord {
 	id: number;
 	username: string;
+	hasPassword?: boolean;
 	email?: string;
 	role: string;
 	avatar: string | null;
