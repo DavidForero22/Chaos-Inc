@@ -50,7 +50,7 @@ export function getLevelProgress(totalXp: number): {
 }
 
 export function getRankLabel(level: number): string {
-	if (level <= 10) return "Becario";
-	if (level <= 25) return "Empleado del Mes";
-	return "CEO Legendario";
+	if (level <= 10) return "Principiante";
+	if (level <= 25) return "Veterano";
+	return "Prejubilado";
 }
