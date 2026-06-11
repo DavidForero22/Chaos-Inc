@@ -32,148 +32,151 @@ class TurnService
         Redis::setex($lockKey, 3, '1');
 
         try {
-        $roomStateKey = "room:{$roomId}:state";
-        $roomInfoKey  = "room:{$roomId}:info";
-        $turnOrderStr = Redis::get("room:{$roomId}:turn_order");
+            $roomStateKey = "room:{$roomId}:state";
+            $roomInfoKey  = "room:{$roomId}:info";
+            $turnOrderStr = Redis::get("room:{$roomId}:turn_order");
 
-        if (!$turnOrderStr) return;
+            if (!$turnOrderStr) return;
 
-        $turnOrder = json_decode($turnOrderStr, true);
-        $currentTurnId = Redis::hget($roomStateKey, 'current_turn_player_id');
+            $turnOrder = json_decode($turnOrderStr, true);
+            $currentTurnId = Redis::hget($roomStateKey, 'current_turn_player_id');
 
-        $currentIndex = array_search($currentTurnId, $turnOrder);
-        if ($currentIndex === false) $currentIndex = 0;
+            $currentIndex = array_search($currentTurnId, $turnOrder);
+            if ($currentIndex === false) $currentIndex = 0;
 
-        $totalPlayers = count($turnOrder);
-        $nextIndex = $currentIndex;
-        $hasWrapped = false;
+            $totalPlayers = count($turnOrder);
+            $nextIndex = $currentIndex;
+            $hasWrapped = false;
 
-        // CALCULA EL TIMEOUT UNA SOLA VEZ al inicio
-        $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
-        $expiresAt = now('UTC')->addSeconds($timeout);
-        $turnId = uniqid('turn_', true);
+            // CALCULA EL TIMEOUT UNA SOLA VEZ al inicio
+            $timeout = (int) (Redis::hget($roomInfoKey, 'turn_timeout') ?: 30);
+            $expiresAt = now('UTC')->addSeconds($timeout);
+            $turnId = uniqid('turn_', true);
 
-        for ($i = 0; $i < $totalPlayers; $i++) {
-            $nextIndex = ($nextIndex + 1) % $totalPlayers;
-            $nextPlayerId = $turnOrder[$nextIndex];
+            for ($i = 0; $i < $totalPlayers; $i++) {
+                $nextIndex = ($nextIndex + 1) % $totalPlayers;
+                $nextPlayerId = $turnOrder[$nextIndex];
 
-            if ($nextIndex === 0) {
-                $hasWrapped = true;
-            }
+                if ($nextIndex === 0) {
+                    $hasWrapped = true;
+                }
 
-            $pInfoKey      = "room:{$roomId}:player:{$nextPlayerId}:info";
-            $pTurnStateKey = "room:{$roomId}:player:{$nextPlayerId}:turn_state";
-            $pPerksKey     = "room:{$roomId}:player:{$nextPlayerId}:perks";
-            $pStatsKey     = "room:{$roomId}:player:{$nextPlayerId}:stats";
+                $pInfoKey      = "room:{$roomId}:player:{$nextPlayerId}:info";
+                $pTurnStateKey = "room:{$roomId}:player:{$nextPlayerId}:turn_state";
+                $pPerksKey     = "room:{$roomId}:player:{$nextPlayerId}:perks";
+                $pStatsKey     = "room:{$roomId}:player:{$nextPlayerId}:stats";
 
-            $isOnline = Redis::hget($pInfoKey, 'is_online') !== '0';
-            $isDead   = Redis::hget($pInfoKey, 'is_dead') === '1';
-            $skipNext = Redis::hget($pTurnStateKey, 'skip_next_turn') === '1';
+                $isOnline = Redis::hget($pInfoKey, 'is_online') !== '0';
+                $isDead   = Redis::hget($pInfoKey, 'is_dead') === '1';
+                $skipNext = Redis::hget($pTurnStateKey, 'skip_next_turn') === '1';
 
-            if ($skipNext) {
-                Redis::hset($pTurnStateKey, 'skip_next_turn', 0);
-                continue;
-            }
+                if ($skipNext) {
+                    Redis::hset($pTurnStateKey, 'skip_next_turn', 0);
+                    continue;
+                }
 
-            if ($isOnline && !$isDead) {
-                Redis::hset($roomStateKey, 'current_turn_player_id', $nextPlayerId);
-                Redis::hset($roomStateKey, 'current_turn_id', $turnId);
-                Redis::hset($roomStateKey, 'turn_expires_at', $expiresAt->timestamp);
+                if ($isOnline && !$isDead) {
+                    Redis::hset($roomStateKey, 'current_turn_player_id', $nextPlayerId);
+                    Redis::hset($roomStateKey, 'current_turn_id', $turnId);
+                    Redis::hset($roomStateKey, 'turn_expires_at', $expiresAt->timestamp);
 
-                // Recolecta datos para eventos antes de hacer cambios
-                $logMessage = null;
-                $achievementsToNotify = [];
-                $cardsToDraw = 2;
-                $drewExtra = false;
+                    // Recolecta datos para eventos antes de hacer cambios
+                    $logMessage = null;
+                    $achievementsToNotify = [];
+                    $cardsToDraw = 2;
+                    $drewExtra = false;
 
-                // --- ROBO DE CARTAS E INERCIA ---
-                $hasInertia = CastHelper::toBool(Redis::hget($pPerksKey, 'has_luck') ?? 0);
+                    // --- ROBO DE CARTAS E INERCIA ---
+                    $hasInertia = CastHelper::toBool(Redis::hget($pPerksKey, 'has_luck') ?? 0);
 
-                if ($hasInertia) {
-                    if (rand(1, 100) <= 50) {
-                        $cardsToDraw = 3;
-                        $drewExtra = true;
-                        Redis::hincrby($pStatsKey, 'luck_streak', 1);
-                        $luckStreak = (int) Redis::hget($pStatsKey, 'luck_streak');
+                    if ($hasInertia) {
+                        if (rand(1, 100) <= 50) {
+                            $cardsToDraw = 3;
+                            $drewExtra = true;
+                            Redis::hincrby($pStatsKey, 'luck_streak', 1);
+                            $luckStreak = (int) Redis::hget($pStatsKey, 'luck_streak');
 
-                        if ($luckStreak >= 3) {
-                            $userId  = Redis::hget($pInfoKey, 'user_id');
-                            $isGuest = Redis::hget($pInfoKey, 'is_guest') === '1';
-                            if (!$isGuest && $userId) {
-                                $newAchievements = app(AchievementService::class)
-                                    ->evaluateMidGameAchievements((int) $userId, [
-                                        'luck_streak' => $luckStreak,
-                                    ]);
-                                foreach ($newAchievements as $achId) {
-                                    $achievementsToNotify[] = [
-                                        'playerId'      => $nextPlayerId,
-                                        'achievementId' => $achId,
-                                    ];
+                            if ($luckStreak >= 3) {
+                                $userId  = Redis::hget($pInfoKey, 'user_id');
+                                $isGuest = Redis::hget($pInfoKey, 'is_guest') === '1';
+                                if (!$isGuest && $userId) {
+                                    $newAchievements = app(AchievementService::class)
+                                        ->evaluateMidGameAchievements((int) $userId, [
+                                            'luck_streak' => $luckStreak,
+                                        ]);
+                                    foreach ($newAchievements as $achId) {
+                                        $achievementsToNotify[] = [
+                                            'playerId'      => $nextPlayerId,
+                                            'achievementId' => $achId,
+                                        ];
+                                    }
                                 }
                             }
-                        }
 
-                        $playerName = Redis::hget($pInfoKey, 'username') ?: "Jugador {$nextPlayerId}";
-                        $logMessage = __('game.lucked_sucess', ['player' => $playerName]);
-                        RoomLogger::info($roomId, "TurnService.php::advanceTurn: El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
+                            $playerName = Redis::hget($pInfoKey, 'username') ?: "Jugador {$nextPlayerId}";
+                            $logMessage = __('game.lucked_sucess', ['player' => $playerName]);
+                            RoomLogger::info($roomId, "TurnService.php::advanceTurn: El jugador {$playerName} (ID: {$nextPlayerId}) ha robado una carta extra.");
                         } else {
+                            Redis::hset($pStatsKey, 'luck_streak', 0);
+                        }
+                    } else {
                         Redis::hset($pStatsKey, 'luck_streak', 0);
                     }
-                    } else {
-                    Redis::hset($pStatsKey, 'luck_streak', 0);
-                }
 
-                $this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);
+                    $this->deckService->drawCardsForPlayer($roomId, $nextPlayerId, $cardsToDraw);
 
-                if ($hasWrapped) {
-                    Redis::hincrby($roomStateKey, 'round_number', 1);
-                }
+                    if ($hasWrapped) {
+                        Redis::hincrby($roomStateKey, 'round_number', 1);
+                    }
 
-                if ($drewExtra) {
-                    event(new RoomStateUpdated(
-                        $roomId,
-                        $logMessage,
-                        null,
-                        !empty($achievementsToNotify) ? $achievementsToNotify : null,
-                        $nextPlayerId
-                    ));
-                }
+                    if ($drewExtra) {
+                        event(new RoomStateUpdated(
+                            $roomId,
+                            $logMessage,
+                            null,
+                            !empty($achievementsToNotify) ? $achievementsToNotify : null,
+                            $nextPlayerId
+                        ));
+                    }
 
-                // --- MINIJUEGO O TURNO NORMAL ---
-                $isBlocked = Redis::hget($pPerksKey, 'is_blocked') === '1';
+                    // --- MINIJUEGO O TURNO NORMAL ---
+                    $isBlocked = Redis::hget($pPerksKey, 'is_blocked') === '1';
 
                     if ($isBlocked) {
-                    Redis::hset($pPerksKey, 'is_blocked', 0);
-                    $colors = ['red', 'blue', 'green', 'yellow'];
+                        Redis::hset($pPerksKey, 'is_blocked', 0);
+                        $colors = ['red', 'blue', 'green', 'yellow'];
                         $correct = $colors[array_rand($colors)];
-                    $challengeId = uniqid('luck_', true);
+                        $challengeId = uniqid('luck_', true);
 
-                    Redis::setex(
-                        "room:{$roomId}:luck_challenge:{$nextPlayerId}",
-                        60,
-                        json_encode([
-                            'correct_color' => $correct,
-                            'challenge_id'  => $challengeId
-                        ])
-                    );
+                        Redis::setex(
+                            "room:{$roomId}:luck_challenge:{$nextPlayerId}",
+                            60,
+                            json_encode([
+                                'correct_color' => $correct,
+                                'challenge_id'  => $challengeId
+                            ])
+                        );
 
                         Redis::hset($roomStateKey, 'turn_expires_at', 0);
+
+                        $playerName = Redis::hget($pInfoKey, 'username') ?: "Jugador {$nextPlayerId}";
+                        RoomLogger::info($roomId, "TurnService.php::advanceTurn - ResolveLuckChallengeJob dispatch para {$playerName}, resuelve en 18s (challenge_id: {$challengeId})");
 
                         ResolveLuckChallengeJob::dispatch($roomId, $nextPlayerId, $challengeId)
                             ->delay(18);
                     } else {
-                    RoomLogger::info(
-                        $roomId,
-                        "TurnService.php::advanceTurn - Iniciando turno para jugador {$nextPlayerId}, expira a: {$expiresAt} (timeout: {$timeout}s)"
-                    );
+                        RoomLogger::info(
+                            $roomId,
+                            "TurnService.php::advanceTurn - Iniciando turno para jugador {$nextPlayerId}, expira a: {$expiresAt} (timeout: {$timeout}s)"
+                        );
 
-                    AutoEndTurnJob::dispatch($roomId, $nextPlayerId, $turnId)
-                        ->delay($timeout + 3);
+                        AutoEndTurnJob::dispatch($roomId, $nextPlayerId, $turnId)
+                            ->delay($timeout + 3);
+                    }
+
+                    break;
                 }
-
-                break;
             }
-        }
         } finally {
             // Liberar liberar el lock, incluso si hay excepciones
             Redis::del($lockKey);
@@ -195,7 +198,7 @@ class TurnService
                 $this->advanceTurn($roomId);
             } else {
                 RoomLogger::info(
-                $roomId,
+                    $roomId,
                     "TurnService.php::checkAndAdvanceTurnOnDisconnect - Lock detectado, esperando que otro proceso avance"
                 );
             }
