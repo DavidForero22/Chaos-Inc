@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Límite general para la API (Navegación normal)
         RateLimiter::for('api', function (Request $request) {
-            return Limit::perMinute(35)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(50)->by($request->user()?->id ?: $request->ip());
         });
 
         // Límite estricto para Autenticación (Previene fuerza bruta y bots)
