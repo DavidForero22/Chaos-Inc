@@ -5,6 +5,7 @@ import type { UserRecord } from "../../../types/user";
 import { ACHIEVEMENTS } from "../../../data/app/achievements";
 import { useUsersData } from "../../../hooks/admin/useUsersData";
 import { useToastStore } from "../../../store/ui/useToastStore";
+import { getFullAvatarUrl } from "../../../utils/avatar";
 
 interface EditUserModalProps {
 	user: UserRecord;
@@ -228,7 +229,7 @@ export default function EditUserModal({
 						<div className="w-12 h-12 rounded-sm overflow-hidden bg-white border-2 border-gray-400 shrink-0 flex items-center justify-center">
 							{user.avatar && !formData.resetAvatar ? (
 								<img
-									src={user.avatar}
+									src={getFullAvatarUrl(user.avatar) ?? undefined}
 									alt="Avatar"
 									className="w-full h-full object-cover"
 									referrerPolicy="no-referrer"
