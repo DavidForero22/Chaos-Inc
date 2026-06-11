@@ -6,7 +6,7 @@ import { CardInfoModal } from "../overlays/CardInfoModal.tsx";
 import { useGameStore } from "../../../store/game/useGameStore.ts";
 import styles from "./OpponentCard.module.css";
 import type { PerkSlot } from "../../../hooks/game/players/useDisplayPerks.ts";
-import { useOpponentTargeting } from "../../../hooks/game/players/useOpponentTargeting.ts"; // <-- Nuevo Hook
+import { useOpponentTargeting } from "../../../hooks/game/players/useOpponentTargeting.ts"; 
 
 interface OpponentCardProps {
 	player: Opponent;
@@ -100,7 +100,7 @@ export function OpponentCard({
 							base_name: "Pasiva",
 							name: slot.name ?? slot.title,
 							description: slot.title,
-							lore: "",
+							lore: slot.lore || "",
 							icons: [],
 							category: "normal",
 						});

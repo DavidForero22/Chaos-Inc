@@ -10,12 +10,14 @@ interface PerkSlotProps {
 	title: string;
 	cardType?: number;
 	name?: string;
+	lore?: string;
 	isUnderSabotage?: boolean;
 	onInfoClick?: (
 		id: string,
 		type: number,
 		name: string,
 		description: string,
+		lore: string,
 	) => void;
 }
 
@@ -25,6 +27,7 @@ export function PerkSlot({
 	title,
 	cardType,
 	name,
+	lore,
 	isUnderSabotage = false,
 	onInfoClick,
 }: PerkSlotProps) {
@@ -46,7 +49,7 @@ export function PerkSlot({
 		if (isDiscardActive) {
 			toggleDiscardPerk(id);
 		} else if (cardType !== undefined && name !== undefined && onInfoClick) {
-			onInfoClick(id, cardType, name, title);
+			onInfoClick(id, cardType, name, title, lore || "");
 		}
 	};
 
