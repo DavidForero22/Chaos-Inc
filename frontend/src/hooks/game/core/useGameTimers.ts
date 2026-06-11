@@ -299,7 +299,7 @@ export function useGameTimers() {
 				setLuckChallengeSecondsLeft(null);
 
 				if (!didTriggerLoader) {
-					useLoadingStore.getState().startLoading("Resolviendo desafío...");
+					useLoadingStore.getState().startLoading("Preguntando al conserje...");
 					didTriggerLoader = true;
 				}
 			} else {
