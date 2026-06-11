@@ -378,7 +378,7 @@ export default function EditUserModal({
 							Catálogo de Logros
 						</h3>
 						<div className="space-y-2">
-							{ACHIEVEMENTS.map((ach) => (
+							{ACHIEVEMENTS.filter(ach => ach.active).map((ach) => (
 								<label
 									key={ach.id}
 									className="flex items-center justify-between p-2 hover:bg-black/5 cursor-pointer rounded transition-colors"
