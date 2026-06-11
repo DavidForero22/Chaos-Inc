@@ -169,7 +169,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					id="terminal-title"
 					className="text-lg text-green-500 tracking-tight flex items-center gap-2 m-0"
 				>
-					<span>Herramientas de Depuración</span>
+					<span>Herramientas de pruebas</span>
 				</h2>
 				<p className="text-xs text-green-700 mt-1 m-0">
 					Usuario:{" "}
@@ -268,8 +268,8 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 				ref={triggerButtonRef}
 				onClick={toggleDebug}
 				className={styles.debugButton}
-				title="Herramientas de Depuración"
-				aria-label="Cerrar herramientas de depuración"
+				title="Herramientas de pruebas"
+				aria-label="Cerrar herramientas de pruebas"
 				aria-haspopup="dialog"
 				aria-expanded="true"
 			>

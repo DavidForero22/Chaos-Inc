@@ -50,7 +50,6 @@ export default function GamesTab() {
 	const handleSort = (field: SortField) => {
 		if (sortField === field) {
 			setSortDir(sortDir === "asc" ? "desc" : "asc");
-			console.log(sortField)
 		} else {
 			setSortField(field);
 			setSortDir("desc");

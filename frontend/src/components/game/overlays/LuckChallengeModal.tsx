@@ -66,21 +66,20 @@ export function LuckChallengeModal({
 				className="text-gray-400 text-xs uppercase font-bold tracking-widest mb-2 text-center"
 				aria-hidden="true"
 			>
-				Control de Acceso de RRHH
+				Codigo marrón
 			</p>
 			<h2
 				id="luck-challenge-title"
 				className="text-2xl font-black text-white mb-2 text-center"
 			>
-				Protocolo de Verificación
+				¡¿Y el baño?!
 			</h2>
 
 			<p
 				id="luck-challenge-desc"
 				className="text-gray-400 text-sm mb-6 text-center"
 			>
-				Tu credencial ha sido bloqueada. Selecciona la puerta correcta para
-				recuperar tu turno.
+				¡Alguien te ha puesto laxante en el café! Encuentra la puerta del baño para no perder tu turno.
 			</p>
 
 			{/* Temporizador visual */}
@@ -92,14 +91,14 @@ export function LuckChallengeModal({
 				>
 					{/* Texto exclusivo para lectores de pantalla */}
 					<span className="sr-only">
-						Tiempo de decisión restante: {luckChallengeSecondsLeft} segundos
+						Tiempo restante: {luckChallengeSecondsLeft} segundos
 					</span>
 
 					<span
 						className="text-xs uppercase font-bold tracking-wider mb-1"
 						aria-hidden="true"
 					>
-						Tiempo de Decisión
+						Tiempo
 					</span>
 					<span
 						className="font-mono text-3xl font-black text-white animate-pulse"
@@ -152,7 +151,7 @@ export function LuckChallengeModal({
 					role="status"
 					aria-live="polite"
 				>
-					Verificando credenciales en el servidor...
+					Preguntando al conserje...
 				</p>
 			)}
 		</Modal>

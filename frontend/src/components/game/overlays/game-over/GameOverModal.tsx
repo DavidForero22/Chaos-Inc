@@ -34,8 +34,6 @@ export function GameOverModal({
 	const [showArrow, setShowArrow] = useState(false);
 	const xpSummary = useGameStore((s) => s.xpSummary);
 
-	console.log(winnerRole);
-
 	// Resolver configuración a prueba de fallos
 	const normalizedRole = winnerRole?.trim().toLowerCase() as ConfigKey;
 

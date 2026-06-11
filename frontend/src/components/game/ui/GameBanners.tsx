@@ -122,7 +122,7 @@ export function GameBanners({
 
 			<AnimatedBanner
 				show={isSomeoneElseInLuckChallenge}
-				message={`¡${getName(game.player_in_luck_challenge)} INTENTA ESCAPAR DEL BLOQUEO DE RRHH!`}
+				message={`¡${getName(game.player_in_luck_challenge)} INTENTA ENCONTRAR EL BAÑO!`}
 				colorClass={styles.bgNotice}
 			/>
 
@@ -161,8 +161,8 @@ export function GameBanners({
 				show={!!luckResult}
 				message={
 					luckResult === "success"
-						? "¡ACERTASTE EL DESAFÍO! ¡VUELVES AL TRABAJO!"
-						: "¡FALLASTE EL DESAFÍO! ¡TURNO PERDIDO!"
+						? "¡ENCONTRASTE EL BAÑO! ¡VUELVES AL TRABAJO!"
+						: "¡NO ENCONTRASTE EL BAÑO! ¡TURNO PERDIDO!"
 				}
 				colorClass={
 					luckResult === "success" ? styles.bgSuccess : styles.bgCritical

@@ -9,6 +9,7 @@ export interface PerkSlot {
 	isEmpty?: boolean;
 	cardType?: number;
 	name?: string;
+	lore?: string;
 }
 
 export function useDisplayPerks(perks: PlayerPerks) {
@@ -30,9 +31,10 @@ export function useDisplayPerks(perks: PlayerPerks) {
 			slots.push({
 				id: "vision_bonus",
 				icon: vb === 1 ? "👓" : "🔭",
-				title: `Alcance visual +${vb}`, 
+				title: `Alcance visual +${vb}`,
 				cardType: 10,
 				name: "Catalejo",
+				lore: "a",
 			});
 		}
 

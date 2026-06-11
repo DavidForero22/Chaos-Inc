@@ -4,21 +4,12 @@ import { useToastStore } from "../../store/ui/useToastStore";
 import api from "../../api/axios";
 
 export function useLeaderboard() {
-	const { users, lastFetched, setUsers } = useLeaderboardStore();
+	const { users, setUsers } = useLeaderboardStore();
 	const [isLoading, setIsLoading] = useState(false);
 	const showToast = useToastStore((state) => state.showToast);
 
 	useEffect(() => {
 		const fetchLeaderboard = async () => {
-			// Caché de 5 minutos (300000 ms)
-			if (
-				users.length > 0 &&
-				lastFetched &&
-				Date.now() - lastFetched < 300000
-			) {
-				return;
-			}
-
 			setIsLoading(true);
 
 			try {
@@ -38,7 +29,7 @@ export function useLeaderboard() {
 		};
 
 		fetchLeaderboard();
-	}, [users.length, lastFetched, setUsers, showToast]);
+	}, [setUsers, showToast]);
 
 	return { users, isLoading };
 }

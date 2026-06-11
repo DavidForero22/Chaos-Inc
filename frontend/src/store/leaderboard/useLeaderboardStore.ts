@@ -10,12 +10,10 @@ export interface LeaderboardUser {
 
 interface LeaderboardState {
 	users: LeaderboardUser[];
-	lastFetched: number | null;
 	setUsers: (users: LeaderboardUser[]) => void;
 }
 
 export const useLeaderboardStore = create<LeaderboardState>((set) => ({
 	users: [],
-	lastFetched: null,
-	setUsers: (users) => set({ users, lastFetched: Date.now() }),
+	setUsers: (users) => set({ users }),
 }));

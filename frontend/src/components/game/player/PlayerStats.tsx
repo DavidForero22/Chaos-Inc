@@ -124,8 +124,9 @@ export function PlayerStats({
 												title={perk.title}
 												cardType={perk.cardType}
 												name={perk.name}
+												lore={perk.lore}
 												isUnderSabotage={me.conditions.must_discard}
-												onInfoClick={(id, type, name, desc) =>
+												onInfoClick={(id, type, name, desc, lore) =>
 													setInfoCard({
 														id: id,
 														card_id: 0,
@@ -134,7 +135,7 @@ export function PlayerStats({
 														base_name: "Pasiva",
 														name: name,
 														description: desc,
-														lore: "",
+														lore: lore,
 														icons: [],
 														category: "normal",
 													})
