@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import type { RoomData } from "../../types/api";
 import EditRoomModal from "../rooms/EditRoomModal";
+import { getFullAvatarUrl } from "../../utils/avatar";
 
 interface WaitingRoomDrawerProps {
 	room: RoomData;
@@ -45,6 +46,8 @@ export default function WaitingRoomDrawer({
 	const MIN_PLAYERS = 3;
 	const canStart = currentPlayers >= MIN_PLAYERS;
 	const missingForMin = Math.max(0, MIN_PLAYERS - currentPlayers);
+
+	console.log(room);
 
 	return (
 		<>
@@ -170,7 +173,7 @@ export default function WaitingRoomDrawer({
 										<div className="w-10 h-10 shrink-0 bg-gray-200 border border-gray-400 rounded-full flex items-center justify-center font-black text-gray-500 overflow-hidden">
 											{player.avatar ? (
 												<img
-													src={player.avatar}
+													src={getFullAvatarUrl(player.avatar) ?? undefined}
 													alt=""
 													className="w-full h-full object-cover"
 													referrerPolicy="no-referrer"
