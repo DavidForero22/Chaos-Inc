@@ -14,7 +14,7 @@ class FriendshipController extends Controller
 {
     public function __construct(private FriendshipService $friendshipService) {}
 
-    /** GET /friends — Amigos confirmados */
+    /** Amigos confirmados */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user()->load(['friendsOfMine', 'friendOf']);
@@ -30,7 +30,7 @@ class FriendshipController extends Controller
         ]);
     }
 
-    /** GET /friends/pending — Solicitudes recibidas pendientes */
+    /** Solicitudes recibidas pendientes */
     public function pendingReceived(Request $request): JsonResponse
     {
         $requests = $request->user()
@@ -44,7 +44,7 @@ class FriendshipController extends Controller
         ]);
     }
 
-    /** GET /friends/sent — Solicitudes enviadas pendientes */
+    /** Solicitudes enviadas pendientes */
     public function pendingSent(Request $request): JsonResponse
     {
         $requests = $request->user()
@@ -58,7 +58,7 @@ class FriendshipController extends Controller
         ]);
     }
 
-    /** POST /friends/{user}/request — Enviar solicitud */
+    /** Enviar solicitud */
     public function sendRequest(Request $request, User $user): JsonResponse
     {
         $result = $this->friendshipService->sendRequest($request->user(), $user);
@@ -68,7 +68,7 @@ class FriendshipController extends Controller
             : response()->json(['data' => $result['data']], $result['status']);
     }
 
-    /** POST /friends/{user}/accept — Aceptar solicitud */
+    /** Aceptar solicitud */
     public function accept(Request $request, User $user): JsonResponse
     {
         $result = $this->friendshipService->acceptRequest($request->user(), $user);
@@ -78,7 +78,7 @@ class FriendshipController extends Controller
             : response()->json(['data' => $result['data']]);
     }
 
-    /** POST /friends/{user}/reject — Rechazar solicitud */
+    /** Rechazar solicitud */
     public function reject(Request $request, User $user): JsonResponse
     {
         $result = $this->friendshipService->rejectRequest($request->user(), $user);
@@ -88,7 +88,7 @@ class FriendshipController extends Controller
             : response()->json(['data' => $result['data']]);
     }
 
-    /** DELETE /friends/{user} — Eliminar amigo o cancelar solicitud */
+    /** Eliminar amigo o cancelar solicitud */
     public function remove(Request $request, User $user): JsonResponse
     {
         $result = $this->friendshipService->removeFriend($request->user(), $user);
@@ -96,5 +96,17 @@ class FriendshipController extends Controller
         return isset($result['error'])
             ? response()->json(['message' => $result['error']], $result['status'])
             : response()->json(['message' => 'Relación eliminada correctamente.']);
+    }
+
+    /**
+     * Cancelar una solicitud enviada (solo si está pendiente y eres el remitente)
+     */
+    public function cancel(Request $request, User $user): JsonResponse
+    {
+        $result = $this->friendshipService->cancelRequest($request->user(), $user);
+
+        return isset($result['error'])
+            ? response()->json(['message' => $result['error']], $result['status'])
+            : response()->json(['message' => 'Solicitud cancelada correctamente.'], $result['status']);
     }
 }

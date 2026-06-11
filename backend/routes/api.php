@@ -115,6 +115,7 @@ Route::prefix('v1')->group(function () {
                 Route::post('/{user}/request', [FriendshipController::class, 'sendRequest']);
                 Route::post('/{user}/accept',  [FriendshipController::class, 'accept']);
                 Route::post('/{user}/reject',  [FriendshipController::class, 'reject']);
+                Route::post('/{user}/cancel', [FriendshipController::class, 'cancel']);
 
                 Route::delete('/{user}', [FriendshipController::class, 'remove']);
             });

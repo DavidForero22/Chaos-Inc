@@ -126,4 +126,29 @@ class FriendshipService
             ->with('receiver')
             ->get();
     }
+
+    /**
+     * Cancelar una solicitud de amistad que el usuario autenticado ha enviado y sigue pendiente.
+     */
+    public function cancelRequest(User $auth, User $target): array
+    {
+        // El usuario no puede cancelar una solicitud hacia sí mismo
+        if ($auth->id === $target->id) {
+            return ['error' => 'No puedes cancelar una solicitud a ti mismo.', 'status' => 422];
+        }
+
+        // Buscar la solicitud donde el autenticado es el remitente y está pendiente
+        $friendship = Friendship::where('sender_id', $auth->id)
+            ->where('receiver_id', $target->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if (!$friendship) {
+            return ['error' => 'No se encontró ninguna solicitud pendiente enviada a este usuario.', 'status' => 404];
+        }
+
+        $friendship->delete();
+
+        return ['data' => null, 'status' => 200];
+    }
 }
