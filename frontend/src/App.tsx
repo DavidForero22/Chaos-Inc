@@ -16,6 +16,7 @@ import { Toast } from "./components/ui/Toast/Toast.tsx";
 import { GlobalRoomManager } from "./components/lobby/GlobalRoomManager.tsx";
 import RoomJoinInterceptor from "./components/lobby/RoomJoinInterceptor.tsx";
 import LeaderboardPage from "./pages/leaderboard/LeaderboardPage.tsx";
+import ScrollToTop from "./components/ui/ScrollToTop.tsx";
 
 // -- IMPORTACIONES PEREZOSAS --
 // Solo se descargarán cuando el usuario intente acceder a esa ruta
@@ -66,6 +67,8 @@ function App() {
 
 	return (
 		<Router>
+			<ScrollToTop />
+
 			{/* Suspense muestra el GlobalLoader mientras se descarga el JS de la página destino */}
 			<Suspense fallback={<PageTransitionLoader />}>
 				<Routes>
