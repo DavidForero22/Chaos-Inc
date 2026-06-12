@@ -94,7 +94,7 @@
 }
 
 /* Media Query para Escritorio */
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (min-height: 700px) {
 	.inkStamp {
 		font-size: 0.9rem;
 		padding: 6px 16px;

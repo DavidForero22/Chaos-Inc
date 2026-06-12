@@ -118,7 +118,7 @@
 /* =========================================
    2. DISEÑO ESCRITORIO (PC y Tablets Grandes)
 ========================================= */
-@media (min-width: 1024px) {
+@media (min-width: 1024px) and (min-height: 700px) {
 	.documentContainer {
 		min-width: 240px;
 		height: auto; 
