@@ -29,9 +29,11 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	const [isRendered, setIsRendered] = useState(false);
 	const [isExiting, setIsExiting] = useState(false);
 
-	// --- Estado para detectar si es PC o Móvil ---
+	// --- Estado para detectar si es PC o Móvil (Ancho y Alto) ---
 	const [isDesktop, setIsDesktop] = useState(
-		typeof window !== "undefined" ? window.innerWidth >= 1024 : false,
+		typeof window !== "undefined"
+			? window.innerWidth >= 1024 && window.innerHeight > 700
+			: false,
 	);
 
 	const {
@@ -56,7 +58,9 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 
 	// Escuchar cambios de tamaño de pantalla
 	useEffect(() => {
-		const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+		const handleResize = () => {
+			setIsDesktop(window.innerWidth >= 1024 && window.innerHeight > 700);
+		};
 		window.addEventListener("resize", handleResize);
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
@@ -234,11 +238,10 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 												)
 											}
 											aria-pressed={debugState.roomActions.force_win === option}
-											className={`px-3 py-1.5 text-xs font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 ${
-												debugState.roomActions.force_win === option
+											className={`px-3 py-1.5 text-xs font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-400 ${debugState.roomActions.force_win === option
 													? "bg-green-500 text-black border border-green-500"
 													: "bg-transparent text-green-600 border border-green-800 hover:bg-green-900/40 hover:text-green-400 hover:border-green-600"
-											}`}
+												}`}
 										>
 											{option === "cancelled"
 												? "Cancelada"
@@ -263,7 +266,7 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 	);
 
 	return (
-		<>
+        <>
 			<button
 				ref={triggerButtonRef}
 				onClick={toggleDebug}
@@ -282,35 +285,8 @@ export function DebugTools({ roomId }: DebugToolsProps) {
 					/* VERSIÓN ESCRITORIO */
 					<div
 						ref={activeContainerRef}
-						className={`${styles.desktopWrapper} ${
-							isExiting ? styles.slideOutLeft : styles.slideInLeft
-						}`}
+						className={`${styles.desktopWrapper} ${isExiting ? styles.slideOutLeft : styles.slideInLeft
+							}`}
 					>
 						<div
-							className={`${styles.terminalWindow} w-96 h-[80vh] max-h-[80vh]`}
-						>
-							{debugContent}
-						</div>
-					</div>
-				) : (
-					/* VERSIÓN MÓVIL */
-					<div
-						ref={activeContainerRef}
-						className={`fixed inset-0 z-200 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 ${
-							isExiting ? "opacity-0 transition-opacity" : ""
-						}`}
-						onClick={handleClose}
-					>
-						<div
-							className={`${styles.terminalWindow} w-full h-full max-h-full`}
-							onClick={(e) => e.stopPropagation()}
-						>
-							{debugContent}
-						</div>
-					</div>
-				),
-				document.body,
-			)}
-		</>
-	);
-}
+							className={`${styles.terminalWindow} w-96 h-[80vh] max-h-

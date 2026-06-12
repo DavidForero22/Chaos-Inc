@@ -38,6 +38,24 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 	const [activeTab, setActiveTab] = useState<"hand" | "stats">("hand");
 
+	// ── ESTADO REACTIVO PARA PANTALLAS COMPACTAS (OR de Ancho y Alto) ──
+	const [isCompactScreen, setIsCompactScreen] = useState(
+		typeof window !== "undefined"
+			? window.innerWidth < 1024 || window.innerHeight <= 700
+			: false
+	);
+
+	// Escuchador de redimensionamiento
+	useEffect(() => {
+		const handleResize = () => {
+			setIsCompactScreen(window.innerWidth < 1024 || window.innerHeight <= 700);
+		};
+		window.addEventListener("resize", handleResize);
+		// Llamada inicial por seguridad
+		handleResize();
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
 	// Referencias para transiciones de estado
 	const prevIsTargeting = useRef<boolean>(false);
 	const prevIsDefending = useRef<boolean>(false);
@@ -47,7 +65,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	useEffect(() => {
 		if (!me) return;
 
-		// Si exigen descartar (Sabotaje o Límite de mano)
 		if (me.conditions.must_discard && !isDiscardMode) {
 			setIsDiscardMode(true);
 			setActiveTab("hand");
@@ -97,7 +114,6 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 		sacrificeCardId,
 	]);
 
-	// E) Separado y al mismo nivel — se dispara cuando cambia sacrificeCardId
 	useEffect(() => {
 		if (isTargetingMode && isSacrificeMode && sacrificeCardId !== null) {
 			setFolderExpanded(false);
@@ -105,21 +121,16 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 	}, [sacrificeCardId]);
 
 	if (!me) return null;
-	
-	// --- LÓGICA DE PESTAÑAS ---
+
 	const handleTabClick = (tab: "hand" | "stats") => {
-		// Bloquear el clic si esta apuntando a un enemigo
 		if (isTargetingMode) return;
 
 		if (!isFolderExpanded) {
-			// Si está cerrada, abrir y seleccionar la pestaña
 			setActiveTab(tab);
 			setFolderExpanded(true);
 		} else if (activeTab === tab) {
-			// Si está abierta y toca la misma pestaña, cerrarla
 			setFolderExpanded(false);
 		} else {
-			// Si está abierta y toca otra pestaña, solo cambiar la vista
 			setActiveTab(tab);
 		}
 	};
@@ -137,8 +148,9 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 			{/* HOJA FLOTANTE PARA DESCARTAR PASIVAS */}
 			<div
 				aria-hidden={!showPerksDiscardSheet}
-				className={`lg:hidden absolute right-4 lg:right-10 z-0 transition-all duration-500 origin-bottom flex flex-col items-center
-                ${showPerksDiscardSheet ? "-top-17.5 lg:-top-27.5" : "top-2 pointer-events-none opacity-0"}`}
+				className={`absolute right-4 z-0 transition-all duration-500 origin-bottom flex flex-col items-center
+                ${!isCompactScreen && "hidden"} 
+                ${showPerksDiscardSheet ? "-top-17.5" : "top-2 pointer-events-none opacity-0"}`}
 			>
 				<div className="bg-[#f8f9f8] border border-[#c7c9c7] px-4 py-3 rounded-sm shadow-md flex flex-col items-center gap-2 transform rotate-3">
 					<span className="text-[10px] uppercase font-bold text-red-600 border-b border-red-600/30 w-full text-center pb-1">
@@ -161,11 +173,11 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 			{/* --- ESTRUCTURA FÍSICA DE LA CARPETA --- */}
 			<div className={styles.folderBackground}>
-				{/* Pestañas para MÓVIL */}
+				{/* Pestañas para MÓVIL y PC de baja altura */}
 				<div
 					role="tablist"
 					aria-label="Vistas del jugador"
-					className={`absolute -top-8 left-4 z-0 flex gap-2 lg:hidden transition-opacity ${isTargetingMode ? "opacity-30 cursor-not-allowed" : "opacity-100"}`}
+					className={`absolute -top-8 left-4 z-0 flex gap-2 transition-opacity ${!isCompactScreen && "hidden"} ${isTargetingMode ? "opacity-30 cursor-not-allowed" : "opacity-100"}`}
 				>
 					<button
 						role="tab"
@@ -194,11 +206,11 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 				<PlayerTimer
 					turnTimeLeft={turnTimeLeft}
 					isTurnPaused={isTurnPaused}
-					className="absolute -top-7 left-62 z-50 lg:hidden"
+					className={`absolute -top-7 left-62 z-50 ${!isCompactScreen && "hidden"}`}
 				/>
 
 				<div
-					className={`${styles.tabRight} hidden lg:block`}
+					className={`${styles.tabRight} ${isCompactScreen ? "hidden" : "block"}`}
 					aria-hidden="true"
 				></div>
 				<div className={styles.texture} aria-hidden="true" />
@@ -206,7 +218,7 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 
 			{/* --- CONTENIDO DE LA CARPETA --- */}
 			<div className={styles.contentArea}>
-				<div className="absolute -top-6 right-4 lg:left-8 lg:right-auto z-49">
+				<div className={`absolute -top-6 z-49 ${isCompactScreen ? "right-4" : "left-8"}`}>
 					<PlayerBanners me={me} />
 				</div>
 
@@ -215,16 +227,15 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					id="panel-stats"
 					role="tabpanel"
 					aria-labelledby="tab-stats"
-					hidden={
-						activeTab !== "stats" &&
-						typeof window !== "undefined" &&
-						window.innerWidth < 1024
-					}
-					className={`shrink-0 z-40 w-full lg:w-65 h-[99%] lg:-mt-6 transform lg:rotate-2 relative ${activeTab === "stats" ? "block" : "hidden lg:block"}`}
+					hidden={isCompactScreen && activeTab !== "stats"}
+					className={`shrink-0 z-40 w-full h-[99%] relative transform ${isCompactScreen
+							? (activeTab === "stats" ? "block" : "hidden")
+							: "block w-65 -mt-6 rotate-2"
+						}`}
 				>
 					<div
 						aria-hidden="true"
-						className="hidden lg:block absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2"
+						className={`absolute inset-0 bg-black opacity-10 blur-md rounded -z-10 transform translate-x-2 translate-y-2 ${isCompactScreen ? "hidden" : "block"}`}
 					></div>
 					<PlayerStats
 						me={me}
@@ -239,12 +250,11 @@ export function PlayerArea({ turnTimeLeft, isTurnPaused }: PlayerAreaProps) {
 					id="panel-hand"
 					role="tabpanel"
 					aria-labelledby="tab-hand"
-					hidden={
-						activeTab !== "hand" &&
-						typeof window !== "undefined" &&
-						window.innerWidth < 1024
-					}
-					className={`flex-1 min-w-0 h-full relative z-20 flex-col justify-start pb-2 pt-2 lg:pt-6 ${activeTab === "hand" ? "flex" : "hidden lg:flex"}`}
+					hidden={isCompactScreen && activeTab !== "hand"}
+					className={`flex-1 min-w-0 h-full relative z-20 flex-col justify-start pb-2 ${isCompactScreen
+							? (activeTab === "hand" ? "flex pt-2" : "hidden")
+							: "flex pt-6"
+						}`}
 				>
 					<PlayerActions />
 					<PlayerHand />

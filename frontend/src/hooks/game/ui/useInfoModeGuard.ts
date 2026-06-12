@@ -9,7 +9,7 @@ export function useInfoModeGuard() {
 
 	useEffect(() => {
 		const handleResize = () => {
-			if (window.innerWidth >= 1024 && isInfoMode) {
+			if (window.innerWidth >= 1024 && window.innerHeight > 700 && isInfoMode) {
 				setIsInfoMode(false);
 			}
 		};
